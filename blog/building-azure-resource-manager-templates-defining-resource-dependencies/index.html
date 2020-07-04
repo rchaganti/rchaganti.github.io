@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
+  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author,speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Building Azure Resource Manager Templates – Defining Resource Dependencies"/>
+<meta name="twitter:description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
+  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others."/>
+
+    <meta property="og:title" content="Building Azure Resource Manager Templates – Defining Resource Dependencies" />
+<meta property="og:description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
+  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/" />
+<meta property="article:published_time" content="2015-12-08T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-12-08T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/">
+    
+    <title>
+  Building Azure Resource Manager Templates – Defining Resource Dependencies · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Building Azure Resource Manager Templates – Defining Resource Dependencies</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2015-12-08T00:00:00Z'>
+                December 8, 2015
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/arm-templates/">ARM Templates</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/arm-templates/">ARM Templates</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.</p>
+<figure>
+    <img src="https://ravichaganti.com/images/armtemplate6-1.png"/> 
+</figure>
+
+<p>In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others. For example, the inbound NAT rules depend on the load balancer. Similarly, VMs depend on network interfaces which in turn depend on the virtual network. In the absence of dependencies, ARM will attempt to deploy these resources in parallel which may result in errors. So, within the resource template, we need to define these dependencies so that ARM can make decisions about the deployment sequence. There are multiple ways of doing this.</p>
+<h4 id="using-dependson">Using DependsOn</h4>
+<p>If you have noticed in the earlier parts of this series, we have used <em>DependsOn</em> property within the resource element.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+    &#34;apiVersion&#34;: &#34;2015-06-15&#34;,
+    &#34;type&#34;: &#34;Microsoft.Network/loadBalancers/inboundNatRules&#34;,
+    &#34;copy&#34;: {
+        &#34;name&#34;: &#34;lbRdpNatLoop&#34;,
+        &#34;count&#34;: &#34;[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;
+    },
+    &#34;name&#34;: &#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;,
+    &#34;location&#34;: &#34;[resourceGroup().location]&#34;,
+    &#34;dependsOn&#34;: [
+        &#34;Microsoft.Network/loadBalancers/loadBalancer&#34;
+    ],
+    &#34;properties&#34;: {
+        &#34;frontendIPConfiguration&#34;: {
+            &#34;id&#34;: &#34;[resourceId(&#39;Microsoft.Network/loadBalancers/frontendIPConfigurations&#39;,&#39;loadBalancer&#39;,variables(&#39;lbFrontend&#39;))]&#34;
+        },
+        &#34;protocol&#34;: &#34;tcp&#34;,
+        &#34;frontendPort&#34;: &#34;[add(3389, copyIndex(1))]&#34;,
+        &#34;backendPort&#34;: 3389,
+        &#34;enableFloatingIP&#34;: false
+    }
+}
+</code></pre></div><p>If you look at line number 11, we added <em>DependsOn</em> property to define that the <em>inboundNatRules</em> depend on the load balancer configuration. This is straightforward and very easy to define. You can use template language functions such as <em>ResourceId()</em> or <em>concat()</em> as well within the value of <em>DependsOn</em> and dynamically build these dependencies. You can provide more than one value here as a comma-separated list.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;dependsOn&#34;: [
+    &#34;Microsoft.Network/loadBalancers/loadBalancer&#34;,
+    &#34;Microsoft.Network/virtualNetworks/vNet1&#34;
+]
+</code></pre></div><h4 id="using-references">Using References</h4>
+<p>The second method is to define reference to the dependent resource. Let us create a virtual network interface the AD VM in our scenario. This depends on the virtual network resource that we already created.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+    &#34;apiVersion&#34;: &#34;2015-05-01-preview&#34;,
+    &#34;type&#34;: &#34;Microsoft.Network/networkInterfaces&#34;,
+    &#34;name&#34;: &#34;dcvmnif&#34;,
+    &#34;location&#34;: &#34;[resourceGroup().location]&#34;,
+    &#34;properties&#34;: {
+        &#34;ipConfigurations&#34;: [
+            {
+                &#34;name&#34;: &#34;[concat(reference(parameters(&#39;vNetName&#39;)).subnets[0].name,parameters(&#39;dcVmName&#39;),&#39;-nifconfig&#39;)]&#34;,
+                &#34;properties&#34;: {
+                    &#34;privateIPAllocationMethod&#34;: &#34;Static&#34;,
+                    &#34;privateIPAddress&#34;: &#34;[variables(&#39;dnsServerPrivateIp&#39;)]&#34;,
+                    &#34;subnet&#34;: {
+                        &#34;id&#34;: &#34;[variables(&#39;vNetSubnet1ID&#39;)]&#34;
+                    }
+                }
+            }
+        ]
+    }
+}
+</code></pre></div><p>Observe line number 9. We used the reference() function to get a reference to the virtual network object we created and get the subnet name from there and use it to construct the <em>IPConfiguration</em> name. When ARM engine finds this reference, it creates an implicit dependency on the virtual network that we referenced. There is no need here to specify <em>DependsOn</em> property.</p>
+<p>Note that we cannot use the reference() function as a part of the resource instance name. This is because the ARM engine must know the names of the resource instances before the deployment can start.</p>
+<h4 id="child-or-nested-resources">Child or Nested Resources</h4>
+<p>The 3rd way to define dependencies is to use child resources. Let us see an example before we discuss this further.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+    &#34;apiVersion&#34;: &#34;2015-06-15&#34;,
+    &#34;type&#34;: &#34;Microsoft.Compute/virtualMachines&#34;,
+    &#34;name&#34;: &#34;[Parameters(&#39;dcVMName&#39;)]&#34;,
+    &#34;location&#34;: &#34;[resourceGroup().location]&#34;,
+    &#34;dependsOn&#34;: [
+        &#34;[resourceId(&#39;Microsoft.Storage/storageAccounts&#39;,parameters(&#39;storageAccount&#39;))]&#34;,
+        &#34;[resourceId(&#39;Microsoft.Network/networkInterfaces&#39;,concat(parameters(&#39;dcVMName&#39;),&#39;-nif&#39;))]&#34;
+    ],
+    &#34;properties&#34;: {
+        &#34;hardwareProfile&#34;: {
+            &#34;vmSize&#34;: &#34;[parameters(&#39;vmSize&#39;)]&#34;
+        },
+        &#34;osProfile&#34;: {
+            &#34;computerName&#34;: &#34;[parameters(&#39;dcVMName&#39;)]&#34;,
+            &#34;adminUsername&#34;: &#34;[parameters(&#39;adminUsername&#39;)]&#34;,
+            &#34;adminPassword&#34;: &#34;[parameters(&#39;adminPassword&#39;)]&#34;
+        },
+        &#34;storageProfile&#34;: {
+            &#34;imageReference&#34;: {
+                &#34;publisher&#34;: &#34;[variables(&#39;imagePublisher&#39;)]&#34;,
+                &#34;offer&#34;: &#34;[variables(&#39;imageOffer&#39;)]&#34;,
+                &#34;sku&#34;: &#34;[parameters(&#39;windowsOSVersion&#39;)]&#34;,
+                &#34;version&#34;: &#34;latest&#34;
+            },
+            &#34;osDisk&#34;: {
+                &#34;name&#34;: &#34;[concat(parameters(&#39;dcVMName&#39;), &#39;-osdisk.vhd&#39;)]&#34;,
+                &#34;vhd&#34;: {
+                    &#34;uri&#34;: &#34;[concat(&#39;http://&#39;,parameters(&#39;storageAccount&#39;),&#39;.blob.core.windows.net/vhds/&#39;, parameters(&#39;dcVMName&#39;), &#39;-osdisk.vhd&#39;)]&#34;
+                },
+                &#34;caching&#34;: &#34;ReadWrite&#34;,
+                &#34;createOption&#34;: &#34;FromImage&#34;
+            },
+            &#34;dataDisks&#34;: [
+                {
+                    &#34;name&#34;: &#34;[concat(parameters(&#39;dcVMName&#39;), &#39;-data-disk1.vhd&#39;)]&#34;,
+                    &#34;vhd&#34;: {
+                        &#34;uri&#34;: &#34;[concat(&#39;http://&#39;,parameters(&#39;storageAccount&#39;),&#39;.blob.core.windows.net/vhds/&#39;, parameters(&#39;dcVMName&#39;), &#39;-data-disk1.vhd&#39;)]&#34;
+                    },
+                    &#34;caching&#34;: &#34;None&#34;,
+                    &#34;createOption&#34;: &#34;Empty&#34;,
+                    &#34;diskSizeGB&#34;: &#34;1000&#34;,
+                    &#34;lun&#34;: 0
+                }
+            ]
+        },
+        &#34;networkProfile&#34;: {
+            &#34;networkInterfaces&#34;: [
+                {
+                    &#34;id&#34;: &#34;[resourceId(&#39;Microsoft.Network/networkInterfaces&#39;,concat(parameters(&#39;dcVMName&#39;),&#39;-nif&#39;))]&#34;
+                }
+            ]
+        },
+        &#34;diagnosticsProfile&#34;: {
+            &#34;bootDiagnostics&#34;: {
+                &#34;enabled&#34;: &#34;true&#34;,
+                &#34;storageUri&#34;: &#34;[concat(&#39;http://&#39;,parameters(&#39;storageAccount&#39;),&#39;.blob.core.windows.net&#39;)]&#34;
+            }
+        }
+    },
+    &#34;resources&#34;: [
+        {
+            &#34;type&#34;: &#34;extensions&#34;,
+            &#34;name&#34;: &#34;createadforest&#34;,
+            &#34;apiVersion&#34;: &#34;2015-05-01-preview&#34;,
+            &#34;location&#34;: &#34;[resourceGroup().location]&#34;,
+            &#34;dependsOn&#34;: [
+                &#34;[concat(&#39;Microsoft.Compute/virtualMachines/&#39;,parameters(&#39;dcVMName&#39;))]&#34;
+            ],
+            &#34;properties&#34;: {
+                &#34;publisher&#34;: &#34;Microsoft.Powershell&#34;,
+                &#34;type&#34;: &#34;DSC&#34;,
+                &#34;typeHandlerVersion&#34;: &#34;2.8&#34;,
+                &#34;settings&#34;: {
+                    &#34;ModulesUrl&#34;: &#34;[concat(parameters(&#39;assetLocation&#39;),&#39;/Configuration.zip&#39;)]&#34;,
+                    &#34;ConfigurationFunction&#34;: &#34;CreateADPDC.ps1\\CreateADPDC&#34;,
+                    &#34;Properties&#34;: {
+                        &#34;DomainName&#34;: &#34;[parameters(&#39;adDomainName&#39;)]&#34;,
+                        &#34;AdminCreds&#34;: {
+                            &#34;UserName&#34;: &#34;[parameters(&#39;adminUsername&#39;)]&#34;,
+                            &#34;Password&#34;: &#34;PrivateSettingsRef:AdminPassword&#34;
+                        }
+                    }
+                },
+                &#34;protectedSettings&#34;: {
+                    &#34;Items&#34;: {
+                        &#34;AdminPassword&#34;: &#34;[parameters(&#39;adminPassword&#39;)]&#34;
+                    }
+                }
+            }
+        }
+    ]
+}
+</code></pre></div><p>This example is quite long. It is the virtual machine resource instance that we need for the domain controller. Apart from all the virtual machine properties such as storage profile and OS profile, we have something interesting at line number 61. We have another resources element within the VM resource definition. As with the top-level resources element, this is also a JSON array and contains the resource definition for the <a href="http://www.powershellmagazine.com/2014/08/05/understanding-azure-vm-dsc-extension/">VM DSC extension</a>. It is obvious that VM DSC extension without a VM is meaningless. By defining this as a child or nested resource inside the VM resource definition, we are creating an implicit dependency between the VM and the VM DSC extension. When ARM engine looks at this in the template, it schedules VM creation before the DSC extension. BTW, this VM DSC extension has the DSC configuration required to build the domain controller in this deployment.</p>
+<p>Always make sure you that you create enough flexibility within the template for someone else to take this and deploy the template in their own environment.To this extent, I have used a parameter called <em>assetLocation</em> (line 75) in the DSC extension properties. You can call this whatever you want. This parameter specifies where all the template assets such as DSC configuration scripts and any additional template files are stored.</p>
+<p>So far in this part, we have seen three different ways of defining dependencies between resources. If you check the template that we <a href="https://github.com/rchaganti/armseries/blob/master/arm-series_Storage-VirtualNet-LB_vNIC-VM.json">built so far for this scenario</a>, you will observe that I have added a few more variables and parameters needed for the DC VM and its configuration.</p>
+<p>Go ahead and deploy this.</p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frchaganti%2Farmseries%2Fmaster%2Farm-series_Storage-VirtualNet-LB_vNIC-VM.json" target="_blank">
+        <img src="http://azuredeploy.net/deploybutton.png" alt="">
+    </a>
+    <br />
+
+<p>In the next part, we will look at the nested template deployments.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-defining-resource-dependencies\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-defining-resource-dependencies\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-defining-resource-dependencies\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-defining-resource-dependencies\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in ARM Templates</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/custom-template-deployment-improvements-in-azure-portal/">Custom Template Deployment Improvements in Azure Portal</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-forcing-wmf-4-0-when-using-dsc-extension/">Building Azure Resource Manager Templates – Forcing WMF 4.0 when using DSC Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-domain-join-extension/">Building Azure Resource Manager Templates – Using Domain Join Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-putting-it-all-together/">Building Azure Resource Manager Templates – Putting it all together</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-linked-templates/">Building Azure Resource Manager Templates – Using Linked Templates</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+    
+
+  </body>
+
+</html>

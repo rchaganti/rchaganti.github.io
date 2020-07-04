@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Azure Resource Manager isn’t a new thing! It was announced during Build 2014. ARM is certainly the preferred way, with more and more services getting ARM support, to deploy Azure services. Microsoft also announced that the upcoming Azure Stack release will feature Azure Resource Manager and the template deployment. This means that learning how to use ARM and write you own templates is an essential skill not just for public cloud but also for the private and hybrid cloud administrators.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author,speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Building Azure Resource Manager Templates – An Introduction"/>
+<meta name="twitter:description" content="Azure Resource Manager isn’t a new thing! It was announced during Build 2014. ARM is certainly the preferred way, with more and more services getting ARM support, to deploy Azure services. Microsoft also announced that the upcoming Azure Stack release will feature Azure Resource Manager and the template deployment. This means that learning how to use ARM and write you own templates is an essential skill not just for public cloud but also for the private and hybrid cloud administrators."/>
+
+    <meta property="og:title" content="Building Azure Resource Manager Templates – An Introduction" />
+<meta property="og:description" content="Azure Resource Manager isn’t a new thing! It was announced during Build 2014. ARM is certainly the preferred way, with more and more services getting ARM support, to deploy Azure services. Microsoft also announced that the upcoming Azure Stack release will feature Azure Resource Manager and the template deployment. This means that learning how to use ARM and write you own templates is an essential skill not just for public cloud but also for the private and hybrid cloud administrators." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-an-introduction/" />
+<meta property="article:published_time" content="2015-11-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-11-02T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-an-introduction/">
+    
+    <title>
+  Building Azure Resource Manager Templates – An Introduction · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-an-introduction/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Building Azure Resource Manager Templates – An Introduction</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2015-11-02T00:00:00Z'>
+                November 2, 2015
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/arm-templates/">ARM Templates</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/arm-templates/">ARM Templates</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-overview/">Azure Resource Manager</a> isn’t a new thing! It was announced during <a href="https://channel9.msdn.com/Events/TechEd/NorthAmerica/2014/DEV-B224">Build 2014</a>. ARM is certainly the preferred way, with more and more services getting ARM support, to deploy Azure services. Microsoft also announced that the upcoming <a href="https://www.youtube.com/watch?v=fuAmcfmo3X0">Azure Stack release</a> will feature Azure Resource Manager and the template deployment. This means that learning how to use ARM and write you own templates is an essential skill not just for public cloud but also for the private and hybrid cloud administrators.</p>
+<p>There is lot of Microsoft and community content out there that describes why ARM is important and how you can use the templates to deploy multi-tier and multi-service cloud deployments and manage all of them as a single entity. I am not going to repeat all that here. My focus, here, will be a thorough coverage of template language and design patterns. Through this series, you will get a complete and in-depth coverage of what you need to know to build world-class ARM templates. ARM uses <a href="http://json.org/">JSON formatted</a> templates to perform these cloud deployments. You can see a bunch of these sample templates in the <a href="https://github.com/Azure/azure-quickstart-templates">Azure quick start templates Github repo</a> that you can use as a starting point to create your own template or understand how to use the template language and best practices. This series of posts is about sharing my learning – the way I learned authoring ARM templates.</p>
+<p>Before you we go ahead start our discussion of ARM template language, let us first quickly review different methods of deploying these templates. This is not a detailed walk-through of these different methods since the focus of this article series is not on the deployment but building templates. After you write a custom ARM template, you can choose between any of these methods to deploy those templates.</p>
+<h4 id="new-template-deployment-preview-portal">New Template Deployment (Preview Portal)</h4>
+<p>The Azure Preview portal has an option to supply the ARM template contents (JSON) and then use a wizard-based method to start the deployment.</p>
+<figure>
+    <img src="https://ravichaganti.com/images/armtemplate1-1.png"/> 
+</figure>
+
+<p>To start this, as shown in the picture, click on the <em>+ icon</em> and scroll down to click on <em>Template Deployment</em>. The wizard that starts after this pretty much self-explanatory. As with any GUI and click-here methods, this is a manual method. I do not prefer this method.</p>
+<h4 id="azure-powershell">Azure PowerShell</h4>
+<p><a href="https://github.com/Azure/azure-powershell/releases">Azure PowerShell</a> (the following example uses 1.0 preview) is my preferred option. You can just supply a template file and template parameter file to the <em>New-AzureRmResourceGroupDeployment</em> cmdlet.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">Login-AzureRmAccount
+<span style="color:#fff;font-weight:bold">New-AzureRmResourceGroup</span> -Name ExampleResourceGroup -Location <span style="color:#0ff;font-weight:bold">&#34;West US&#34;</span>
+<span style="color:#fff;font-weight:bold">New-AzureRmResourceGroupDeployment</span> -Name ExampleDeployment -ResourceGroupName ExampleResourceGroup -TemplateFile C:\ARMTemplates\SingleVMDeploy.json -TemplateParameterFile C:\ARMTemplates\SingleVMDeploy-parameter.json
+</code></pre></div><p>This method, like any other PowerShell-based method, can be completely automated and can be made a part of your CI/CD pipeline.</p>
+<p>If you prefer, you can do the same with <a href="https://github.com/Azure/azure-xplat-cli/releases">Azure CLI</a> as well.</p>
+<h4 id="arm-rest-api">ARM REST API</h4>
+<p>The <a href="https://msdn.microsoft.com/en-in/library/azure/dn790549.aspx">template deployment API in the ARM REST API</a> provides a way to deploy custom ARM templates programatically using any language that supports REST interfaces. For example, you can use the following API request to create a template deployment. You can supply the JSON template along with all parameter information in the same request or as a link to a blob in your storage account.</p>
+<p><a href="https://management.azure.com/subscriptions/%7Bsubscription-id%7D/resourcegroups/%7Bresource-group-name%7D/providers/microsoft.resources/deployments/%7Bdeployment-name%7D?api-version=%7Bapi-version%7D">https://management.azure.com/subscriptions/{subscription-id}/resourcegroups/{resource-group-name}/providers/microsoft.resources/deployments/{deployment-name}?api-version={api-version}</a></p>
+<p>This method, like the Azure PowerShell or CLI method, can be easily integrated into an existing CI/CD pipeline.</p>
+<h4 id="click-to-deploy-method">Click to Deploy Method</h4>
+<p>Finally, there is a click to deploy method that Azure Preview portal gets integrated into. For example, most or all of the sample templates within the Azure quick start templates gallery contain the <a href="https://azure.microsoft.com/en-us/blog/deploy-to-azure-button-for-azure-websites-2/">Deploy to Azure button</a>.</p>
+<p>Clicking on the above button will take you to the new template deployment option in the preview portal where you can add the parameter values and start the deployment. Similar to this, you can embed these buttons on any webpage and redirect the user to Azure Preview portal to start the deployment.</p>
+<h4 id="visual-studio">Visual Studio</h4>
+<p>For developers creating ARM custom templates, it might be an easier option to both author and test deployment using <a href="https://azure.microsoft.com/en-in/documentation/articles/arm-template-deployment/#step-2-create-the-visual-studio-project-the-template-file-and-the-parameters-file">Visual Studio</a>. VS provides necessary tooling to do this. VS provides the options to add new resources through a wizard and then later use the VS editor to customize and deploy those templates. Note that VS does not have all the resource types available in the wizard interface. For some of these missing resource types, you might still have to refer to the <a href="https://github.com/Azure/azure-resource-manager-schemas">schema and resource definitions</a>.</p>
+<p>VS is my preferred (and only option at the moment) to start ARM template development. So, in this series, going forward, we will use VS for most of our scenarios but do the deployments using Azure PowerShell.</p>
+<p>This brings us to the end of today’s article. We have not yet seen any basics of authoring Azure Resource Manager templates. We will start discussing the basics and go in-depth starting the next part in this series. Before that, familiarize yourself with at least one of the custom template deployment methods.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-an-introduction\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-an-introduction\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-an-introduction\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-an-introduction\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in ARM Templates</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/custom-template-deployment-improvements-in-azure-portal/">Custom Template Deployment Improvements in Azure Portal</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-forcing-wmf-4-0-when-using-dsc-extension/">Building Azure Resource Manager Templates – Forcing WMF 4.0 when using DSC Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-domain-join-extension/">Building Azure Resource Manager Templates – Using Domain Join Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-putting-it-all-together/">Building Azure Resource Manager Templates – Putting it all together</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-linked-templates/">Building Azure Resource Manager Templates – Using Linked Templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/">Building Azure Resource Manager Templates – Defining Resource Dependencies</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+    
+
+  </body>
+
+</html>

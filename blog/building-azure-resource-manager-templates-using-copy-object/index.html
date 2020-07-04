@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="If you are following this series, by now you know how to use parameters and variables in ARM template language. We used that knowledge to create a template that creates relevant things to like storage account and virtual network. Let us revisit the scenario.
+  In this part, we will extend the template to add publicIP, load balancer, and RDP endpoints for the virtual machines. Before we do that, let us review what we need.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author,speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Building Azure Resource Manager Templates – Using Copy Object"/>
+<meta name="twitter:description" content="If you are following this series, by now you know how to use parameters and variables in ARM template language. We used that knowledge to create a template that creates relevant things to like storage account and virtual network. Let us revisit the scenario.
+  In this part, we will extend the template to add publicIP, load balancer, and RDP endpoints for the virtual machines. Before we do that, let us review what we need."/>
+
+    <meta property="og:title" content="Building Azure Resource Manager Templates – Using Copy Object" />
+<meta property="og:description" content="If you are following this series, by now you know how to use parameters and variables in ARM template language. We used that knowledge to create a template that creates relevant things to like storage account and virtual network. Let us revisit the scenario.
+  In this part, we will extend the template to add publicIP, load balancer, and RDP endpoints for the virtual machines. Before we do that, let us review what we need." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-copy-object/" />
+<meta property="article:published_time" content="2015-11-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-11-17T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-copy-object/">
+    
+    <title>
+  Building Azure Resource Manager Templates – Using Copy Object · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-copy-object/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Building Azure Resource Manager Templates – Using Copy Object</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2015-11-17T00:00:00Z'>
+                November 17, 2015
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              10-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/arm-templates/">ARM Templates</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/arm-templates/">ARM Templates</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>If you are following this series, by now you know how to use parameters and variables in ARM template language. We used that knowledge to create a template that creates relevant things to like storage account and virtual network. Let us revisit the scenario.</p>
+<figure>
+    <img src="https://ravichaganti.com/images/armtemplate5-1.png"/> 
+</figure>
+
+<p>In this part, we will extend the template to add publicIP, load balancer, and RDP endpoints for the virtual machines. Before we do that, let us review what we need. To achieve what we want in this, we will use copy object in the template.</p>
+<h4 id="what-iscopy-object">What is Copy Object?</h4>
+<p>In our template, we already have the storage account and virtual network configuration defined. What we now need is a load balancer with a public IP so that we can access this deployment from the Internet. Also, we need the inbound NAT rules for enabling RDP access to the VMs in this deployment. But before we create the RDP rules for each VM, we need to know how many VM instances we are deploying. As shown in the scenario diagram, we need to be able to deploy this template within development, test, or production environment. Depending on the selected environment, we will have one AD DC VM along with 1 (development) or 2 (test) or 3 (production) VMs that join the AD domain. Therefore, we need a way to capture the environment type as an input parameter. Also, based on the environment type selected by the user, we need to decide on the number of VM instances required for the deployment and then create only relevant number of inbound NAT rules within the load balancer.</p>
+<p>There are multiple ways to achieve this.</p>
+<ol>
+<li>Add multiple resource definitions; one for each resource instance we need. This does not give the flexibility to dynamically add or remove instances based on the VM count we need. This method is not efficient.</li>
+<li>Use some kind of iterator, like other programming languages, within a resource definition and tell ARM how many resource instances we need. This can be achieved using copy object technique in ARM templates.</li>
+</ol>
+<p>Before we go to the copy object discussion, let us first add more parameters and variables that are needed for this template. These additional parameters will also help us with defining the iteration count within the copy object.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;parameters&#34;</span><span style="color:#f00">:</span> {
+    <span style="font-weight:bold">&#34;storageAccount&#34;</span>: {
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+        <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name for the storage account.&#34;</span>
+        }
+    },
+    <span style="font-weight:bold">&#34;storageAccountType&#34;</span>: {
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+        <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
+        <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+            <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
+            <span style="color:#0ff;font-weight:bold">&#34;Standard_GRS&#34;</span>,
+            <span style="color:#0ff;font-weight:bold">&#34;Standard_ZRS&#34;</span>
+        ],
+        <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Account type based on the storage redundancy requirements.&#34;</span>
+        }
+    },
+    <span style="font-weight:bold">&#34;vNetName&#34;</span>: {
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+        <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Name for the virtual network.&#34;</span>
+        }
+    },
+    <span style="font-weight:bold">&#34;DnsName&#34;</span>: {
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+        <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique public DNS prefix for the deployment. The fqdn will look something like &#39;&amp;lt;dnsname&amp;gt;.westus.cloudapp.azure.com&#39;.&#34;</span>
+        }
+    },
+    <span style="font-weight:bold">&#34;environmentType&#34;</span>: {
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+        <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+            <span style="color:#0ff;font-weight:bold">&#34;Development&#34;</span>,
+            <span style="color:#0ff;font-weight:bold">&#34;Test&#34;</span>,
+            <span style="color:#0ff;font-weight:bold">&#34;Production&#34;</span>
+        ],
+        <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Development&#34;</span>,
+        <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Type of environment where this deployment should occur. This has an impact on the number of VMs to be depoloyed.&#34;</span>
+        }
+    }
+}
+</code></pre></div><p>Within the new parameters, we have the <em>dnsName</em> parameter that will be for external access. The <em>environmentType</em> parameter is used to capture whether the user is deploying this template for dev, test, or production. However, based on this selection, we need a way to find out the number of VMs we need in the domain. That is, we need know the instance count for each environment. Remember our discussion on free-form vs known configurations? We don’t want to leave such choices to the end user. So, the place where this decision can be made will be in the variables element.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;variables&#34;</span><span style="color:#f00">:</span> {
+    <span style="font-weight:bold">&#34;vNetPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/16&#34;</span>,
+    <span style="font-weight:bold">&#34;vNetSubnet1Name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>,
+    <span style="font-weight:bold">&#34;vNetSubnet1Prefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/24&#34;</span>,
+    <span style="font-weight:bold">&#34;vNetSubnet1ID&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>,
+    <span style="font-weight:bold">&#34;dnsServerPrivateIp&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.8&#34;</span>,
+    <span style="font-weight:bold">&#34;deploymentSize&#34;</span>: {
+        <span style="font-weight:bold">&#34;Development&#34;</span>: {
+            <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">1</span>
+        },
+        <span style="font-weight:bold">&#34;Test&#34;</span>: {
+            <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">2</span>
+        },
+        <span style="font-weight:bold">&#34;Production&#34;</span>: {
+            <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>
+        }
+    },
+    <span style="font-weight:bold">&#34;selectedDeployment&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span>
+}
+</code></pre></div><p>Within the variables element, we defined new variables for making it easier to select the environment type. The <em>deploymentSize</em> variable defines a JSON object. Within this, we are associating <em>instancesCount</em> to every deployment type.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;deploymentSize&#34;</span><span style="color:#f00">:</span> {
+    <span style="font-weight:bold">&#34;Development&#34;</span>: {
+        <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">1</span>
+    },
+    <span style="font-weight:bold">&#34;Test&#34;</span>: {
+        <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">2</span>
+    },
+    <span style="font-weight:bold">&#34;Production&#34;</span>: {
+        <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>
+    }
+}
+</code></pre></div><p>We use the <em>selectedDeployment</em> variable to retrieve the value of <em>deploymentSize</em> variable. This is done by associating the value of environmentType parameter and looking up for that in the <em>deploymentSize</em> variable.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;selectedDeployment&#34;</span><span style="color:#f00">:</span> <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span>
+</code></pre></div><p>This works because <em>deploymentSize</em> is a JSON object similar to a dictionary. We can index into it using one of the key names. So, in this case, the key names will match the value passed to the <em>environmentType</em> parameter and indexing into that will give us the right object within _deploymentSize. _Once we have the selectedDeployment variable populated, we can access the <em>instancesCount</em> value by dot-referencing the property name. For example,</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;
+</code></pre></div><p>This should not be alien to us. We use <em>variables()</em> function and pass the <em>selectedDeployment</em> variable name to it. The resulting object has the <em>instancesCount</em> property which can then be retrieved using dot-referencing. Now that we figured this out, let us go back to the discussion around multiple instance creation within a template.</p>
+<h4 id="working-with-copy-object">Working with Copy Object</h4>
+<p>As stated earlier, the reason we need <em>instancesCount</em> value is because we need to tell ARM how many times it has to iterate for creating the resource for which we need multiple instances. This is done within the <a href="https://azure.microsoft.com/en-us/documentation/articles/resource-group-create-multiple/#copy-copyindex-and-length">copy object syntax</a>.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;copy&#34;: { 
+    &#34;name&#34;: &#34;copy loop name&#34;, 
+    &#34;count&#34;: &#34;integer value&#34; 
+}
+</code></pre></div><p>The <em>name</em> property within the <em>copy</em> element defines a name for the iterator which can later be used for defining dependencies. The _count _property defines the number of times the iterator has to run. In our case, we will set the value of count property to the <em>instancesCount</em> value we retrieve from the <em>selectedDeployment.</em></p>
+<p>We place this inside the resource definition. In our scenario, we will use the copy object within <em>Microsoft.Network/loadBalancers/inboundNatRules</em> resource type. Let us first see the new resources that we need to enable public IP and load balancer configuration. We will then review the resource definition to understand how we use the copy object.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;resources&#34;</span><span style="color:#f00">:</span> [
+    {
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
+        <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
+        <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+            <span style="font-weight:bold">&#34;accountType&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
+        }
+    },
+    {
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;vNetName&#39;)]&#34;</span>,
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/virtualNetworks&#34;</span>,
+        <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
+        <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+            <span style="font-weight:bold">&#34;addressSpace&#34;</span>: {
+                <span style="font-weight:bold">&#34;addressPrefixes&#34;</span>: [
+                    <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetPrefix&#39;)]&#34;</span>
+                ]
+            },
+            <span style="font-weight:bold">&#34;subnets&#34;</span>: [
+                {
+                    <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span>,
+                    <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                        <span style="font-weight:bold">&#34;addressPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Prefix&#39;)]&#34;</span>
+                    }
+                }
+            ]
+        }
+    },
+    {
+        <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/publicIPAddresses&#34;</span>,
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;publicIp&#34;</span>,
+        <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+            <span style="font-weight:bold">&#34;publicIPAllocationMethod&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Dynamic&#34;</span>,
+            <span style="font-weight:bold">&#34;dnsSettings&#34;</span>: {
+                <span style="font-weight:bold">&#34;domainNameLabel&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;DnsName&#39;)]&#34;</span>
+            }
+        }
+    },
+    {
+        <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;loadBalancer&#34;</span>,
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/loadBalancers&#34;</span>,
+        <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+        <span style="font-weight:bold">&#34;dependsOn&#34;</span>: [
+            <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/publicIPAddresses/publicIp&#34;</span>
+        ],
+        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+            <span style="font-weight:bold">&#34;frontendIPConfigurations&#34;</span>: [
+                {
+                    <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;lbFrontend&#39;)]&#34;</span>,
+                    <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                        <span style="font-weight:bold">&#34;publicIPAddress&#34;</span>: {
+                            <span style="font-weight:bold">&#34;id&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Network/publicIPAddresses&#39;,&#39;publicIp&#39;)]&#34;</span>
+                        }
+                    }
+                }
+            ],
+            <span style="font-weight:bold">&#34;backendAddressPools&#34;</span>: [
+                {
+                    <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;lbBackendAddrPool&#39;)]&#34;</span>
+                }
+            ]
+        }
+    },
+    {
+        <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-06-15&#34;</span>,
+        <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/loadBalancers/inboundNatRules&#34;</span>,
+        <span style="font-weight:bold">&#34;copy&#34;</span>: {
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;lbRdpNatLoop&#34;</span>,
+            <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;</span>
+        },
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;</span>,
+        <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+        <span style="font-weight:bold">&#34;dependsOn&#34;</span>: [
+            <span style="color:#0ff;font-weight:bold">&#34;[concat(&#39;Microsoft.Network/loadBalancers/loadBalancer&#39;)]&#34;</span>
+        ],
+        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+            <span style="font-weight:bold">&#34;frontendIPConfiguration&#34;</span>: {
+                <span style="font-weight:bold">&#34;id&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Network/loadBalancers/frontendIPConfigurations&#39;,&#39;loadBalancer&#39;,variables(&#39;lbFrontend&#39;))]&#34;</span>
+            },
+            <span style="font-weight:bold">&#34;protocol&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;tcp&#34;</span>,
+            <span style="font-weight:bold">&#34;frontendPort&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[add(3389, copyIndex(1))]&#34;</span>,
+            <span style="font-weight:bold">&#34;backendPort&#34;</span>: <span style="color:#ff0;font-weight:bold">3389</span>,
+            <span style="font-weight:bold">&#34;enableFloatingIP&#34;</span>: <span style="color:#fff;font-weight:bold">false</span>
+        }
+    }
+]
+</code></pre></div><p>In this updated resource collection, we have added three resource types. A public IP address to assign it to the load balancer, a load balancer that will act as a container for the VM endpoints, and finally, RDP endpoints based on the number of VM instances we need.</p>
+<p>Observe the highlighted lines in the resource collection. The copy object that we used within the inboundNATRules resource type tells ARM how many instances we need to create based on the VM count we need.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;copy&#34;: {
+    &#34;name&#34;: &#34;lbRdpNatLoop&#34;,
+    &#34;count&#34;: &#34;[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;
+},
+</code></pre></div><p>Within an ARM template, for each resource type and its instances, the <em>name</em> property should carry a unique value. Without this, you will see an error during deployment that multiple instances cannot use the same name. So, if you look at line number 77, we are dynamically constructing the value for <em>name.</em></p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;name&#34;: &#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;
+</code></pre></div><p>As you see here, we are concatenating ‘/loadbalancer/’ with ‘VM-‘ and then using the <a href="https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#copyindex"><em>copyIndex()</em></a> function and finally add ‘-RDP’. The <em>copyIndex()</em> function gives us the iteration number. So, if we are creating three VM endpoints within this resource definition, we get iteration values 0, 1, and 2. The index always starts from 0. However, if we want to offset it to different value than zero, we can specify the value inside the <em>copyIndex()</em> function. In my example, I am using 1 so that the values the template receives will be 1, 2, and 3. Since we are using the iteration number within the name value, we always get an unique identifier.</p>
+<p>Another function that we are using within this template update is the <em><a href="https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#add">add()</a></em> function. This function, as its name suggests, adds integers. I am using this function to dynamically derive the frontend port number for the VM RDP endpoint.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;frontendPort&#34;: &#34;[add(3389, copyIndex(1))]&#34;
+</code></pre></div><p>We are doing this since all VM RDP endpoints should be accessible through the load balancer. By using add function, we are adding the iteration value to the RDP port (3389) to derive a unique value.</p>
+<p>Now that we have completed our discussion on the copy object and its usage, let us move on to see the ARM template update that creates storage account, virtual network, public IP, load balancer, and finally the VM RDP endpoints. We are not creating an RDP endpoint for the DC VM.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span>,
+    <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
+    <span style="font-weight:bold">&#34;parameters&#34;</span>: {
+        <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name for the storage account.&#34;</span>
+            }
+        },
+        <span style="font-weight:bold">&#34;storageAccountType&#34;</span>: {
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
+            <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+                <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Standard_GRS&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Standard_ZRS&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Premium_LRS&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Standard_RAGRS&#34;</span>
+            ],
+            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Account type based on the storage redundancy requirements.&#34;</span>
+            }
+        },
+        <span style="font-weight:bold">&#34;vNetName&#34;</span>: {
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Name for the virtual network.&#34;</span>
+            }
+        },
+        <span style="font-weight:bold">&#34;DnsName&#34;</span>: {
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique public DNS prefix for the deployment. The fqdn will look something like &#39;&amp;lt;dnsname&amp;gt;.westus.cloudapp.azure.com&#39;.&#34;</span>
+            }
+        },
+        <span style="font-weight:bold">&#34;environmentType&#34;</span>: {
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+            <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+                <span style="color:#0ff;font-weight:bold">&#34;Development&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Test&#34;</span>,
+                <span style="color:#0ff;font-weight:bold">&#34;Production&#34;</span>
+            ],
+            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Development&#34;</span>,
+            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Type of environment where this deployment should occur. This has an impact on the number of VMs to be depoloyed.&#34;</span>
+            }
+        }
+    },
+    <span style="font-weight:bold">&#34;variables&#34;</span>: {
+        <span style="font-weight:bold">&#34;vNetPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/16&#34;</span>,
+        <span style="font-weight:bold">&#34;vNetSubnet1Name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>,
+        <span style="font-weight:bold">&#34;vNetSubnet1Prefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/24&#34;</span>,
+        <span style="font-weight:bold">&#34;vNetSubnet1ID&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>,
+        <span style="font-weight:bold">&#34;dnsServerPrivateIp&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.8&#34;</span>,
+        <span style="font-weight:bold">&#34;lbFrontend&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;lbFrontEnd&#34;</span>,
+        <span style="font-weight:bold">&#34;lbBackendAddrPool&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;lbBackEndPool&#34;</span>,
+        <span style="font-weight:bold">&#34;deploymentSize&#34;</span>: {
+            <span style="font-weight:bold">&#34;Development&#34;</span>: {
+                <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">1</span>
+            },
+            <span style="font-weight:bold">&#34;Test&#34;</span>: {
+                <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">2</span>
+            },
+            <span style="font-weight:bold">&#34;Production&#34;</span>: {
+                <span style="font-weight:bold">&#34;instancesCount&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>
+            }
+        },
+        <span style="font-weight:bold">&#34;selectedDeployment&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span>
+    },
+    <span style="font-weight:bold">&#34;resources&#34;</span>: [
+        {
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
+            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
+            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+            <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;accountType&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
+            }
+        },
+        {
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;vNetName&#39;)]&#34;</span>,
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/virtualNetworks&#34;</span>,
+            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
+            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+            <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;addressSpace&#34;</span>: {
+                    <span style="font-weight:bold">&#34;addressPrefixes&#34;</span>: [
+                        <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetPrefix&#39;)]&#34;</span>
+                    ]
+                },
+                <span style="font-weight:bold">&#34;subnets&#34;</span>: [
+                    {
+                        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span>,
+                        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                            <span style="font-weight:bold">&#34;addressPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Prefix&#39;)]&#34;</span>
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/publicIPAddresses&#34;</span>,
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;publicIp&#34;</span>,
+            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+            <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;publicIPAllocationMethod&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Dynamic&#34;</span>,
+                <span style="font-weight:bold">&#34;dnsSettings&#34;</span>: {
+                    <span style="font-weight:bold">&#34;domainNameLabel&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;DnsName&#39;)]&#34;</span>
+                }
+            }
+        },
+        {
+            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;loadBalancer&#34;</span>,
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/loadBalancers&#34;</span>,
+            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+            <span style="font-weight:bold">&#34;dependsOn&#34;</span>: [
+                <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/publicIPAddresses/publicIp&#34;</span>
+            ],
+            <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;frontendIPConfigurations&#34;</span>: [
+                    {
+                        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;lbFrontend&#39;)]&#34;</span>,
+                        <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                            <span style="font-weight:bold">&#34;publicIPAddress&#34;</span>: {
+                                <span style="font-weight:bold">&#34;id&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Network/publicIPAddresses&#39;,&#39;publicIp&#39;)]&#34;</span>
+                            }
+                        }
+                    }
+                ],
+                <span style="font-weight:bold">&#34;backendAddressPools&#34;</span>: [
+                    {
+                        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;lbBackendAddrPool&#39;)]&#34;</span>
+                    }
+                ]
+            }
+        },
+        {
+            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-06-15&#34;</span>,
+            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/loadBalancers/inboundNatRules&#34;</span>,
+            <span style="font-weight:bold">&#34;copy&#34;</span>: {
+                <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;lbRdpNatLoop&#34;</span>,
+                <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;</span>
+            },
+            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;</span>,
+            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+            <span style="font-weight:bold">&#34;dependsOn&#34;</span>: [
+                <span style="color:#0ff;font-weight:bold">&#34;[concat(&#39;Microsoft.Network/loadBalancers/loadBalancer&#39;)]&#34;</span>
+            ],
+            <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;frontendIPConfiguration&#34;</span>: {
+                    <span style="font-weight:bold">&#34;id&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Network/loadBalancers/frontendIPConfigurations&#39;,&#39;loadBalancer&#39;,variables(&#39;lbFrontend&#39;))]&#34;</span>
+                },
+                <span style="font-weight:bold">&#34;protocol&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;tcp&#34;</span>,
+                <span style="font-weight:bold">&#34;frontendPort&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[add(3389, copyIndex(1))]&#34;</span>,
+                <span style="font-weight:bold">&#34;backendPort&#34;</span>: <span style="color:#ff0;font-weight:bold">3389</span>,
+                <span style="font-weight:bold">&#34;enableFloatingIP&#34;</span>: <span style="color:#fff;font-weight:bold">false</span>
+            }
+        }
+    ]
+}
+</code></pre></div><p>You can go ahead and deploy this update by clicking on the button below. </p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frchaganti%2Farmseries%2Fmaster%2Farm-series_Storage-VirtualNet-LB.json" target="_blank">
+        <img src="http://azuredeploy.net/deploybutton.png" alt="">
+    </a>
+    <br />
+
+<figure>
+    <img src="https://ravichaganti.com/images/armtemplate5-2.png"/> 
+</figure>
+
+<p>This brings up the portal and prompts for the parameter values we need for the deployment. Within the parameters, you will see the <em>environmentType</em> dropdown with three possible values. I have selected Production as the input here and I expect to see three RDP endpoints created at the end of template deployment. Let us see if this worked.</p>
+<figure>
+    <img src="https://ravichaganti.com/images/armtemplate5-3.png"/> 
+</figure>
+
+<p><a href="http://139.59.40.198/blog/uploads/2015/11/RDPEndpoints.png"></a></p>
+<p>As you see here, the endpoints with respective frontend port numbers are created. We will have to associate these endpoints to VM network interfaces and we will take that up in a later part. Stay tuned.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-copy-object\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-copy-object\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-copy-object\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-copy-object\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in ARM Templates</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/custom-template-deployment-improvements-in-azure-portal/">Custom Template Deployment Improvements in Azure Portal</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-forcing-wmf-4-0-when-using-dsc-extension/">Building Azure Resource Manager Templates – Forcing WMF 4.0 when using DSC Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-domain-join-extension/">Building Azure Resource Manager Templates – Using Domain Join Extension</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-putting-it-all-together/">Building Azure Resource Manager Templates – Putting it all together</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-linked-templates/">Building Azure Resource Manager Templates – Using Linked Templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/">Building Azure Resource Manager Templates – Defining Resource Dependencies</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+    
+
+  </body>
+
+</html>
