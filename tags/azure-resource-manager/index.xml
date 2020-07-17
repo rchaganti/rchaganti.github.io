@@ -6,10 +6,241 @@
     <description>Recent content in Azure Resource Manager on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 16 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 17 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/tags/azure-resource-manager/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Azure Resource Manager - Tools for ARM template design, authoring, and deployment</title>
+      <link>https://ravichaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/</link>
+      <pubDate>Fri, 17 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/</guid>
+      <description>&lt;p&gt;The first part of this series of articles on Azure Resource Manager (ARM) provided a quick overview of ARM. You looked a quick introduction to ARM templates as well and looked at an overview of different template deployment methods. In this part of the series, we will look at different methods to author ARM templates and an in-depth look at preferred deployment methods. You can choose any of the methods mentioned here but this series of articles will use one preferred method each for authoring and deploying templates. You will read more about those methods and the reasons behind that choice as well.&lt;/p&gt;
+&lt;h2 id=&#34;authoring-tools&#34;&gt;Authoring Tools&lt;/h2&gt;
+&lt;p&gt;ARM templates, as mentioned in the last part, are JSON documents. These files can be authored in notepad as well but there are better ways to deal with this task. You will learn about three different methods that I have used and my observations and preferences around these methods. Let us start with the template editor that Azure Portal offers.&lt;/p&gt;
+&lt;h3 id=&#34;template-editor-in-azure-portal&#34;&gt;Template Editor in Azure Portal&lt;/h3&gt;
+&lt;p&gt;The web-based template editor in the Azure portal is one way but I see it as a better way to edit existing templates than writing one from scratch. You can import a quick start template and use that as a starting point for building your own template.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-templateeditor-qs.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Once you click on &lt;em&gt;Quickstart template&lt;/em&gt; [1], you will be shown a list of templates available from the &lt;a href=&#34;https://github.com/Azure/azure-quickstart-templates&#34;&gt;GitHub repository&lt;/a&gt;. The selected template then gets loaded into the editor for further updates or deployment. I selected the &lt;a href=&#34;https://github.com/Azure/azure-quickstart-templates/tree/master/101-vm-simple-windows&#34;&gt;101-vm-simple-windows template&lt;/a&gt; from the list.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-templateeditor-ar.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;At this point, you can click on &lt;em&gt;Add resource&lt;/em&gt; [2] to add another resource to this template. This will bring up a limited set of additional resources you can add to the loaded template. You may select a Windows Virtual Machine.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-templateeditor-arwvm.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;This brings up a few input parameters needed for the new VM instance. Once you enter these values and click OK, the template in the editor window gets updated to add the new VM resource instance. You can review the updated template and click on Save to move ahead to deploy this template.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-templateeditor-deploy.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;At this point, you will presented with a list of input parameters needed for this template deployment. You can enter these values and click &lt;em&gt;Purchase&lt;/em&gt; to start the template validation and deploy it if there are no validation errors. However, it is not always this straightforward. I ended up updating a few language expressions to make this working. If you have tried this option, you will know that the editing experience is limited. It supports adding only a few types of additional resources to the template. And, of course, this isn&amp;rsquo;t a great way to edit or build anything other than a simple template. You need a better way than this web-based editor.&lt;/p&gt;
+&lt;h3 id=&#34;visual-studio&#34;&gt;Visual Studio&lt;/h3&gt;
+&lt;p&gt;Visual Studio provides a rich integrated development environment (IDE) for developing various types of applications. You can use some of the starter templates packaged along with Visual Studio and build upon those existing templates to add your own resources or start from a blank template and build everything from scratch. For this quick overview of using Visual Studio for template authoring and deployment, I will use Visual Studio 2019 Community Edition.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudiostart.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;When you install and open Visual Studio, you will see different options to get started. Select &lt;em&gt;Create a new project&lt;/em&gt;.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudio.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the next window, filter down the options [1] to Azure and Cloud. In the filtered project templates, select &lt;em&gt;Azure Resource Group&lt;/em&gt; [2] and click &lt;em&gt;Next&lt;/em&gt;.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudioconfigure.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Enter the relevant input for creating a Visual Studio project and click Create.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudiotemplate.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;As you see in the above screenshot, you can select one of the canned starter templates or start with a blank template. Since we have learned the basics of template authoring yet, scroll down in the template list and select &lt;em&gt;Windows Virtual Machine&lt;/em&gt; and click OK. This creates the Visual Studio solution.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudiosolution.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Once the solution gets created, click on WindowsVirtualMachine.json [1] in the Solution Explorer pane. This opens the ARM template. On the left-hand side, you can see the JSON Outline [2] pane which shows parameters, variables, and resources defined in the template.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudioresource.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Similar to the Azure Portal template editing experience, you can add resources to this existing template by right-clicking on resources node in the JSON outline and selecting &lt;em&gt;Add New Resource&lt;/em&gt;.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudioaddresource.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;From a set of limited resource types, you can select the resource type you want to add, provide the necessary input parameter values and click Add. The selected resource gets added to the template. You can now customize the template and start a deployment. Before you can deploy the template, you will have to provide the values for the template parameters. This can be done by opening the WindowsVirtualMachine.parameters.json file and enter the relevant values.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudioeditparams.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Before starting a deployment of this template, you can validate the template. For that, right click on the solution name in the Solution Explorer and select &lt;em&gt;Validate&lt;/em&gt;.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudiovalidate.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;You will be prompted to enter the password for the admin user to continue validation. If the validation completes with no errors, you can again right-click on the solution name in the Solution Explorer and click Deploy to provision the ARM resources defined in the template.&lt;/p&gt;
+&lt;p&gt;Overall experience with authoring templates in Visual Studio is good. This method provides intellisense for different resource properties based on the template schema version.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudiointelli.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;The editor experience in Visual Studio also provides insights into what might be wrong with certain resource property values and / or what might be missing therefore providing better editing experience.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-visualstudioeditorexp.png&#34; width=&#34;560&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Overall, compared to the web editor in Azure portal, authoring experience in Visual Studio is way better. However, this is a heavy solution. On a decently configured system, it takes close to a minute to just open Visual Studio. Also, as you may have already seen, the starter templates do not support selecting the Azure quickstart templates from the GitHub repository. Within the template editor, you can auto-complete the resource property names once the resource type property is populated. However, there are no quick snippets that you can use directly. This, for me, kills productivity. There may be a few external marketplace extensions but there is no built-in support.&lt;/p&gt;
+&lt;h3 id=&#34;visual-studio--code&#34;&gt;Visual Studio  Code&lt;/h3&gt;
+&lt;p&gt;This is my favorite tool. No doubt. There are several reasons as you will read in this section. This tweet poll just endorses my choice.&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;What is your favorite editor for authoring &lt;a href=&#34;https://twitter.com/Azure?ref_src=twsrc%5Etfw&#34;&gt;@Azure&lt;/a&gt; Resource Manager templates?&lt;/p&gt;&amp;mdash; Ravikanth Chaganti (@ravikanth) &lt;a href=&#34;https://twitter.com/ravikanth/status/1280058881322872833?ref_src=twsrc%5Etfw&#34;&gt;July 6, 2020&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;Throughout this series, you will see using VS Code only for authoring ARM templates. Therefore, I will skip any details similar to Visual Studio based template authoring experience you just read earlier. Now, moving on to why I like VS Code for ARM template authoring, first of all, VS Code is an open source, lightweight, and faster alternative to Visual Studio. The extension support within VS Code is unmatchable. With the official Azure extensions and a bunch of other community extensions, you can be super productive when working with the complex ARM template files. Before you get started with authoring an ARM template in VS Code, you must first install the right set of extensions that will help you in the authoring process. The following list is the minimum you will need to follow the articles in this series. Alternatively, you can install the &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-node-azure-pack&#34;&gt;Azure Tools extension pack&lt;/a&gt; that will install following three plus a bunch of other extensions that you may never need.&lt;/p&gt;
+&lt;h4 id=&#34;azure-account&#34;&gt;Azure Account&lt;/h4&gt;
+&lt;p&gt;The &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account&#34;&gt;Azure account&lt;/a&gt; VS Code extension allows you to sign into Azure and access your Azure subscriptions. This is necessary for other Azure extensions to function. Once you install this extension, you get a set of commands to sign in, sign out, select subscriptions, create Azure accounts, and open Azure Cloud Shell within VS Code.&lt;/p&gt;
+&lt;h4 id=&#34;azure-resource-manager-arm-tools&#34;&gt;Azure Resource Manager (ARM) Tools&lt;/h4&gt;
+&lt;p&gt;The &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools&#34;&gt;ARM Tools extension&lt;/a&gt; is a must if you want to be productive authoring ARM templates in VS Code. This extension provides the full ARM template language support and provides a bunch of snippets to speed up the authoring process. You will see and use this extension a lot in the next parts of this article series and therefore I will not spend any more time on this here.&lt;/p&gt;
+&lt;h4 id=&#34;azure-policy&#34;&gt;Azure Policy&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=AzurePolicy.azurepolicyextension&#34;&gt;Azure Policy&lt;/a&gt; extension can be used for authoring and managing policy definitions and assignments. This is in preview like a few other VS Code extensions. This is a good one to install as well as you follow this series of articles on Azure Resource Manager and want to try out Azure Policy related examples.&lt;/p&gt;
+&lt;h4 id=&#34;azure-cli-tools&#34;&gt;Azure CLI Tools&lt;/h4&gt;
+&lt;p&gt;Finally, the &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli&#34;&gt;Azure CLI Tools&lt;/a&gt; extension is what will help you when you author Azure CLI scripts to perform template deployments. This is an optional one if all you need is really the ability to run Azure CLI commands to validate and deploy templates within the VS Code terminal.&lt;/p&gt;
+&lt;h2 id=&#34;deployment-tools&#34;&gt;Deployment Tools&lt;/h2&gt;
+&lt;p&gt;There are many ways to deploy ARM templates. This includes using Azure portal, Azure CLI, Azure PowerShell cmdlets, ARM REST API, and Python or Go SDK.&lt;/p&gt;
+&lt;h3 id=&#34;azure-portal&#34;&gt;Azure Portal&lt;/h3&gt;
+&lt;p&gt;Azure Portal allows you to author templates in an online editor or upload templates for deployments or deploy from a collection of quick start templates. We looked at the an example of this in the previous section already. Using the template editor in the Azure portal, you can author and deploy or you can simply upload a template for deployment. Many places online (including the Azure Quickstart template repository), you see a &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-azure-button&#34;&gt;Deploy to Azure&lt;/a&gt; button that directly takes to you the custom deployment page. You can use this method to deploy a template stored in an online public repository to perform resource group level deployments. Here is how it appears in a webpage.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fportal.azure.com%2f%23create%2fMicrosoft.Template%2furi%2fhttps%253A%252F%252Fraw.githubusercontent.com%252FAzure%252Fazure-quickstart-templates%252Fmaster%252F101-storage-account-create%252Fazuredeploy.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;Clicking on the above button brings up the custom deployment blade asking for the input parameters needed for the template deployment.&lt;/p&gt;
+&lt;h3 id=&#34;azure-cli&#34;&gt;Azure CLI&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/cli/azure/?view=azure-cli-latest&#34;&gt;Azure CLI&lt;/a&gt; offers a method to deploy ARM templates as well. You can use the &lt;code&gt;az deployment&lt;/code&gt; command to perform template deployment.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=deploytemplate.azcli&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;With the &lt;code&gt;az deployment&lt;/code&gt; command, we can either use an online template file or local file.&lt;/p&gt;
+&lt;h3 id=&#34;azure-powershell&#34;&gt;Azure PowerShell&lt;/h3&gt;
+&lt;p&gt;Similar to Azure CLI, you can use &lt;a href=&#34;https://docs.microsoft.com/en-us/powershell/azure&#34;&gt;Azure PowerShell module&lt;/a&gt; as well to deploy ARM templates.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=deploytemplate.ps1&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;If you do not want to install any of these tools (Az CLI and Az PowerShell module) on your local system, you can always use Azure Cloud Shell within VS Code or launch Cloud Shell in the browser to start using any of these tools. Within this series of articles, you will occasionally see a button like the one displayed below. You can click on it to open &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/cloud-shell/embed-cloud-shell&#34;&gt;Azure Cloud Shell&lt;/a&gt; and start performing command execution.&lt;/p&gt;
+
+    &lt;a href=&#34;https://shell.azure.com/&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://shell.azure.com/images/launchcloudshell.png&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;h3 id=&#34;arm-rest-api&#34;&gt;ARM REST API&lt;/h3&gt;
+&lt;p&gt;ARM REST API is another way to do template deployment but I consider this a bit low-level and requires good amount of scripting / programming experience.&lt;/p&gt;
+&lt;p&gt;For most part of this series of articles on ARM, you will see Azure CLI examples. You will occasionally see a few Azure PowerShell examples. I will write about other deployment methods such as Terraform and Pulumi in a different series of articles. But, before you go there, it is good to get a good grasp of ARM fundamentals. Next few articles in this series of articles will dive into the ARM template authoring and deployment. For now, let us move on to discuss some features and services that work hand in hand with ARM.&lt;/p&gt;
+&lt;h2 id=&#34;template-design-and-visualization-tools&#34;&gt;Template Design and visualization Tools&lt;/h2&gt;
+&lt;p&gt;As a cloud consultant or architect, you have to create the cloud architecture proposals before you go into the implementation phase. There are a bunch of tools &amp;ndash; online and offline &amp;ndash; that can help you create the architecture diagrams for your cloud infrastructure proposals. In this final section of this post, you will get to know about a few tools that I have used or using to create these architecture diagrams.&lt;/p&gt;
+&lt;p&gt;You can always use good old friend Microsoft Visio if you have a license for the product and I trust this a lot and use it. However, I will introduce other tools that you may find useful.&lt;/p&gt;
+&lt;h3 id=&#34;arm-template-visualizer&#34;&gt;ARM template visualizer&lt;/h3&gt;
+&lt;p&gt;The ARM template visualizer is not really a designer like Visio or any other tool you may see in this section but a good way to visualize an ARM template on a canvas. If you navigate to the ARM quickstart template GitHub repository, you will see a button like what is shown below.&lt;/p&gt;
+
+    &lt;a href=&#34;http://armviz.io/#/?load=https%3a%2f%2fraw.githubusercontent.com%2fAzure%2fazure-quickstart-templates%2fmaster%2f101-1vm-2nics-2subnets-1vnet%2fazuredeploy.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;And, when you on click on this button, it takes you to an ARM template visualizer where you can see the template in a visual form.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-armviz.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;By default, the template visualization [1] opens up and you can click on &lt;em&gt;&amp;lt;/&amp;gt;&lt;/em&gt; [2] to see the ARM template JSON. You can edit the contents of the template and return back to the canvas to see the updated visualization. Going to the File menu, you can open a local template or download the template that is visualized.&lt;/p&gt;
+&lt;h3 id=&#34;drawio&#34;&gt;Draw.io&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://draw.io&#34;&gt;Draw.io&lt;/a&gt; is a web-based tool that can help you design and save Azure architecture diagrams. There is a &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio&#34;&gt;VS Code extension&lt;/a&gt; as well for this and you can now create the diagrams right within VS Code.&lt;/p&gt;
+&lt;figure&gt;
+    &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-drawio.png&#34; width=&#34;860&#34;/&gt; 
+&lt;/figure&gt;
+
+&lt;h3 id=&#34;cloudskew&#34;&gt;Cloudskew&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.cloudskew.com/&#34;&gt;Cloudskew&lt;/a&gt; is another web-based tool that provides a very nice canvas to create cloud architecture diagrams. This is also a free tool that offers several built-in cloud icon support.&lt;/p&gt;
+&lt;figure&gt;
+    &lt;img src=&#34;https://ravichaganti.com/images/armin30/d2-cloudskew.png&#34; width=&#34;860&#34;/&gt; 
+&lt;/figure&gt;
+
+&lt;p&gt;There may be many other tools for ARM template design and visualization that I may not have tried yet. But, like I mentioned earlier, my trusted source is still good old Visio and I continue to use it.&lt;/p&gt;
+&lt;p&gt;So far in this article, we looked at different authoring tools, deployment methods, and finally a few options to design and visualize these ARM templates. This should get you equipped with the right tools to get started with template authoring. In the next part of this series, we will look at the basics of template authoring. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Azure Resource Manager - Introduction</title>
