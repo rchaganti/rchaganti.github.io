@@ -6,10 +6,121 @@
     <description>Recent content in Azure on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 23 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 24 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/azure/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Azure Resource Manager - Adding parameters to ARM templates</title>
+      <link>https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/</link>
+      <pubDate>Fri, 24 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/templatearchitecture.png&#34; width=&#34;760&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the &lt;a href=&#34;https://ravichaganti.com/blog/azure-resource-manager-arm-template-basics/&#34;&gt;last part&lt;/a&gt; of &lt;a href=&#34;https://ravichaganti.com/series/azure-resource-manager-in-30-days/&#34;&gt;this series&lt;/a&gt;, you learned the template syntax and authored an ARM template that provisions the resource group needed for the above architecture. This deployment was performed at the subscription level using Azure CLI. In this part, you will create another template for performing additional resource &amp;ndash; storage account and virtual network &amp;ndash; provisioning at the resource group level. You will, then, parameterize this template to understand how to add parameters to ARM templates.&lt;/p&gt;
+&lt;h2 id=&#34;resource-group-deployment&#34;&gt;Resource group deployment&lt;/h2&gt;
+&lt;p&gt;Deployments scoped at the resource group level are the most common deployments. In this method, you provision resources within a resource group in your subscription. Within the VS Code editor, typing &lt;code&gt;arm!&lt;/code&gt; brings up the snippet for a resource group scoped ARM template.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=rgScopedDeploymentSkeleton.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;You can see in the above snippet that the &lt;code&gt;$schema&lt;/code&gt; value is different from what was used for a subscription scoped deployment. Within this template, you can either right-click in the editor window and select Insert Item in the context menu and select Resource or click &lt;code&gt;+&lt;/code&gt; next to resources in the ARM template outline to add any additional resources you need.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d3-insertresource.png&#34; width=&#34;760&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Either of these options will present you with a list of available resource types. To add a storage account resource type, select &lt;code&gt;Storage Account&lt;/code&gt; from the list of resources. You may go ahead and add a virtual network resource as well. This is how the updated template will look like.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=rgScopedDeployment.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;As you see here, the insert resources method adds the resource definitions with pre-defined default values. You may not be able deploy this as-is since some of the resource names (storage account especially) might be taken already. You may enter some unique names for the resources and try template deployment using the deploy to Azure button below.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2frgScopedDeployment.azrm.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;When this template opens in the Azure portal, you will be prompted to select either an existing resource group or create a new resource group. Since you already created a resource group in the last part of this series, you can select the same. For the resources (storage account and virtual network), the selected resource group&amp;rsquo;s location will be used. This is specified in the template using the built-in &lt;code&gt;resourceGroup()&lt;/code&gt; function. You will learn more about these functions and expressions in a later part of the series. For now, just remember that &lt;code&gt;resourceGroup().location&lt;/code&gt; will give the location of the resource group selected for the resources&amp;rsquo; deployment.&lt;/p&gt;
+&lt;h2 id=&#34;parameters-in-arm-templates&#34;&gt;Parameters in ARM templates&lt;/h2&gt;
+&lt;p&gt;The template that you just built provides a good foundation to start experimenting with parameters in an ARM template. In the template above, there are several resource properties that can be parameterized so that the template becomes reusable between multiple deployments by providing the necessary input parameters. So, if you have to identify a few parameters within each resource, you may come with a list similar to the one below.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Resource&lt;/th&gt;
+&lt;th&gt;Parameter Names&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;storageAccounts&lt;/td&gt;
+&lt;td&gt;storageAccountName, storageAccountSku, storageAccountTier&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;virtualNetworks&lt;/td&gt;
+&lt;td&gt;virtualNetworkName, virtualNetworkAddressPrefix, VirtualNetworkSubnetName, virtualNetworkSubnetAddressPrefix&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;With this list handy, take a look at the syntax for adding parameters.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=parameterSyntax.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;Within all possible elements described above for defining a parameter, only name and type are mandatory. Rest all elements provide a way to control the input values. For the type element, the allowed values are string, int, bool, securestring, object, secureObject, and array. The type of a parameter depends on the resource property that we choose to parameterize.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;allowedValues&lt;/code&gt; element in parameters can be used to define a set of valid values for the selected resource property. For example, Azure supports two type of storage tiers &amp;ndash; standard and premium &amp;ndash; for any storage SKU. Any other value for this property will be invalid. When an end user does not select any value out of the allowed values for a property, you can default to a known value using the &lt;code&gt;defaultValue&lt;/code&gt; element.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;maxLength&lt;/code&gt; and &lt;code&gt;minLength&lt;/code&gt; are used for string data types. Within the above template, these elements can be used for the &lt;code&gt;name&lt;/code&gt; property of the resources to define the minimum and maximum allowed length of the string input. For example, an Azure storage account name should be between 3 to 24 characters in length. These elements can be used with array type as well.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;minValue&lt;/code&gt; and &lt;code&gt;maxValue&lt;/code&gt; elements are used for parameters of int type. In the parameter selection that we did, there is no need for using these elements yet. You will see the use of these elements in a later part of this series.&lt;/p&gt;
+&lt;p&gt;With this understanding, you can define the parameters for this template as below.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=parametersford4template.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;The parameter definitions above provide a clear idea about how to use the &lt;code&gt;allowedValues&lt;/code&gt; and &lt;code&gt;defaultValue&lt;/code&gt; elements in a parameter definition. Now, how do you use these parameter values in the template for resource properties?&lt;/p&gt;
+&lt;h3 id=&#34;using-parameter-values&#34;&gt;Using parameter values&lt;/h3&gt;
+&lt;p&gt;The built-in &lt;code&gt;parameters()&lt;/code&gt; function can be used to retrieve the value provided by the end user as a part of template deployment. This function takes the parameter name as the argument and retrieves the value. For example, &lt;code&gt;[parameters(&#39;storageAccountSku&#39;)]&lt;/code&gt;. You may now update the template above to change the static values to use the &lt;code&gt;parameters()&lt;/code&gt; function.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4RgScopedStorageVNetTemplateFinal.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;h3 id=&#34;deploying-parameterized-templates&#34;&gt;Deploying parameterized templates&lt;/h3&gt;
+&lt;p&gt;You can try deploying the parameterized template by clicking on the below deploy to Azure button.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fd4RgScopedStorageVNetTemplateFinal.azrm.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;This will bring up the input blade for this template deployment.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d4-finalportaldeployment.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Take a look at how the array value for the virtual network address prefix is provided. The &lt;code&gt;*&lt;/code&gt; next to a parameter name indicates a mandatory parameter or a parameter that has no default value. If you hover the &lt;code&gt;!&lt;/code&gt; icon next to the parameter name to see (balloon tip) what the parameter is about. This text is you added in the parameter &lt;code&gt;metadata&lt;/code&gt; element as &lt;code&gt;description&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The parameter &amp;lsquo;Virtual Network Address Prefix&amp;rsquo; accepts values of array type and it can be seen from the example above how array values are provided. The array values must be enclosed in square brackets.&lt;/p&gt;
+&lt;p&gt;Now that you have tried the portal experience of deploying templates, take a look at how you can do that at the command line using Azure CLI. With Azure CLI, there are many ways of providing template parameter input. Inline parameter values is one such method.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4-deployTemplateInlineParam.azcli&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In the above command, a resource group for the template deployment gets created first. The &lt;code&gt;az deployment group create&lt;/code&gt; command performs the template deployment by using the template URL as the argument to &lt;code&gt;--template-uri&lt;/code&gt; parameter and &lt;code&gt;--parameters&lt;/code&gt; is used to supply all template input parameter values. The URL specified as argument to the &lt;code&gt;--template-uri&lt;/code&gt; parameter must be accessible from Azure. As an alternate to the &lt;code&gt;--template-uri&lt;/code&gt; parameter, you can use the &lt;code&gt;--template-file&lt;/code&gt; to specify a local path to the template JSON file.&lt;/p&gt;
+&lt;p&gt;As you see in the above Azure CLI command, all mandatory parameters (parameters with no default values) should be provided as key-value pairs separated by space. This can be quite daunting and error-prone if you have a lot of template parameters. You can also provide a JSON string as an argument to &lt;code&gt;--parameters&lt;/code&gt;. Also, when using Azure CLI, you must know the names of the parameters to be supplied as input. This is where the parameter files will come in very handy. You can either create one manually or use ARM Tools VS Code extension to generate one for you.&lt;/p&gt;
+&lt;p&gt;To use VS Code extension to generate the parameter file, right-click anywhere in the template editor window and click &lt;em&gt;Select/Create Parameter File&lt;/em&gt;. In the command window, select &lt;em&gt;New&lt;/em&gt; and then &lt;em&gt;All Parameters&lt;/em&gt;. This will prompt for a name and location for the parameter JSON file. Here is how the generated parameter JSON will look like.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4-paramJson.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;You can fill-in the required values and use the following Azure CLI command to start the deployment.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4-deployTemplateWithParamJson.azcli&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;This command specification is way simpler than using inline parameters or JSON string.&lt;/p&gt;
+&lt;p&gt;Apart from the inline key-value pair specification, the @d4-paramJson.json (@{path}) specification references a file in the local folder path. This is most preferred in case of CI &amp;amp; CD of ARM templates in which the parameter JSON file can be auto-generated during build processes. Also, you can use a mix of inline parameters and parameter JSON as well. You can explore more such examples using &lt;code&gt;az deployment group create --help&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;In this part, you looked at how to add resources to an ARM template and learned how to parameterize the template for reusability. Parameters in ARM templates support multiple data types and learned how to use string and array data types in this article. You will learn about using other data types in the later parts of this series. You learned how to use Azure portal and Azure CLI for template deployments. You looked at using inline parameter key-value specification and looked at creating and using parameter JSON files as well. In the next part, you will learn how to build expressions and variables in ARM templates.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Azure Resource Manager - ARM template basics</title>
@@ -17,7 +128,7 @@
       <pubDate>Thu, 23 Jul 2020 00:00:00 +0000</pubDate>
       
       <guid>https://ravichaganti.com/blog/azure-resource-manager-arm-template-basics/</guid>
-      <description>&lt;p&gt;In the last two parts of the series, you have seen a brief introduction to Azure Resource Manager and the services that complement ARM to extend its functionality or support the services offered by ARM. You also looked at an overview of ARM templates and the tools available to design, author, and deploy these templates.&lt;/p&gt;
+      <description>&lt;p&gt;In the last two parts of &lt;a href=&#34;https://ravichaganti.com/series/azure-resource-manager-in-30-days/&#34;&gt;the series&lt;/a&gt;, you have seen a brief introduction to Azure Resource Manager and the services that complement ARM to extend its functionality or support the services offered by ARM. You also looked at an overview of ARM templates and the tools available to design, author, and deploy these templates.&lt;/p&gt;
 &lt;p&gt;Starting this part of the series for the next few days, you will start learning about authoring ARM templates right from the basics and to the advanced template syntax and techniques with a goal to build an ARM template that helps provision the following architecture.&lt;/p&gt;
 
     &lt;figure &gt;
