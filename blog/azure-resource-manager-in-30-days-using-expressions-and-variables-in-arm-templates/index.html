@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="So far in this series, you learned how to use VS Code and ARM Tools extension to get started with the ARM template development, how to perform a subscription scoped deployment to create a resource group and then looked at resource group scoped deployment to create a storage account and a virtual network resources. You learned about parameterizing the ARM template so that it becomes reusable. Equipped with that knowledge, you can now start digging into expressions and variables in the ARM templates.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Azure Resource Manager - Using expressions and variables in ARM templates"/>
+<meta name="twitter:description" content="So far in this series, you learned how to use VS Code and ARM Tools extension to get started with the ARM template development, how to perform a subscription scoped deployment to create a resource group and then looked at resource group scoped deployment to create a storage account and a virtual network resources. You learned about parameterizing the ARM template so that it becomes reusable. Equipped with that knowledge, you can now start digging into expressions and variables in the ARM templates."/>
+
+    <meta property="og:title" content="Azure Resource Manager - Using expressions and variables in ARM templates" />
+<meta property="og:description" content="So far in this series, you learned how to use VS Code and ARM Tools extension to get started with the ARM template development, how to perform a subscription scoped deployment to create a resource group and then looked at resource group scoped deployment to create a storage account and a virtual network resources. You learned about parameterizing the ARM template so that it becomes reusable. Equipped with that knowledge, you can now start digging into expressions and variables in the ARM templates." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/" />
+<meta property="article:published_time" content="2020-07-30T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-07-30T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/">
+    
+    <title>
+  Azure Resource Manager - Using expressions and variables in ARM templates · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Azure Resource Manager - Using expressions and variables in ARM templates</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-07-30T00:00:00Z'>
+                July 30, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/arm-template/">ARM Template</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/arm-template/">ARM Template</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#expressions">Expressions</a>
+      <ul>
+        <li><a href="#evaluating-expressions">Evaluating Expressions</a></li>
+      </ul>
+    </li>
+    <li><a href="#variables">Variables</a>
+      <ul>
+        <li><a href="#accessing-variable-values">Accessing variable values</a></li>
+        <li><a href="#free-form-vs-known-configuration">Free-form vs known configuration</a></li>
+      </ul>
+    </li>
+    <li><a href="#summary">Summary</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/armin30/templatearchitecture.png" width="760" />
+        
+        
+    </figure>
+    
+<p>So far in <a href="https://ravichaganti.com/series/azure-resource-manager-in-30-days/">this series</a>, you learned how to use VS Code and ARM Tools extension to get started with the ARM template development, how to perform a subscription scoped deployment to create a resource group and then looked at resource group scoped deployment to create a storage account and a virtual network resources. You learned about parameterizing the ARM template so that it becomes reusable. Equipped with that knowledge, you can now start digging into expressions and variables in the ARM templates.</p>
+<h2 id="expressions">Expressions</h2>
+<p>You have already used expressions in the template you built in the last part. For example, <code>[parameters('storageAccountSku')]</code> is an expression that you used. Within an ARM template, expressions are a way to dynamically determine values of resource properties and other artifacts. Expressions are invoked within square brackets and are calculated at deployment time. When creating an expression, you can combine multiple <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions">template functions</a>. For example, in the previous template that provisioned a storage account and a virtual network, the storage account name has to be unique. Now, either you can let the end user figure out a unique string for this resource property by trial and error or you can use an expression such as <code>[concat('sacct', '-', uniqueString(resourceGroup().id))]</code> to generate a random string to use as a name for the storage account you want provision. Remember that, within the same resource group, the value generated by this expression will always be same since the seed to the <code>uniqueString()</code> function will always be same. So, when you deploy a template that uses this expression multiple times, no action will be taken if the storage account already exists with the name.</p>
+<p>There are several categories of standard (built-in) template functions that you can use to simplify template authoring and deployment experience. These functions include comparison and logical functions, numeric and string functions, array, object, and date functions, and resource and deployment value functions. For example, the <code>concat()</code> function that you saw in the earlier example is a part of <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-string">string functions</a> category. It takes multiple strings and returns a concatenated string. A <code>concat()</code> function exists in the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-array">array functions</a> category as well and works on arrays and returns a concatenated array. The <code>uniqueString()</code> function is in the string functions category and generates a hash based on the value passed as its argument. The <code>resourceGroup()</code> function is a part of the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource">resource functions</a> category and returns the properties of the resource group within which the deployment is in progress.</p>
+<p>Let us see another example of using expressions in ARM templates. In the template that was develope d in the last part, the <code>storageAccountName</code> parameter was used the capture the input for the name property of the storage account resource. In this parameter definition, <code>minLength</code> and <code>maxLength</code> elements were used to ensure the string length is between 3 and 24 characters. However, the name of the storage account name should always be in lower case. There is no element in parameter definition to describe this validation. This can be achieved by using the <code>toLower()</code> function from the string functions category to transform the user provided input value into a lower case string. Here is how it can be done.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=storageResourceWithToLower.json"></script>
+
+<p>These are just a few examples of how you can use standard template functions in ARM templates as a part of different expressions. I recommend that you read through the <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions">documentation</a> to understand how to use these functions in an expression and explore how you can simplify the template deployment experience. But, how do you evaluate an expression that you want to use in an ARM template?</p>
+<h3 id="evaluating-expressions">Evaluating Expressions</h3>
+<p>Waiting for a real resource template deployment may be not be a great idea and a way to evaluate expression output without initiating a real deployment would be beneficial. This is totally possible with the <code>outputs</code> element in an ARM template.</p>
+<p>As you learned in the template basics, the <code>outputs</code> element in a template is used to return values from after a deployment is complete. This is especially useful in automated deployment processes. Except for a few that are runtime functions such as <code>reference()</code>, this method can be used with most of the standard template functions and expressions that you create. In general, the following snippet shows the syntax of <code>outputs</code> element.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=outputSyntax.json"></script>
+
+<p>This is a simplified syntax of <code>outputs</code> element. There are other properties you can use but for now, this is good enough.</p>
+<table>
+<thead>
+<tr>
+<th>Element Name</th>
+<th>Description</th>
+<th>Is Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>output-name</td>
+<td>Name of the output value</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>type</td>
+<td>type of the output value</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>value</td>
+<td>Expression that should be evaluated and returned as output value</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>To try this method of using <code>outputs</code> element , you can create an ARM template with no resource definitions as shown below.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=outputDemo.azrm.json"></script>
+
+<p>In the outputs element definition, the name of the output value has been set to <code>lowercaseStorageAccountName</code> and the output value is set to <code>[toLower(parameters('StorageAccountName'))]</code>. Although there is just one output from this example template, there can be any number of outputs from a given ARM template. The above ARM template can be deployed using of the known deployment tools to see the value the expression evaluates to. Let us see an example using Azure CLI.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=deployForEvalOutput.azcli"></script>
+
+<p>In the command above, inline parameter specification has been used and the value for the <code>storageAccountName</code> has been set to a string containing mixed case characters. The expression used in the output value element should return this string with all characters in lower case.</p>
+<p>When you deploy using Azure CLI or Azure PowerShell, the command output contains the deployment output as well when the template deployment completes successfully. The default output format in Azure CLI is JSON. So, when the command completes successfully, you will see the JSON string returned to the command console.</p>
+
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/armin30/outputEvalExprDemo.png" width="670" />
+        
+        
+    </figure>
+    
+<p>This JSON output can be queried using <a href="https://docs.microsoft.com/en-us/cli/azure/query-azure-cli?view=azure-cli-latest">JMESPath</a>. All you have to do is append <code>--query properties.outputs.&lt;output_value_name&gt;.value</code> to the above Azure CLI deployment command.</p>
+<p>Output values from the template&rsquo;s <code>outputs</code> element can be seen in the Azure portal as well if you navigate to the resource group and check the deployment history.</p>
+
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/armin30/portalOutput.png" width="670" />
+        
+        
+    </figure>
+    
+<h2 id="variables">Variables</h2>
+<p>Variables are a way to help reduce complexity in an ARM template. In the template that deployed a storage account and a virtual network, we used seven parameters to collect the input required for the template deployment. This provides flexibility in choosing desired values for the deployment. While this flexibility is good, you may want to use fixed address prefixes for virtual network and subnets that you deploy as a part of the template. One way to achieve this is to hard code these values in resource properties. Hard coding values results in repetition and any unintentional mistakes that lead to errors in deployment. Also, there may be certain resource property values that you want to auto-generate based on the value of a specific parameter. This is where variables in ARM template syntax play a role.</p>
+<p>Here is the simplified syntax for adding variables in an ARM template.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=variableSyntax.json"></script>
+
+<p>Simple variable declaration is straightforward. You just need to add a key-value pair for the variable name and it&rsquo;s value. Here is how you may simplify the earlier template.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=variablesForStorageAndVNet.json"></script>
+
+<p>This variable definition eliminates the need for three parameters - <code>virtualNetworkAddressPrefix</code>, <code>virtualNetworkSubnetName</code>, and <code>virtualNetworkSubnetAddressPrefix</code>.</p>
+<h3 id="accessing-variable-values">Accessing variable values</h3>
+<p>Within the resource definitions, you can access the values of variables using the <code>variables()</code> function in an expression. Here is the updated template that uses variables for a few resource properties.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4RgScopedStorageVNetTemplateFinal.azrm.json"></script>
+
+<p>You can deploy this template by clicking on the deploy to Azure button.</p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fd5RgScopedStorageVNetTemplateFinal.json" target="_blank">
+        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
+    </a>
+    <br />
+
+<p>In the portal template deployment experience, you will see that the number of input parameters have reduced but the final result stays same. You can try deploying this template via the Azure CLI using the same set of commands you tried in the last part.</p>
+<h3 id="free-form-vs-known-configuration">Free-form vs known configuration</h3>
+<p>So far, you have learned about are parameters, variables, and learn to use them in ARM templates. Parameters enable the flexibility to gather input from user deploying the template. You can parameterize a complete template and let the user provide every value needed for the deployment as an input parameter. This is called <strong>free-form configuration</strong>. However, using free-form configuration is not always scalable. The number of parameters that a user need to input might be overwhelming. Also, you don’t want your end user deploying this template to mess-up with critical resource properties such as virtual network and subnet address prefixes. This can have negative effects on the overall infrastructure deployment. As you have seen in the updated template, you might always want to use fixed values for certain parameters where there is scope for errors. Some of this cannot be controlled unless you use <strong>known configurations</strong>. Known configurations help standardize resource configurations. Use variables in the template for resource settings that require no user input or you need control over. By using variables, you can simply change the value of the variable if at all you need to modify the template instead of trying to find where all the value is used.</p>
+<h2 id="summary">Summary</h2>
+<p>Expressions syntax in ARM templates enable combining multiple standard functions provided by the ARM template language. Variables when combined with expression syntax can simplify the overall template authoring experience. Choosing between free-form vs known configurations for the ARM template, you can create a template that is both flexible and implements known configurations to control how the deployed infrastructure gets configured. With this knowledge around parameters, variables, and expressions, in the next part of this series, you will learn more about some of the standard functions and learn how to implement user-defined functions.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Azure Resource Manager In 30 Days</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/">Azure Resource Manager - Adding parameters to ARM templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-arm-template-basics/">Azure Resource Manager - ARM template basics</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/">Azure Resource Manager - Tools for ARM template design, authoring, and deployment</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-introduction/">Azure Resource Manager - Introduction</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>
