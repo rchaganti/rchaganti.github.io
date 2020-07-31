@@ -6,10 +6,109 @@
     <description>Recent content in ARM Template on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 30 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 31 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/arm-template/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Azure Resource Manager - Using functions in ARM templates</title>
+      <link>https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/</link>
+      <pubDate>Fri, 31 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/templatearchitecture.png&#34; width=&#34;760&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;&lt;a href=&#34;https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/&#34;&gt;Expressions in ARM template language&lt;/a&gt; are a way to reduce complexity in the templates. &lt;a href=&#34;https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/&#34;&gt;Using parameters and variables in ARM templates&lt;/a&gt; always requires the use of expressions. Parameter and variable values are combined with standard (built-in) template functions (STF) to create complex expressions to implement the business requirements and implement known configurations. Updated ARM template syntax introduced the ability to implement user-defined functions for complicated expressions and use repeatedly in your templates. In this part, you will learn more about standard template functions and learn how to implement user-defined functions.&lt;/p&gt;
+&lt;h2 id=&#34;standard-template-functions&#34;&gt;Standard template functions&lt;/h2&gt;
+&lt;p&gt;There are different categories of &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions&#34;&gt;standard template functions&lt;/a&gt;. To work with arrays, &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-array&#34;&gt;array functions&lt;/a&gt; can be used. For example, &lt;code&gt;contains()&lt;/code&gt; function can be used to check whether an array / object / string contains a value / key / substring. This function returns true if the item is found an false otherwise. Here is an example.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=stfArrayContains.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In this example, the parameter &lt;code&gt;locations&lt;/code&gt; has a default value so you do not have to pass any parameter values while evaluating this template &lt;a href=&#34;https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/#evaluating-expressions&#34;&gt;using the method you used in the last part&lt;/a&gt;. Within the &lt;code&gt;outputs&lt;/code&gt; element, there are two output values defined within which the &lt;code&gt;contains()&lt;/code&gt; function is used. One function checks for a value that exists on the parameter value (therefore returns true) and the second one checks for a value that does not exist in the parameter value and therefore returns false.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/stfArrayContainsOutput.png&#34; width=&#34;670&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the last part, you tried a few examples of STF already. At a high level, you can classify the STF into two categories &amp;ndash; compile-time and run-time. The examples that we have seen so far are compile-time functions. The compile-time functions evaluate before the deployment begins. The run-time functions evaluate once the deployment begins. One example of a run-time function is the &lt;code&gt;listKeys()&lt;/code&gt; function. Using this template function, here is how you retrieve the storage account key for a given storage account.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;[
+    &lt;span style=&#34;color:#f00&#34;&gt;listKeys(&lt;/span&gt;
+        &lt;span style=&#34;color:#f00&#34;&gt;resourceId(&lt;/span&gt;
+            &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;Microsoft.Storage/storageAccounts&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;concat(&lt;/span&gt;
+                &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;sacct&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;-&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;uniqueString(&lt;/span&gt;
+                    &lt;span style=&#34;color:#f00&#34;&gt;resourceGroup().id&lt;/span&gt;
+                &lt;span style=&#34;color:#f00&#34;&gt;)&lt;/span&gt;
+            &lt;span style=&#34;color:#f00&#34;&gt;)&lt;/span&gt;
+        &lt;span style=&#34;color:#f00&#34;&gt;)&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2019-06-01&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;&lt;/span&gt;
+    &lt;span style=&#34;color:#f00&#34;&gt;).keys&lt;/span&gt;[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f00&#34;&gt;.value&lt;/span&gt;
+]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, two arguments are passed to the &lt;code&gt;listKeys()&lt;/code&gt; &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#list&#34;&gt;function&lt;/a&gt;. First one is the &lt;code&gt;resourceId()&lt;/code&gt; &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid&#34;&gt;function&lt;/a&gt; to retrieve the unique ID of the storage account that you provisioned. Second parameter is the API version used to deploy the resource. The final part of the expression &lt;code&gt;.keys[0].value&lt;/code&gt; is the array reference to retrieve the value of primary storage key.&lt;/p&gt;
+&lt;p&gt;Here is another example of a run-time function. This is called &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#reference&#34;&gt;reference()&lt;/a&gt;. This function returns the runtime state of a resource.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;[
+    &lt;span style=&#34;color:#f00&#34;&gt;reference(&lt;/span&gt;
+        &lt;span style=&#34;color:#f00&#34;&gt;concat(&amp;#39;Microsoft.Storage/storageAccounts/&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;concat(&lt;/span&gt;
+                &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;sacct&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;-&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;uniqueString(resourceGroup().id)&lt;/span&gt;
+            &lt;span style=&#34;color:#f00&#34;&gt;)&lt;/span&gt;, &lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2019-06-01&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;&amp;#39;&lt;/span&gt;
+        &lt;span style=&#34;color:#f00&#34;&gt;)&lt;/span&gt;
+    &lt;span style=&#34;color:#f00&#34;&gt;).primaryEndpoints.blob&lt;/span&gt;
+]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Similar to the expression that used &lt;code&gt;listKeys()&lt;/code&gt; function, this one too uses a prefix string, a unique string generated using the resource group ID, and the API version string to retrieve the storage blob URI. This blob URI is retrieved using &lt;code&gt;.primaryEndpoints.blob&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In the above example, &lt;code&gt;concat(&#39;sacct&#39;, &#39;-&#39;, uniqueString(resourceGroup().id))&lt;/code&gt; sub-expression is used to generate a unique name for the storage account. What if you want to use a similar expression for multiple resource names in the ARM template to ensure that your ARM template uses more known configuration? One way to do that is to repeat the expression multiple times with different prefixes as needed. The second and a better way is to create and use an user-defined functions (UDF) where you get the ability to parameterize expressions and reuse the same in your ARM templates like you use built-in functions.&lt;/p&gt;
+&lt;h2 id=&#34;user-defined-functions&#34;&gt;User-defined functions&lt;/h2&gt;
+&lt;p&gt;With user-defined functions (UDF), you can create your own functions by combining multiple standard template functions into a complicated expression. The following syntax describes how the user-defined functions can be added to ARM templates.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=userDefinedFunction.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;A UDF must be a part of a namespace to avoid name conflicts with STF. All your expressions get added to the members object. You need to give your custom function a unique name within the namespace and add parameters and output as needed. Here is a quick example that wraps the above expression into a custom function.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=userDefinedFunctionExample.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In the above example, one parameters &amp;ndash; prefix &amp;ndash; allows you to use the expression with varying input. The output value within the UDF is set to the transformed expression that will use the parameter and return a unique resource name. How do you use this UDF in your template? Simple, like any other built-in function in an expression.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;variables&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; {
+	&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;virtualNetworkAddressPrefix&amp;#34;&lt;/span&gt; : &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;10.0.0.0/16&amp;#34;&lt;/span&gt;,
+	&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;virtualNetworkName&amp;#34;&lt;/span&gt; : &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[armin30.uniqueResourceName(&amp;#39;vnet&amp;#39;)]&amp;#34;&lt;/span&gt;,
+	&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;virtualNetworkSubnetName&amp;#34;&lt;/span&gt; : &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[armin30.uniqueResourceName(&amp;#39;subnet&amp;#39;)]&amp;#34;&lt;/span&gt;,
+	&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;storageAccountName&amp;#34;&lt;/span&gt; : &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[armin30.uniqueResourceName(&amp;#39;sacct&amp;#39;)]&amp;#34;&lt;/span&gt;,
+	&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;virtualNetworkSubnetAddressPrefix&amp;#34;&lt;/span&gt; : &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;10.0.1.0/24&amp;#34;&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A UDF is accessed using the &lt;em&gt;namespace.functionName&lt;/em&gt; notation with a list of comma-separated parameter values. This example assign output value from &lt;code&gt;armin30.uniqueResourceName()&lt;/code&gt; function to variables. You can use the UDF directly in resource properties as well.&lt;/p&gt;
+&lt;h3 id=&#34;limitations-of-udf&#34;&gt;Limitations of UDF&lt;/h3&gt;
+&lt;p&gt;There are few limitations when using user-defined functions.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;You cannot access parameters and variables defined in the ARM template&amp;rsquo;s parameters and variables elements. You can only access parameters defined within the user-defined function and these UDF parameters cannot have any default values.&lt;/li&gt;
+&lt;li&gt;There is no nested UDF support.&lt;/li&gt;
+&lt;li&gt;The expressions that use reference and list* methods cannot be used within UDF.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Finally, here is the updated template for the scenario you are working on.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d6userDefinedFuncTemplate.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;You can deploy this template by clicking on the deploy to Azure button.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2f1b1f190cab195fb0f7562a7ecc7d3e02886953fd%2fd6userDefinedFuncTemplate.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;Once the deployment is complete, you can see the deployed resources in the portal or in the console if you used Azure CLI. Note the random strings with the prefixes that you specified as input to the &lt;code&gt;armin30.uniqueResourceName&lt;/code&gt; UDF.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/d6templateDeploy.png&#34; width=&#34;860&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;With the help of parameters, variables, expressions, and user-defined functions you get the ability to simplify the ARM template authoring process and make the templates more readable. There are many standard template functions that help you simplify the ARM template resource definitions. When you have to repeat and reuse some of the complicated expressions in an ARM template, you can wrap the expression as a user-defined function and use the UDF in the resource definition. In the next part of the series, you will learn how to use secrets in an ARM template.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Azure Resource Manager - Using expressions and variables in ARM templates</title>
@@ -102,7 +201,7 @@
 &lt;p&gt;This variable definition eliminates the need for three parameters - &lt;code&gt;virtualNetworkAddressPrefix&lt;/code&gt;, &lt;code&gt;virtualNetworkSubnetName&lt;/code&gt;, and &lt;code&gt;virtualNetworkSubnetAddressPrefix&lt;/code&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;accessing-variable-values&#34;&gt;Accessing variable values&lt;/h3&gt;
 &lt;p&gt;Within the resource definitions, you can access the values of variables using the &lt;code&gt;variables()&lt;/code&gt; function in an expression. Here is the updated template that uses variables for a few resource properties.&lt;/p&gt;
-&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d4RgScopedStorageVNetTemplateFinal.azrm.json&#34;&gt;&lt;/script&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=d5RgScopedStorageVNetTemplateFinal.json&#34;&gt;&lt;/script&gt;
 
 &lt;p&gt;You can deploy this template by clicking on the deploy to Azure button.&lt;/p&gt;
 
@@ -113,7 +212,7 @@
 
 &lt;p&gt;In the portal template deployment experience, you will see that the number of input parameters have reduced but the final result stays same. You can try deploying this template via the Azure CLI using the same set of commands you tried in the last part.&lt;/p&gt;
 &lt;h3 id=&#34;free-form-vs-known-configuration&#34;&gt;Free-form vs known configuration&lt;/h3&gt;
-&lt;p&gt;So far, you have learned about are parameters, variables, and learn to use them in ARM templates. Parameters enable the flexibility to gather input from user deploying the template. You can parameterize a complete template and let the user provide every value needed for the deployment as an input parameter. This is called &lt;strong&gt;free-form configuration&lt;/strong&gt;. However, using free-form configuration is not always scalable. The number of parameters that a user need to input might be overwhelming. Also, you don’t want your end user deploying this template to mess-up with critical resource properties such as virtual network and subnet address prefixes. This can have negative effects on the overall infrastructure deployment. As you have seen in the updated template, you might always want to use fixed values for certain parameters where there is scope for errors. Some of this cannot be controlled unless you use &lt;strong&gt;known configurations&lt;/strong&gt;. Known configurations help standardize resource configurations. Use variables in the template for resource settings that require no user input or you need control over. By using variables, you can simply change the value of the variable if at all you need to modify the template instead of trying to find where all the value is used.&lt;/p&gt;
+&lt;p&gt;So far in this series, you have learned about are parameters, variables, and learn to use them in ARM templates. Parameters enable the flexibility to gather input from user deploying the template. You can parameterize a complete template and let the user provide every value needed for the deployment as an input parameter. This is called &lt;strong&gt;free-form configuration&lt;/strong&gt;. However, using free-form configuration is not always scalable. The number of parameters that a user need to input might be overwhelming. Also, you don’t want your end user deploying this template to mess-up with critical resource properties such as virtual network and subnet address prefixes. This can have negative effects on the overall infrastructure deployment. As you have seen in the updated template, you might always want to use fixed values for certain parameters where there is scope for errors. Some of this cannot be controlled unless you use &lt;strong&gt;known configurations&lt;/strong&gt;. Known configurations help standardize resource configurations. Use variables in the template for resource settings that require no user input or you need control over. By using variables, you can simply change the value of the variable if at all you need to modify the template instead of trying to find where all the value is used.&lt;/p&gt;
 &lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
 &lt;p&gt;Expressions syntax in ARM templates enable combining multiple standard functions provided by the ARM template language. Variables when combined with expression syntax can simplify the overall template authoring experience. Choosing between free-form vs known configurations for the ARM template, you can create a template that is both flexible and implements known configurations to control how the deployed infrastructure gets configured. With this knowledge around parameters, variables, and expressions, in the next part of this series, you will learn more about some of the standard functions and learn how to implement user-defined functions.&lt;/p&gt;
 </description>
