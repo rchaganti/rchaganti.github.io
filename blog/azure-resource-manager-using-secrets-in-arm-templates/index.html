@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Azure Resource Manager - Using secrets in ARM templates"/>
+<meta name="twitter:description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input."/>
+
+    <meta property="og:title" content="Azure Resource Manager - Using secrets in ARM templates" />
+<meta property="og:description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/" />
+<meta property="article:published_time" content="2020-08-07T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-08-07T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
+    
+    <title>
+  Azure Resource Manager - Using secrets in ARM templates · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Azure Resource Manager - Using secrets in ARM templates</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-08-07T00:00:00Z'>
+                August 7, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/arm-template/">ARM Template</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/key-vault/">Key Vault</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/arm-template/">ARM Template</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/key-vault/">Key Vault</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#azure-key-vault">Azure Key Vault</a>
+      <ul>
+        <li><a href="#creating-a-key-vault">Creating a key vault</a></li>
+        <li><a href="#adding-secrets-to-vault">Adding secrets to vault</a></li>
+        <li><a href="#retrieve-vault-secret">Retrieve vault secret</a></li>
+      </ul>
+    </li>
+    <li><a href="#summary">Summary</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/armin30/templatearchitecture.png" width="760" />
+        
+        
+    </figure>
+    
+<p>In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input. Also, the configuration scripts used for guest OS configuration may have to access an internal storage account blob which will require the storage connection strings and access keys. Storing these secrets in plain-text is not recommended at all. Also, as an architect, you may want to standardize on the passwords used for local administrator accounts and do not want to share the domain-join credentials with any user while provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will see how to handle secrets such as passwords, access keys, certificates, and so on in an ARM template.</p>
+<h2 id="azure-key-vault">Azure Key Vault</h2>
+<p><a href="https://azure.microsoft.com/en-us/services/key-vault/">Azure Key Vault</a> is a service that provides a centralized secret store. You can use the Key Vault for cryptographic keys, API keys, passwords, connection strings, and certificates. For the cryptographic keys, you can use a Hardware Security Module (HSM) as well. Once a key vault is provisioned, you can add your secrets and retrieve them in an ARM template for use with other resource types such as virtual machines.</p>
+<h3 id="creating-a-key-vault">Creating a key vault</h3>
+<p>To create a key vault, you need few mandatory input parameters such as <code>tenantId</code>, <code>objectId</code> of the user or service principal or the security group in Azure Active Directory (AAD), key and secret permissions. The specified tenant will be used for authenticating requests to the key vault and the object Id of the AAD user will be used to provide the necessary permissions to interact with the Key Vault.</p>
+<p>Here is a simple starter template that you can use.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azrm.json"></script>
+
+<p>In this starter template, you see that the value of <code>tenantId</code> defaults to the value of the <code>tenantId</code> property from the <code>subscription()</code> standard template function. The value to the <code>objectId</code> property is coming from a template parameter. You can retrieve the object ID of an AAD user using <code>az ad user show</code> command.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">az ad user show --id Ravikanth@azure.com --query objectId
+</code></pre></div><p>You can deploy the above template to create a Key Vault by clicking on the Deploy To Azure button below.</p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fa5b15709b6803abaf3d4eca4308052eb37c31fbd%2fazKVbeginner.azrm.json" target="_blank">
+        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
+    </a>
+    <br />
+
+<p>If you prefer Azure CLI, you can use the following commands to perform this template deployment.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azcli"></script>
+
+<p>In the above template, as a part of the access policies [line 22], for <code>key</code>,  <code>secrets</code>, <code>certificates</code> permissions, you have used <code>all</code> as the value. As it literally means, this permission level provides full permission set to the service principal specified using <code>objectId</code> property. This is not recommended in a production Key Vault. You must secure the key vault as well and restrict access to what is really needed. The allowed values for the key and secret permissions can be seen in the <a href="https://docs.microsoft.com/en-us/azure/templates/microsoft.keyvault/2015-06-01/vaults">resource provider reference</a>.</p>
+<p>To this extent, the above template can be modified to add a few more parameters to enable permission value specification.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerParameterized.azrm.json"></script>
+
+<p>In this updated template, three additional parameters are added to gather key, secret, and certificate permissions. While there are default values for these parameters, you can provide updated set of permissions as an array during deployment time. If you notice, there are additional resource properties as well added to the Key Vault resource definition.</p>
+<p><strong>enabledForDeployment</strong> spcifies whether Azure virtual machines can retrieve the certificates from the key vault or not.</p>
+<p><strong>enabledForTemplateDeployment</strong> specifies whether Azure Resource Manager is allowed to retrieve secrets from the vault or not.</p>
+<p>For the architecture that you are building, both these properties need to be set to <code>true</code>.</p>
+<p>You can try deploying this template by clicking on the Deploy to Azure button below.</p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2f4a5cb89ed7d2b3a5c08230450a38799e1f6d6f0e%2fazKVbeginnerParameterized.azrm.json" target="_blank">
+        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
+    </a>
+    <br />
+
+<p>Now, with this updated template you have a functional key vault that can be used to store secrets needed for other resource configurations. So, how do you use ARM templates to store secrets in a key vault?</p>
+<h3 id="adding-secrets-to-vault">Adding secrets to vault</h3>
+<p>Once you have a key vault provisioned, you can add the <code>Microsoft.KeyVault/vaults/secrets</code> resource to the template to add secrets to the vault. The following resource definition will do that job.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+	&#34;type&#34;: &#34;Microsoft.KeyVault/vaults/secrets&#34;,
+	&#34;name&#34;: &#34;[concat(variables(&#39;keyVaultName&#39;), &#39;/&#39;, parameters(&#39;secretName&#39;))]&#34;,
+	&#34;apiVersion&#34;: &#34;2018-02-14&#34;,
+	&#34;location&#34;: &#34;[resourceGroup().location]&#34;,
+	&#34;properties&#34;: {
+		&#34;value&#34;: &#34;[parameters(&#39;secretValue&#39;)]&#34;,
+		&#34;contentType&#34; : &#34;string&#34;
+	}
+}
+</code></pre></div><p>In this resource definition, the type of the resource is <code>Microsoft.KeyVault/vaults/secrets</code>. The <code>secretName</code> that you want to use will be provided as the name of the resource and the value will be set in the resource properties.</p>
+<p>Here is the full template that can be used to provision a key vault and then add a secret to it.</p>
+<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerStoreSecret.azrm.json"></script>
+
+<p>This updated template added two more parameters &ndash; <code>secretName</code> and <code>secretValue</code>. <code>secretValue</code> is a secure string. Try deploying the template using the deploy to Azure button below.</p>
+
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fb605dc41251aea40dae877f352a0b35998944076%2fazKVbeginnerStoreSecret.azrm.json" target="_blank">
+        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
+    </a>
+    <br />
+
+<h3 id="retrieve-vault-secret">Retrieve vault secret</h3>
+<p>Finally, when you have to use the secret as another resource property value, you can do that using a property definition as shown below.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;adminPassword&#34;: {
+    &#34;reference&#34;: {
+        &#34;keyVault&#34;: {
+        &#34;id&#34;: &#34;/subscriptions/&lt;SubscriptionID&gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/&lt;KeyVaultName&gt;&#34;
+        },
+        &#34;secretName&#34;: &#34;vmAdminPassword&#34;
+    }
+}
+</code></pre></div><p>You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.</p>
+<h2 id="summary">Summary</h2>
+<p>In this part, you learned how to create an Azure Key Vault, add secrets to the vault, and retrieve the secrets. This knowledge will come handy when you attempt creating virtual machines that require a predefined administrator password. In the next part, you will learn about resource dependencies in ARM templates.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Azure Resource Manager In 30 Days</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/">Azure Resource Manager - Using functions in ARM templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/">Azure Resource Manager - Using expressions and variables in ARM templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/">Azure Resource Manager - Adding parameters to ARM templates</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-arm-template-basics/">Azure Resource Manager - ARM template basics</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/">Azure Resource Manager - Tools for ARM template design, authoring, and deployment</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>

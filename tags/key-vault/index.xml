@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Key Vault on Ravikanth Chaganti</title>
+    <link>https://ravichaganti.com/tags/key-vault/</link>
+    <description>Recent content in Key Vault on Ravikanth Chaganti</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 07 Aug 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://ravichaganti.com/tags/key-vault/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Azure Resource Manager - Using secrets in ARM templates</title>
+      <link>https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/</link>
+      <pubDate>Fri, 07 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/armin30/templatearchitecture.png&#34; width=&#34;760&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input. Also, the configuration scripts used for guest OS configuration may have to access an internal storage account blob which will require the storage connection strings and access keys. Storing these secrets in plain-text is not recommended at all. Also, as an architect, you may want to standardize on the passwords used for local administrator accounts and do not want to share the domain-join credentials with any user while provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will see how to handle secrets such as passwords, access keys, certificates, and so on in an ARM template.&lt;/p&gt;
+&lt;h2 id=&#34;azure-key-vault&#34;&gt;Azure Key Vault&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://azure.microsoft.com/en-us/services/key-vault/&#34;&gt;Azure Key Vault&lt;/a&gt; is a service that provides a centralized secret store. You can use the Key Vault for cryptographic keys, API keys, passwords, connection strings, and certificates. For the cryptographic keys, you can use a Hardware Security Module (HSM) as well. Once a key vault is provisioned, you can add your secrets and retrieve them in an ARM template for use with other resource types such as virtual machines.&lt;/p&gt;
+&lt;h3 id=&#34;creating-a-key-vault&#34;&gt;Creating a key vault&lt;/h3&gt;
+&lt;p&gt;To create a key vault, you need few mandatory input parameters such as &lt;code&gt;tenantId&lt;/code&gt;, &lt;code&gt;objectId&lt;/code&gt; of the user or service principal or the security group in Azure Active Directory (AAD), key and secret permissions. The specified tenant will be used for authenticating requests to the key vault and the object Id of the AAD user will be used to provide the necessary permissions to interact with the Key Vault.&lt;/p&gt;
+&lt;p&gt;Here is a simple starter template that you can use.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In this starter template, you see that the value of &lt;code&gt;tenantId&lt;/code&gt; defaults to the value of the &lt;code&gt;tenantId&lt;/code&gt; property from the &lt;code&gt;subscription()&lt;/code&gt; standard template function. The value to the &lt;code&gt;objectId&lt;/code&gt; property is coming from a template parameter. You can retrieve the object ID of an AAD user using &lt;code&gt;az ad user show&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;az ad user show --id Ravikanth@azure.com --query objectId
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can deploy the above template to create a Key Vault by clicking on the Deploy To Azure button below.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fa5b15709b6803abaf3d4eca4308052eb37c31fbd%2fazKVbeginner.azrm.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;If you prefer Azure CLI, you can use the following commands to perform this template deployment.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azcli&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In the above template, as a part of the access policies [line 22], for &lt;code&gt;key&lt;/code&gt;,  &lt;code&gt;secrets&lt;/code&gt;, &lt;code&gt;certificates&lt;/code&gt; permissions, you have used &lt;code&gt;all&lt;/code&gt; as the value. As it literally means, this permission level provides full permission set to the service principal specified using &lt;code&gt;objectId&lt;/code&gt; property. This is not recommended in a production Key Vault. You must secure the key vault as well and restrict access to what is really needed. The allowed values for the key and secret permissions can be seen in the &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/templates/microsoft.keyvault/2015-06-01/vaults&#34;&gt;resource provider reference&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;To this extent, the above template can be modified to add a few more parameters to enable permission value specification.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerParameterized.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;In this updated template, three additional parameters are added to gather key, secret, and certificate permissions. While there are default values for these parameters, you can provide updated set of permissions as an array during deployment time. If you notice, there are additional resource properties as well added to the Key Vault resource definition.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;enabledForDeployment&lt;/strong&gt; spcifies whether Azure virtual machines can retrieve the certificates from the key vault or not.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;enabledForTemplateDeployment&lt;/strong&gt; specifies whether Azure Resource Manager is allowed to retrieve secrets from the vault or not.&lt;/p&gt;
+&lt;p&gt;For the architecture that you are building, both these properties need to be set to &lt;code&gt;true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can try deploying this template by clicking on the Deploy to Azure button below.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2f4a5cb89ed7d2b3a5c08230450a38799e1f6d6f0e%2fazKVbeginnerParameterized.azrm.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;p&gt;Now, with this updated template you have a functional key vault that can be used to store secrets needed for other resource configurations. So, how do you use ARM templates to store secrets in a key vault?&lt;/p&gt;
+&lt;h3 id=&#34;adding-secrets-to-vault&#34;&gt;Adding secrets to vault&lt;/h3&gt;
+&lt;p&gt;Once you have a key vault provisioned, you can add the &lt;code&gt;Microsoft.KeyVault/vaults/secrets&lt;/code&gt; resource to the template to add secrets to the vault. The following resource definition will do that job.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;{
+	&amp;#34;type&amp;#34;: &amp;#34;Microsoft.KeyVault/vaults/secrets&amp;#34;,
+	&amp;#34;name&amp;#34;: &amp;#34;[concat(variables(&amp;#39;keyVaultName&amp;#39;), &amp;#39;/&amp;#39;, parameters(&amp;#39;secretName&amp;#39;))]&amp;#34;,
+	&amp;#34;apiVersion&amp;#34;: &amp;#34;2018-02-14&amp;#34;,
+	&amp;#34;location&amp;#34;: &amp;#34;[resourceGroup().location]&amp;#34;,
+	&amp;#34;properties&amp;#34;: {
+		&amp;#34;value&amp;#34;: &amp;#34;[parameters(&amp;#39;secretValue&amp;#39;)]&amp;#34;,
+		&amp;#34;contentType&amp;#34; : &amp;#34;string&amp;#34;
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this resource definition, the type of the resource is &lt;code&gt;Microsoft.KeyVault/vaults/secrets&lt;/code&gt;. The &lt;code&gt;secretName&lt;/code&gt; that you want to use will be provided as the name of the resource and the value will be set in the resource properties.&lt;/p&gt;
+&lt;p&gt;Here is the full template that can be used to provision a key vault and then add a secret to it.&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerStoreSecret.azrm.json&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;This updated template added two more parameters &amp;ndash; &lt;code&gt;secretName&lt;/code&gt; and &lt;code&gt;secretValue&lt;/code&gt;. &lt;code&gt;secretValue&lt;/code&gt; is a secure string. Try deploying the template using the deploy to Azure button below.&lt;/p&gt;
+
+    &lt;a href=&#34;https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fb605dc41251aea40dae877f352a0b35998944076%2fazKVbeginnerStoreSecret.azrm.json&#34; target=&#34;_blank&#34;&gt;
+        &lt;img src=&#34;https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true&#34; alt=&#34;&#34;&gt;
+    &lt;/a&gt;
+    &lt;br /&gt;
+
+&lt;h3 id=&#34;retrieve-vault-secret&#34;&gt;Retrieve vault secret&lt;/h3&gt;
+&lt;p&gt;Finally, when you have to use the secret as another resource property value, you can do that using a property definition as shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&amp;#34;adminPassword&amp;#34;: {
+    &amp;#34;reference&amp;#34;: {
+        &amp;#34;keyVault&amp;#34;: {
+        &amp;#34;id&amp;#34;: &amp;#34;/subscriptions/&amp;lt;SubscriptionID&amp;gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/&amp;lt;KeyVaultName&amp;gt;&amp;#34;
+        },
+        &amp;#34;secretName&amp;#34;: &amp;#34;vmAdminPassword&amp;#34;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.&lt;/p&gt;
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;In this part, you learned how to create an Azure Key Vault, add secrets to the vault, and retrieve the secrets. This knowledge will come handy when you attempt creating virtual machines that require a predefined administrator password. In the next part, you will learn about resource dependencies in ARM templates.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
