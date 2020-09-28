@@ -6,10 +6,142 @@
     <description>Recent content in Golang on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 31 Aug 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 28 Sep 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/golang/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Get set Go - Slices in Go language</title>
+      <link>https://ravichaganti.com/blog/get-set-go-slices-in-go-language/</link>
+      <pubDate>Mon, 28 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/get-set-go-slices-in-go-language/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/getsetgo/banner.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the previous part of this &lt;a href=&#34;https://ravichaganti.com/series/get-set-go/&#34;&gt;series&lt;/a&gt;, you learned about arrays in Go language. As you have learned, arrays have a fixed size and therefore you cannot resize (grow or shrink) arrays. This limitation can be overcome using &lt;a href=&#34;https://golang.org/ref/spec#Slice_types&#34;&gt;slices&lt;/a&gt; in Go language. In this part, you will learn about slices and how to use this data type in your Go programs.&lt;/p&gt;
+&lt;h2 id=&#34;slices&#34;&gt;Slices&lt;/h2&gt;
+&lt;p&gt;A slice in Go language is a slice of an underlying array! Yes, no pun intended. 😊&lt;/p&gt;
+&lt;p&gt;Here is how the Go language specification describes slices. &lt;em&gt;A slice is a descriptor for a contiguous segment of an underlying array and provides access to a numbered sequence of elements from that array.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;There are different ways to declaring and initializing slices in Go language.&lt;/p&gt;
+&lt;h3 id=&#34;slice-literal&#34;&gt;Slice literal&lt;/h3&gt;
+&lt;p&gt;The syntax for declaring a variable as a slice is &lt;code&gt;var s1 = []int{1,2}&lt;/code&gt;. This declare a slice of integers and initializes with two elements. This is similar to how you declared array variables. The only difference is that there is no size specification. You can avoid any values in the declaration to create an empty slice of integers. For example,  &lt;code&gt;var s2 = []int{}&lt;/code&gt;. However, you cannot add elements (to an empty slice or at an index that is out of bound) using the indexer syntax. For example, specifying &lt;code&gt;s2[0]= 100&lt;/code&gt; will result in an error. The indexer method works only when updating an existing element at a specific index in the slice. To add elements to an empty slice, you need use the built-in &lt;code&gt;append()&lt;/code&gt; method.&lt;/p&gt;
+&lt;p&gt;Here is a quick example that shows both these methods.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; s1 = []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;}
+	s1[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;] = &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+	fmt.Println(s1)
+
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; s2 = []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{}
+	s2 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s2, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;100&lt;/span&gt;)
+	s2 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s2, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;200&lt;/span&gt;)
+	fmt.Println(s2)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;With slices, unlike arrays, you can append elements. This essentially changes the size of the slice. You can use the &lt;code&gt;len()&lt;/code&gt; built-in function to find the current number of elements and the &lt;code&gt;cap()&lt;/code&gt; function to find the maximum capacity of the slice. Review the below example to understand the difference between length and capacity in-depth.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; s1 = []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;}
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Initial len and cap&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;len&lt;/span&gt;(s1), &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;cap&lt;/span&gt;(s1))
+
+	s1 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s1, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;len and cap after adding 3rd element&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;len&lt;/span&gt;(s1), &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;cap&lt;/span&gt;(s1))
+
+	s1 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s1, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt;)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;len and cap after adding 4th element&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;len&lt;/span&gt;(s1), &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;cap&lt;/span&gt;(s1))
+
+	s1 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s1, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;len and cap after adding 5th element&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;len&lt;/span&gt;(s1), &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;cap&lt;/span&gt;(s1))
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When you run this, you will see the following output.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;PS C:&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;\G&lt;/span&gt;itHub&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;\G&lt;/span&gt;etSetGo&amp;gt; go run .&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;\s&lt;/span&gt;lices.go
+Initial len and cap &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;
+len and cap after adding 3rd element &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt;
+len and cap after adding 4th element &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt;
+len and cap after adding 5th element &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;8&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you observe the above output, the initial length and capacity of the slice is what you initialized it to &amp;ndash; with two elements. After adding a third element, the capacity changed to 4 and stayed as 4 even after the adding the 4th element. However, the moment the 5th element gets added, the capacity of the slice jumps to 8. So, what is happening here?&lt;/p&gt;
+&lt;p&gt;With the &lt;code&gt;append&lt;/code&gt; function, whenever you add an element, if the length exceeds the current capacity of the slice, Go simply doubles the capacity. So, when we added the 3rd element, the capacity doubled to 4 and then we added the 5th element, it doubled to 8.&lt;/p&gt;
+&lt;h3 id=&#34;using-make&#34;&gt;Using Make&lt;/h3&gt;
+&lt;p&gt;Slices can also be declared and initialized using the &lt;code&gt;make&lt;/code&gt; built-in function. The syntax for using make to create a slice is as follows.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; name = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;make&lt;/span&gt;(slice-&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt;, slice-length, slice-capacity)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is an example that uses &lt;code&gt;make&lt;/code&gt; function.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; s3 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;make&lt;/span&gt;([]&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt;)
+	s3[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;] = &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+	s3[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;] = &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;20&lt;/span&gt;
+	s3 = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;append&lt;/span&gt;(s3, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;20&lt;/span&gt;)
+
+	fmt.Println(s3, &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;len&lt;/span&gt;(s3), &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;cap&lt;/span&gt;(s3))
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this example, the last integer value that is used to specify the capacity of the slice is optional. By default, the capacity will be same as length. The code in the above example creates a slice with length of 2 and capacity of 4. And, observe how the 3rd element is added. You have to use the append function since adding the 3rd element exceeds the length specified when using &lt;code&gt;make&lt;/code&gt; function. This behavior is different from what you seen above with append method on a slice created using slice literal syntax.&lt;/p&gt;
+&lt;h3 id=&#34;slicing-arrays&#34;&gt;Slicing arrays&lt;/h3&gt;
+&lt;p&gt;Yet another method of creating a slice is to slice an existing array! Take a look at this example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; languages = [&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;6&lt;/span&gt;]&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Python&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Rust&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Java&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;C#&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;PowerShell&amp;#34;&lt;/span&gt;}
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Elements in the string array are&amp;#34;&lt;/span&gt;, languages)
+
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; langSlice = languages[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;:&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;]
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nElements in the derived slice are&amp;#34;&lt;/span&gt;, langSlice)
+
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nSlicing without a start index is similar to using start index 0&amp;#34;&lt;/span&gt;, languages[:&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;])
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nSlicing without an end index gets all elements from start_index till end of the array&amp;#34;&lt;/span&gt;, languages[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;4&lt;/span&gt;:])
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the &lt;code&gt;languages&lt;/code&gt; array has six elements. A slice of these elements &amp;ndash; from index 0 to 2 &amp;ndash; is assigned to the variable &lt;code&gt;langSlice&lt;/code&gt;. This variable is of slice data type. In the variable assignment, you have specified the the slice as start_index:end_index in square brackets. In this specification,&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The end_index in excluded. So, when the indexes specified are 0 and 2, the resulting slice will have elements from index 0 and 1 but not 2.&lt;/li&gt;
+&lt;li&gt;Both start_index and end_index are optional. So, for example, if you specify [:3], the first three elements from the array. If you specify [4:], elements from index 4 till the end of the array get assigned to the slice. Finally, skipping both &amp;ndash; [:] &amp;ndash; will simply return all elements from the array.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You learned in an earlier part of this series that slices are reference types. This means that when you update an element in the slice the element in the underlying array gets updated as well.&lt;/p&gt;
+&lt;p&gt;Take a look at this example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; languages = [&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;6&lt;/span&gt;]&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Python&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Rust&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Java&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;C#&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;PowerShell&amp;#34;&lt;/span&gt;}
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Elements in the string array are&amp;#34;&lt;/span&gt;, languages)
+
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; langSlice = languages[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;:&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;]
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nElements in the derived slice are&amp;#34;&lt;/span&gt;, langSlice)
+
+	langSlice[&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;] = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;C++&amp;#34;&lt;/span&gt;
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nElements in the updated slice are&amp;#34;&lt;/span&gt;, langSlice)
+
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nElements in the underlying array are&amp;#34;&lt;/span&gt;, languages)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you run this above example, you will see output similar to what is shown here.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;slices.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+Elements in the &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; array are [Go Python Rust Java C&lt;span style=&#34;color:#f00&#34;&gt;#&lt;/span&gt; PowerShell]
+
+Elements in the derived slice are [Go Python]
+
+Elements in the updated slice are [Go C++]
+
+Elements in the underlying array are [Go C++ Rust Java C&lt;span style=&#34;color:#f00&#34;&gt;#&lt;/span&gt; PowerShell]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As you see here, once you update an element in the derived slice, the underlying array also gets updated. This brings us to the discussion around pointers in Go language which is the subject of next part in this series.&lt;/p&gt;
+&lt;p&gt;Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Get set Go - Arrays in Go language</title>
