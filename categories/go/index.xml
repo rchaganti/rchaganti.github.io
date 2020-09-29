@@ -6,10 +6,88 @@
     <description>Recent content in Go on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 28 Sep 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 29 Sep 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/go/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Get set Go - Pointers in Go language</title>
+      <link>https://ravichaganti.com/blog/get-set-go-pointers-in-go-language/</link>
+      <pubDate>Tue, 29 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/get-set-go-pointers-in-go-language/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/getsetgo/banner.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the previous part of this &lt;a href=&#34;https://ravichaganti.com/series/get-set-go/&#34;&gt;series&lt;/a&gt;, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the end of the article on slices, you learned that slices are essentially references to an underlying array and any changes made to the slice will reflect in the underlying array as well. In this article, you shall learn about another reference type called pointers in Go language.&lt;/p&gt;
+&lt;h2 id=&#34;pointers&#34;&gt;Pointers&lt;/h2&gt;
+&lt;p&gt;Pointers in Go, like other languages, hold the memory address of a value. First, an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	a := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+	b := &amp;amp;a
+
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of a is&amp;#34;&lt;/span&gt;, a)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of b is&amp;#34;&lt;/span&gt;, b)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value at b is&amp;#34;&lt;/span&gt;, *b)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The first variable declaration and initialization in the above example is already known. It is a simple integer. The line where variable b is declared is special. On the right-hand side, using &amp;amp; prefix tells Go that you want to store the memory location of the value represented by variable a. &amp;amp; is called the addressOf operator. So, variable b gets the memory address of variable a. In the last line, the asterisk (*) dereferences the value at variable b and therefore it is called the dereferencing operator.&lt;/p&gt;
+&lt;p&gt;This should be clear if you run this example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;pointers.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+value of a is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+value of b is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0xc000012090&lt;/span&gt;
+value at b is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The second output shows the value stored in variable b which is the memory address of variable a. And, the last line in the output shows the value at the memory address represented by variable b which is the value of variable a &amp;ndash; 10.&lt;/p&gt;
+&lt;p&gt;Since variable b is the address of value represented variable a, you cannot assign another integer value to b directly. Instead, you dereference and then assign a value which changes the value of variable a.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	a := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+	b := &amp;amp;a
+
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of a is&amp;#34;&lt;/span&gt;, a)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of b is&amp;#34;&lt;/span&gt;, b)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value at b is&amp;#34;&lt;/span&gt;, *b)
+
+	*b = &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;20&lt;/span&gt;
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of b is&amp;#34;&lt;/span&gt;, b)
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;value of a is&amp;#34;&lt;/span&gt;, a)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you run this above example, you will see output similar to what is shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;pointers.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+value of a is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+value of b is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0xc000012090&lt;/span&gt;
+value at b is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+value of b is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0xc000012090&lt;/span&gt;
+value of a is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;20&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you observe the output, the memory address stored in variable b itself does not change but the value assigned to variable gets updated to 20. This is good but are there other methods we can declare pointers in Go language?&lt;/p&gt;
+&lt;p&gt;The regular variable declaration syntax works for variables as well.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;var b *int = &amp;amp;a&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The above method is just an expanded form of what you learned in the first example. In this expanded form, there is explicit declaration of pointer type which is &lt;code&gt;*int&lt;/code&gt; in this case or you can call it an integer pointer. You can skip the initialization part and just declare an integer pointer. In such as case the zero value of a pointer will be set to &lt;code&gt;nil&lt;/code&gt; and you cannot dereference until you assign a value.&lt;/p&gt;
+&lt;h3 id=&#34;using-new-function&#34;&gt;Using new function&lt;/h3&gt;
+&lt;p&gt;When you use the built-in &lt;code&gt;new&lt;/code&gt; function to declare and initialize a variable, you get a pointer to its memory address. Take a look at the below example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	a := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;new&lt;/span&gt;(&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;)
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;println&lt;/span&gt;(a)
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;println&lt;/span&gt;(*a)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When you run this, the first &lt;code&gt;println&lt;/code&gt; will print the memory address and when you dereference it&amp;rsquo;s value, you will see a zero value.&lt;/p&gt;
+&lt;p&gt;This is just an introduction to pointers in Go language and you will learn more about the use cases of pointers when we discuss functions and other advanced concepts. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Get set Go - Slices in Go language</title>
