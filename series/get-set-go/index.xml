@@ -6,10 +6,203 @@
     <description>Recent content in Get Set GO on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 07 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 09 Oct 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/series/get-set-go/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Get set Go - Labels in Go language</title>
+      <link>https://ravichaganti.com/blog/get-set-go-labels-in-go-language/</link>
+      <pubDate>Fri, 09 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/get-set-go-labels-in-go-language/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/getsetgo/banner.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control flow. What you have seen in the examples with these statements was an unlabeled way to break or continue the iteration. Go language supports labels that let you transfer control to the place in the (same function) code where the label is defined. There are different ways to use labeled statements.&lt;/p&gt;
+&lt;h2 id=&#34;goto&#34;&gt;Goto&lt;/h2&gt;
+&lt;p&gt;Similar to &lt;code&gt;break&lt;/code&gt; and &lt;code&gt;continue&lt;/code&gt;, the &lt;code&gt;[goto](https://golang.org/ref/spec#Goto_statements)&lt;/code&gt; statement in Go language transfers the control to the place in the code where a specific label is defined within the same function. Here is an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	num := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+
+jumpTo:
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; num &amp;lt;= &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt; {
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; num%&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; == &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt; {
+			num++
+			&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;goto&lt;/span&gt; jumpTo
+		}
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\n num has value set to %d&amp;#34;&lt;/span&gt;, num)
+		num++
+	}
+
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nFinal value of num is %d&amp;#34;&lt;/span&gt;, num)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above example&amp;rsquo;s purpose is to print all odd numbers between 1 and 10. In this, the &lt;code&gt;goto&lt;/code&gt; statement is used to jump to the start of the loop again. Note the way the label &amp;ndash; &lt;code&gt;jumpTo&lt;/code&gt; &amp;ndash; is defined. The general syntax for defining a label in a Go program is &lt;code&gt;identifier:&lt;/code&gt; and then with the &lt;code&gt;goto&lt;/code&gt; statement, you just use the identifier &amp;ndash; &lt;code&gt;goto jumpTo&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Here is the output from this program.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt; 
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt; 
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;7&lt;/span&gt; 
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt; 
+Final value of num is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;11&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The scope of a label is the function where it is defined. With the &lt;code&gt;goto&lt;/code&gt; statement, it does not matter where the label is defined within the function. For example, the following program works as well. Of course, without printing all the odd number values.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	num := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; num &amp;lt;= &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt; {
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; num%&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; == &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt; {
+			num++
+			&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;goto&lt;/span&gt; jumpTo
+		}
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\n num has value set to %d&amp;#34;&lt;/span&gt;, num)
+		num++
+	}
+
+jumpTo:
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nFinal value of num is %d&amp;#34;&lt;/span&gt;, num)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This produces output as shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+ num has value set to &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+Final value of num is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Function scope of a label also means that you cannot have the same label identifier declared multiple times even within different code blocks within the same function. Also, using &lt;code&gt;goto&lt;/code&gt; has a couple of caveats.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Since &lt;code&gt;goto&lt;/code&gt; can be used to jump forward in the program flow, you cannot jump over a variable declaration.&lt;/li&gt;
+&lt;li&gt;You cannot jump into a new code block.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;continue-and-break-with-labels&#34;&gt;Continue and Break with labels&lt;/h2&gt;
+&lt;p&gt;If you look at the &lt;code&gt;continue&lt;/code&gt; and &lt;code&gt;break&lt;/code&gt; statement syntax from the &lt;a href=&#34;https://golang.org/ref/spec#Continue_statements&#34;&gt;Go language specification&lt;/a&gt;, you will notice that these statements have an optional label.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;BreakStmt = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;break&amp;#34;&lt;/span&gt; [ Label ] .
+ContinueStmt = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;continue&amp;#34;&lt;/span&gt; [ Label ] .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;Break&lt;/code&gt; statement works only within a &lt;code&gt;for&lt;/code&gt; loop, &lt;code&gt;switch&lt;/code&gt; or &lt;code&gt;select&lt;/code&gt; statement while &lt;code&gt;continue&lt;/code&gt; works only in a loop. You have already seen examples of &lt;code&gt;break&lt;/code&gt; and &lt;code&gt;continue&lt;/code&gt; within a &lt;code&gt;for&lt;/code&gt; loop. Similar to the &lt;code&gt;goto&lt;/code&gt; statement, you just need to suffix the label identifier to &lt;code&gt;continue&lt;/code&gt; and &lt;code&gt;break&lt;/code&gt; statements.&lt;/p&gt;
+&lt;p&gt;Continue statement without a label, it skips the current iteration of the innermost loop. First, take a look at this example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Go&#34; data-lang=&#34;Go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	s1 := []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;}
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; i := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;; i &amp;lt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;; i++ {
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\n\ni is %d&amp;#34;&lt;/span&gt;, i)
+
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; _, j := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;range&lt;/span&gt; s1 {
+			&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; j%&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; == &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt; {
+				&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;continue&lt;/span&gt;
+			}
+			fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nj is %d&amp;#34;&lt;/span&gt;, j)
+
+		}
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is straightforward. Within the inner loop, if you encounter an even number, you simply go to the next iteration using &lt;code&gt;continue&lt;/code&gt;. Here is the output from this program.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, imagine based on the condition being checked in the inner loop, you may want to simply start again from the outer loop. You can achieve this with a simple change of adding the label to the continue statement.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	s1 := []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;}
+
+jumpTo:
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; i := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;; i &amp;lt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;; i++ {
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\n\ni is %d&amp;#34;&lt;/span&gt;, i)
+
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; _, j := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;range&lt;/span&gt; s1 {
+			&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; j%&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; == &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt; {
+				&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;continue&lt;/span&gt; jumpTo
+			}
+			fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nj is %d&amp;#34;&lt;/span&gt;, j)
+
+		}
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The only change here is that a label &amp;ndash; called &lt;code&gt;jumpTo&lt;/code&gt; &amp;ndash; is added right before the outer &lt;code&gt;for&lt;/code&gt; loop. And, the same identifier is added to &lt;code&gt;continue&lt;/code&gt; statement inside the innermost loop. You can clearly see the difference in the control flow when you run this program. Here is what you will see.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+      
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+      
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Since the innermost loop reinitializes every time it is reached during execution, you will never go beyond the second element in the slice. The labeled &lt;code&gt;continue&lt;/code&gt; becomes very useful in case of nested loops where exiting the current scope based on a condition is needed.&lt;/p&gt;
+&lt;p&gt;Similarly, labels can be used with &lt;code&gt;break&lt;/code&gt; statement as well. For this, just replace &lt;code&gt;continue&lt;/code&gt; with &lt;code&gt;break&lt;/code&gt; in the above example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	s1 := []&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt;{&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;9&lt;/span&gt;, &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;}
+
+jumpTo:
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; i := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;; i &amp;lt; &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;; i++ {
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\n\ni is %d&amp;#34;&lt;/span&gt;, i)
+
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt; _, j := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;range&lt;/span&gt; s1 {
+			&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; j%&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt; == &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt; {
+				&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;break&lt;/span&gt; jumpTo
+			}
+			fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nj is %d&amp;#34;&lt;/span&gt;, j)
+
+		}
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The following snippet shows the output both with and without the label to illustrate the difference.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+&lt;span style=&#34;color:#007f7f&#34;&gt;//without break label
+&lt;/span&gt;&lt;span style=&#34;color:#007f7f&#34;&gt;&lt;/span&gt;i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+
+i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;2&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;for&lt;/span&gt;.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+&lt;span style=&#34;color:#007f7f&#34;&gt;//with break label
+&lt;/span&gt;&lt;span style=&#34;color:#007f7f&#34;&gt;&lt;/span&gt;i is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;0&lt;/span&gt;
+j is &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is it about using labeled statements in Go. When you write some &amp;ldquo;real&amp;rdquo; Go code other than these trivial examples, you will understand the advantages of these labeled statements in control flow. In this next part, you will learn about functions in Go.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Get set Go - Loops in Go language</title>
