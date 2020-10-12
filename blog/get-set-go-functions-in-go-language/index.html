@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Alright. In this series so far, you learned about some basics of programming in Go language, about data types, conditions, and loops. In all the examples in the earlier parts of the series, there was just the main function which is the entry point into a Go program. All execution of a Go program starts at the main function. The idea of a function in any language is to basically group together a set of instructions and these instructions can now be used repeatedly as needed.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Get set Go - Functions in Go language"/>
+<meta name="twitter:description" content="Alright. In this series so far, you learned about some basics of programming in Go language, about data types, conditions, and loops. In all the examples in the earlier parts of the series, there was just the main function which is the entry point into a Go program. All execution of a Go program starts at the main function. The idea of a function in any language is to basically group together a set of instructions and these instructions can now be used repeatedly as needed."/>
+
+    <meta property="og:title" content="Get set Go - Functions in Go language" />
+<meta property="og:description" content="Alright. In this series so far, you learned about some basics of programming in Go language, about data types, conditions, and loops. In all the examples in the earlier parts of the series, there was just the main function which is the entry point into a Go program. All execution of a Go program starts at the main function. The idea of a function in any language is to basically group together a set of instructions and these instructions can now be used repeatedly as needed." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/get-set-go-functions-in-go-language/" />
+<meta property="article:published_time" content="2020-10-12T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-10-12T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/get-set-go-functions-in-go-language/">
+    
+    <title>
+  Get set Go - Functions in Go language · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/get-set-go-functions-in-go-language/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Get set Go - Functions in Go language</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-10-12T00:00:00Z'>
+                October 12, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              10-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/golang/">Golang</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/go/">Go</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/golang/">Golang</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/go/">Go</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#functions">Functions</a></li>
+    <li><a href="#named-return-values">Named return values</a></li>
+    <li><a href="#multiple-return-values">Multiple return values</a></li>
+    <li><a href="#variadic-functions">Variadic functions</a></li>
+    <li><a href="#passing-by-value-vs-passing-by-reference">Passing by value vs passing by reference</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/getsetgo/banner.png" width="660" />
+        
+        
+    </figure>
+    
+<p>Alright. In this <a href="https://ravichaganti.com/series/get-set-go/">series</a> so far, you learned about some basics of programming in Go language, about data types, conditions, and loops. In all the examples in the earlier parts of the series, there was just the <code>main</code> function which is the entry point into a Go program. All execution of a Go program starts at the <code>main</code> function. The idea of a function in any language is to basically group together a set of instructions and these instructions can now be used repeatedly as needed. As you learned, the <code>main</code> function is a bit special though. Functions promote reusability and readability of your code. In this part of the series, you shall learn about functions in Go language.</p>
+<h2 id="functions">Functions</h2>
+<p>A function in go, like any other language, is a block of code that takes input, performs a specific task, and generates some output. The general syntax for declaring functions in Go language is shown below.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">func</span> <span style="color:#fff;font-weight:bold">func</span>-name(param1-name param1-<span style="color:#fff;font-weight:bold">type</span>, param2-name param2-<span style="color:#fff;font-weight:bold">type</span>) <span style="color:#fff;font-weight:bold">func</span>-<span style="color:#fff;font-weight:bold">return</span>-<span style="color:#fff;font-weight:bold">type</span> {  
+ 	<span style="color:#007f7f">//statements that perform a specific task
+</span><span style="color:#007f7f"></span>}
+</code></pre></div><p>The <code>func</code> keyword, you have already seen this with the main function, is used to declare the function type in Go followed by a name given to the function. Within the parenthesis, you specify any parameters that are needed for the function to perform its task followed by function return type(s). Both parameters and return type are optional. Like the main function, the function body needs to be enclosed in a pair of curly brackets with the open bracket on the same line as the <code>func</code> declaration. The parameters in the function declaration are always in the format of parameter name followed by its type. You can have any number of parameters. Similarly, you can specify a comma separated list of return types as well. However, if you have more than one return type, you must enclose them in ().</p>
+<p>Take a look at this example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	a, b := <span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>
+	c := add(a, b)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> add(x <span style="color:#fff;font-weight:bold">int</span>, y <span style="color:#fff;font-weight:bold">int</span>) <span style="color:#fff;font-weight:bold">int</span> {
+    sum := x + y
+    <span style="color:#fff;font-weight:bold">return</span> sum
+}
+</code></pre></div><p>Well, this is a super trivial elementary type example but you get the point. In the <code>main</code> function, there are two variables <code>a</code> and <code>b</code>. These variables are declared and initialized with some integer values. Now, another variable named <code>c</code> is declared and initialized to the return value from the function <code>add</code>. This is yet another way to initialize variables in Go language. Observe how the function is called. We just use the name of the function with all parameter values enclosed in () &ndash; like <code>add(a, b)</code>.</p>
+<p>The <code>add</code> function is declared with two input parameters &ndash; <code>x</code> and <code>y</code> &ndash; of integer type. Since the variable <code>c</code> in function <code>main</code> gets its value from the <code>add</code> function, this function has an integer return type. Within the function body, the <code>sum</code> variable is declared and initialized to store the value of <code>x+y</code>. And, finally, the <code>return sum</code> statement</p>
+<p>Since both parameters of this function are of integer types, we can simplify the function declaration as follows.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">func</span> add(x, y <span style="color:#fff;font-weight:bold">int</span>) <span style="color:#fff;font-weight:bold">int</span> {
+	<span style="color:#007f7f">//code
+</span><span style="color:#007f7f"></span>}
+</code></pre></div><h2 id="named-return-values">Named return values</h2>
+<p>Go functions support named return values. First, see the below example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	a, b := <span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>
+	c := add(a, b)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> add(x <span style="color:#fff;font-weight:bold">int</span>, y <span style="color:#fff;font-weight:bold">int</span>) (sum <span style="color:#fff;font-weight:bold">int</span>) {
+	sum = x + y
+	<span style="color:#fff;font-weight:bold">return</span>
+}
+</code></pre></div><p>In this example which is more or less same as the first one, all that is modified is the <code>add</code> function. For the function return value, there is both name and type enclosed in parenthesis. And, within the function body, you don&rsquo;t have to declare the variable <code>sum</code> anymore since it is already declared as a part of the return value declaration. And, finally, observe the <code>return</code> statement. You don&rsquo;t have specify the name of the variable that you want to return. Instead, simply use the return statement. This tells Go to return values of variables declared as a part of the function declaration. So, what happens if you don&rsquo;t have a variable named sum in the function body? Does Go through an error? Not really. It simply returns a zero value for the type mentioned in the function return value declaration.</p>
+<p>See this example and the program output to understand this.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	a, b := <span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>
+	c := add(a, b)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> add(x <span style="color:#fff;font-weight:bold">int</span>, y <span style="color:#fff;font-weight:bold">int</span>) (sum <span style="color:#fff;font-weight:bold">int</span>) {
+	sum1 := x + y
+	fmt.Println(sum1)
+	<span style="color:#fff;font-weight:bold">return</span>
+}
+</code></pre></div><p>In this modified example, <code>sum</code> is declared as the return value from function <code>add</code>. However, there is no value assigned to sum within the function body. So, the <code>return</code> statement returns the zero value of integer variable <code>sum</code>.</p>
+<p>And, here is the output.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>   
+<span style="color:#ff0;font-weight:bold">30</span>
+Sum of a and b is <span style="color:#ff0;font-weight:bold">0</span>        
+PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; 
+</code></pre></div><p>As you see in the program output, there is no error and the return value from the <code>add</code> function is 0 which gets assigned to variable <code>c</code> in the main function.</p>
+<h2 id="multiple-return-values">Multiple return values</h2>
+<p>In Go, a function can return multiple values. The way you can declare such as function is shown here.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	a, b := <span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>
+	c, d := math(a, b)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Difference if a and b is&#34;</span>, d)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> math(x <span style="color:#fff;font-weight:bold">int</span>, y <span style="color:#fff;font-weight:bold">int</span>) (sum, diff <span style="color:#fff;font-weight:bold">int</span>) {
+	sum = x + y
+	diff = x - y
+	<span style="color:#fff;font-weight:bold">return</span>
+}
+</code></pre></div><p>In this example, the <code>add</code> function is renamed to <code>math</code> and one more return value called <code>diff</code> has been added. With this, you have two integer return values on the function. Similar the function parameters, you can specify the type of return values just once if you have more than one value of the same type. Once again, this example uses named return values to so there is no need to specify the variable names along with the return statement.</p>
+<p>In the <code>main</code> function, variables <code>c</code> and <code>d</code> get their values from the <code>math</code> function. Since sum is declared first in the return values of the function, variable <code>c</code> gets the value of <code>sum</code> and variable <code>d</code> gets the value of <code>diff</code> assigned respectively. If you are interested only in one value returning from the function, you can use the blank identifier (<code>_</code>) you learned in an earlier part of this series.</p>
+<h2 id="variadic-functions">Variadic functions</h2>
+<p>In the example above, function <code>add</code> takes exactly two values and adds them up and returns the result to <code>main</code> function. Is there a way you can pass it an arbitrary number of values to get the sum of those values? This is where variadic functions play a role.</p>
+<p>First, take a look at this example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	c := add(<span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>, <span style="color:#ff0;font-weight:bold">30</span>, <span style="color:#ff0;font-weight:bold">40</span>, <span style="color:#ff0;font-weight:bold">50</span>)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> add(values ...<span style="color:#fff;font-weight:bold">int</span>) <span style="color:#fff;font-weight:bold">int</span> {
+	sum := <span style="color:#ff0;font-weight:bold">0</span>
+	<span style="color:#fff;font-weight:bold">for</span> _, i := <span style="color:#fff;font-weight:bold">range</span> values {
+		sum = sum + i
+	}
+
+	<span style="color:#fff;font-weight:bold">return</span> sum
+}
+</code></pre></div><p>In this example, the add function&rsquo;s parameter definition is different from what you have seen so far. In the parameter definition &ndash; <code>values ...int</code> &ndash; <code>values</code> is the name of the parameter and <code>int</code> is the data type of that parameter. The three dots <code>...</code> (Ellipsis) indicate that the parameter <code>values</code> must be rolled into a slice type. Observe that there is no space between the Ellipsis and the data type of the parameter. Essentially, you prefix Ellipsis to the data type of the parameter.</p>
+<p>Within the add function, once the parameters values are received and rolled into a slice, the rest of the logic using the <code>for</code> loop is similar to what you have learned in an earlier part of the series. When you use Ellipsis in a function parameter definition, the function becomes a variadic function. With this change, it does not matter how many values of the same data type you specify.</p>
+<p>Now, what if you have to pass some more values (as parameters) to this variadic function? This can be done but the Ellipsis can be used only with the final parameter of the function.</p>
+<p>Take a look at this example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	num := []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">10</span>, <span style="color:#ff0;font-weight:bold">20</span>, <span style="color:#ff0;font-weight:bold">30</span>, <span style="color:#ff0;font-weight:bold">40</span>, <span style="color:#ff0;font-weight:bold">50</span>}
+	c := add(<span style="color:#ff0;font-weight:bold">0</span>, num...)
+
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Sum of a and b is&#34;</span>, c)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> add(x <span style="color:#fff;font-weight:bold">int</span>, values ...<span style="color:#fff;font-weight:bold">int</span>) <span style="color:#fff;font-weight:bold">int</span> {
+	sum := <span style="color:#ff0;font-weight:bold">0</span>
+	<span style="color:#fff;font-weight:bold">for</span> _, i := <span style="color:#fff;font-weight:bold">range</span> values {
+		sum = sum + i + x
+	}
+
+	<span style="color:#fff;font-weight:bold">return</span> sum
+}
+</code></pre></div><p>In this example,the add function is updated to add one more integer parameter called <code>x</code>. As you can see in the function parameter definition, the add function has two parameters &ndash; <code>x</code> and <code>values</code>. Within <code>main</code> function, you now have a slice called <code>num</code>. And, the way <code>add</code> function invoked is also a bit different. Instead of passing the slice directly, Ellipsis is postfixed to the variable name &ndash; <code>num...</code> &ndash; to unroll the slice values into a bunch of integers. These values get rolled into a slice again within the add function.</p>
+<p>There are several use cases for variadic function. First and foremost, when you do not know in advance how many values you may have to pass to a function. Secondly, using variadic functions, you can avoid creating a temporary slice to just pass a bunch of values to a function.</p>
+<h2 id="passing-by-value-vs-passing-by-reference">Passing by value vs passing by reference</h2>
+<p>Like many other programming languages, Go language too supports pointers which form the basis of passing values to a function by reference. First, take a look at this example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">type</span> person <span style="color:#fff;font-weight:bold">struct</span> {
+	firstName <span style="color:#fff;font-weight:bold">string</span>
+	lastName  <span style="color:#fff;font-weight:bold">string</span>
+	age       <span style="color:#fff;font-weight:bold">int</span>
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	p1 := person{
+		firstName: <span style="color:#0ff;font-weight:bold">&#34;Ravikanth&#34;</span>,
+		lastName:  <span style="color:#0ff;font-weight:bold">&#34;Chaganti&#34;</span>,
+		age:       <span style="color:#ff0;font-weight:bold">39</span>,
+	}
+	<span style="color:#007f7f">//print p1
+</span><span style="color:#007f7f"></span>	fmt.Println(p1)
+	<span style="color:#007f7f">//increment age
+</span><span style="color:#007f7f"></span>	incrementAge(p1)
+	<span style="color:#007f7f">//print p1 again
+</span><span style="color:#007f7f"></span>	fmt.Println(p1)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> incrementAge(p1 person) {
+	p1.age++
+	fmt.Println(p1)
+}
+</code></pre></div><p>In this example, the struct <code>person</code> is a custom type which has three elements &ndash; <code>firstName</code>, <code>lastName</code>, and <code>age</code>. Age is an integer can be incremented using the <code>increment()</code> function. In the main function, <code>p1</code> is declared and initialized.</p>
+<p>Here is how the output will be when you run this program.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>
+{Ravikanth Chaganti <span style="color:#ff0;font-weight:bold">39</span>}
+{Ravikanth Chaganti <span style="color:#ff0;font-weight:bold">40</span>}
+{Ravikanth Chaganti <span style="color:#ff0;font-weight:bold">39</span>}
+PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt;
+</code></pre></div><p>As you see here, the changes done to the age element within <code>p1</code> are not visible within the <code>main</code> function. The reason is, by default, when you pass a value to a function in Go, a copy of that variable gets created within the function scope. So, essentially, the <code>increment()</code> function gets copy of the <code>p1</code> struct and then it modifies the age element within that copy which is certainly not visible to the <code>main</code> function. So, how do we pass values by reference so that the calling function sees the changes in values? We need to use pointers. Here is an updated example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">type</span> person <span style="color:#fff;font-weight:bold">struct</span> {
+	firstName <span style="color:#fff;font-weight:bold">string</span>
+	lastName  <span style="color:#fff;font-weight:bold">string</span>
+	age       <span style="color:#fff;font-weight:bold">int</span>
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	p1 := &amp;person{
+		firstName: <span style="color:#0ff;font-weight:bold">&#34;Ravikanth&#34;</span>,
+		lastName:  <span style="color:#0ff;font-weight:bold">&#34;Chaganti&#34;</span>,
+		age:       <span style="color:#ff0;font-weight:bold">39</span>,
+	}
+
+	fmt.Println(*p1)
+
+	incrementAge(p1)
+
+	fmt.Println(*p1)
+}
+
+<span style="color:#fff;font-weight:bold">func</span> incrementAge(p1 *person) {
+	p1.age++
+}
+</code></pre></div><p>In this updated example, <code>p1</code> is a reference to the <code>person</code> struct and by passing this pointer to the <code>incrementAge()</code> function, the value of <code>age</code> element gets incremented and becomes available to the main function. Observe how the <code>incrementAge()</code> function parameter definition is updated to receive the pointer to <code>person</code> struct. And, within the function, you simply reference the <code>age</code> element and increment it.</p>
+<p>Wow! This has been a long post. This is a good overview of function basics in Go. In the next part, you will learn about anonymous functions in Go language. Stay tuned.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/get-set-go-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/get-set-go-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/get-set-go-functions-in-go-language\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/get-set-go-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Get Set GO</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-labels-in-go-language/">Get set Go - Labels in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-loops-in-go-language/">Get set Go - Loops in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-condition-statements-in-go-language/">Get set Go - Condition statements in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-structs-in-go-language/">Get set Go - Structs in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-maps-in-go-language/">Get set Go - Maps in Go language</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>
