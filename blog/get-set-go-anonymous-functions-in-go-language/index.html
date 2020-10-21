@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Get set Go - Anonymous Functions in Go language"/>
+<meta name="twitter:description" content="In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions."/>
+
+    <meta property="og:title" content="Get set Go - Anonymous Functions in Go language" />
+<meta property="og:description" content="In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/get-set-go-anonymous-functions-in-go-language/" />
+<meta property="article:published_time" content="2020-10-21T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-10-21T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/get-set-go-anonymous-functions-in-go-language/">
+    
+    <title>
+  Get set Go - Anonymous Functions in Go language · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/get-set-go-anonymous-functions-in-go-language/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Get set Go - Anonymous Functions in Go language</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-10-21T00:00:00Z'>
+                October 21, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/golang/">Golang</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/go/">Go</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/golang/">Golang</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/go/">Go</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#function-literals">Function literals</a>
+      <ul>
+        <li><a href="#inline-execution">Inline execution</a></li>
+      </ul>
+    </li>
+    <li><a href="#passing-arguments">Passing arguments</a></li>
+    <li><a href="#assigning-functions-to-variables">Assigning functions to variables</a></li>
+    <li><a href="#custom-function-types">Custom function types</a></li>
+    <li><a href="#passing-functions-as-arguments">Passing functions as arguments</a></li>
+    <li><a href="#functions-as-return-values">Functions as return values</a></li>
+    <li><a href="#closures">Closures</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/getsetgo/banner.png" width="660" />
+        
+        
+    </figure>
+    
+<p>In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions.</p>
+<h2 id="function-literals">Function literals</h2>
+<p>Go language specification defines a function literal syntax as follows.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">FunctionLit = <span style="color:#0ff;font-weight:bold">&#34;func&#34;</span> Signature FunctionBody .
+</code></pre></div><p>Compare this to the function declaration syntax.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">FunctionDecl = <span style="color:#0ff;font-weight:bold">&#34;func&#34;</span> FunctionName Signature [ FunctionBody ] .
+</code></pre></div><p>The difference is in the name of the function. The function literals or anonymous functions do not have a name or an identifier. The function declaration binds an identifier to a function whereas function literals do not have a name or an identifier (and, therefore called anonymous functions) and can be assigned to a variable, passed to another function, and returned from a function.</p>
+<h3 id="inline-execution">Inline execution</h3>
+<p>Here is an example of inline execution of a function literal.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
+    <span style="color:#fff;font-weight:bold">func</span>() {
+		fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function!&#34;</span>)
+	}()
+}
+</code></pre></div><p>In the above example, the function literal inside <code>main</code> is the function literal. It has no name or an identifier. And, the parenthesis at the end of the function literal make it execute inline. So, when you run this, the first <code>Println</code> gets called and then the <code>Println</code> inside the anonymous function gets called.</p>
+<h2 id="passing-arguments">Passing arguments</h2>
+<p>You can pass arguments to these anonymous functions.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
+	<span style="color:#fff;font-weight:bold">func</span>(version <span style="color:#fff;font-weight:bold">float64</span>) {
+		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span>, version)
+	}(<span style="color:#ff0;font-weight:bold">1.15</span>)
+}
+</code></pre></div><p>This example declares one parameter to the function called <code>version</code> which is of <code>float64</code> data type. And, at the end of function literal definition, you can pass the value associated with the version parameter within the parenthesis.</p>
+<h2 id="assigning-functions-to-variables">Assigning functions to variables</h2>
+<p>Function literals, as mentioned earlier, can be assigned to variables. It is like any other value that you assign to a variable. Here is an example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
+	f := <span style="color:#fff;font-weight:bold">func</span>(version <span style="color:#fff;font-weight:bold">float64</span>) {
+		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span>, version)
+	}
+
+	f(<span style="color:#ff0;font-weight:bold">1.15</span>)
+}
+</code></pre></div><p>This example is similar the previous one. The only difference is the missing the parenthesis at the end of function literal. Instead, the function gets assigned to a variable and we use the variable &ndash; <code>f(1.15)</code> &ndash; to invoke the function. The value 1.15 gets passed to the anonymous function. So, what do you think the type of variable <code>f</code> will be? You can check that by adding <code>fmt.Printf(&quot;\n%T&quot;, f)</code> to the above example. This will be the output.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>
+Hello from main!
+Hello from an anonymous function in Go language <span style="color:#ff0;font-weight:bold">1.15</span>!
+<span style="color:#fff;font-weight:bold">func</span>(<span style="color:#fff;font-weight:bold">float64</span>)
+</code></pre></div><p>So the variable <code>f</code> is of <code>func()</code> type. This leads us into the custom and user-defined function types.</p>
+<h2 id="custom-function-types">Custom function types</h2>
+<p>Similar to defining a struct, you can define a custom function type. The general syntax for defining a custom function type is:</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">type</span> &lt;<span style="color:#fff;font-weight:bold">func</span>-name&gt; <span style="color:#fff;font-weight:bold">func</span>(&lt;parameter1 parameter-<span style="color:#ff0;font-weight:bold">1</span><span style="color:#fff;font-weight:bold">type</span>, parameter2 parameter2-<span style="color:#fff;font-weight:bold">type</span>&gt;) &lt;<span style="color:#fff;font-weight:bold">return</span>-<span style="color:#fff;font-weight:bold">type</span>&gt; 
+</code></pre></div><p>For example, <code>type concat func(fName, lName string)</code> string defines a new custom function type named <code>concat</code>. This defines the signature of the function.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	<span style="color:#fff;font-weight:bold">var</span> s concat = <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
+		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, fName, lName)
+		<span style="color:#fff;font-weight:bold">return</span> msg
+	}
+
+	fmt.Println(s(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
+	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;%T&#34;</span>, s)
+}
+</code></pre></div><p>In the <code>main</code> function, you can use the new function type to create a variable and assign the function to it. The above example declares and initializes variable <code>s</code> for this purpose. You can then use variable <code>s</code> as you have already seen earlier. When you run this example, you will see that the type of the variable <code>s</code> is <code>main.concat</code> which is the custom function type.</p>
+<h2 id="passing-functions-as-arguments">Passing functions as arguments</h2>
+<p>Function literals can be passed as arguments to other functions. You have learned how to create a custom function type in the previous section. The following example demonstrates how to pass that custom function type as an argument to another function. Take a look.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+
+<span style="color:#fff;font-weight:bold">func</span> wrapper(s concat) {
+	fmt.Println(s(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
+		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
+		<span style="color:#fff;font-weight:bold">return</span> msg
+	}
+
+	wrapper(a)
+}
+</code></pre></div><p>The function that is getting passed to the <code>wrapper</code> function need not be of a custom function type. The custom type in this example takes <code>string</code> arguments and returns <code>string</code> type. You can define any function signature as an argument and match that signature in the function literal body that you define.</p>
+<h2 id="functions-as-return-values">Functions as return values</h2>
+<p>In Go language, you can not only pass functions as arguments but you can also return functions from other functions. Here is a variation of the above example to demonstrate this.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">func</span> wrapper() <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
+	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
+		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
+		<span style="color:#fff;font-weight:bold">return</span> msg
+	}
+	<span style="color:#fff;font-weight:bold">return</span> a
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	concat := wrapper()
+	fmt.Println(concat(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
+}
+</code></pre></div><p>The wrapper function in this update example takes no arguments but returns a function. Within the <code>wrapper</code> function body, you simply declare and initialize a function literal and return that. In the <code>main</code> function, a variable called <code>concat</code> gets initialized to the return value of the <code>wrapper</code> function which is a function. Finally, the <code>concat</code> function literal gets invoked with the string arguments.</p>
+<p>So, what happened to the custom type that you saw an earlier example? Can you still use that custom type as a return value? Yes, of course. Here is the updated example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+
+<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+
+<span style="color:#fff;font-weight:bold">func</span> wrapper() concat {
+	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
+		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
+		<span style="color:#fff;font-weight:bold">return</span> msg
+	}
+
+	<span style="color:#fff;font-weight:bold">return</span> a
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	concat := wrapper()
+	fmt.Println(concat(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
+}
+</code></pre></div><p>This brings this part to the final concept around function literals called closures.</p>
+<h2 id="closures">Closures</h2>
+<p>Wikipedia describes closures as below.</p>
+<blockquote>
+<p>In programming languages, a closure, also lexical closure or function closure, is a technique for implementing lexically scoped name binding in a language with first-class functions. Operationally, a closure is a record storing a function together with an environment. The environment is a mapping associating each free variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or reference to which the name was bound when the closure was created. Unlike a plain function, a closure allows the function to access those captured variables through the closure&rsquo;s copies of their values or references, even when the function is invoked outside their scope.</p>
+</blockquote>
+<p>That is a lot to digest but pay attention to the last sentence. If we have to put that in simple words, a closure can access the variables defined outside its scope. Here is an example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> (
+	<span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+)
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+	lang := <span style="color:#0ff;font-weight:bold">&#34;Go Language&#34;</span>
+	<span style="color:#fff;font-weight:bold">func</span>() {
+		fmt.Println(lang, <span style="color:#0ff;font-weight:bold">&#34;rocks!&#34;</span>)
+	}()
+}
+</code></pre></div><p>In the above example, the function literal inside the <code>main</code> function can access the variable <code>lang</code> defined outside its scope. A closure in Go has access to its surrounding state and it gets bound to that. The state of the closure becomes unique when it is created.</p>
+<p>Take a look at this example to understand this.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+
+<span style="color:#fff;font-weight:bold">import</span> (
+	<span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+)
+
+<span style="color:#fff;font-weight:bold">func</span> sub() <span style="color:#fff;font-weight:bold">func</span>() <span style="color:#fff;font-weight:bold">int</span> {
+	a := <span style="color:#ff0;font-weight:bold">100</span>
+	<span style="color:#fff;font-weight:bold">return</span> <span style="color:#fff;font-weight:bold">func</span>() <span style="color:#fff;font-weight:bold">int</span> {
+		a = a - <span style="color:#ff0;font-weight:bold">10</span>
+		<span style="color:#fff;font-weight:bold">return</span> a
+	}
+}
+
+<span style="color:#fff;font-weight:bold">func</span> main() {
+
+	a1 := sub()
+	a2 := sub()
+
+	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a1 %d&#34;</span>, a1())
+	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a2 %d&#34;</span>, a2())
+
+	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a1 again %d&#34;</span>, a1())
+	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a2 again %d&#34;</span>, a2())
+}
+</code></pre></div><p>In the <code>sub()</code> function, variable a gets initialized to 100. Also, <code>sub()</code> function returns a function in which variable <code>a</code> gets decremented by 10 and the resulting value gets returned. In this main function, variables <code>a1</code> and <code>a2</code> get initialized to the closure returned from <code>sub()</code> function. Now, the interesting part comes when you invoke these closures. Here is the output.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>
+
+Value from a1 <span style="color:#ff0;font-weight:bold">90</span>
+Value from a2 <span style="color:#ff0;font-weight:bold">90</span>
+Value from a1 again <span style="color:#ff0;font-weight:bold">80</span>
+Value from a2 again <span style="color:#ff0;font-weight:bold">80</span>
+PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt;
+</code></pre></div><p>The first calls to <code>a1</code> and <code>a2</code> return the same value. And, then when you call these closures again, they return the same value. What does this mean? This demonstrates that the closures do have a unique and isolated state when they get created. So, when you created a1 and a2, each of them have variable <code>a</code> at 100 and when these closures get invoked, value of <code>a</code> gets decremented by 10. Therefore, each set of invocation of these closures return the same value.</p>
+<p>As you proceed learning more advanced concepts in Go language, you will start seeing real use cases of closures. Stay tuned.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/get-set-go-anonymous-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/get-set-go-anonymous-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/get-set-go-anonymous-functions-in-go-language\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/get-set-go-anonymous-functions-in-go-language\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Get Set GO</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-functions-in-go-language/">Get set Go - Functions in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-labels-in-go-language/">Get set Go - Labels in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-loops-in-go-language/">Get set Go - Loops in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-condition-statements-in-go-language/">Get set Go - Condition statements in Go language</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/get-set-go-structs-in-go-language/">Get set Go - Structs in Go language</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2020
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>

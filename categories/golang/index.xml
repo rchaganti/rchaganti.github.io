@@ -6,10 +6,216 @@
     <description>Recent content in Golang on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 12 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 21 Oct 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/golang/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Get set Go - Anonymous Functions in Go language</title>
+      <link>https://ravichaganti.com/blog/get-set-go-anonymous-functions-in-go-language/</link>
+      <pubDate>Wed, 21 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/get-set-go-anonymous-functions-in-go-language/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/getsetgo/banner.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions.&lt;/p&gt;
+&lt;h2 id=&#34;function-literals&#34;&gt;Function literals&lt;/h2&gt;
+&lt;p&gt;Go language specification defines a function literal syntax as follows.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;FunctionLit = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;func&amp;#34;&lt;/span&gt; Signature FunctionBody .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Compare this to the function declaration syntax.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;FunctionDecl = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;func&amp;#34;&lt;/span&gt; FunctionName Signature [ FunctionBody ] .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The difference is in the name of the function. The function literals or anonymous functions do not have a name or an identifier. The function declaration binds an identifier to a function whereas function literals do not have a name or an identifier (and, therefore called anonymous functions) and can be assigned to a variable, passed to another function, and returned from a function.&lt;/p&gt;
+&lt;h3 id=&#34;inline-execution&#34;&gt;Inline execution&lt;/h3&gt;
+&lt;p&gt;Here is an example of inline execution of a function literal.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from main!&amp;#34;&lt;/span&gt;)
+    &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;() {
+		fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from an anonymous function!&amp;#34;&lt;/span&gt;)
+	}()
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the function literal inside &lt;code&gt;main&lt;/code&gt; is the function literal. It has no name or an identifier. And, the parenthesis at the end of the function literal make it execute inline. So, when you run this, the first &lt;code&gt;Println&lt;/code&gt; gets called and then the &lt;code&gt;Println&lt;/code&gt; inside the anonymous function gets called.&lt;/p&gt;
+&lt;h2 id=&#34;passing-arguments&#34;&gt;Passing arguments&lt;/h2&gt;
+&lt;p&gt;You can pass arguments to these anonymous functions.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from main!&amp;#34;&lt;/span&gt;)
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(version &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;float64&lt;/span&gt;) {
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from an anonymous function in Go language %.2f!&amp;#34;&lt;/span&gt;, version)
+	}(&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1.15&lt;/span&gt;)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This example declares one parameter to the function called &lt;code&gt;version&lt;/code&gt; which is of &lt;code&gt;float64&lt;/code&gt; data type. And, at the end of function literal definition, you can pass the value associated with the version parameter within the parenthesis.&lt;/p&gt;
+&lt;h2 id=&#34;assigning-functions-to-variables&#34;&gt;Assigning functions to variables&lt;/h2&gt;
+&lt;p&gt;Function literals, as mentioned earlier, can be assigned to variables. It is like any other value that you assign to a variable. Here is an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	fmt.Println(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from main!&amp;#34;&lt;/span&gt;)
+	f := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(version &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;float64&lt;/span&gt;) {
+		fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hello from an anonymous function in Go language %.2f!&amp;#34;&lt;/span&gt;, version)
+	}
+
+	f(&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1.15&lt;/span&gt;)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This example is similar the previous one. The only difference is the missing the parenthesis at the end of function literal. Instead, the function gets assigned to a variable and we use the variable &amp;ndash; &lt;code&gt;f(1.15)&lt;/code&gt; &amp;ndash; to invoke the function. The value 1.15 gets passed to the anonymous function. So, what do you think the type of variable &lt;code&gt;f&lt;/code&gt; will be? You can check that by adding &lt;code&gt;fmt.Printf(&amp;quot;\n%T&amp;quot;, f)&lt;/code&gt; to the above example. This will be the output.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;function.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+Hello from main!
+Hello from an anonymous function in Go language &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1.15&lt;/span&gt;!
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;float64&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So the variable &lt;code&gt;f&lt;/code&gt; is of &lt;code&gt;func()&lt;/code&gt; type. This leads us into the custom and user-defined function types.&lt;/p&gt;
+&lt;h2 id=&#34;custom-function-types&#34;&gt;Custom function types&lt;/h2&gt;
+&lt;p&gt;Similar to defining a struct, you can define a custom function type. The general syntax for defining a custom function type is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt; &amp;lt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;-name&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(&amp;lt;parameter1 parameter-&lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt;, parameter2 parameter2-&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt;&amp;gt;) &amp;lt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt;-&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt;&amp;gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For example, &lt;code&gt;type concat func(fName, lName string)&lt;/code&gt; string defines a new custom function type named &lt;code&gt;concat&lt;/code&gt;. This defines the signature of the function.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt; concat &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(fName, lName &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;var&lt;/span&gt; s concat = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(fName, lName &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; {
+		msg := fmt.Sprintf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;%s %s rocks!&amp;#34;&lt;/span&gt;, fName, lName)
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; msg
+	}
+
+	fmt.Println(s(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Language&amp;#34;&lt;/span&gt;))
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;%T&amp;#34;&lt;/span&gt;, s)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the &lt;code&gt;main&lt;/code&gt; function, you can use the new function type to create a variable and assign the function to it. The above example declares and initializes variable &lt;code&gt;s&lt;/code&gt; for this purpose. You can then use variable &lt;code&gt;s&lt;/code&gt; as you have already seen earlier. When you run this example, you will see that the type of the variable &lt;code&gt;s&lt;/code&gt; is &lt;code&gt;main.concat&lt;/code&gt; which is the custom function type.&lt;/p&gt;
+&lt;h2 id=&#34;passing-functions-as-arguments&#34;&gt;Passing functions as arguments&lt;/h2&gt;
+&lt;p&gt;Function literals can be passed as arguments to other functions. You have learned how to create a custom function type in the previous section. The following example demonstrates how to pass that custom function type as an argument to another function. Take a look.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt; concat &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(fName, lName &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; wrapper(s concat) {
+	fmt.Println(s(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Language&amp;#34;&lt;/span&gt;))
+}
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	a := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(f, l &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; {
+		msg := fmt.Sprintf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;%s %s rocks!&amp;#34;&lt;/span&gt;, f, l)
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; msg
+	}
+
+	wrapper(a)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The function that is getting passed to the &lt;code&gt;wrapper&lt;/code&gt; function need not be of a custom function type. The custom type in this example takes &lt;code&gt;string&lt;/code&gt; arguments and returns &lt;code&gt;string&lt;/code&gt; type. You can define any function signature as an argument and match that signature in the function literal body that you define.&lt;/p&gt;
+&lt;h2 id=&#34;functions-as-return-values&#34;&gt;Functions as return values&lt;/h2&gt;
+&lt;p&gt;In Go language, you can not only pass functions as arguments but you can also return functions from other functions. Here is a variation of the above example to demonstrate this.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; wrapper() &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(fName, lName &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; {
+	a := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(f, l &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; {
+		msg := fmt.Sprintf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;%s %s rocks!&amp;#34;&lt;/span&gt;, f, l)
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; msg
+	}
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; a
+}
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	concat := wrapper()
+	fmt.Println(concat(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Language&amp;#34;&lt;/span&gt;))
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The wrapper function in this update example takes no arguments but returns a function. Within the &lt;code&gt;wrapper&lt;/code&gt; function body, you simply declare and initialize a function literal and return that. In the &lt;code&gt;main&lt;/code&gt; function, a variable called &lt;code&gt;concat&lt;/code&gt; gets initialized to the return value of the &lt;code&gt;wrapper&lt;/code&gt; function which is a function. Finally, the &lt;code&gt;concat&lt;/code&gt; function literal gets invoked with the string arguments.&lt;/p&gt;
+&lt;p&gt;So, what happened to the custom type that you saw an earlier example? Can you still use that custom type as a return value? Yes, of course. Here is the updated example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;type&lt;/span&gt; concat &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(fName, lName &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; wrapper() concat {
+	a := &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;(f, l &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt;) &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;string&lt;/span&gt; {
+		msg := fmt.Sprintf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;%s %s rocks!&amp;#34;&lt;/span&gt;, f, l)
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; msg
+	}
+
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; a
+}
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	concat := wrapper()
+	fmt.Println(concat(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Language&amp;#34;&lt;/span&gt;))
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This brings this part to the final concept around function literals called closures.&lt;/p&gt;
+&lt;h2 id=&#34;closures&#34;&gt;Closures&lt;/h2&gt;
+&lt;p&gt;Wikipedia describes closures as below.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In programming languages, a closure, also lexical closure or function closure, is a technique for implementing lexically scoped name binding in a language with first-class functions. Operationally, a closure is a record storing a function together with an environment. The environment is a mapping associating each free variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or reference to which the name was bound when the closure was created. Unlike a plain function, a closure allows the function to access those captured variables through the closure&amp;rsquo;s copies of their values or references, even when the function is invoked outside their scope.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That is a lot to digest but pay attention to the last sentence. If we have to put that in simple words, a closure can access the variables defined outside its scope. Here is an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; (
+	&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+)
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+	lang := &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Go Language&amp;#34;&lt;/span&gt;
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;() {
+		fmt.Println(lang, &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;rocks!&amp;#34;&lt;/span&gt;)
+	}()
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the function literal inside the &lt;code&gt;main&lt;/code&gt; function can access the variable &lt;code&gt;lang&lt;/code&gt; defined outside its scope. A closure in Go has access to its surrounding state and it gets bound to that. The state of the closure becomes unique when it is created.&lt;/p&gt;
+&lt;p&gt;Take a look at this example to understand this.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;package&lt;/span&gt; main
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;import&lt;/span&gt; (
+	&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+)
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; sub() &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;() &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt; {
+	a := &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;100&lt;/span&gt;
+	&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt;() &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;int&lt;/span&gt; {
+		a = a - &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;10&lt;/span&gt;
+		&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;return&lt;/span&gt; a
+	}
+}
+
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;func&lt;/span&gt; main() {
+
+	a1 := sub()
+	a2 := sub()
+
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nValue from a1 %d&amp;#34;&lt;/span&gt;, a1())
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nValue from a2 %d&amp;#34;&lt;/span&gt;, a2())
+
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nValue from a1 again %d&amp;#34;&lt;/span&gt;, a1())
+	fmt.Printf(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;\nValue from a2 again %d&amp;#34;&lt;/span&gt;, a2())
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the &lt;code&gt;sub()&lt;/code&gt; function, variable a gets initialized to 100. Also, &lt;code&gt;sub()&lt;/code&gt; function returns a function in which variable &lt;code&gt;a&lt;/code&gt; gets decremented by 10 and the resulting value gets returned. In this main function, variables &lt;code&gt;a1&lt;/code&gt; and &lt;code&gt;a2&lt;/code&gt; get initialized to the closure returned from &lt;code&gt;sub()&lt;/code&gt; function. Now, the interesting part comes when you invoke these closures. Here is the output.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt; run .&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;function.&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;go&lt;/span&gt;
+
+Value from a1 &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;90&lt;/span&gt;
+Value from a2 &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;90&lt;/span&gt;
+Value from a1 again &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;80&lt;/span&gt;
+Value from a2 again &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;80&lt;/span&gt;
+PS C:&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GitHub&lt;span style=&#34;color:#f00&#34;&gt;\&lt;/span&gt;GetSetGo&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The first calls to &lt;code&gt;a1&lt;/code&gt; and &lt;code&gt;a2&lt;/code&gt; return the same value. And, then when you call these closures again, they return the same value. What does this mean? This demonstrates that the closures do have a unique and isolated state when they get created. So, when you created a1 and a2, each of them have variable &lt;code&gt;a&lt;/code&gt; at 100 and when these closures get invoked, value of &lt;code&gt;a&lt;/code&gt; gets decremented by 10. Therefore, each set of invocation of these closures return the same value.&lt;/p&gt;
+&lt;p&gt;As you proceed learning more advanced concepts in Go language, you will start seeing real use cases of closures. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Get set Go - Functions in Go language</title>
