@@ -6,10 +6,63 @@
     <description>Recent content in Blogs on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 21 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 10 Jan 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>PowerShell and Secret Management - Introduction</title>
+      <link>https://ravichaganti.com/blog/powershell-and-secret-management-introduction/</link>
+      <pubDate>Sun, 10 Jan 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/powershell-and-secret-management-introduction/</guid>
+      <description>&lt;p&gt;Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.&lt;/p&gt;
+&lt;p&gt;Within many of my PowerShell scripts, I have used Windows Credential Manager to store and retrieve secrets. PowerShell gallery has a bunch of modules that enable secret management in PowerShell. There are other 3rd party vaults such as &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Hashicorp Vault&lt;/a&gt;. At Ignite 2019, PowerShell team &lt;a href=&#34;https://myignite.techcommunity.microsoft.com/sessions/83981?source=sessions&#34;&gt;introduced secrets management in PowerShell&lt;/a&gt;. This is available on &lt;a href=&#34;https://github.com/powershell/secretmanagement&#34;&gt;GitHub&lt;/a&gt; and &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement&#34;&gt;PowerShell Gallery&lt;/a&gt; as well.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretManagement
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This module provides the plumbing needed to register secret vaults and then store/retrieve secrets from the registered vaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Command&lt;/span&gt; -Module Microsoft.PowerShell.SecretManagement
+
+CommandType     Name                                               Version    Source                                          
+-----------     ----                                               -------    ------                                          
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;                                         0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt;                                     0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt;                                    0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt;                               0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt;                                      0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt;                                         0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretVaultDefault&lt;/span&gt;                             0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Test-SecretVault&lt;/span&gt;                                   0.9.0      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unregister-SecretVault&lt;/span&gt;                             0.9.0      Microsoft.PowerShell.SecretManagement  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before you can start managing secrets, you need to register a secret vault. By default, there is no registered vault.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: The earlier alpha version of this module had a built-in vault  that was a wrapper around the Windows Credential Manager. It has now been &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore/0.9.1&#34;&gt;moved out as a vault extension&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;You can verify that using the &lt;code&gt;Get-SecretVault&lt;/code&gt; command. The secret management module vault extensions can be developed to add support for many secret vaults that already exist out there. There are bunch of them already on the &lt;a href=&#34;https://devblogs.microsoft.com/powershell/secrets-management-module-vault-extensions/#:~:text=The%20purpose%20of%20the%20Secrets%20Management%20module%20is,that%20allows%20registration%20of%20other%20secrets%20storage/retrieval%20solutions.&#34;&gt;PowerShell gallery&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can download the vault extension from PowerShell gallery the same way you download any module.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretStore
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Each secret store or the vault extension may have it&amp;rsquo;s own configuration. In the next part of this series of articles on secret management in PowerShell, you will learn how to use the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore/0.9.1&#34;&gt;SecretStore&lt;/a&gt; vault extension.&lt;/p&gt;
+&lt;p&gt;Stay tuned!&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Get set Go - Methods in Go language</title>
+      <link>https://ravichaganti.com/blog/get-set-go-methods-in-go-language/</link>
+      <pubDate>Fri, 23 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/get-set-go-methods-in-go-language/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/getsetgo/banner.png&#34; width=&#34;660&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the last two parts of this series, you looked at functions and anonymous functions. Both provide a way to create reusable blocks of code and each having its own purpose and use within Go programming. As learned earlier, Go is not a pure object oriented programming language. But, it does support some aspects of OOP. Methods in Go are one way to&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Get set Go - Anonymous Functions in Go language</title>
@@ -3056,9 +3109,7 @@ hub push -u origin HEAD
 &lt;p&gt;Overall, compared to the web editor in Azure portal, authoring experience in Visual Studio is way better. However, this is a heavy solution. On a decently configured system, it takes close to a minute to just open Visual Studio. Also, as you may have already seen, the starter templates do not support selecting the Azure quickstart templates from the GitHub repository. Within the template editor, you can auto-complete the resource property names once the resource type property is populated. However, there are no quick snippets that you can use directly. This, for me, kills productivity. There may be a few external marketplace extensions but there is no built-in support.&lt;/p&gt;
 &lt;h3 id=&#34;visual-studio--code&#34;&gt;Visual Studio  Code&lt;/h3&gt;
 &lt;p&gt;This is my favorite tool. No doubt. There are several reasons as you will read in this section. This tweet poll just endorses my choice.&lt;/p&gt;
-&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;What is your favorite editor for authoring &lt;a href=&#34;https://twitter.com/Azure?ref_src=twsrc%5Etfw&#34;&gt;@Azure&lt;/a&gt; Resource Manager templates?&lt;/p&gt;&amp;mdash; Ravikanth Chaganti (@ravikanth) &lt;a href=&#34;https://twitter.com/ravikanth/status/1280058881322872833?ref_src=twsrc%5Etfw&#34;&gt;July 6, 2020&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
-
+&lt;p&gt;tweet 1280058881322872833&lt;/p&gt;
 &lt;p&gt;Throughout this series, you will see using VS Code only for authoring ARM templates. Therefore, I will skip any details similar to Visual Studio based template authoring experience you just read earlier. Now, moving on to why I like VS Code for ARM template authoring, first of all, VS Code is an open source, lightweight, and faster alternative to Visual Studio. The extension support within VS Code is unmatchable. With the official Azure extensions and a bunch of other community extensions, you can be super productive when working with the complex ARM template files. Before you get started with authoring an ARM template in VS Code, you must first install the right set of extensions that will help you in the authoring process. The following list is the minimum you will need to follow the articles in this series. Alternatively, you can install the &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-node-azure-pack&#34;&gt;Azure Tools extension pack&lt;/a&gt; that will install following three plus a bunch of other extensions that you may never need.&lt;/p&gt;
 &lt;h4 id=&#34;azure-account&#34;&gt;Azure Account&lt;/h4&gt;
 &lt;p&gt;The &lt;a href=&#34;https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account&#34;&gt;Azure account&lt;/a&gt; VS Code extension allows you to sign into Azure and access your Azure subscriptions. This is necessary for other Azure extensions to function. Once you install this extension, you get a set of commands to sign in, sign out, select subscriptions, create Azure accounts, and open Azure Cloud Shell within VS Code.&lt;/p&gt;
@@ -3358,9 +3409,7 @@ hub push -u origin HEAD
 &lt;p&gt;Step 3 builds the static pages using Hugo command and step 4 publishes those static pages to an external public repository. This step uses &lt;a href=&#34;peaceiris/actions-gh-pages@v3&#34;&gt;peaceiris/actions-gh-pages@v3&lt;/a&gt; from the actions marketplace. This action a few options. If you do not specify an external repository, it will simply create a new branch in the same repository that was checked out earlier and publish your static pages there. It will also auto-configure the cname based on what is configured in the static pages. I did not want this behavior since my Blog repository is a private repository and do not want a public facing site in that repository. For this action to be able to access the external repository and commit the new build of static pages, it needs the &lt;a href=&#34;https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token#:~:text=Personal%20access%20tokens%20%28PATs%29%20are%20an%20alternative%20to,uses%20SAML%20SSO%2C%20you%20must%20authorize%20the%20PAT.&#34;&gt;GitHub personal token&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Finally, the last step sends out a tweet using the &lt;a href=&#34;ethomson/send-tweet-action@v1&#34;&gt;ethomson/send-tweet-action@v1&lt;/a&gt; action. This action requires Twitter API token and secrets. You can create your own app on &lt;a href=&#34;https://developer.twitter.com/en/apps&#34;&gt;Twitter developer portal&lt;/a&gt;. If everything else goes fine, this last step will send the tweet out using the pull request title and body arguments you have seen earlier.&lt;/p&gt;
 &lt;p&gt;Here is a test tweet that was sent out at the end of an earlier test run.&lt;/p&gt;
-&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Just a test from GitHub Actions &lt;a href=&#34;https://t.co/QOZFo0kPeh&#34;&gt;https://t.co/QOZFo0kPeh&lt;/a&gt;&lt;/p&gt;&amp;mdash; Ravikanth Chaganti (@ravikanth) &lt;a href=&#34;https://twitter.com/ravikanth/status/1279720259801530368?ref_src=twsrc%5Etfw&#34;&gt;July 5, 2020&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
-
+&lt;p&gt;tweet 1279720259801530368&lt;/p&gt;
 &lt;p&gt;Now, there is one thing I still need to implement is the conditional execution of the GitHub action. For example, I may update an already published article for whatever reasons but may not want a tweet to go out after this update. I can implement this based on the pull request labels. And, I want to be able to schedule article publishing which may be possible using cron syntax within the workflows. More on these later.&lt;/p&gt;
 </description>
     </item>
