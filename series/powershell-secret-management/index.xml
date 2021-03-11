@@ -6,10 +6,43 @@
     <description>Recent content in PowerShell Secret Management on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 15 Jan 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 11 Mar 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/series/powershell-secret-management/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>PowerShell and Secret Management - Updates</title>
+      <link>https://ravichaganti.com/blog/powershell-and-secrets-management-updates/</link>
+      <pubDate>Thu, 11 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/powershell-and-secrets-management-updates/</guid>
+      <description>&lt;p&gt;At the recent Ignite event, Microsoft announced the release candidate 2 update of PowerShell &lt;code&gt;SecretManagement&lt;/code&gt; module and the &lt;code&gt;SecretStore&lt;/code&gt; extension vault modules. Both modules have been bumped up to version 0.9.1.&lt;/p&gt;
+&lt;p&gt;In the updated release, the secret management module has added support for secret metadata. The extension vault module must implement support for the metadata for this to work. To this extent, the SecretStore module has been updated to support metadata as well.&lt;/p&gt;
+&lt;p&gt;This metadata can be useful in tagging additional non-sensitive details that describe the secret. For example, you can use secret metadata if you want to store the tenant or subscription associated with the secret.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt; -Name GITHUB_TOKEN -Secret &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt; -Metadata @{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The additional metadata can be retrieved using the &lt;code&gt;Get-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN | &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;fl &lt;/span&gt;*
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can update existing metadata or add new metadata by using the &lt;code&gt;Set-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN -Metadata @{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;TestKey&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;TestValue&amp;#39;&lt;/span&gt;;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Another good update that I have seen is about more meaningful error messages. For example, when you run &lt;code&gt;Get-Secret&lt;/code&gt; command when no vaults are registered, you will see a more friendly error message.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN
+WARNING&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; 
+        There are currently no extension vaults registered.
+        At least one vault must be registered before SecretManagement can add or retrieve secrets.
+        You can download SecretManagement extension vault modules from PowerShellGallery.
+        https&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;//aka.ms/SecretManagementVaults
+        
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; The secret GITHUB_TOKEN was not found.
+At line&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;1 char&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;1
++ &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; ObjectNotFound&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; (Microsoft.Power...etSecretCommand&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;GetSecretCommand) [&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;], ItemNotFound 
+   Exception
+    + FullyQualifiedErrorId &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; GetSecretNotFound,Microsoft.PowerShell.SecretManagement.GetSecretCommand
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Microsoft announced that the RC2 release of the SecretManagement and SecretStore modules are go live versions and will most probably be promoted to GA release if there are no high-risk bugs.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>PowerShell and Secret Management - Using Secret Store Extension Vault</title>
