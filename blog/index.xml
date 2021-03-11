@@ -6,10 +6,63 @@
     <description>Recent content in Blogs on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 10 Jan 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 15 Jan 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>PowerShell and Secret Management - Using Secret Store Extension Vault</title>
+      <link>https://ravichaganti.com/blog/powershell-and-secret-management-using-secret-store-extension-vault/</link>
+      <pubDate>Fri, 15 Jan 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/powershell-and-secret-management-using-secret-store-extension-vault/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;Update&lt;/strong&gt;: This article has been updated to show the latest version of the secret store module.&lt;/p&gt;
+&lt;p&gt;In the last part, you have seen an introduction to secret management in PowerShell and towards the end you learned that they are vault extensions that provide the real functionality for storing and managing secrets. In this part of the series, you will learn more about the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore/0.9.1&#34;&gt;SecretStore&lt;/a&gt; vault extension for the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement&#34;&gt;SecretManagement&lt;/a&gt; PowerShell module.&lt;/p&gt;
+&lt;p&gt;The SecretStore extension vault is a wrapper around the .NET Crypto API. This vault stores the secrets to the local machine based on the current user account context. You can install this from the PowerShell gallery.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretStore
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This extension vault comes with a few commands that are used to configure the vault behavior.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Command&lt;/span&gt; -Module Microsoft.PowerShell.SecretStore
+
+CommandType     Name                                               Version    Source                                          
+-----------     ----                                               -------    ------                                          
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;                       0.9.1      Microsoft.PowerShell.SecretStore                
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Reset-SecretStore&lt;/span&gt;                                  0.9.1      Microsoft.PowerShell.SecretStore                
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStoreConfiguration&lt;/span&gt;                       0.9.1      Microsoft.PowerShell.SecretStore                
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStorePassword&lt;/span&gt;                            0.9.1      Microsoft.PowerShell.SecretStore                
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unlock-SecretStore&lt;/span&gt;                                 0.9.1      Microsoft.PowerShell.SecretStore  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before you can start using this extension vault, by default, you must first set a secret store password.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStorePassword&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command prompts for entering old and new passwords. Simply enter a desired password and hit enter. Once the password is set, you can run the &lt;code&gt;Get-SecretStoreConfiguration&lt;/code&gt; command to see the default vault extension configuration.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;
+
+      Scope Authentication PasswordTimeout Interaction
+      ----- -------------- --------------- -----------
+CurrentUser       Password             900      Prompt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As you can see, the default scope of the secret store is set &lt;code&gt;CurrentUser&lt;/code&gt; and it can be otherwise set to &lt;code&gt;AllUsers&lt;/code&gt;. The &lt;code&gt;Authentication&lt;/code&gt; property by default requires to supply a password to manage the secrets. This can be disabled by setting the &lt;code&gt;Authentication&lt;/code&gt; property to &lt;code&gt;None&lt;/code&gt;. Within a session, the supplied password is valid for 900 seconds, by default. This can be changed by setting the &lt;code&gt;PasswordTimeout&lt;/code&gt; property. The &lt;code&gt;Interaction&lt;/code&gt; property, by default, is set to &lt;code&gt;Prompt&lt;/code&gt; and can be set to &lt;code&gt;None&lt;/code&gt; to ensure you are not prompted to enter password for any configuration retrieval or changes. When disabling password prompt, &lt;a href=&#34;https://github.com/PowerShell/SecretStore/issues/49&#34;&gt;you must ensure that you also set &lt;code&gt;Authentication&lt;/code&gt; to &lt;code&gt;None&lt;/code&gt;&lt;/a&gt; to avoid lockdown of secret store.&lt;/p&gt;
+&lt;p&gt;Once this initial configuration is complete as per your needs, you can register this extension vault with the secret management module.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt; -ModuleName Microsoft.PowerShell.SecretStore -Name SecretStore -DefaultVault -Verbose
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above command registers Microsoft.PowerShell.SecretStore module as the extension vault and sets as the default vault. The &lt;code&gt;Get-SecretVault&lt;/code&gt; command retrieves all registered extension vaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt; 
+
+Name        ModuleName                       IsDefaultVault
+----        ----------                       --------------
+SecretStore Microsoft.PowerShell.SecretStore True 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can start storing secrets using the SecretManagement module commands now.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt; -Name GITHUB_TOKEN -Secret &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can get a secret value by using the &lt;code&gt;Get-Secret&lt;/code&gt; command. You must use &lt;code&gt;-AsPlainText&lt;/code&gt; switch to return the stored secret as readable string.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN -AsPlainText
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;Get-SecretInfo&lt;/code&gt; returns the metadata information related to the secret.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN
+
+Name         &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Type &lt;/span&gt;  VaultName  
+----         ----   ---------  
+GITHUB_TOKEN String SecretStore
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can remove a stored secret using the &lt;code&gt;Remove-Secret&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt; -Name GITHUB_TOKEN
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is a quick overview of using the SecretStore extension vault with SecretManagement module. You will learn more about other extension vaults and secret management module itself in later parts of this series. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>PowerShell and Secret Management - Introduction</title>
@@ -17,7 +70,8 @@
       <pubDate>Sun, 10 Jan 2021 00:00:00 +0000</pubDate>
       
       <guid>https://ravichaganti.com/blog/powershell-and-secret-management-introduction/</guid>
-      <description>&lt;p&gt;Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.&lt;/p&gt;
+      <description>&lt;p&gt;&lt;strong&gt;Update&lt;/strong&gt;: This article has been updated to show the latest version of the secret management module.&lt;/p&gt;
+&lt;p&gt;Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.&lt;/p&gt;
 &lt;p&gt;Within many of my PowerShell scripts, I have used Windows Credential Manager to store and retrieve secrets. PowerShell gallery has a bunch of modules that enable secret management in PowerShell. There are other 3rd party vaults such as &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Hashicorp Vault&lt;/a&gt;. At Ignite 2019, PowerShell team &lt;a href=&#34;https://myignite.techcommunity.microsoft.com/sessions/83981?source=sessions&#34;&gt;introduced secrets management in PowerShell&lt;/a&gt;. This is available on &lt;a href=&#34;https://github.com/powershell/secretmanagement&#34;&gt;GitHub&lt;/a&gt; and &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement&#34;&gt;PowerShell Gallery&lt;/a&gt; as well.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretManagement
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This module provides the plumbing needed to register secret vaults and then store/retrieve secrets from the registered vaults.&lt;/p&gt;
@@ -25,15 +79,16 @@
 
 CommandType     Name                                               Version    Source                                          
 -----------     ----                                               -------    ------                                          
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;                                         0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt;                                     0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt;                                    0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt;                               0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt;                                      0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt;                                         0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretVaultDefault&lt;/span&gt;                             0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Test-SecretVault&lt;/span&gt;                                   0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unregister-SecretVault&lt;/span&gt;                             0.9.0      Microsoft.PowerShell.SecretManagement  
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;                                         0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt;                                     0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt;                                    0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt;                               0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt;                                      0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt;                                         0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretInfo&lt;/span&gt;                                     0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretVaultDefault&lt;/span&gt;                             0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Test-SecretVault&lt;/span&gt;                                   0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unregister-SecretVault&lt;/span&gt;                             0.9.1      Microsoft.PowerShell.SecretManagement  
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before you can start managing secrets, you need to register a secret vault. By default, there is no registered vault.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Note: The earlier alpha version of this module had a built-in vault  that was a wrapper around the Windows Credential Manager. It has now been &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore/0.9.1&#34;&gt;moved out as a vault extension&lt;/a&gt;.&lt;/p&gt;

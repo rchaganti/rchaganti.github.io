@@ -7,15 +7,18 @@
     <meta http-equiv="Content-Language" content="en">
 
     <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO.">
+    <meta name="description" content="Update: This article has been updated to show the latest version of the secret management module.
+Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="PowerShell and Secret Management - Introduction"/>
-<meta name="twitter:description" content="Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO."/>
+<meta name="twitter:description" content="Update: This article has been updated to show the latest version of the secret management module.
+Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values."/>
 
     <meta property="og:title" content="PowerShell and Secret Management - Introduction" />
-<meta property="og:description" content="Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO." />
+<meta property="og:description" content="Update: This article has been updated to show the latest version of the secret management module.
+Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/powershell-and-secret-management-introduction/" />
 <meta property="article:published_time" content="2021-01-10T00:00:00+00:00" />
@@ -136,7 +139,8 @@
       <div>
         
         
-        <p>Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.</p>
+        <p><strong>Update</strong>: This article has been updated to show the latest version of the secret management module.</p>
+<p>Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.</p>
 <p>Within many of my PowerShell scripts, I have used Windows Credential Manager to store and retrieve secrets. PowerShell gallery has a bunch of modules that enable secret management in PowerShell. There are other 3rd party vaults such as <a href="https://www.vaultproject.io/">Hashicorp Vault</a>. At Ignite 2019, PowerShell team <a href="https://myignite.techcommunity.microsoft.com/sessions/83981?source=sessions">introduced secrets management in PowerShell</a>. This is available on <a href="https://github.com/powershell/secretmanagement">GitHub</a> and <a href="https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement">PowerShell Gallery</a> as well.</p>
 <div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Install-Module</span> -Name Microsoft.PowerShell.SecretManagement
 </code></pre></div><p>This module provides the plumbing needed to register secret vaults and then store/retrieve secrets from the registered vaults.</p>
@@ -144,15 +148,16 @@
 
 CommandType     Name                                               Version    Source                                          
 -----------     ----                                               -------    ------                                          
-Cmdlet          <span style="color:#fff;font-weight:bold">Get-Secret</span>                                         0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Get-SecretInfo</span>                                     0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Get-SecretVault</span>                                    0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Register-SecretVault</span>                               0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Remove-Secret</span>                                      0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Set-Secret</span>                                         0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Set-SecretVaultDefault</span>                             0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Test-SecretVault</span>                                   0.9.0      Microsoft.PowerShell.SecretManagement           
-Cmdlet          <span style="color:#fff;font-weight:bold">Unregister-SecretVault</span>                             0.9.0      Microsoft.PowerShell.SecretManagement  
+Cmdlet          <span style="color:#fff;font-weight:bold">Get-Secret</span>                                         0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Get-SecretInfo</span>                                     0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Get-SecretVault</span>                                    0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Register-SecretVault</span>                               0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Remove-Secret</span>                                      0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Set-Secret</span>                                         0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Set-SecretInfo</span>                                     0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Set-SecretVaultDefault</span>                             0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Test-SecretVault</span>                                   0.9.1      Microsoft.PowerShell.SecretManagement           
+Cmdlet          <span style="color:#fff;font-weight:bold">Unregister-SecretVault</span>                             0.9.1      Microsoft.PowerShell.SecretManagement  
 </code></pre></div><p>Before you can start managing secrets, you need to register a secret vault. By default, there is no registered vault.</p>
 <blockquote>
 <p>Note: The earlier alpha version of this module had a built-in vault  that was a wrapper around the Windows Credential Manager. It has now been <a href="https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore/0.9.1">moved out as a vault extension</a>.</p>
