@@ -6,10 +6,63 @@
     <description>Recent content in PowerShell on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 11 Mar 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 19 Mar 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/tags/powershell/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>PowerShell script to download and install Azure CLI</title>
+      <link>https://ravichaganti.com/blog/powershell-script-to-download-and-install-azure-cli/</link>
+      <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/powershell-script-to-download-and-install-azure-cli/</guid>
+      <description>&lt;p&gt;Whenever I have to build a new development machine or VM, I usually go about installing a few development tools and command line tools that I use quite often. One such tool is the &lt;a href=&#34;https://docs.microsoft.com/en-us/cli/azure/&#34;&gt;Azure CLI&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;There are many alternatives for installing Azure CLI as a part of build process but what I use is this PowerShell script.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;[&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;CmdletBinding&lt;/span&gt;()]
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;param&lt;/span&gt;
+(
+
+)
+$InformationPreference = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;Continue&amp;#39;&lt;/span&gt;
+
+&lt;span style=&#34;color:#007f7f&#34;&gt;# Verify that the script is running as administrator&lt;/span&gt;
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; ([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;S-1-5-32-544&amp;#39;&lt;/span&gt;))
+{
+    &lt;span style=&#34;color:#007f7f&#34;&gt;# Download Azure CLI MSI package&lt;/span&gt;
+    $uri = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;https://aka.ms/installazurecliwindows&amp;#39;&lt;/span&gt;
+    $request = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Invoke-WebRequest&lt;/span&gt; -UseBasicParsing -Uri $uri -MaximumRedirection 0 -ErrorAction Ignore
+
+    &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt;(($request.StatusCode -ge 300) -and ($request.StatusCode -lt 400))
+    {
+       $location = $request.Headers.Location
+       $fileName = &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Split-Path&lt;/span&gt; -Path $location -Leaf
+       $cliVersion = $fileName.Split(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;-&amp;#39;&lt;/span&gt;)[2].trim(&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;.msi&amp;#39;&lt;/span&gt;)
+       $downloadPath = &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;${env:Temp}\$fileName&amp;#34;&lt;/span&gt;
+
+       &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Write-Information&lt;/span&gt; -Message (&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Downloading Azure CLI version {0} to {1}&amp;#34;&lt;/span&gt; -f $cliVersion, $downloadPath)
+       &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Invoke-WebRequest&lt;/span&gt; -UseBasicParsing -Uri $location -OutFile $downloadPath -ErrorAction SilentlyContinue -Verbose&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;$false
+       &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Test-Path&lt;/span&gt; -Path $downloadPath)
+       {
+            &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Write-Information&lt;/span&gt; -Message (&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Installing Azure CLI version {0} from {1}&amp;#34;&lt;/span&gt; -f $cliVersion, $downloadPath)
+            &lt;span style=&#34;color:#007f7f&#34;&gt;#Start-Process -FilePath msiexec.exe -ArgumentList &amp;#34;/i $downloadPath /qb /passive&amp;#34; -Wait -ErrorAction Stop -Verbose:$false&lt;/span&gt;
+
+            &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Write-Information&lt;/span&gt; -Message (&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Remove Azure CLI installer file from {0}&amp;#34;&lt;/span&gt; -f $downloadPath)
+            &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Item&lt;/span&gt; -Path $downloadPath -Force
+       }
+    }
+    &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;else&lt;/span&gt;
+    {
+        &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;throw&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;Cloud not retrieve the redirected URL&amp;#39;&lt;/span&gt;
+    }
+}
+&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;else&lt;/span&gt;
+{
+    &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;throw&lt;/span&gt; &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;This must run as administrator at an elevated PowerShell prompt.&amp;#39;&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This script downloads the most recent public build and installs it.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>PowerShell and Secret Management - Updates</title>
