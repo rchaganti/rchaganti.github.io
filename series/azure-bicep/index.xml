@@ -36,7 +36,7 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can assign default values to parameters. For example,&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string = &amp;#39;Azure Bicep&amp;#39;
-param isPrivate = false
+param isPrivate bool = false
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also assign value from an expression as a default value as well.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string = resourceGroup().location
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In Bicep, you can add parameter metadata and constraints using decorators. The general syntax for using decorated parameter declaration is as shown below.&lt;/p&gt;
@@ -72,11 +72,11 @@ param storageAccountName string
 @maxLength(6)
 param vmNames string[]
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;secure-decorator&#34;&gt;Secure Decorator&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;@secure&lt;/code&gt; decorator specifies that the parameter is a secure string or secure object. When a parameter is marked as secure, it&amp;rsquo;s value does not get stored in the deployment history.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;@secure&lt;/code&gt; decorator specifies that the parameter is a secure string or secure object. When a parameter is marked as secure, its value does not get stored in the deployment history.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@secure()
 param administratorPasswrod string
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;metadata-decorator&#34;&gt;Metadata Decorator&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;@metadata&lt;/code&gt; decorator can be used to specify any other custom properties that describe the parameter or it&amp;rsquo;s significance.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;@metadata&lt;/code&gt; decorator can be used to specify any other custom properties that describe the parameter or its significance.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@metadata({
 	addedOn: &amp;#39;2021-04-11&amp;#39;
 })
@@ -92,8 +92,7 @@ param storageAccountName string
 @description(&amp;#39;Specifies the storage account tier. Default value is Hot.&amp;#39;)
 @allowed([
 	&amp;#39;Hot&amp;#39;
-	&amp;#39;Cold&amp;#39;
-	&amp;#39;Archive&amp;#39;
+	&amp;#39;Cool&amp;#39;
 ])
 param accessTier string = &amp;#39;Hot&amp;#39;
 
@@ -346,7 +345,7 @@ resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
   }
   kind: &amp;#39;StorageV2&amp;#39;
   properties: {
-    accessTier: &amp;#39;Hot&amp;#39;
+    accessTier: accessTier
   }
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The 26 lines in the above example is what you need to create a reusable Bicep file that can generate ARM template to provision an Azure storage account. This, when compiled, produces the following ARM template.&lt;/p&gt;
