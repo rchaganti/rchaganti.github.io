@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, resource keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today&rsquo;s article, you will see what is beyond those basics.
+Parameters One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bicep Language - Beyond Basics - Parameters"/>
+<meta name="twitter:description" content="In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, resource keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today&rsquo;s article, you will see what is beyond those basics.
+Parameters One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure."/>
+
+    <meta property="og:title" content="Bicep Language - Beyond Basics - Parameters" />
+<meta property="og:description" content="In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, resource keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today&rsquo;s article, you will see what is beyond those basics.
+Parameters One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/" />
+<meta property="article:published_time" content="2021-04-11T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-04-11T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">
+    
+    <title>
+  Bicep Language - Beyond Basics - Parameters · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Bicep Language - Beyond Basics - Parameters</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2021-04-11T00:00:00Z'>
+                April 11, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/bicep/">Bicep</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/bicep/">Bicep</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#parameters">Parameters</a>
+      <ul>
+        <li><a href="#description-decorator">Description Decorator</a></li>
+        <li><a href="#value-decorator">Value Decorator</a></li>
+        <li><a href="#allowed-values-decorator">Allowed Values Decorator</a></li>
+        <li><a href="#length-decorator">Length Decorator</a></li>
+        <li><a href="#secure-decorator">Secure Decorator</a></li>
+        <li><a href="#metadata-decorator">Metadata Decorator</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/bicep.png" />
+        
+        
+    </figure>
+    
+<p>In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, <code>resource</code> keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today&rsquo;s article, you will see what is beyond those basics.</p>
+<h2 id="parameters">Parameters</h2>
+<p>One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure. To make this happen, you need to parameterize your infrastructure configuration definitions. In this case, your Bicep files.</p>
+<p>Bicep language <a href="https://github.com/Azure/bicep/blob/main/docs/spec/parameters.md">supports parameter declarations</a> that get compiled into ARM template parameters.</p>
+<p>At a minimum, this is how you specify a parameter declaration.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param &lt;parameter-identifier&gt; &lt;parameter-type&gt;
+</code></pre></div><p>The <code>param</code> keyword is what gets used to declare parameters in Bicep. The <code>parameter-identifier</code> is what gets referenced when we need the value assigned to the parameter within any resource properties. The <code>parameter-type</code> can be any of the supported data types in Bicep. Bicep has support for several data types like every other programming language. This includes simple types such as <code>int</code>, <code>number</code>, <code>string</code>, <code>bool</code>, <code>null</code>, <code>error</code>, and <code>any</code> and complex types such as arrays and objects. You will learn about some of these types are you build more complex Bicep programs.</p>
+<p>So, in its simplest form, parameter specification in a Bicep file will look like the below example.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param myFirstParameter string
+</code></pre></div><p>You can assign default values to parameters. For example,</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param myFirstParameter string = &#39;Azure Bicep&#39;
+param isPrivate = false
+</code></pre></div><p>You can also assign value from an expression as a default value as well.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param myFirstParameter string = resourceGroup().location
+</code></pre></div><p>In Bicep, you can add parameter metadata and constraints using decorators. The general syntax for using decorated parameter declaration is as shown below.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@expression
+param &lt;parameter-identifier&gt; &lt;parameter-type&gt;
+</code></pre></div><h3 id="description-decorator">Description Decorator</h3>
+<p>The <code>@description</code> decorator is used to specify parameter description.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@description(&#39;This parameter is used to specify the location of the resource. Default value is WestUS&#39;)
+param location string = &#39;WestUS&#39;
+</code></pre></div><h3 id="value-decorator">Value Decorator</h3>
+<p>The <code>@minValue</code> and <code>@maxValue</code> decorators are used to define the lower and upper bound values for an integer parameter.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@minValue(1)
+@maxValue(10)
+param numVMs int = 2
+</code></pre></div><h3 id="allowed-values-decorator">Allowed Values Decorator</h3>
+<p>Similar to JSON ARM templates, Bicep language too supports constraining parameter values to a known set. This is done using <code>@allowed</code> parameter decorator.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@allowed([
+	&#39;WestUS&#39;
+	&#39;WestUS2&#39;
+	&#39;EastUS&#39;
+])
+param location string = &#39;WestUS&#39;
+</code></pre></div><p><code>@allowed</code> decorator expects an array of values. This validation is case-sensitive. So, if you specify WestUs2 instead of WestUS2, <code>Bicep build</code> will fail.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">PS C:\sandbox&gt; bicep build .\main.bicep
+C:\sandbox\main.bicep(20,25) : Error BCP027: The parameter expects a default value of type &#34;&#39;EastUS&#39; | &#39;WestUS&#39; | &#39;WestUS2&#39;&#34; but provided value is of type &#34;&#39;WestUs2&#39;&#34;.
+</code></pre></div><h3 id="length-decorator">Length Decorator</h3>
+<p>Using the <code>@minLength</code> and <code>@maxLength</code> decorator, you can constrain the length of string and array data type parameter values.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@minLength(3)
+@maxLength(24)
+param storageAccountName string
+
+@minLength(4)
+@maxLength(6)
+param vmNames string[]
+</code></pre></div><h3 id="secure-decorator">Secure Decorator</h3>
+<p>The <code>@secure</code> decorator specifies that the parameter is a secure string or secure object. When a parameter is marked as secure, it&rsquo;s value does not get stored in the deployment history.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@secure()
+param administratorPasswrod string
+</code></pre></div><h3 id="metadata-decorator">Metadata Decorator</h3>
+<p>The <code>@metadata</code> decorator can be used to specify any other custom properties that describe the parameter or it&rsquo;s significance.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@metadata({
+	addedOn: &#39;2021-04-11&#39;
+})
+</code></pre></div><p>You can combine multiple decorators for any given parameter in the Bicep file. Here is an example with declaration with parameter decorators.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@description(&#39;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.&#39;)
+@metadata({
+
+})
+@minLength(3)
+@maxLength(24)
+param storageAccountName string
+
+@description(&#39;Specifies the storage account tier. Default value is Hot.&#39;)
+@allowed([
+	&#39;Hot&#39;
+	&#39;Cold&#39;
+	&#39;Archive&#39;
+])
+param accessTier string = &#39;Hot&#39;
+
+@description(&#39;Specifies the location of the new storage account. Default location is WestUS2.&#39;)
+@allowed([
+	&#39;WestUS&#39;
+	&#39;WestUS2&#39;
+	&#39;EastUS&#39;
+])
+param location string = &#39;WestUS2&#39;
+
+resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: &#39;Standard_LRS&#39;
+  }
+  kind: &#39;StorageV2&#39;
+  properties: {
+    accessTier: &#39;Hot&#39;
+  }
+}
+</code></pre></div><p>Here is how the generated template looks once you compile this using <code>bicep build</code> command.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
+  <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
+  <span style="font-weight:bold">&#34;parameters&#34;</span>: {
+    <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+      <span style="font-weight:bold">&#34;maxLength&#34;</span>: <span style="color:#ff0;font-weight:bold">24</span>,
+      <span style="font-weight:bold">&#34;minLength&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>,
+      <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+        <span style="font-weight:bold">&#34;addedOn&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2021-04-11&#34;</span>,
+        <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.&#34;</span>
+      }
+    },
+    <span style="font-weight:bold">&#34;accessTier&#34;</span>: {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+      <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>,
+      <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+        <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>,
+        <span style="color:#0ff;font-weight:bold">&#34;Cold&#34;</span>,
+        <span style="color:#0ff;font-weight:bold">&#34;Archive&#34;</span>
+      ],
+      <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+        <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Specifies the storage account tier. Default value is Hot.&#34;</span>
+      }
+    },
+    <span style="font-weight:bold">&#34;location&#34;</span>: {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
+      <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;WestUS2&#34;</span>,
+      <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
+        <span style="color:#0ff;font-weight:bold">&#34;WestUS&#34;</span>,
+        <span style="color:#0ff;font-weight:bold">&#34;WestUS2&#34;</span>,
+        <span style="color:#0ff;font-weight:bold">&#34;EastUS&#34;</span>
+      ],
+      <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+        <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Specifies the location of the new storage account. Default location is WestUS2.&#34;</span>
+      }
+    }
+  },
+  <span style="font-weight:bold">&#34;functions&#34;</span>: [],
+  <span style="font-weight:bold">&#34;resources&#34;</span>: [
+    {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
+      <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-06-01&#34;</span>,
+      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
+      <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;location&#39;)]&#34;</span>,
+      <span style="font-weight:bold">&#34;sku&#34;</span>: {
+        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>
+      },
+      <span style="font-weight:bold">&#34;kind&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;StorageV2&#34;</span>,
+      <span style="font-weight:bold">&#34;properties&#34;</span>: {
+        <span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
+      }
+    }
+  ],
+  <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+    <span style="font-weight:bold">&#34;_generator&#34;</span>: {
+      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
+      <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.126.58533&#34;</span>,
+      <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10010485068534492010&#34;</span>
+    }
+  }
+}
+</code></pre></div><p>Notice in the <code>storageAccountName</code> parameter definition how the contents of metadata decorator get rolled into parameter&rsquo;s metadata attribute in the JSON template.</p>
+<p>Alright. This is all about using parameters in Bicep. You will gain some more knowledge beyond basics in the next post. Stay tuned.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Azure Bicep</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/getting-started-with-azure-bicep/">Getting Started With Azure Bicep</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/introduction-to-azure-bicep/">Introduction to Azure Bicep</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2021
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>

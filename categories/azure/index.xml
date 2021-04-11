@@ -6,15 +6,188 @@
     <description>Recent content in Azure on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 05 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 11 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/azure/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>Bicep Language - Beyond Basics - Parameters</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/</link>
+      <pubDate>Sun, 11 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, &lt;code&gt;resource&lt;/code&gt; keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today&amp;rsquo;s article, you will see what is beyond those basics.&lt;/p&gt;
+&lt;h2 id=&#34;parameters&#34;&gt;Parameters&lt;/h2&gt;
+&lt;p&gt;One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure. To make this happen, you need to parameterize your infrastructure configuration definitions. In this case, your Bicep files.&lt;/p&gt;
+&lt;p&gt;Bicep language &lt;a href=&#34;https://github.com/Azure/bicep/blob/main/docs/spec/parameters.md&#34;&gt;supports parameter declarations&lt;/a&gt; that get compiled into ARM template parameters.&lt;/p&gt;
+&lt;p&gt;At a minimum, this is how you specify a parameter declaration.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param &amp;lt;parameter-identifier&amp;gt; &amp;lt;parameter-type&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;param&lt;/code&gt; keyword is what gets used to declare parameters in Bicep. The &lt;code&gt;parameter-identifier&lt;/code&gt; is what gets referenced when we need the value assigned to the parameter within any resource properties. The &lt;code&gt;parameter-type&lt;/code&gt; can be any of the supported data types in Bicep. Bicep has support for several data types like every other programming language. This includes simple types such as &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;number&lt;/code&gt;, &lt;code&gt;string&lt;/code&gt;, &lt;code&gt;bool&lt;/code&gt;, &lt;code&gt;null&lt;/code&gt;, &lt;code&gt;error&lt;/code&gt;, and &lt;code&gt;any&lt;/code&gt; and complex types such as arrays and objects. You will learn about some of these types are you build more complex Bicep programs.&lt;/p&gt;
+&lt;p&gt;So, in its simplest form, parameter specification in a Bicep file will look like the below example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can assign default values to parameters. For example,&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string = &amp;#39;Azure Bicep&amp;#39;
+param isPrivate = false
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also assign value from an expression as a default value as well.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param myFirstParameter string = resourceGroup().location
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In Bicep, you can add parameter metadata and constraints using decorators. The general syntax for using decorated parameter declaration is as shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@expression
+param &amp;lt;parameter-identifier&amp;gt; &amp;lt;parameter-type&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;description-decorator&#34;&gt;Description Decorator&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;@description&lt;/code&gt; decorator is used to specify parameter description.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@description(&amp;#39;This parameter is used to specify the location of the resource. Default value is WestUS&amp;#39;)
+param location string = &amp;#39;WestUS&amp;#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;value-decorator&#34;&gt;Value Decorator&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;@minValue&lt;/code&gt; and &lt;code&gt;@maxValue&lt;/code&gt; decorators are used to define the lower and upper bound values for an integer parameter.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@minValue(1)
+@maxValue(10)
+param numVMs int = 2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;allowed-values-decorator&#34;&gt;Allowed Values Decorator&lt;/h3&gt;
+&lt;p&gt;Similar to JSON ARM templates, Bicep language too supports constraining parameter values to a known set. This is done using &lt;code&gt;@allowed&lt;/code&gt; parameter decorator.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
+	&amp;#39;WestUS&amp;#39;
+	&amp;#39;WestUS2&amp;#39;
+	&amp;#39;EastUS&amp;#39;
+])
+param location string = &amp;#39;WestUS&amp;#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;@allowed&lt;/code&gt; decorator expects an array of values. This validation is case-sensitive. So, if you specify WestUs2 instead of WestUS2, &lt;code&gt;Bicep build&lt;/code&gt; will fail.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;PS C:\sandbox&amp;gt; bicep build .\main.bicep
+C:\sandbox\main.bicep(20,25) : Error BCP027: The parameter expects a default value of type &amp;#34;&amp;#39;EastUS&amp;#39; | &amp;#39;WestUS&amp;#39; | &amp;#39;WestUS2&amp;#39;&amp;#34; but provided value is of type &amp;#34;&amp;#39;WestUs2&amp;#39;&amp;#34;.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;length-decorator&#34;&gt;Length Decorator&lt;/h3&gt;
+&lt;p&gt;Using the &lt;code&gt;@minLength&lt;/code&gt; and &lt;code&gt;@maxLength&lt;/code&gt; decorator, you can constrain the length of string and array data type parameter values.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@minLength(3)
+@maxLength(24)
+param storageAccountName string
+
+@minLength(4)
+@maxLength(6)
+param vmNames string[]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;secure-decorator&#34;&gt;Secure Decorator&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;@secure&lt;/code&gt; decorator specifies that the parameter is a secure string or secure object. When a parameter is marked as secure, it&amp;rsquo;s value does not get stored in the deployment history.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@secure()
+param administratorPasswrod string
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;metadata-decorator&#34;&gt;Metadata Decorator&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;@metadata&lt;/code&gt; decorator can be used to specify any other custom properties that describe the parameter or it&amp;rsquo;s significance.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@metadata({
+	addedOn: &amp;#39;2021-04-11&amp;#39;
+})
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can combine multiple decorators for any given parameter in the Bicep file. Here is an example with declaration with parameter decorators.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@description(&amp;#39;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.&amp;#39;)
+@metadata({
+
+})
+@minLength(3)
+@maxLength(24)
+param storageAccountName string
+
+@description(&amp;#39;Specifies the storage account tier. Default value is Hot.&amp;#39;)
+@allowed([
+	&amp;#39;Hot&amp;#39;
+	&amp;#39;Cold&amp;#39;
+	&amp;#39;Archive&amp;#39;
+])
+param accessTier string = &amp;#39;Hot&amp;#39;
+
+@description(&amp;#39;Specifies the location of the new storage account. Default location is WestUS2.&amp;#39;)
+@allowed([
+	&amp;#39;WestUS&amp;#39;
+	&amp;#39;WestUS2&amp;#39;
+	&amp;#39;EastUS&amp;#39;
+])
+param location string = &amp;#39;WestUS2&amp;#39;
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: &amp;#39;Hot&amp;#39;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is how the generated template looks once you compile this using &lt;code&gt;bicep build&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;$schema&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;contentVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;1.0.0.0&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;parameters&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;storageAccountName&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;maxLength&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;24&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;minLength&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;addedOn&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2021-04-11&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;description&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.&amp;#34;&lt;/span&gt;
+      }
+    },
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Cold&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Archive&amp;#34;&lt;/span&gt;
+      ],
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;description&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Specifies the storage account tier. Default value is Hot.&amp;#34;&lt;/span&gt;
+      }
+    },
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS2&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS2&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;EastUS&amp;#34;&lt;/span&gt;
+      ],
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;description&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Specifies the location of the new storage account. Default location is WestUS2.&amp;#34;&lt;/span&gt;
+      }
+    }
+  },
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;functions&amp;#34;&lt;/span&gt;: [],
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;: [
+    {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-06-01&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[parameters(&amp;#39;storageAccountName&amp;#39;)]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[parameters(&amp;#39;location&amp;#39;)]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
+      }
+    }
+  ],
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;_generator&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;bicep&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;version&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;0.3.126.58533&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;templateHash&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;10010485068534492010&amp;#34;&lt;/span&gt;
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Notice in the &lt;code&gt;storageAccountName&lt;/code&gt; parameter definition how the contents of metadata decorator get rolled into parameter&amp;rsquo;s metadata attribute in the JSON template.&lt;/p&gt;
+&lt;p&gt;Alright. This is all about using parameters in Bicep. You will gain some more knowledge beyond basics in the next post. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Getting Started With Azure Bicep</title>
       <link>https://ravichaganti.com/blog/getting-started-with-azure-bicep/</link>
-      <pubDate>Mon, 05 Apr 2021 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 06 Apr 2021 00:00:00 +0000</pubDate>
       
       <guid>https://ravichaganti.com/blog/getting-started-with-azure-bicep/</guid>
       <description>
@@ -162,18 +335,7 @@ bicep --version
 &lt;p&gt;Both Terraform and Pulumi support multiple cloud deployments. These are not tools that are specifically written for Microsoft Azure. Microsoft could have chosen to adapt one of these but they instead chose to write their own language that makes authoring ARM templates easier. This is an important step since there are many customers who have heavily invested in ARM templates. If Microsoft moves away from ARM templates, this section of customers won&amp;rsquo;t be happy. Creating a transpiler that provides simple and concise declarative way of generating ARM templates will help maintain the backward compatibility while ensuring that those who are just starting with Microsoft Azure do not get freaked out looking at ARM templates.&lt;/p&gt;
 &lt;p&gt;With Bicep, you don&amp;rsquo;t have to worry about learning ARM template language and author thousands of lines of JSON documents. You simply write a Bicep file that declaratively defines the Azure infrastructure, transpile it into an ARM template, and finally use the methods that are already known to you to provision the generated ARM template. Simple. But, how simple is Bicep language? Let us look at an example.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param storageAccountName string
-
-@allowed([
-  &amp;#39;Hot&amp;#39;
-  &amp;#39;Cool&amp;#39;
-  &amp;#39;Archive&amp;#39;
-])
 param accessTier string = &amp;#39;Hot&amp;#39;
-
-@allowed([
-  &amp;#39;WestUS2&amp;#39;
-  &amp;#39;CentralUS&amp;#39;
-])
 param location string = &amp;#39;WestUS2&amp;#39;
 
 resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
@@ -197,20 +359,11 @@ resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
     },
     &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: {
       &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Cool&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Archive&amp;#34;&lt;/span&gt;
-      ]
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
     },
     &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: {
       &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS2&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS2&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;CentralUS&amp;#34;&lt;/span&gt;
-      ]
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS2&amp;#34;&lt;/span&gt;
     }
   },
   &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;functions&amp;#34;&lt;/span&gt;: [],
