@@ -6,10 +6,67 @@
     <description>Recent content in Azure Bicep on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 11 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 12 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/series/azure-bicep/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bicep Language - Beyond Basics - Variables</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-variables/</link>
+      <pubDate>Mon, 12 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-variables/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;This part of the series will take you beyond Bicep language basics by showing you how to add variables to your Bicep files. If you have worked on ARM JSON templates, you know that variables exist there as well. The primary intention of using variables in either ARM JSON templates or Bicep language is to bring in a balance between &lt;a href=&#34;https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/#free-form-vs-known-configuration&#34;&gt;free-form vs fixed configurations&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For example, as you learned in &lt;a href=&#34;https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/&#34;&gt;last part of this series&lt;/a&gt;, if you parameterize all resource properties, you will end up with a huge list of input parameters that need to be provided while compiling the Bicep file to ARM JSON template. While this provides flexibility, it may not always have desired outcome. If you want to enforce some standard resource property values across deployments, you must either hard-code those values or constrain what values can be specified if you are collecting the value from a parameter.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Azure Policy can help with some of what I just described and is a different discussion altogether.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Having too many parameters is not desired and hard-coding values in a template makes it difficult to maintain especially when the same value is used for multiple resource instances in a template.&lt;/p&gt;
+&lt;p&gt;This is where variables are used. The basic syntax for declaring variables in Bicep is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var &amp;lt;variable-name&amp;gt; = &amp;lt;variable-value&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;var&lt;/code&gt; keyword is used to declare a variable. &lt;em&gt;Variables in Bicep should be assigned at the time of declaration and cannot be reassigned.&lt;/em&gt; The name of the variable cannot be same as that of a &lt;code&gt;param&lt;/code&gt;, &lt;code&gt;resource&lt;/code&gt;, or &lt;code&gt;output&lt;/code&gt; identifiers. Variable declaration in Bicep does not need type specification like parameters. The data type of a variable gets inferred from the value that you assign.&lt;/p&gt;
+&lt;p&gt;Here is an example that uses a variable in Bicep.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@description(&amp;#39;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.&amp;#39;)
+@metadata({
+  addedOn: &amp;#39;2021-04-11&amp;#39;
+})
+@minLength(3)
+@maxLength(24)
+param storageAccountName string
+
+@description(&amp;#39;Specifies the storage account tier. Default value is Hot.&amp;#39;)
+@allowed([
+	&amp;#39;Hot&amp;#39;
+	&amp;#39;Cool&amp;#39;
+])
+param accessTier string = &amp;#39;Hot&amp;#39;
+
+var location = resourceGroup().location
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: accessTier
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this example, you will see that the location is now a variable and not collected as input from parameters. The value of the location variable is assigned by evaluating the expression &lt;code&gt;resourceGroup().location&lt;/code&gt;. Now, imagine if you have multiple resources that you want to deploy as a part of the template. Instead of specifying the hard-coded location resource property value multiple times, you can simply refer to the variable that you defined.&lt;/p&gt;
+&lt;p&gt;This is a quick one today but as you learn more beyond the basics in a later part of this &lt;a href=&#34;https://ravichaganti.com/series/azure-bicep&#34;&gt;series&lt;/a&gt;, you will see how  variables can be assigned values from expressions in Bicep language and how that is a powerful way to reduce the complexity of template authoring in Bicep language. Stay tuned!&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bicep Language - Beyond Basics - Parameters</title>
