@@ -6,10 +6,295 @@
     <description>Recent content in Azure Bicep on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 13 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 14 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/series/azure-bicep/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bicep Language - Beyond Basics - Iterations</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/</link>
+      <pubDate>Wed, 14 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;When working ARM templates, you may have come across a situation where you want to provision multiple instances of a resource with similar configuration. For example, multiple storage accounts or virtual machines or multiple data disks attached to a virtual machine. In the JSON template language, the &lt;code&gt;copy&lt;/code&gt; element is used for this purpose. Bicep language has a few different ways you can achieve this at different levels like resources, resource properties, and outputs. Variable iterations &lt;a href=&#34;https://github.com/Azure/bicep/issues/1814&#34;&gt;are not available yet&lt;/a&gt; and mostly coming as a part of &lt;a href=&#34;https://github.com/Azure/bicep/projects/7#card-56641753&#34;&gt;0.4 release&lt;/a&gt; which is due by &lt;a href=&#34;https://github.com/Azure/bicep/milestone/7&#34;&gt;May 25th 2021&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;In this part of the &lt;a href=&#34;https://ravichaganti.com/series/azure-bicep&#34;&gt;series&lt;/a&gt; of articles on Bicep language, you will learn about using iterations in your Bicep files.&lt;/p&gt;
+&lt;p&gt;There are three ways to implement iterations in Bicep.&lt;/p&gt;
+&lt;h2 id=&#34;using-a-loop-index&#34;&gt;Using a loop index&lt;/h2&gt;
+&lt;p&gt;Using an iteration or loop index is the simplest way to create multiple instances of a resource or iterating resource properties. A loop index syntax in Bicep is similar to what you may have seen in other languages.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;[for &amp;lt;index&amp;gt; in range(&amp;lt;start&amp;gt;, &amp;lt;stop&amp;gt;): {
+  &amp;lt;resource-instance&amp;gt; or &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As you will see next, all you need to do is just assign this either to a resource declaration or resource property.&lt;/p&gt;
+&lt;h3 id=&#34;resource-iteration&#34;&gt;Resource iteration&lt;/h3&gt;
+&lt;p&gt;Here is the general syntax of implementing a index based iteration in Bicep for resources.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource &amp;lt;resource-symbolic-name&amp;gt; &amp;#39;&amp;lt;resource-type&amp;gt;@&amp;lt;api-version&amp;gt;&amp;#39; = [for &amp;lt;index&amp;gt; in range(&amp;lt;start&amp;gt;, &amp;lt;stop&amp;gt;): {
+  &amp;lt;resource-instance&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This should not be difficult to understand since you already know how to declare a resource instance. To add an iteration, all you need to do is add the iterator. In this case a loop index. The &lt;code&gt;range()&lt;/code&gt; function here helps in creating a collection of integers from start integer to stop integer. Stop index is excluded. Here is a simple example around creating multiple storage accounts using loop index.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param saCount int = 2
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for index in range(0, saCount): {
+  name: &amp;#39;${index}stg${uniqueString(resourceGroup().id)}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+  	accessTier: &amp;#39;Hot&amp;#39;
+  }
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the previous article on expressions in Bicep language, you learned how to use interpolation. The same technique can be used here to access the value stored in &lt;code&gt;index&lt;/code&gt; &amp;ndash; &lt;code&gt;${index}&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;This is how the resource declaration gets tranpiled into ARM JSON.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;  &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; [
+    {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;copy&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;sa&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;count&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[length(range(0, parameters(&amp;#39;saCount&amp;#39;)))]&amp;#34;&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-04-01&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[format(&amp;#39;{0}stg{1}&amp;#39;, range(0, parameters(&amp;#39;saCount&amp;#39;))[copyIndex()], uniqueString(resourceGroup().id))]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[resourceGroup().location]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
+      }
+    }
+  ]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;resource-property-iteration&#34;&gt;Resource property iteration&lt;/h3&gt;
+&lt;p&gt;The general syntax for using loop indexes for resource properties is similar to that of resources.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&amp;lt;property-name&amp;gt;: [for &amp;lt;index&amp;gt; in range(&amp;lt;start&amp;gt;, &amp;lt;stop&amp;gt;): {
+  &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is a quick example of iterating on resource properties. This example demonstrates creating multiple subnets in a Azure Virtual Network.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var numSubnets = 3
+var subnetPrefix = [
+  &amp;#39;10.10.12.0/24&amp;#39;
+  &amp;#39;10.10.13.0/24&amp;#39;
+]
+
+resource vnet &amp;#39;Microsoft.Network/virtualNetworks@2018-11-01&amp;#39; = {
+  name: &amp;#39;vnet&amp;#39;
+  location: resourceGroup().location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        &amp;#39;10.10.10.0/16&amp;#39;
+      ]
+    }
+    subnets: [for sIndex in range(0, numSubnets): {
+      name: &amp;#39;subnet${sIndex}&amp;#39;
+      properties: {
+        addressPrefix: subnetPrefix[sIndex]
+      }
+    }]
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The way this example is built is very similar to how you create multiple storage account instances. For the number of subnets, the &lt;code&gt;numSubnets&lt;/code&gt; variable is used and the &lt;code&gt;subnetPrefix&lt;/code&gt; array has the prefixes used for each subnet. Using array indexer, you can retrieve the prefix from the &lt;code&gt;subnetPrefix&lt;/code&gt; array.&lt;/p&gt;
+&lt;p&gt;Those of you with a sharp eye must have noticed that the &lt;code&gt;numSubnets&lt;/code&gt; is set to 3 but there are only two elements in the &lt;code&gt;subnetPrefix&lt;/code&gt; array. For Bicep, this does not matter. You must make sure that these values are consistent.&lt;/p&gt;
+&lt;h2 id=&#34;iterating-over-a-collection&#34;&gt;Iterating over a collection&lt;/h2&gt;
+&lt;p&gt;The second method of creating resource or resource property iterations is to iterate over a collection. Here is the general syntax for this.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;[for &amp;lt;item&amp;gt; in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-instance&amp;gt; or &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once again, this syntax can be used with either resource declaration or resource properties.&lt;/p&gt;
+&lt;h3 id=&#34;resource-iteration-1&#34;&gt;Resource Iteration&lt;/h3&gt;
+&lt;p&gt;The general syntax for iterating over a collection to create multiple resource instances is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource &amp;lt;resource-symbolic-name&amp;gt; &amp;#39;&amp;lt;resource-type&amp;gt;@&amp;lt;api-version&amp;gt;&amp;#39; = [for &amp;lt;item&amp;gt; in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-instance&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is a full example of creating multiple storage accounts using this method.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var saNames = [
+  &amp;#39;sqllondon&amp;#39;
+  &amp;#39;sqlchennai&amp;#39;
+  &amp;#39;archiveseattle&amp;#39;
+]
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for sName in saNames: {
+  name: concat(sName, uniqueString(resourceGroup().id))
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: &amp;#39;Hot&amp;#39;
+  }
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this example, the variable &lt;code&gt;saNames&lt;/code&gt; contains a list of storage account names. The iteration in this example loops over the elements in &lt;code&gt;saNames&lt;/code&gt; array and uses these values as a part of the storage account name. Here is how the resource declaration gets compiled into ARM JSON representation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; [
+	{
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;copy&amp;#34;&lt;/span&gt;: {
+			&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;sa&amp;#34;&lt;/span&gt;,
+			&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;count&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[length(variables(&amp;#39;saNames&amp;#39;))]&amp;#34;&lt;/span&gt;
+         },
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-04-01&amp;#34;&lt;/span&gt;,
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[concat(variables(&amp;#39;saNames&amp;#39;)[copyIndex()], uniqueString(resourceGroup().id))]&amp;#34;&lt;/span&gt;,
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[resourceGroup().location]&amp;#34;&lt;/span&gt;,
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
+			&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;
+		},
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
+		&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
+			&lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
+		}
+	}
+]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;resource-property-iteration-1&#34;&gt;Resource property iteration&lt;/h3&gt;
+&lt;p&gt;Here is the general syntax for using collection iteration with resource properties.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&amp;lt;property-name&amp;gt;: [for &amp;lt;item&amp;gt; in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The previous example around the storage account creation can be modified to add iteration for the &lt;code&gt;accessTier&lt;/code&gt; property.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var sAccounts = [
+  {
+    name: &amp;#39;sqllondon&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+  {
+    name: &amp;#39;sqlchennai&amp;#39;
+    accessTier: &amp;#39;Hot&amp;#39;
+  }
+  {
+    name: &amp;#39;archiveseattle&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+] 
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for sAcct in sAccounts: {
+  name: concat(sAcct.name, uniqueString(resourceGroup().id))
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: sAcct.accessTier
+  }
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this example, the &lt;code&gt;sAccounts&lt;/code&gt; variable is a collection of objects. Each object in this collection has two properties &amp;ndash; &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;accessTier&lt;/code&gt;. We use the same collection for both storage account instance and the &lt;code&gt;accessTier&lt;/code&gt; resource property. Within the iteration, you can access the properties using an accessor. &lt;code&gt;sAcct&lt;/code&gt; represents the item from &lt;code&gt;sAccounts&lt;/code&gt; collection in the current iteration and &lt;code&gt;sAcct.name&lt;/code&gt; and &lt;code&gt;sAcct.accessTier&lt;/code&gt; represent the &lt;code&gt;name&lt;/code&gt; and &lt;code&gt;accessTier&lt;/code&gt; values associated with the current item in the collection.&lt;/p&gt;
+&lt;h2 id=&#34;iterating-over-elements-in-an-array&#34;&gt;Iterating over elements in an array&lt;/h2&gt;
+&lt;p&gt;The final method to use loops in Bicep files is to iterate over elements in an array. In the first method, you looked using the index value from the iteration. In the second method where we used an array of storage account names, we used the element value within each iteration. In this third method, you can access both index and element value. The general syntax for this type of iteration is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;[for (&amp;lt;item&amp;gt;, &amp;lt;index&amp;gt;) in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-instance&amp;gt; or &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;resource-iteration-2&#34;&gt;Resource Iteration&lt;/h3&gt;
+&lt;p&gt;The syntax for resource iteration using this third method is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource &amp;lt;resource-symbolic-name&amp;gt; &amp;#39;&amp;lt;resource-type&amp;gt;@&amp;lt;api-version&amp;gt;&amp;#39; = [for (&amp;lt;item&amp;gt;, &amp;lt;index&amp;gt;) in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-instance&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using this method, you can simplify the above example where you created multiple storage accounts and configured a different access tier for each account.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var sAccounts = [
+  {
+    name: &amp;#39;sqllondon&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+  {
+    name: &amp;#39;sqlchennai&amp;#39;
+    accessTier: &amp;#39;Hot&amp;#39;
+  }
+  {
+    name: &amp;#39;archiveseattle&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+] 
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for (sItem, sIndex) in sAccounts: {
+  name: &amp;#39;stg${sItem.name}${sIndex}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: sItem.accessTier
+  }
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this method of iteration, &lt;code&gt;sItem&lt;/code&gt; represents the element at the current index and &lt;code&gt;sIndex&lt;/code&gt; is the integer representing the current iteration. You can build this and see how it gets transpiled to ARM JSON representation.&lt;/p&gt;
+&lt;h3 id=&#34;resource-property-iteration-2&#34;&gt;Resource property Iteration&lt;/h3&gt;
+&lt;p&gt;The syntax for resource property iteration in this method is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&amp;lt;property-name&amp;gt;: [for (&amp;lt;item&amp;gt;, &amp;lt;index&amp;gt;) in &amp;lt;collection&amp;gt;: {
+  &amp;lt;resource-properties&amp;gt;
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is an example of using this method to create multiple subnets in a Azure virtual network.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var subnetPrefix = [
+  &amp;#39;10.10.12.0/24&amp;#39;
+  &amp;#39;10.10.13.0/24&amp;#39;
+]
+
+resource vnet &amp;#39;Microsoft.Network/virtualNetworks@2018-11-01&amp;#39; = {
+  name: &amp;#39;vnet&amp;#39;
+  location: resourceGroup().location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        &amp;#39;10.10.10.0/16&amp;#39;
+      ]
+    }
+    subnets: [for (sItem, sIndex) in subnetPrefix: {
+      name: &amp;#39;subnet${sIndex}&amp;#39;
+      properties: {
+        addressPrefix: sItem
+      }
+    }]
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When you choose one of these methods depends on what type of configuration you want to perform. As you start building more complex Bicep files, you will start identifying places to use one of the three methods that you just learned.&lt;/p&gt;
+&lt;h2 id=&#34;serial-deployment-of-resources&#34;&gt;Serial deployment of resources&lt;/h2&gt;
+&lt;p&gt;By default, creating multiple resource instances happens in parallel. However, you can configure to do this serially as well. This is where you use the the &lt;code&gt;@batchSize&lt;/code&gt; decorator in a resource declaration. This decorator takes an integer as input which represent the number of parallel deployments to perform. Here is a quick example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param saCount int = 20
+
+@batchSize(3)
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for index in range(0, saCount): {
+  name: &amp;#39;${index}stg${uniqueString(resourceGroup().id)}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+  	accessTier: &amp;#39;Hot&amp;#39;
+  }
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When you add a &lt;code&gt;batchSize&lt;/code&gt; decorator, the resulting ARM representation sets the &lt;code&gt;mode&lt;/code&gt; property of the &lt;code&gt;copy&lt;/code&gt; element to serial.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; [
+    {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;copy&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;sa&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;count&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[length(range(0, parameters(&amp;#39;saCount&amp;#39;)))]&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;mode&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;serial&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;batchSize&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ff0;font-weight:bold&#34;&gt;3&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-04-01&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[format(&amp;#39;{0}stg{1}&amp;#39;, range(0, parameters(&amp;#39;saCount&amp;#39;))[copyIndex()], uniqueString(resourceGroup().id))]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[resourceGroup().location]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
+      }
+    }
+]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So far you have learned about using iteration for resource creation and resource properties. This is it for today. In the next part of this series, you will learn about outputs in Bicep files and how iterations can be used with outputs. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bicep Language - Beyond Basics - Expressions</title>
