@@ -6,10 +6,138 @@
     <description>Recent content in Bicep on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 14 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 15 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/tags/bicep/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bicep Language - Beyond Basics - Output</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/</link>
+      <pubDate>Thu, 15 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;You use outputs in ARM JSON templates to return value(s) from the deployment. Returning output from a template is not mandatory but useful in scenarios such as when deploying templates through a CI/CD pipeline or when creating templates as reusable modules. To support this, Bicep language has an &lt;code&gt;outputs&lt;/code&gt; element.&lt;/p&gt;
+&lt;h2 id=&#34;output&#34;&gt;Output&lt;/h2&gt;
+&lt;p&gt;Syntax for adding &lt;code&gt;output&lt;/code&gt; element to Bicep is:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;output &amp;lt;output-identifier&amp;gt; &amp;lt;output-type&amp;gt; = &amp;lt;literal&amp;gt; or &amp;lt;expression&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can add any number of outputs in a Bicep file. The output-identifier along with the literal value or the value from the expression will be returned after a successful deployment. As you will learn in the next part of this series, Bicep modules make use of outputs from a template deployment. The type of data that you return from output can be an integer, a string, an array, an object, or a boolean value.&lt;/p&gt;
+&lt;p&gt;Here is a simple example that returns the storage account Id once the template deployment is complete.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = {
+  name: &amp;#39;stg${uniqueString(resourceGroup().id)}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+  	accessTier: &amp;#39;Hot&amp;#39;
+  }
+}
+
+output sid string = sa.id
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can use the resource accessor to assign the value of storage account resource Id to the output. In this example, &lt;code&gt;sa&lt;/code&gt; is the resource instance name within the deployment. So, sa.id will retrieve the resource Id of the storage account.&lt;/p&gt;
+&lt;p&gt;You can deploy this template using &lt;code&gt;az deployment group create --template-file=C:\sandbox\bicep\main.bicep --resource-group bicep&lt;/code&gt;. The output from this command will include an outputs object.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;outputs&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sid&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;String&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;/subscriptions/5073fd4c-3a1b-4559-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/stg6axmw2qxc2xnq&amp;#34;&lt;/span&gt;
+      }
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;output-iterations&#34;&gt;Output Iterations&lt;/h2&gt;
+&lt;p&gt;Similar to resources and resource properties, you can use iterations with &lt;code&gt;output&lt;/code&gt; as well. There are three types of iterations that you learned about in the previous part of this series. The syntax for using any of those three methods is similar for outputs as well.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;output &amp;lt;output-identifier&amp;gt; &amp;lt;output-type&amp;gt; = [for index in range(&amp;lt;start&amp;gt;, &amp;lt;stop&amp;gt;):
+	&amp;lt;output-properties&amp;gt;
+]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the last part of this series, you learned how to use loop index based iteration. The same example can be extended to add output of all storage account resource Ids. Here is how you do that.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param saCount int = 3
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for index in range(0, saCount): {
+  name: &amp;#39;${index}stg${uniqueString(resourceGroup().id)}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+  	accessTier: &amp;#39;Hot&amp;#39;
+  }
+}]
+
+output saId array = [for i in range(0, saCount): resourceId(&amp;#39;Microsoft.Storage/storageAccounts&amp;#39;, &amp;#39;${i}stg${uniqueString(resourceGroup().id)}&amp;#39;)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the ARM template deployment output, you should see:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&amp;#34;outputs&amp;#34;: {
+      &amp;#34;saId&amp;#34;: {
+        &amp;#34;type&amp;#34;: &amp;#34;Array&amp;#34;,
+        &amp;#34;value&amp;#34;: [
+          &amp;#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/0stg6axmw2qxc2xnq&amp;#34;,
+          &amp;#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/1stg6axmw2qxc2xnq&amp;#34;,
+          &amp;#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/2stg6axmw2qxc2xnq&amp;#34;
+        ]
+      }
+    }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Within the output array, if you want to return multiple properties, you can simply specify that using a property name.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;var sAccounts = [
+  {
+    name: &amp;#39;sqllondon&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+  {
+    name: &amp;#39;sqlchennai&amp;#39;
+    accessTier: &amp;#39;Hot&amp;#39;
+  }
+  {
+    name: &amp;#39;archiveseattle&amp;#39;
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+] 
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = [for (sItem, sIndex) in sAccounts: {
+  name: &amp;#39;stg${sItem.name}${sIndex}&amp;#39;
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: sItem.accessTier
+  }
+}]
+
+output storageDetail array = [for (sItem, sIndex) in sAccounts: {
+  id: reference(&amp;#39;stg${sItem.name}${sIndex}&amp;#39;, &amp;#39;2019-04-01&amp;#39;, &amp;#39;Full&amp;#39;).resourceId
+  accessTier: reference(&amp;#39;stg${sItem.name}${sIndex}&amp;#39;).accessTier
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This deployment will return the output similar to:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;outputs&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;storageDetail&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Array&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;value&amp;#34;&lt;/span&gt;: [
+          {
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Cool&amp;#34;&lt;/span&gt;,
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts/stgsqllondon0&amp;#34;&lt;/span&gt;
+          },
+          {
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;,
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts/stgsqlchennai1&amp;#34;&lt;/span&gt;
+          },
+          {
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Cool&amp;#34;&lt;/span&gt;,
+            &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts/stgarchiveseattle2&amp;#34;&lt;/span&gt;
+          }
+        ]
+      }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Alright. This is it for today. In the next part of this series, you will learn about authoring reusable modules in Bicep. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bicep Language - Beyond Basics - Iterations</title>
