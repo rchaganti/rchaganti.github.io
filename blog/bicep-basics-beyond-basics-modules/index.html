@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Bicep Language - Beyond Basics - Modules"/>
+<meta name="twitter:description" content="Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules."/>
+
+    <meta property="og:title" content="Bicep Language - Beyond Basics - Modules" />
+<meta property="og:description" content="Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/bicep-basics-beyond-basics-modules/" />
+<meta property="article:published_time" content="2021-04-16T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-04-16T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-modules/">
+    
+    <title>
+  Bicep Language - Beyond Basics - Modules · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-modules/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Bicep Language - Beyond Basics - Modules</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2021-04-16T00:00:00Z'>
+                April 16, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/bicep/">Bicep</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/bicep/">Bicep</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#consuming-a-module">Consuming a module</a></li>
+    <li><a href="#module-iterations">Module iterations</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        
+    <figure >
+        
+            <img src="https://ravichaganti.com/images/bicep.png" />
+        
+        
+    </figure>
+    
+<p>Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules.</p>
+<p>In this part of the <a href="https://ravichaganti.com/series/azure-bicep">series of articles on Bicep language</a>, you will learn about modularizing Bicep files. You already have the necessary knowledge, <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">parameterizing Bicep files</a>, to start this learning.</p>
+<p>Here is an example from one of the previous parts.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param saCount int = 2
+
+resource sa &#39;Microsoft.Storage/storageAccounts@2019-04-01&#39; = [for index in range(0, saCount): {
+  name: &#39;${index}stg${uniqueString(resourceGroup().id)}&#39;
+  location: resourceGroup().location
+  sku: {
+    name: &#39;Standard_LRS&#39;
+  }
+  kind: &#39;StorageV2&#39;
+  properties: {
+  	accessTier: &#39;Hot&#39;
+  }
+}]
+</code></pre></div><p>Add some output to this using what you learned in the <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/">previous part about using output</a> in Bicep.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">output saId array = [for i in range(0, saCount): resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, &#39;${i}stg${uniqueString(resourceGroup().id)}&#39;)]
+</code></pre></div><p>Now, save this as storageAccount.bicep. Congratulations. You just created a Bicep module! Now, to the important part. How do you consume this in another Bicep file?</p>
+<h2 id="consuming-a-module">Consuming a module</h2>
+<p>The <code>module</code> keyword helps in consuming a Bicep module. The syntax for consuming a Bicep module is:</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = {
+	name: &lt;name-to-be-used-for-nested-deployment&gt;
+	params: {
+		&lt;param-name&gt;: &lt;param-value&gt;
+	}
+}
+</code></pre></div><p>module-identifier, similar to a resource identifier, will be used to reference the module object in other parts of the Bicep file as needed. The <code>name</code> property within the module will be used as a name for the nested deployment within the generated ARM template. This property is mandatory. And, then the <code>params</code> property will be used to supply a list of parameter values to the module.</p>
+<p>Here is how you can consume the <code>storageAccount</code> module you created earlier.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./storageAccount.bicep&#39; = {
+  name: &#39;storageDeploy&#39;
+  params: {
+    saCount: 3
+  }
+}
+
+output stgResourceId array = stgModule.outputs.saId
+</code></pre></div><p>Save this example as main.bicep. Note that it is not necessary that you always store the module files at the same level as the main Bicep file. You can store all modules in a different folder and use that relative path. For example:</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./modules/storageAccount.bicep&#39; = {
+  name: &#39;storageDeploy&#39;
+  params: {
+    saCount: 3
+  }
+}
+
+output stgResourceId array = stgModule.outputs.saId
+</code></pre></div><p>Also, make sure you use the Unix type path. Bicep does not support Windows backslash for cross-platform compatibility reasons. You can compile the main.bicep using <code>bicep build</code>. Here is how the generated ARM JSON will look like.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
+  <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
+  <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+    <span style="font-weight:bold">&#34;_generator&#34;</span>: {
+      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
+      <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.255.40792&#34;</span>,
+      <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;11285400335859160700&#34;</span>
+    }
+  },
+  <span style="font-weight:bold">&#34;functions&#34;</span>: [],
+  <span style="font-weight:bold">&#34;resources&#34;</span>: [
+    {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Resources/deployments&#34;</span>,
+      <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-10-01&#34;</span>,
+      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;storageDeploy&#34;</span>,
+      <span style="font-weight:bold">&#34;properties&#34;</span>: {
+        <span style="font-weight:bold">&#34;expressionEvaluationOptions&#34;</span>: {
+          <span style="font-weight:bold">&#34;scope&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;inner&#34;</span>
+        },
+        <span style="font-weight:bold">&#34;mode&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Incremental&#34;</span>,
+        <span style="font-weight:bold">&#34;parameters&#34;</span>: {
+          <span style="font-weight:bold">&#34;saCount&#34;</span>: {
+            <span style="font-weight:bold">&#34;value&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>
+          }
+        },
+        <span style="font-weight:bold">&#34;template&#34;</span>: {
+          <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
+          <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
+          <span style="font-weight:bold">&#34;metadata&#34;</span>: {
+            <span style="font-weight:bold">&#34;_generator&#34;</span>: {
+              <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
+              <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.255.40792&#34;</span>,
+              <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;7655284844148565855&#34;</span>
+            }
+          },
+          <span style="font-weight:bold">&#34;parameters&#34;</span>: {
+            <span style="font-weight:bold">&#34;saCount&#34;</span>: {
+              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;int&#34;</span>,
+              <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#ff0;font-weight:bold">2</span>
+            }
+          },
+          <span style="font-weight:bold">&#34;functions&#34;</span>: [],
+          <span style="font-weight:bold">&#34;resources&#34;</span>: [
+            {
+              <span style="font-weight:bold">&#34;copy&#34;</span>: {
+                <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;sa&#34;</span>,
+                <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span>
+              },
+              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
+              <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-04-01&#34;</span>,
+              <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id))]&#34;</span>,
+              <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
+              <span style="font-weight:bold">&#34;sku&#34;</span>: {
+                <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>
+              },
+              <span style="font-weight:bold">&#34;kind&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;StorageV2&#34;</span>,
+              <span style="font-weight:bold">&#34;properties&#34;</span>: {
+                <span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
+              }
+            }
+          ],
+          <span style="font-weight:bold">&#34;outputs&#34;</span>: {
+            <span style="font-weight:bold">&#34;saId&#34;</span>: {
+              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;array&#34;</span>,
+              <span style="font-weight:bold">&#34;copy&#34;</span>: {
+                <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span>,
+                <span style="font-weight:bold">&#34;input&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id)))]&#34;</span>
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  <span style="font-weight:bold">&#34;outputs&#34;</span>: {
+    <span style="font-weight:bold">&#34;stgResourceId&#34;</span>: {
+      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;array&#34;</span>,
+      <span style="font-weight:bold">&#34;value&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[reference(resourceId(&#39;Microsoft.Resources/deployments&#39;, &#39;storageDeploy&#39;), &#39;2019-10-01&#39;).outputs.saId.value]&#34;</span>
+    }
+  }
+}
+</code></pre></div><h2 id="module-iterations">Module iterations</h2>
+<p>You can use modules with iterations as well. It is straight forward to do this based on what you learned in <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/">the earlier part about iterations in Bicep</a>.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = [for &lt;item&gt; in &lt;collection&gt;: {
+  name: &lt;name-to-be-used-for-nested-deployment&gt;
+  params: {
+    &lt;parameter-name&gt;: &lt;parameter-value&gt;
+  }
+}]
+</code></pre></div><p>You can quickly build an example that uses module iteration. Start with a module first. This module will be used to create a virtual network and a subnet within that.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param vNetName string
+param addressPrefix string
+param subnetPrefix string
+
+resource vnet &#39;Microsoft.Network/virtualNetworks@2018-11-01&#39; = {
+  name: vNetName
+  location: resourceGroup().location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        addressPrefix
+      ]
+    }
+    subnets: [
+      {
+        name: &#39;${vNetName}-subnet&#39;
+        properties: {
+          addressPrefix: subnetPrefix
+        }
+      }
+    ]
+  }
+}
+
+output vnetId string = resourceId(&#39;Microsoft.Network/virtualNetworks&#39;, vNetName)
+</code></pre></div><p>Save this as vnet.bicep.</p>
+<p>To consume this, create a main bicep file.</p>
+<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">var vNet = [
+  {
+    vNetName: &#39;testNet&#39;
+    addressPrefix: &#39;10.0.0.0/25&#39;
+    subnetPrefix: &#39;10.0.0.0/27&#39;
+  }
+  {
+    vNetName: &#39;devNet&#39;
+    addressPrefix: &#39;10.0.0.0/25&#39;
+    subnetPrefix: &#39;10.0.0.32/27&#39;
+  }
+  {
+    vNetName: &#39;prodNet&#39;
+    addressPrefix: &#39;10.0.0.0/25&#39;
+    subnetPrefix: &#39;10.0.0.64/27&#39;
+  }
+]
+
+module net &#39;modules/vnet.bicep&#39; = [for network in vNet: {
+  name: &#39;${network.vNetName}deployment&#39;
+  params: {
+    vNetName: network.vNetName
+    addressPrefix: network.addressPrefix
+    subnetPrefix: network.subnetPrefix
+  }
+}]
+
+output vNetId array = [for network in vNet: {
+  id: resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,network.vNetName)
+}]
+</code></pre></div><p>The variable <code>vNet</code> will hold a collection of virtual networks that need to be created. Using the collection iteration along with module declaration, you can supply the necessary parameter values needed for the module parameters.</p>
+<p>As you start building complex templates, you will find modules very helpful. This is it for today. You will learn about conditional deployments in the next part of this series.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-modules\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-modules\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-modules\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-modules\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Azure Bicep</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/">Bicep Language - Beyond Basics - Output</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/">Bicep Language - Beyond Basics - Iterations</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-expressions/">Bicep Language - Beyond Basics - Expressions</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-variables/">Bicep Language - Beyond Basics - Variables</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">Bicep Language - Beyond Basics - Parameters</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2021
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>
