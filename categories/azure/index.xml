@@ -6,10 +6,155 @@
     <description>Recent content in Azure on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 16 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 19 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/categories/azure/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bicep Language - Beyond Basics - Conditional Deployment</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-conditional-deployment/</link>
+      <pubDate>Mon, 19 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-conditional-deployment/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;When you go to the Azure portal and deploy a service, you may have seen a prompt where you are asked to select an existing resource group or create a new resource group. And, a few more service deployment scenarios might ask you to select between selecting an existing or creating a new storage account.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/biceprg.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;What if you want to achieve this in your own ARM templates? You can. In ARM templates, &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-use-conditions&#34;&gt;you use the condition element&lt;/a&gt; within resource instance definition. Bicep supports this using the &lt;code&gt;if&lt;/code&gt; keyword. Here is the general syntax for defining conditional deployment of a resource instance.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource Identifier &amp;#39;Microsoft.Provider/Type@Version&amp;#39; if (condition) = {
+  name: 
+  location: 
+  properties: {
+    
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Unlike iterative deployments syntax, you don&amp;rsquo;t have to enclose the resource instance in square brackets. Within the &lt;code&gt;if&lt;/code&gt; condition, you can use the &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/bicep-operators&#34;&gt;comparison or logical operators supported in Bicep&lt;/a&gt;. Here is an example of a conditional deployment.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
+  &amp;#39;new&amp;#39;
+  &amp;#39;existing&amp;#39;
+])
+param newOrExisting string = &amp;#39;new&amp;#39;
+
+param storageAccountName string
+
+resource stg &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = if (newOrExisting == &amp;#39;new&amp;#39;) {
+  name: storageAccountName
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+    accessTier: &amp;#39;Cool&amp;#39;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the parameter &lt;code&gt;newOrExisting&lt;/code&gt; is used to collect input on whether a new storage account needs to be created or not. The value of this parameter gets checked in the &lt;code&gt;if&lt;/code&gt; condition within the resource instance definition. Only if the value supplied is &lt;code&gt;new&lt;/code&gt;, a new storage account resource gets provisioned. The following ARM JSON is what this example produces.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;$schema&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;contentVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;1.0.0.0&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;_generator&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;bicep&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;version&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;0.3.255.40792&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;templateHash&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;839898532623422150&amp;#34;&lt;/span&gt;
+    }
+  },
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;parameters&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;newOrExisting&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;new&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;new&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;existing&amp;#34;&lt;/span&gt;
+      ]
+    },
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;storageAccountName&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;
+    }
+  },
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;functions&amp;#34;&lt;/span&gt;: [],
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;: [
+    {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;condition&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[equals(parameters(&amp;#39;newOrExisting&amp;#39;), &amp;#39;new&amp;#39;)]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-06-01&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[parameters(&amp;#39;storageAccountName&amp;#39;)]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[resourceGroup().location]&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;,
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;tier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard&amp;#34;&lt;/span&gt;
+      },
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
+        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
+      }
+    }
+  ]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Conditional deployments can be used with modules as well. Here is an example of a module for creating a storage account.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param storageAccountName string
+
+resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = {
+  name: storageAccountName
+  location: resourceGroup().location
+  sku: {
+    name: &amp;#39;Standard_LRS&amp;#39;
+  }
+  kind: &amp;#39;StorageV2&amp;#39;
+  properties: {
+  	accessTier: &amp;#39;Cool&amp;#39;
+  }
+}
+
+output saId string = resourceId(&amp;#39;Microsoft.Storage/storageAccounts&amp;#39;, storageAccountName)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This module gets used in a main Bicep file as shown below.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
+  &amp;#39;new&amp;#39;
+  &amp;#39;existing&amp;#39;
+])
+param newOrExisting string = &amp;#39;new&amp;#39;
+
+param storageAccountName string
+
+module stgModule &amp;#39;modules/storageAccount.bicep&amp;#39; = if (newOrExisting == &amp;#39;new&amp;#39;) {
+  name: &amp;#39;storageDeploy&amp;#39;
+  params: {
+    storageAccountName: storageAccountName
+  } 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The way you perform a conditional deployment of a module is same as that of a resource instance.&lt;/p&gt;
+&lt;p&gt;Can you combine iterative and conditional deployments in Bicep? Yes, of course. Here is an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
+  &amp;#39;new&amp;#39;
+  &amp;#39;existing&amp;#39;
+])
+param newOrExisting string = &amp;#39;new&amp;#39;
+
+param storageAccountName string
+
+module stgModule &amp;#39;modules/storageAccount.bicep&amp;#39; = [for index in range(0,3): if (newOrExisting == &amp;#39;new&amp;#39;) {
+  name: &amp;#39;storageDeploy&amp;#39;
+  params: {
+    storageAccountName: &amp;#39;${storageAccountName}${index}&amp;#39;
+  } 
+}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As shown in the above example, the condition must follow the iteration syntax. This is it for today. In the next part of this series, you will learn about scoped deployments. Stay tuned.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bicep Language - Beyond Basics - Modules</title>
@@ -3817,151 +3962,6 @@ resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = {
 
 &lt;!-- raw HTML omitted --&gt;
 &lt;p&gt; &lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Bicep Language - Beyond Basics - Conditional Deployment</title>
-      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-conditional-deployment/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-conditional-deployment/</guid>
-      <description>
-    &lt;figure &gt;
-        
-            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
-        
-        
-    &lt;/figure&gt;
-    
-&lt;p&gt;When you go to the Azure portal and deploy a service, you may have seen a prompt where you are asked to select an existing resource group or create a new resource group. And, a few more service deployment scenarios might ask you to select between selecting an existing or creating a new storage account.&lt;/p&gt;
-
-    &lt;figure &gt;
-        
-            &lt;img src=&#34;https://ravichaganti.com/images/biceprg.png&#34; /&gt;
-        
-        
-    &lt;/figure&gt;
-    
-&lt;p&gt;What if you want to achieve this in your own ARM templates? You can. In ARM templates, &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-use-conditions&#34;&gt;you use the condition element&lt;/a&gt; within resource instance definition. Bicep supports this using the &lt;code&gt;if&lt;/code&gt; keyword. Here is the general syntax for defining conditional deployment of a resource instance.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;resource Identifier &amp;#39;Microsoft.Provider/Type@Version&amp;#39; if (condition) = {
-  name: 
-  location: 
-  properties: {
-    
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Unlike iterative deployments syntax, you don&amp;rsquo;t have to enclose the resource instance in square brackets. Within the &lt;code&gt;if&lt;/code&gt; condition, you can use the &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/bicep-operators&#34;&gt;comparison or logical operators supported in Bicep&lt;/a&gt;. Here is an example of a conditional deployment.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
-  &amp;#39;new&amp;#39;
-  &amp;#39;existing&amp;#39;
-])
-param newOrExisting string = &amp;#39;new&amp;#39;
-
-param storageAccountName string
-
-resource stg &amp;#39;Microsoft.Storage/storageAccounts@2019-06-01&amp;#39; = if (newOrExisting == &amp;#39;new&amp;#39;) {
-  name: storageAccountName
-  location: resourceGroup().location
-  sku: {
-    name: &amp;#39;Standard_LRS&amp;#39;
-  }
-  kind: &amp;#39;StorageV2&amp;#39;
-  properties: {
-    accessTier: &amp;#39;Cool&amp;#39;
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the parameter &lt;code&gt;newOrExisting&lt;/code&gt; is used to collect input on whether a new storage account needs to be created or not. The value of this parameter gets checked in the &lt;code&gt;if&lt;/code&gt; condition within the resource instance definition. Only if the value supplied is &lt;code&gt;new&lt;/code&gt;, a new storage account resource gets provisioned. The following ARM JSON is what this example produces.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;$schema&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&amp;#34;&lt;/span&gt;,
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;contentVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;1.0.0.0&amp;#34;&lt;/span&gt;,
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
-    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;_generator&amp;#34;&lt;/span&gt;: {
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;bicep&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;version&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;0.3.255.40792&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;templateHash&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;839898532623422150&amp;#34;&lt;/span&gt;
-    }
-  },
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;parameters&amp;#34;&lt;/span&gt;: {
-    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;newOrExisting&amp;#34;&lt;/span&gt;: {
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;defaultValue&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;new&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;allowedValues&amp;#34;&lt;/span&gt;: [
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;new&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;existing&amp;#34;&lt;/span&gt;
-      ]
-    },
-    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;storageAccountName&amp;#34;&lt;/span&gt;: {
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;string&amp;#34;&lt;/span&gt;
-    }
-  },
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;functions&amp;#34;&lt;/span&gt;: [],
-  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;: [
-    {
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;condition&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[equals(parameters(&amp;#39;newOrExisting&amp;#39;), &amp;#39;new&amp;#39;)]&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Storage/storageAccounts&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2019-06-01&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[parameters(&amp;#39;storageAccountName&amp;#39;)]&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;[resourceGroup().location]&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;sku&amp;#34;&lt;/span&gt;: {
-        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard_LRS&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;tier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Standard&amp;#34;&lt;/span&gt;
-      },
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;kind&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;StorageV2&amp;#34;&lt;/span&gt;,
-      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: {
-        &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;accessTier&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Hot&amp;#34;&lt;/span&gt;
-      }
-    }
-  ]
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Conditional deployments can be used with modules as well. Here is an example of a module for creating a storage account.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;param storageAccountName string
-
-resource sa &amp;#39;Microsoft.Storage/storageAccounts@2019-04-01&amp;#39; = {
-  name: storageAccountName
-  location: resourceGroup().location
-  sku: {
-    name: &amp;#39;Standard_LRS&amp;#39;
-  }
-  kind: &amp;#39;StorageV2&amp;#39;
-  properties: {
-  	accessTier: &amp;#39;Cool&amp;#39;
-  }
-}
-
-output saId string = resourceId(&amp;#39;Microsoft.Storage/storageAccounts&amp;#39;, storageAccountName)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This module gets used in a main Bicep file as shown below.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
-  &amp;#39;new&amp;#39;
-  &amp;#39;existing&amp;#39;
-])
-param newOrExisting string = &amp;#39;new&amp;#39;
-
-param storageAccountName string
-
-module stgModule &amp;#39;modules/storageAccount.bicep&amp;#39; = if (newOrExisting == &amp;#39;new&amp;#39;) {
-  name: &amp;#39;storageDeploy&amp;#39;
-  params: {
-    storageAccountName: storageAccountName
-  } 
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The way you perform a conditional deployment of a module is same as that of a resource instance.&lt;/p&gt;
-&lt;p&gt;Can you combine iterative and conditional deployments in Bicep? Yes, of course. Here is an example.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;@allowed([
-  &amp;#39;new&amp;#39;
-  &amp;#39;existing&amp;#39;
-])
-param newOrExisting string = &amp;#39;new&amp;#39;
-
-param storageAccountName string
-
-module stgModule &amp;#39;modules/storageAccount.bicep&amp;#39; = [for index in range(0,3): if (newOrExisting == &amp;#39;new&amp;#39;) {
-  name: &amp;#39;storageDeploy&amp;#39;
-  params: {
-    storageAccountName: &amp;#39;${storageAccountName}${index}&amp;#39;
-  } 
-}]
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As shown in the above example, the condition must follow the iteration syntax. This is it for today. In the next part of this series, you will learn about scoped deployments. Stay tuned.&lt;/p&gt;
 </description>
     </item>
     
