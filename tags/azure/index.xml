@@ -6,10 +6,92 @@
     <description>Recent content in Azure on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 19 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 20 Apr 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/tags/azure/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bicep Language - Beyond Basics - Scoped Deployment</title>
+      <link>https://ravichaganti.com/blog/bicep-basics-beyond-basics-scoped-deployment/</link>
+      <pubDate>Tue, 20 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/bicep-basics-beyond-basics-scoped-deployment/</guid>
+      <description>
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/bicep.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;When using ARM JSON templates, you can deploy to any of the four supported scopes &amp;ndash; &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-management-group?tabs=azure-cli&#34;&gt;management groups&lt;/a&gt;, &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-tenant?tabs=azure-cli&#34;&gt;tenants&lt;/a&gt;, &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-subscription?tabs=azure-cli&#34;&gt;subscriptions&lt;/a&gt;, and &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-resource-group?tabs=azure-cli&#34;&gt;resource groups&lt;/a&gt;. What you can deploy using ARM JSON templates differs between these different target scopes. For example, you can create resource groups at the subscription level only. You identify the target scope for an ARM JSON template using the &lt;code&gt;$schema&lt;/code&gt; element in the template. Each scope has a specific schema.&lt;/p&gt;
+&lt;p&gt;Bicep language too supports specifying scope within the bicep files using the &lt;code&gt;targetScope&lt;/code&gt; keyword. This keyword takes one or more values &amp;ndash; resourceGroup, tenant, subscription, and managementGroup.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/targetscope.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;When the &lt;code&gt;targetScope&lt;/code&gt; value is set, Bicep knows what resources to expect within the file.&lt;/p&gt;
+
+    &lt;figure &gt;
+        
+            &lt;img src=&#34;https://ravichaganti.com/images/scopeerror.png&#34; /&gt;
+        
+        
+    &lt;/figure&gt;
+    
+&lt;p&gt;Here is an example of using the resource group resource in a subscription scoped Bicep file.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;targetScope = &amp;#39;subscription&amp;#39;
+
+resource rg &amp;#39;Microsoft.Resources/resourceGroups@2020-06-01&amp;#39; = {
+  name: &amp;#39;rgTest&amp;#39;
+  location: &amp;#39;WestUS&amp;#39;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This, when compiled, produces the following ARM JSON representation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;$schema&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;contentVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;1.0.0.0&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;metadata&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;_generator&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;bicep&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;version&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;0.3.255.40792&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;templateHash&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;12733481855883894499&amp;#34;&lt;/span&gt;
+    }
+  },
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;functions&amp;#34;&lt;/span&gt;: [],
+  &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;resources&amp;#34;&lt;/span&gt;: [
+    {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;Microsoft.Resources/resourceGroups&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;apiVersion&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;2020-06-01&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;rgTest&amp;#34;&lt;/span&gt;,
+      &lt;span style=&#34;font-weight:bold&#34;&gt;&amp;#34;location&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#34;WestUS&amp;#34;&lt;/span&gt;
+    }
+  ]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is how you deploy a subscription level template using Azure CLI.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;az deployment sub create --name rgDeployment --template-file .&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;\m&lt;/span&gt;ain.bicep --location WestUS
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can mix scopes in a Bicep file by explicitly specifying scope property in a resource instance or module. Here is an example.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;targetScope = &amp;#39;subscription&amp;#39;
+resource rgTest &amp;#39;Microsoft.Resources/resourceGroups@2021-01-01&amp;#39; = {
+  name: &amp;#39;rgTest&amp;#39;
+  location: &amp;#39;West US&amp;#39;
+}
+
+module saDeploy &amp;#39;modules/storageAccount.bicep&amp;#39; = {
+  name: &amp;#39;saDeploy&amp;#39;
+  scope: resourceGroup(&amp;#39;rgTest&amp;#39;)
+  params: {
+    saCount: 3
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the module specification, the scope property is set to the resource group being created in this template and that creates a dependency on the resource group as well.&lt;/p&gt;
+&lt;p&gt;This is a quick overview of scoped deployment template generation using Bicep. Hope you enjoyed reading this series of articles. This is the final article in this series and I will write more deep dive articles later. If you have suggestions for any specific content around Bicep, feel free to leave a comment.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bicep Language - Beyond Basics - Conditional Deployment</title>
