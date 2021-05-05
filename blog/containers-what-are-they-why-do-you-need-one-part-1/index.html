@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Containers? No, not the shipping containers but the much-hyped container technology in the computer industry. I am sure even if you have not used any of the existing container technologies, you must have at least read or heard about them.
+I am not the first one to write about containers and this is certainly not an in-depth overview of container technologies. I will eventually get there and show you how you can deploy different container technologies.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Containers – What are they? Why do you need one? – Part 1"/>
+<meta name="twitter:description" content="Containers? No, not the shipping containers but the much-hyped container technology in the computer industry. I am sure even if you have not used any of the existing container technologies, you must have at least read or heard about them.
+I am not the first one to write about containers and this is certainly not an in-depth overview of container technologies. I will eventually get there and show you how you can deploy different container technologies."/>
+
+    <meta property="og:title" content="Containers – What are they? Why do you need one? – Part 1" />
+<meta property="og:description" content="Containers? No, not the shipping containers but the much-hyped container technology in the computer industry. I am sure even if you have not used any of the existing container technologies, you must have at least read or heard about them.
+I am not the first one to write about containers and this is certainly not an in-depth overview of container technologies. I will eventually get there and show you how you can deploy different container technologies." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/" />
+<meta property="article:published_time" content="2015-01-20T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-01-20T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/">
+    
+    <title>
+  Containers – What are they? Why do you need one? – Part 1 · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Containers – What are they? Why do you need one? – Part 1</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2015-01-20T00:00:00Z'>
+                January 20, 2015
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/containers/">Containers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/containers/">Containers</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#infrastructure-challenges">Infrastructure Challenges</a>
+      <ul>
+        <li><a href="#traditional-infrastructure">Traditional Infrastructure</a></li>
+        <li><a href="#virtualized-infrastructure">Virtualized Infrastructure</a></li>
+      </ul>
+    </li>
+    <li><a href="#devops-challenges">DevOps Challenges</a></li>
+  </ul>
+</nav>
+          <hr>
+        
+        <p>Containers? No, not the shipping containers but the much-hyped container technology in the computer industry. I am sure even if you have not used any of the existing container technologies, you must have at least read or heard about them.</p>
+<p>I am not the first one to write about containers and this is certainly not an in-depth overview of container technologies. I will eventually get there and show you how you can deploy different container technologies. This series of articles is about my own thoughts and a documentation for my own reference. In the process, I wish to help my readers as well.</p>
+<p>Let us get started. In this article, I will first describe what is the need for containers and how they are different from the virtual machines that we have been using all this while.</p>
+<h2 id="infrastructure-challenges">Infrastructure Challenges</h2>
+<p>Before we start looking at containers, let us dig into some of the challenges in the current infrastructure models. This will form the foundation for moving to containers and you will be able to appreciate the value containers bring.</p>
+<h3 id="traditional-infrastructure">Traditional Infrastructure</h3>
+<p>Not so long ago, most of the data centers had only physical servers. When planning for application workloads, IT managers typically looked at physical servers that are configured to support the resources required for the workload. We had to plan ahead to support future growth of application usage and resource requirements. This was usually achieved by over-sizing these physical servers. And, mostly, these physical servers were used to run only a single application workload. There is technically nothing stopping us from running multiple applications on the same physical server but that was simply not a best practice as we cannot completely limit the resources a process can create and accomplish full isolation between applications. These factors led to different set of problems and challenges.</p>
+<p>Over-sizing physical servers led to lot of unused resources. For example, a web server may not need all the processing power and memory available in a physical server. But, sizing a web server just for its average utilization will lead to performance issues during peak conditions. Another challenge was related scaling out compute power. Going back to the web server example, when you need to scale-out your web farm to support additional load, lets says during holiday season, you had to plan for it in advance and keep the servers ready. This is mainly because provisioning new physical servers takes time.</p>
+<p>There were also other concerns over space and power utilization when using physical servers in a data center. Then came virtualization and addressed most of the challenges associated with physical server deployments.</p>
+<h3 id="virtualized-infrastructure">Virtualized Infrastructure</h3>
+<p>Virtualized infrastructures, popularized by VMware, solved most or all of the problems that IT organizations encountered with physical servers. Virtualization enables agile workload deployment, workload mobility, efficient resource utilization using resource pools, and on-demand scale out using automation.</p>
+<p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/virt1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/virt1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
+<p>Virtualization is great. It enables full resource utilization through consolidation and brings in all other benefits I mentioned above. I can take two or more workloads with low resource requirements and consolidate them on a big fat physical server. For the guest OS inside these virtual machines, there is usually no difference. This is because the hypervisor is emulating the hardware that is required for the guest OS to run. But, this ease of use and full functionality comes at a cost. Virtual machines are fat. They have an overhead in terms of the hypervisor itself and the emulation that is needed for the guest OS to be fully functional. So, even if all you want to run is a simple application that is isolated from all other workloads on the same machine, you still have to pay for the cost of running a full OS inside a virtual machine. The cost here is not just dollars but the overhead in running that operating system too. Remember, every OS needs to patched and maintained. All this adds to the complexity of managing the infrastructure and therefore cost too. This needs to be mitigated in a better way. We will see the answer in a while.</p>
+<h2 id="devops-challenges">DevOps Challenges</h2>
+<p><a href="http://www.quickmeme.com/img/f8/f807fc62794fa72409995d504dc6a48f36f2bd31b56f3661cc900f3b5a25f2c8.jpg"><!-- raw HTML omitted --></a></p>
+<p>The overhead associated with running virtual machines alone isn’t the problem. The VMs are used for running workloads and these workloads or applications need continuous updates as developers add more features or fix existing bugs. With the Agile development and release small and release often requirements, the coordination between developers and operations becomes a bigger challenge. The solution to this challenge is what we know as <a href="http://en.wikipedia.org/wiki/DevOps">DevOps</a>.</p>
+<blockquote>
+<p>DevOps is not a single tool or software but rather a set of practices combined with different tools.</p>
+</blockquote>
+<p>Most of the issues reported in either QA or pre-production phases of release are due to the differences in environment. That is, the developer environment may be tweaked to make a feature work but if the same changes are not propagated down to the QA, pre-production, and production environments, there is a higher chance of failure when the software updates are deployed. So, there is a need for consistent continuous delivery and integration. This automation may not be a challenge when there are just a handful of systems in each environment. However, that is not the case. Many deployments are large (think how Facebook or Google are running their software on millions of servers) and a simple automation isn&rsquo;t good enough. Also, the continuous delivery and integration challenges only multiply with the need for supporting disparate platforms and system architectures. When working at a large scale, we need to ensure that the application can be scaled out with a lot less effort than creating a VM and then configuring it for the application. The time to value is super critical in this scenario. Some of these challenges can be solved by configuration management platforms such as Puppet, Chef, or even Windows PowerShell Desired State Configuration. We will talk more about this in a later post.</p>
+<p>So, how do we overcome these challenges posed by the infrastructure, continuous delivery and integration? Containers have an answer.</p>
+<p>In this article, we looked at the need and the primary drivers for the technology behind containerization. In the next part, I will introduce containers and history of container technologies.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-why-do-you-need-one-part-1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-why-do-you-need-one-part-1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-why-do-you-need-one-part-1\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-why-do-you-need-one-part-1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Containers</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/">Containers – What are they? And, their history! – Part 2</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2021
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>

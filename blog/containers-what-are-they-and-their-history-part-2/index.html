@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.
+In today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Containers – What are they? And, their history! – Part 2"/>
+<meta name="twitter:description" content="In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.
+In today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them."/>
+
+    <meta property="og:title" content="Containers – What are they? And, their history! – Part 2" />
+<meta property="og:description" content="In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.
+In today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/" />
+<meta property="article:published_time" content="2015-02-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2015-02-06T00:00:00+00:00" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/">
+    
+    <title>
+  Containers – What are they? And, their history! – Part 2 · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  <body class="colorscheme-auto">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Containers – What are they? And, their history! – Part 2</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2015-02-06T00:00:00Z'>
+                February 6, 2015
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              6-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/containers/">Containers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/containers/">Containers</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#history">History</a>
+      <ul>
+        <li><a href="#lmctfy">LMCTFY</a></li>
+        <li><a href="#docker">Docker</a></li>
+        <li><a href="#kubernetes">Kubernetes</a></li>
+        <li><a href="#rocket">Rocket</a></li>
+        <li><a href="#others">Others</a></li>
+      </ul>
+    </li>
+    <li><a href="#future">Future</a>
+      <ul>
+        <li><a href="#further-reading">Further Reading</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+          <hr>
+        
+        <p>In the earlier article, I explained the <a href="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1">hurdles in the traditional and virtualized ways of implementing workloads</a>. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.</p>
+<p>In today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them.</p>
+<blockquote>
+<p><strong>Note</strong>: If you are not a Linux user or never even installed Linux, lot of content that follows will sound alien. If you need to get a quick training on Linux, go ahead to <a href="https://www.edx.org/">edX</a> and take the <a href="https://www.edx.org/course/introduction-linux-linuxfoundationx-lfs101x-2">Linux Foundation course</a>.</p>
+</blockquote>
+<p>Containers are light weight isolated operating system environments running on a host. Unlike virtual machines, containers</p>
+<ul>
+<li>don’t need additional hardware capabilities such as Intel-VT and so on.</li>
+<li>don’t need emulated BIOS or completely virtualized hardware</li>
+</ul>
+<p>Instead, containers are processes running on a host operating system that provide allocation and assignment of resources such as CPU, memory, block IO, and network bandwidth and do not (or cannot) interfere with rest of the system’s resources or process.</p>
+<p>Take a look at the following figure.</p>
+<p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/container11.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/container11.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
+<p>The figure above contrasts the way containers implemented with how VMs are built. Remember that containers are complementary to virtual machines. They are not a complete replacement for virtual machines. You may end up creating virtual machines for complete isolation and then run containers inside those VMs.</p>
+<p>[pullquote]The above representation is an over-simplified architecture of containers. In fact, there are no technologies shown in the picture that really are the building blocks for creating containers. We will dig into that in a bit.[/pullquote]</p>
+<p>Each container is a process within the host operating system. The applications running inside the container assume exclusive access to the operating system. In reality, those applications run inside an isolated process environment. This is similar to how <a href="http://en.wikipedia.org/wiki/Chroot">chroot</a> works. Historically speaking, the concept of containerization itself is not new. <a href="http://en.wikipedia.org/wiki/Solaris_Containers">Solaris Zones and Containers</a> did something similar for a long time. Windows OS had something called <a href="https://technet.microsoft.com/en-us/library/cc755084%28v=ws.10%29.aspx">Dynamic Hardware Partitioning</a> (not on x86 systems and something that never got popular for the same reason) in Windows Server 2008. The container technology that we are going to discuss is based on Linux OS and has some history associated with it. Let us review the history a bit and then dive into the technology that is used to implement these containers.</p>
+<h2 id="history">History</h2>
+<p>Google <a href="http://www.infoq.com/news/2014/06/everything-google-containers">has been using the container technology</a> to run their own services for a long time. In fact, they create <a href="http://slides.eightypercent.net/GlueCon%202014%20-%20Containers%20At%20Scale.pdf">more than 2 billion containers</a>  a week. While Google started using containerization in the year 2004, they formally donated the <a href="http://en.wikipedia.org/wiki/Cgroups">cgroups project</a> to Linux kernel in the year 2007.</p>
+<!-- raw HTML omitted -->
+<p>The release of cgroups lead to creation of <strong><a href="http://linuxcontainers.org">Linux Containers (LXC)</a></strong>. Apart from cgroups, LXC uses kernel namespaces, apparmor and SE Linux profiles, Chroots, CGroups, and other kernel capabilities such as Seccomp policies. LXC falls somewhere in between the VMs and a chroot.</p>
+<h3 id="lmctfy">LMCTFY</h3>
+<p>Let-me-contain-that-for-you (<a href="https://github.com/google/lmctfy">LMCTFY</a>) is an open source version of Google’s container stack. LMCTFY works at the same level as LXC and therefore it is not recommended to use it along side other container technologies such as LXC. Most or all of Google’s online services run inside the containers deployed using their own container stack and they have been doing this since 2004! So, it goes without saying that they have mastered this art containerization and certainly have a solid technology in LMCTFY.</p>
+<p>Creating resource isolation is only one part of the story. We still need a better way to orchestrate the whole container creation and then manage the container life cycle.</p>
+<h3 id="docker">Docker</h3>
+<p>Orchestration of the container and managing life cycle is important and this is where tools such as <a href="http://docker.io">Docker</a> come into picture.</p>
+
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+  <iframe src="https://www.youtube.com/embed/ZzQfxoMFH0U" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video"></iframe>
+</div>
+
+<p>Docker, <a href="http://blog.docker.com/2014/03/docker-0-9-introducing-execution-drivers-and-libcontainer/">until release 0.9</a>, used LXC as the default execution environment. Starting with Docker 0.9, LXC was replaced with <a href="https://github.com/docker/libcontainer">libcontainer</a> – a library developed to access Linux kernel’s container APIs directly. With libcontainer, Docker can now perform container management without relying on other execution environments such as LXC. Although libcontainer is the new default execution environment, Docker still supports LXC. In fact, the execution driver API was added to ensure that other execution environments can be used when necessary provided they have a execution driver.</p>
+<p>Docker revolutionized and brought the concepts of Linux containers to masses. In the subsequent parts of this series, we will dive into LXC, Docker, and the kernel components that help the overall containerization.</p>
+<h3 id="kubernetes">Kubernetes</h3>
+<p>While tools such as Docker provide the container life cycle management, the orchestration of multi-tier containers and container clusters is still not easy. This is where Google once again took the lead and developed <a href="https://github.com/GoogleCloudPlatform/kubernetes">Kubernetes</a>.</p>
+<p>Kubernetes is an open source system for managing containerized applications across multiple hosts, providing basic mechanisms for deployment, maintenance, and scaling of applications.</p>
+<p>There are many other tools in the Docker eco-system. We will look at them when we start discussing Docker in-depth.</p>
+<h3 id="rocket">Rocket</h3>
+<p>Docker has a rival in <a href="https://coreos.com/blog/rocket/">Rocket</a>. Rocket is a new container runtime, designed for composability, security, and speed.</p>
+<p>From their FAQ, <a href="https://github.com/coreos/rocket">Rocket</a> is an alternative to the Docker runtime, designed for server environments with the most rigorous security and production requirements. Rocket is oriented around the App Container specification, a new set of simple and open specifications for a portable container format.</p>
+<p>This is an interesting development and at the moment with Linux-only focus unlike Docker.</p>
+<h3 id="others">Others</h3>
+<p>There are other container solutions such as OpenVZ and Warden. I will not go into the details as I have not worked on any of these. I will try and pull some information on these if I get to experiment with them a bit.</p>
+<h2 id="future">Future</h2>
+<p>We looked at the history of container technology itself and the container solutions such as Docker. Docker has certainly brought Linux containers to lime-light. The future holds a lot. Many of the cloud providers have vouched for Docker integration and we can already see that in action with Microsoft Azure, Amazon Web Services, and Google Cloud Platform. Microsoft announced that the <a href="https://msopentech.com/blog/2014/10/15/docker-containers-coming-microsoft-linux-server-near/">Docker engine will soon come to the Windows Server</a> (both on-premises and in the cloud).</p>
+<p>With the exciting times ahead, it is time for both IT professionals and developers to start looking at the containers. Stay tuned for more in-depth information.</p>
+<hr>
+<h3 id="further-reading">Further Reading</h3>
+<p>Cgroups [<a href="https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt">Kernel Documentation</a>]</p>
+<p>Namespaces [<a href="https://www.kernel.org/doc/Documentation/namespaces/compatibility-list.txt">Kernel Documentation</a>]</p>
+<p><a href="http://www.cs.ucsb.edu/~rich/class/cs290-cloud/papers/lxc-namespace.pdf">Resource management: Linux kernel Namespaces and cgroups by Rami Rosen</a></p>
+<p><a href="http://uwsgi-docs.readthedocs.org/en/latest/Namespaces.html">Jailing your apps using Linux namespaces</a></p>
+<p><a href="http://www.tomsitpro.com/articles/lxc-linux-containers-docker,1-1904.html">Getting started with LXC</a></p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('http://www.facebook.com/share.php?u=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('http://twitter.com/home?status=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/shareArticle?mini=true&url=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/&title=&summary=&source=');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in Containers</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/">Containers – What are they? Why do you need one? – Part 1</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ravikanth" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+        
+        
+          
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2021
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+    
+
+    
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-3619442-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    
+    
+    
+
+  </body>
+
+</html>
