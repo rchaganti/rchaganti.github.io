@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Intrinsic events are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI creates intrinsic events for objects stored in the WMI repository. A provider generates intrinsic events for dynamic classes, but WMI can create an instance for a dynamic class if no provider is available. WMI uses polling to detect the changes.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -146,33 +146,84 @@
         
         <p><strong>Intrinsic events</strong> are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI creates intrinsic events for objects stored in the WMI repository. A provider generates intrinsic events for dynamic classes, but WMI can create an instance for a dynamic class if no provider is available. WMI uses polling to detect the changes.</p>
 <p>There are many system classes that WMI uses to report intrinsic events. However, the ones that are most interesting and useful are __InstanceCreationEvent, __InstanceModificationEvent, and __InstanceDeletionEvent. Hence, monitoring resources on a system involves monitoring of these system classes. These classes are derived from the __InstanceOperationEvent class which is derived from the __Event system class under root\Default namespace. The following capture of WMI CIM Studio shows this hierarchy.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/WQL8-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/WQL8-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/WQL8-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>The WQL syntax for WMI intrinsic event queries is:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">SELECT \* FROM __InstanceXEvent WITHIN PollingInterval WHERE TargetInstance ISA WMIClassName AND TargetInstance.WMIClassPropertyName = Value
-</code></pre></div><p>This is something similar to what we saw in the earlier post about WQL syntax for event queries. The __InstanceXEvent can be any of the system classes such as __InstanceCreationEvent, __InstanceModificationEvent, __InstanceDeletionEvent, and __InstanceOperationEvent. <strong>Now, when do we use each of these event classes?</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">SELECT \* FROM __InstanceXEvent WITHIN PollingInterval WHERE TargetInstance ISA WMIClassName AND TargetInstance.WMIClassPropertyName = Value
+</code></pre></td></tr></table>
+</div>
+</div><p>This is something similar to what we saw in the earlier post about WQL syntax for event queries. The __InstanceXEvent can be any of the system classes such as __InstanceCreationEvent, __InstanceModificationEvent, __InstanceDeletionEvent, and __InstanceOperationEvent. <strong>Now, when do we use each of these event classes?</strong></p>
 <p><strong>__InstanceCreationEvent</strong> is used when we want to receive a notification upon creation of an instance. For example, we can use this event class when you want to receive an event notification every time a new process gets created. This can be done by,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Query for new process events
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Query for new process events
 $query = &#34;Select * from __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA &#39;Win32_Process&#39;&#34;
 #Register WMI event
 Register-WmiEvent -Query $query -Action { Write-Host &#34;New Process Created. Do something useful here&#34; }
-</code></pre></div><p><strong>__InstanceDeletionEvent</strong> is used when we want to receive a notification upon deletion of an instance. For example, we can use this class when we want to receive an event notification every time a process is terminated. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Query for new process events
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>__InstanceDeletionEvent</strong> is used when we want to receive a notification upon deletion of an instance. For example, we can use this class when we want to receive an event notification every time a process is terminated. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Query for new process events
 $query = &#34;Select * from __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA &#39;Win32_Process&#39;&#34;
 #Register WMI event
 Register-WmiEvent -Query $query -Action { Write-Host &#34;A Process terminated. Do something useful here&#34; }
-</code></pre></div><p><strong>__InstanceModificationEvent</strong> is used when we want to monitor changes to an existing instance or a resource. For example, we can use this class when we want to receive an event notification when a the processor utilization on a system goes beyond a specified usage threshold. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Query for new process events
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>__InstanceModificationEvent</strong> is used when we want to monitor changes to an existing instance or a resource. For example, we can use this class when we want to receive an event notification when a the processor utilization on a system goes beyond a specified usage threshold. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Query for new process events
 $query = &#34;Select * from __InstanceModificationEvent WITHIN 5 WHERE TargetInstance ISA &#39;Win32_Processor&#39; AND TargetInstance.LoadPercentage &gt; 80&#34;
 #Register WMI event
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Processor utilization is more than 80%. Do something useful here&#34; }
-</code></pre></div><p>All of the examples above just displayed a message when the event notification was received. Instead, we can do something useful within the script block. For example, in the __InstanceCreationEvent example, we are just displaying that a new process was created but not the process name that just got created. <strong>So, how do we access that information in the script block and tell a user the name of the process that was created?</strong></p>
+</code></pre></td></tr></table>
+</div>
+</div><p>All of the examples above just displayed a message when the event notification was received. Instead, we can do something useful within the script block. For example, in the __InstanceCreationEvent example, we are just displaying that a new process was created but not the process name that just got created. <strong>So, how do we access that information in the script block and tell a user the name of the process that was created?</strong></p>
 <p>Simple, PowerShell creates an automatic variable called $event and stores the last event received in that variable. And, this automatic variable can be accessed in the -Action scriptblock you specify during a WMI event registration. Let us see an example.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/WQL8-2.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/WQL8-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/WQL8-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>If you see in the above example, I made an event registration for process creation events and in the -Action script block, assigned the $event variable to a variable in the global scope ($myEvent). This is essential because we cannot access the $event variable outside the -Action script block. Once the registration was done, I opened a notepad. This will fire the __InstanceCreationEvent and $myEvent should have the details around the event. So, I tried looking at all the members of this event. After exploring that a bit, I figured out that $myEvent.SourceEventArgs.NewEvent.TargetInstance.Name has the name of the new process which is notepad.exe. This is precisely what you see in the last line there.</p>
 <p>$Event.SourceEventArgs.NewEvent.TargetInstance will have the instance of the newly created process. I will leave it to you to explore more.</p>

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="The WMI query syntax for event queries is a bit different and deserves a discussion. So, before we delve in to the types of event queries, let us first look at the syntax for WQL event queries. As we discussed earlier, we use SELECT statement for event queries too. We can combine this with other keywords such as WITHIN, HAVING, and GROUP to change how we receive these WMI events.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -162,39 +162,101 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 <p>In the above syntax specification, we know the SELECT, FROM, and WHERE keywords. There are also other keywords such as WITHIN, GROUP, BY, and HAVING. Let us look at each one of these keywords now.</p>
 <h4 id="within">WITHIN</h4>
 <p>WITHIN keyword is used to specify the polling interval or grouping interval (used with GROUP clause) for the events. A polling interval is the interval that WMI uses as the maximum amount of time that can pass before notification of an event must be delivered. The general syntax to specify the polling interval,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">SELECT * FROM eventclass WITHIN interval WHERE property = value
-</code></pre></div><p>The polling interval value is specified as number of seconds and is a floating point number. So, we can specify values smaller than one second. However, specifying a polling interval smaller than one second (for example, 0.1) may cause system slow down due to the resource intensive nature of event queries. The recommended values for the polling interval really depend on the event calss. Do not use a small value here unless you really need the event notification be delivered immediately.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">SELECT * FROM eventclass WITHIN interval WHERE property = value
+</code></pre></td></tr></table>
+</div>
+</div><p>The polling interval value is specified as number of seconds and is a floating point number. So, we can specify values smaller than one second. However, specifying a polling interval smaller than one second (for example, 0.1) may cause system slow down due to the resource intensive nature of event queries. The recommended values for the polling interval really depend on the event calss. Do not use a small value here unless you really need the event notification be delivered immediately.</p>
 <h4 id="group">GROUP</h4>
 <p>Using GROUP clause causes WMI to generate a single notification to represent a group of events. When used in a WMI event query, this returns an instance of <a href="http://msdn.microsoft.com/en-us/library/aa394623(v=VS.85).aspx">__AggregateEvent</a> that contains an embedded object of one of the instances received during the grouping interval and number of such events received. These two are represented by <strong>representative</strong> &amp; <strong>NumberOfEvents</strong> properties respectively. The grouping interval specifies the time period, after receiving an initial event, during which WMI should collect similar events. The GROUP clause must contain a WITHIN clause to specify the grouping interval and can contain the BY or HAVING keyword, or both. And, the GROUP clause is placed after the WHERE clause if the query contains a WHERE clause. Here is the syntax:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">SELECT * FROM EventClass [WHERE property = value] GROUP WITHIN interval
-</code></pre></div><p>The WHERE, BY, and HAVING clauses are optional.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">SELECT * FROM EventClass [WHERE property = value] GROUP WITHIN interval
+</code></pre></td></tr></table>
+</div>
+</div><p>The WHERE, BY, and HAVING clauses are optional.</p>
 <p>This is especially useful when we don’t want to receive an event notification every time the event fires. For example, when monitoring a system, we may not want to receive a notification every time an specific event log gets generated. Instead, we can use GROUP clause to specify a grouping interval and receive only one notification for all the desired event logs generated within the grouping interval. Something similar to this:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
 $query = &#34;Select * from __instanceCreationEvent WHERE TargetInstance ISA &#39;Win32_NTLogEvent&#39; ANDTargetInstance.EventCode=1980 GROUP WITHIN 300&#34;
 #Register the event
 Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</code></pre></div><h4 id="having">HAVING</h4>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="having">HAVING</h4>
 <p>In the above imaginary example, we will receive an event notification for all the events received within the grouping interval. But, what if we want to receive the event notification only when ten such event logs are generated within the grouping interval? This is where HAVING plays an important role. Let us look at how we can modify the above sample code to use HAVING keyword.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
 $query = &#34;Select * from __instanceCreationEvent WHERE TargetInstance ISA &#39;Win32_NTLogEvent&#39; ANDTargetInstance.EventCode=1980 GROUP WITHIN 300 HAVING NumberOfEvents &gt; 10&#34;
 #Register the event
 Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</code></pre></div><p>I mentioned earlier that by using GROUP returns a property called <strong>NumberOfEvents</strong> that contains the number of events received during the grouping interval. Now, we use that property along with HAVING keyword to filter event notifications. Here is the syntax:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">SELECT \* FROM EventClass [WHERE property = value]
+</code></pre></td></tr></table>
+</div>
+</div><p>I mentioned earlier that by using GROUP returns a property called <strong>NumberOfEvents</strong> that contains the number of events received during the grouping interval. Now, we use that property along with HAVING keyword to filter event notifications. Here is the syntax:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">SELECT \* FROM EventClass [WHERE property = value]
 GROUP WITHIN interval HAVING NumberOfEvents operator constant
-</code></pre></div><p>So, using the HAVING query as shown above, an event notification is delivered only when WMI receives more than 10 events in the grouping interval.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>So, using the HAVING query as shown above, an event notification is delivered only when WMI receives more than 10 events in the grouping interval.</p>
 <h4 id="by">BY</h4>
 <p>You can use BY keyword along with GROUP clause to group events by one or more properties of the event class. The general syntax for using BY is as follows:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">SELECT \* FROM EventClass [WHERE property = value]
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">SELECT \* FROM EventClass [WHERE property = value]
 GROUP WITHIN interval [BY property_list]
-</code></pre></div><p>For example, The following example groups all events received in 300 seconds by the TargetInstance.SourceName property.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
+</code></pre></td></tr></table>
+</div>
+</div><p>For example, The following example groups all events received in 300 seconds by the TargetInstance.SourceName property.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Build a WMI query for receiving an event
 $query = &#34;Select * from __instanceCreationEvent WHERE TargetInstance ISA &#39;Win32_NTLogEvent&#39; `
                                                 GROUP WITHIN 300 BY TargetInstance.SourceName `
                                                 HAVING NumberOfEvents &gt; 10&#34;
 #Register the event
 Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</code></pre></div><p>In the above example, the events are grouped by the TargetInstance.SourceName property and an event notification is delivered only if the number of events received during the grouping interval exceeds 10.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, the events are grouped by the TargetInstance.SourceName property and an event notification is delivered only if the number of events received during the grouping interval exceeds 10.</p>
 <p>So far, we looked at all the important keywords that can be used while building WMI event queries. But, if you have observed, I kept using the words *<strong>eventclass*</strong> and *<strong>TargetInstance*</strong>. What are these?</p>
 <h4 id="event-classes">Event Classes</h4>
 <p>As discussed earlier, an event class is a WMI class that <a href="http://msdn.microsoft.com/en-us/library/aa390797(v=VS.85).aspx#wmi.gloss_event_consumer"><em>event consumers</em></a> can subscribe to by an <a href="http://msdn.microsoft.com/en-us/library/aa390797(v=VS.85).aspx#wmi.gloss_event_query"><em>event query</em></a>. The class reports a specific type of occurrence. For example, the <a href="http://msdn.microsoft.com/en-us/library/aa394376(v=VS.85).aspx"><strong>Win32_ProcessStopTrace</strong></a> class reports that a specific process has stopped. In the upcoming parts of this series, we will look at several examples of event classes when we discuss intrinsic and extrinsic events. In fact, __InstanceCreationEvent we used in all the above examples is a part of event classes that are used for intrinsic event queries. More on this later.</p>

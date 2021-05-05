@@ -20,15 +20,36 @@
       <description>&lt;p&gt;In this part of the &lt;a href=&#34;http://139.59.40.198/blog/?cat=240&#34;&gt;remoting series&lt;/a&gt;, we look at how &lt;a href=&#34;http://msdn.microsoft.com/en-us/library/cc226764(PROT.10).aspx&#34;&gt;CredSSP &lt;/a&gt;can be used for &lt;a href=&#34;http://msdn.microsoft.com/en-us/library/ee309365(VS.85).aspx&#34;&gt;multi-hop authentication&lt;/a&gt; in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or PowerShell remoting, per se. Credential Security Service Provider (CredSSP) is a new security service provider that enables an application to delegate the user’s credentials from the client to the target server. Multi-hop support in Windows Remote Management uses CredSSP for authentication. Since PowerShell 2.0 remoting is built on top of WinRM, we can use CredSSP to perform multi-hop authentication.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;So, what is multi-hop authentication?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Well, let us look at an example to understand what is multi-hop authentication. Imagine a group of computers as shown here and you establish a remoting session from computer A (client) to computer B (server) and then from computer B, you try to create a file in a file share on computer C.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting12-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting12-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting12-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Now, within the remoting session to computer B, we want to execute a command — as below — to create test.txt on computer C.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName Test-PC.SP2010lab.com -credential SP2010LAB\Administrator -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting12-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName Test-PC.SP2010lab.com -credential SP2010LAB\Administrator -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting12-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting12-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;This command results in an “Access Denied” error as shown above. This command fails since the remote session tries to access the file share using the machine credentilas instead of the credentials used to invoke the remote session. We could have successfully created the text file if there was a way to pass or delegate credentials from the client so that we can authenticate to the file share. This is what is called multi-hop authentication and PowerShell remoting enables this using CredSSP.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do we delegate credentials?&lt;/strong&gt;&lt;/p&gt;
@@ -38,29 +59,65 @@
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: You need to run these cmdlets in an elevated prompt.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enable-WSManCredSSP -Role Client -DelegateComputer &amp;#34;*.SP2010lab.com&amp;#34;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As shown here, you can use &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819469.aspx&#34;&gt;Enable-WSManCredSSP&lt;/a&gt; cmdlet to enable CredSSP authentication and specify the computer role as client. When the computer role is defined as a client, you can also specify the DelegateComputer parameter to specify the server or servers that receive the delegated credentials from the client. The delegateComputer accepts wildcards as shown above. You can also specify “*” to specify all computers in the network.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enable-WSManCredSSP -Role Client -DelegateComputer &amp;#34;*.SP2010lab.com&amp;#34;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;As shown here, you can use &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819469.aspx&#34;&gt;Enable-WSManCredSSP&lt;/a&gt; cmdlet to enable CredSSP authentication and specify the computer role as client. When the computer role is defined as a client, you can also specify the DelegateComputer parameter to specify the server or servers that receive the delegated credentials from the client. The delegateComputer accepts wildcards as shown above. You can also specify “*” to specify all computers in the network.&lt;/p&gt;
 &lt;p&gt;When &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819469.aspx&#34;&gt;Enable-WSManCredSSP&lt;/a&gt; cmdlet is used to enable CredSSP on the client by specifying client in the role parameter. The cmdlet then performs the following:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;The WS-Management setting &amp;lt;localhost|computername&amp;gt;\Client\Auth\CredSSP is set to true.&lt;/li&gt;
 &lt;li&gt;Sets the Windows CredSSP policy AllowFreshCredentials to WSMan/Delegate on the client.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Now, we will enable CredSSP on computer B and deginate that as server.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enable-WSManCredSSP -Role Server
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above cmdlet enables CredSSP on computer B and sets the WS-Management setting &amp;lt;localhost|computername&amp;gt;\Service\Auth\CredSSP is to true. Now, we can use Invoke-Command to run the script block as shown at the beginning of this post. However, we will specify the authentication method as CredSSP and pass the credentials.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName test-pc.SP2010lab.com -Credential SP2010Lab\Administrator -Authentication CredSSP -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting12-3.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enable-WSManCredSSP -Role Server
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The above cmdlet enables CredSSP on computer B and sets the WS-Management setting &amp;lt;localhost|computername&amp;gt;\Service\Auth\CredSSP is to true. Now, we can use Invoke-Command to run the script block as shown at the beginning of this post. However, we will specify the authentication method as CredSSP and pass the credentials.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName test-pc.SP2010lab.com -Credential SP2010Lab\Administrator -Authentication CredSSP -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting12-3.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting12-3.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As you see here,  we see the output from Create() method which shows the details of the newly created file.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Caution:&lt;/strong&gt; CredSSP authentication delegates the user’s credentials from the local computer to a remote computer. This practice increases the security risk of the remote operation. If the remote computer is compromised, when credentials are passed to it, the credentials can be used to control the network session.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;You can use &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819469.aspx&#34;&gt;Disable-WSManCredSSP&lt;/a&gt; to disable CredSSP authentication on a client or a server computer.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Disable-WSManCredSSP -Role Client            
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Disable-WSManCredSSP -Role Client            
 Disable-WSManCredSSP -Role Server
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can use &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819468.aspx&#34;&gt;Get-WSManCredSSP&lt;/a&gt; cmdlet to verify if a computer has CredSSP enabled and also the role (client/server).&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can use &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819468.aspx&#34;&gt;Get-WSManCredSSP&lt;/a&gt; cmdlet to verify if a computer has CredSSP enabled and also the role (client/server).&lt;/p&gt;
 &lt;p&gt;This is it for now. We will look at few more aspects of PowerShell remoting in the next part of this series. Stay tuned..!&lt;/p&gt;
 </description>
     </item>
@@ -77,16 +134,37 @@ Disable-WSManCredSSP -Role Server
 &lt;/blockquote&gt;
 &lt;p&gt;The concepts of remoting output are explained in a TechNet article at &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd347582.aspx&#34;&gt;http://technet.microsoft.com/en-us/library/dd347582.aspx&lt;/a&gt;. I am going to put some story around this to help you understand the concepts well.&lt;/p&gt;
 &lt;p&gt;First, let us start with an obvious difference in the output received from a remote session. If you use Invoke-Command to run Get-PSDrive, you see something like this.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;You can see an additional column in the output that shows the remote computer name with PSComputerName as the column name. This won’t be displayed if you run the same cmdlet on local computer. So, if you don’t want to display this information in the remote output you can use the -HideComputerName parameter.&lt;/p&gt;
 &lt;p&gt;It is also possible that some cmdlets may not display PSComputerName property. For example, Get-Date. In such a scenario you can add PSComputerName to the output of Get-Date as shown here&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;&lt;strong&gt;How remote command output is sent over to local computer?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;The objects that Windows PowerShell cmdlets return cannot be transmitted over the network. So, the live objects are “serialized”. In other words, the live objects are converted into XML representations of the object and its properties. Then, the XML-based serialized object is transmitted across the network to the local session where it gets deserialized in to .NET object. This is how an &lt;a href=&#34;http://msdn.microsoft.com/en-us/library/ms973893.aspx&#34;&gt;MSDN &lt;/a&gt;article defines serialization in .NET framework.&lt;/p&gt;
@@ -95,40 +173,85 @@ Disable-WSManCredSSP -Role Server
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;strong&gt;So, what does this mean to us in PowerShell remoting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;As it is defined above, the live objects are converted in to XML based representation. So, once deserialized in the local session, they don’t expose any methods that actually belong to the object. Let us see an example to understand this. First, let us look at Get-Process output in a local session and see what all methods we see.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-3.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-3.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-3.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Here, you can see a list of methods you can use against a process object. Now, let us take a look at how this looks when we execute the same command in a remote session.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-4.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-4.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-4.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;If you observe in the above screenshot, TypeName represents a deserialized object and there are no methods that you can use against a process object. A deserialized object represents a snapshot of get-process at the time of command execution in the remote session. This also means that you can’t execute methods such as Kill() against a deserialized process object. Also, no methods to modify the property set will work in the local session.&lt;/p&gt;
 &lt;p&gt;Windows PowerShell blog has a nice post on &lt;a href=&#34;http://blogs.msdn.com/powershell/archive/2010/01/07/how-objects-are-sent-to-and-from-remote-sessions.aspx&#34;&gt;how objects are to and from a remote session&lt;/a&gt;. I recommend that you read this post for more information.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;What about output formatting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Most deserialized objects are automatically formatted for display by entries in the Types.ps1xml or Format.ps1xml files. However, the local computer might not have formatting files for all of the deserialized objects that were generated on a remote computer. When objects are not formatted, all of the properties of each object appear in the console in a streaming list. To get formatting data from another computer, use the Get-FormatData and Export-FormatData cmdlets. Again, let us take an example to understand this.&lt;/p&gt;
 &lt;p&gt;Take an example of a SharePoint 2010 farm and you want to access /run SharePoint 2010 cmdlets from a Windows 7 machine using Invoke-Command. First, if we run Get-SPSite on SharePoint 2010 web frontend, you will see&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-5.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-5.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-5.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Now, if we try to run the same in a remote session using Invoke-Command, you will see&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-6.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-6.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-6.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As you see in the above screenshot, the output from a remote session is quite different from the one you saw in a local session. This is because we don’t have the formatting data available on the Windows 7 computer.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;So, how do we get the formatting data to local computer?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;We can use Get-FormatData, Export-FormatData and Update-FormatData cmdlets to get the formatting data from a remote computer to local session. To do this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
 Invoke-Command -Session $s -ScriptBlock {Get-FormatData -TypeName *SharePoint*} | Export-FormatData -Path C:\scripts\SharePoint.Format.ps1xml
 Update-FormatData -PrependPath C:\scripts\SharePoint.Format.ps1xml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting11-7.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting11-7.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting11-7.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Now, with the formatting information in the local session, you can see that Get-SPSite output is formatted similar to the one we saw when we ran the cmdlet in a local session. However, make a note that this applies only to the current session. If you close and re-open the PowerShell console, the formatting data will be lost. You can add the Update-FormatData cmdlet to your PowerShell profile to make the format data across all PowerShell sessions.&lt;/p&gt;
 &lt;p&gt;This is it. We are just a few more posts away from completing this PowerShell remoting series. Do let me know your feedback and let me know if you want to see something more around remoting.&lt;/p&gt;
@@ -143,7 +266,25 @@ Update-FormatData -PrependPath C:\scripts\SharePoint.Format.ps1xml
       <guid>https://ravichaganti.com/blog/powershell-2-0-remoting-guide-part-10-restricting-available-commands-using-custom-session-configuration/</guid>
       <description>&lt;p&gt;“With great power comes great responsibility”, said uncle Ben. But some people don’t just understand that. That is when you have to rip-off their powers. Similarly, the default PS Session configuration allows full access to PowerShell language, cmdlets, scripts and everything available to PowerShell. Of course, you need to authenticate as a local administrator or should have execute permission to invoke the session. Running a few cmdlets such as Stop-Service or Restart-Computer can be quite dangerous on a production server. This is where a custom session configuration can help provide role based access to remote host using PowerShell remoting.&lt;/p&gt;
 &lt;p&gt;We touched upon creating custom session configuration in &lt;a href=&#34;http://139.59.40.198/blog/?p=1200&#34;&gt;part 9&lt;/a&gt; of this PowerShell &lt;a href=&#34;http://139.59.40.198/blog/?cat=240&#34;&gt;remoting series&lt;/a&gt;. In this part, I will discuss how we can extend the concept of custom session configuration to restrict available commands and PowerShell language in a remote session. I will go striaght in to the startup script used to implement this since we already looked at how to create custom session configuration and assign permissions to a specific user.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$RequiredCommands = @(&amp;#34;Get-Command&amp;#34;,
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$RequiredCommands = @(&amp;#34;Get-Command&amp;#34;,
                              &amp;#34;Get-FormatData&amp;#34;,
                              &amp;#34;Out-Default&amp;#34;,
                              &amp;#34;Select-Object&amp;#34;,
@@ -157,13 +298,35 @@ $ExecutionContext.SessionState.Scripts.Clear()
 
 Get-Command -CommandType Cmdlet, alias, function | ?{$RequiredCommands -notcontains $_.Name} | %{$_.Visibility=&amp;#34;Private&amp;#34;}
 $ExecutionContext.SessionState.LanguageMode=&amp;#34;RestrictedLanguage&amp;#34;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As you see here, We have only a few required commands. We don’t want the remote user to execute commands other than this set. BTW, this set is the absolute minimum required even to start remoting session. So, consider this as a standard required commands list. Towards the end, we set the language mode to restricted to make sure the remote user cannot execute infinite loops, etc that could potentially bring the system down. This script, when used as the startup script for a session, will result in something as shown here.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting10-1.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;As you see here, We have only a few required commands. We don’t want the remote user to execute commands other than this set. BTW, this set is the absolute minimum required even to start remoting session. So, consider this as a standard required commands list. Towards the end, we set the language mode to restricted to make sure the remote user cannot execute infinite loops, etc that could potentially bring the system down. This script, when used as the startup script for a session, will result in something as shown here.&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting10-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting10-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As you see above, get-Command lists only the commands we have in the Required Commands list. However, if you have a large list of required commands, the method you have seen in the above code is not scalable. Instead, you can use a denied list of commands that is relatively small. For example, if you don’t want your users to execute Stop-Process or Restart-Computer, your code will look like&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$DeniedCommands = @(&amp;#34;Stop-Process&amp;#34;,
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$DeniedCommands = @(&amp;#34;Stop-Process&amp;#34;,
                              &amp;#34;Restart-Computer&amp;#34;
                              )            
 
@@ -172,10 +335,19 @@ $ExecutionContext.SessionState.Scripts.Clear()
 
 Get-Command -CommandType Cmdlet, alias, function | ?{$DeniedCommands -contains $_.Name} | %{$_.Visibility=&amp;#34;Private&amp;#34;}
 $ExecutionContext.SessionState.LanguageMode=&amp;#34;RestrictedLanguage&amp;#34;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So, if you use this code for your startup script, you will see something like this:&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting10-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;So, if you use this code for your startup script, you will see something like this:&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting10-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting10-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;I prefer the second method.&lt;/p&gt;
 &lt;p&gt;If you need to extend or modify the behavior of commands in a remote session, you need to create command proxies. You can read more about it @ &lt;a href=&#34;http://blogs.msdn.com/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx&#34;&gt;http://blogs.msdn.com/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx&lt;/a&gt;.&lt;/p&gt;
@@ -210,35 +382,79 @@ Set-PSSessionConfiguration
 Get-PSSessionConfiguration&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do I create a new session configuration?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Register-PSSessionConfiguration cmdlet can be used to create a new session configuration. You can use a C# asembly or a PowerShell script as a startup script for this new session configuration. This startup script can be used to customize the remoting experience. For example, create a script the imports Active Directory module using import-module cmdlet as shown here.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-Module ActiveDirectory
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Save this script as startupscript.ps1 or any name of your choice on the local computer. Now, use the Register-PSSessionConfiguration cmdlet to create a new session configuration. This can be done by running:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Register-PSSessionConfiguration -Name &amp;#34;ActiveDirectory&amp;#34; -StartupScript C:\scripts\StartupScript.ps1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You will be prompted to confirm this action and at the end to restart WinRM service on the local computer.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-Module ActiveDirectory
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Save this script as startupscript.ps1 or any name of your choice on the local computer. Now, use the Register-PSSessionConfiguration cmdlet to create a new session configuration. This can be done by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Register-PSSessionConfiguration -Name &amp;#34;ActiveDirectory&amp;#34; -StartupScript C:\scripts\StartupScript.ps1
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You will be prompted to confirm this action and at the end to restart WinRM service on the local computer.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Note: You must enable script execution on the local computer to be able to use the startup script as a part of session configuration&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;strong&gt;How do I see available session configurations?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Get-PSSessionConfiguration cmdlet lists all the available session configurations on the local computer.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting9-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting9-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting9-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As you see in the above output, Get-PSSessionConfiguration lists all available session configurations on the local computer and who has permission to access the configuration. No permissions have been assigned yet to the new active directory configuration.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do I give permissions to a session configuration?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;You can use Set-PSSessionConfiguration to allow access to invoke the new session configuration. To do this,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-PSSessionConfiguration -Name ActiveDirectory -ShowSecurityDescriptorUI
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This opens up the dialog to add permissions to invoke this session configuration. As you see in the screenshot here, administrators group has no invoke permission on this session configuration.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting9-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-PSSessionConfiguration -Name ActiveDirectory -ShowSecurityDescriptorUI
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This opens up the dialog to add permissions to invoke this session configuration. As you see in the screenshot here, administrators group has no invoke permission on this session configuration.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting9-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting9-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Select Allow -&amp;gt; Invoke permission here and click OK. You will be prompted to restart the WinRM service. Now, an administrator or a member of administrators group will be able to use this session configuration.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do I invoke a session configuration?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;You can use New-PSSession, Enter-PSSession and Invoke-Command cmdlets to load a session configuration othen than the default configuration. The ConfigurationName parameter can be used to specify the session configuration.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory      
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory      
 Enter-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory            
 Invoke-Command -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory -ScriptBlock {Get-Process}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;blockquote&gt;
 &lt;p&gt;Note: To be able to use the -StartupScript, script execution policy must be set to signed or unrestricted on the local computer where the session configuration is registered.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;In an earlier post — &lt;a href=&#34;http://139.59.40.198/blog/?p=1151&#34;&gt;part 6: Implict remoting sessions&lt;/a&gt; — we used Invoke-Command to load the active directory module within a persistent sesion and then use that persistent session to import active directory cmdlets in to local session. However, by using a session configuration that import active directory module as a startup script, we will have all the AD cmdlets available as soon as we connect to the remote session.&lt;/p&gt;
@@ -262,25 +478,62 @@ Invoke-Command -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory -Scri
 &lt;p&gt;A more detailed guide is available at &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd347642.aspx&#34;&gt;about_remote_troubleshooting&lt;/a&gt; page on TechNet. I will list only the scenarios I have tested.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Remoting to a computer in workgroup from a computer in domain&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Take an example of two computers, Win7-VM in a domain environment and WinXP-VM in a workgroup. Now, if you want to start a remoting session from Win7-VM using Enter-PSSession using:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName WinXP-VM -Credential WinXP-VM\Administrator
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;you will see an error message similar to the one here&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting8-1.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName WinXP-VM -Credential WinXP-VM\Administrator
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;you will see an error message similar to the one here&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting8-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting8-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;We can workaround this by adding the remote computer to local computer’s trusted hosts list — in this case, on Win7-VM. You can use one of the following methods.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-Item WSMan:\localhost\Client\TrustedHosts -Value *
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;set-item wsman:\localhost\Client\TrustedHosts -value WinXP-VM
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-Item WSMan:\localhost\Client\TrustedHosts -Value *
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;set-item wsman:\localhost\Client\TrustedHosts -value WinXP-VM
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: WSMan:\LocalHost\Client will be available only if WinRM service is enabled and running.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;The first command uses a wildcard to add all computers in the network to the list of trusted hosts and the second command adds only WinXP-VM to that list. You can also supply a comma seperated list.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Remoting to a computer in domain from a computer in workgroup&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Using the same example as above — if you want to establish a remoting session from WinXP-VM to Win7-VM, you can change the trusted hosts list on WinXP-VM to add the computers in the domain. Again, it can be done in multiple ways.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-Item WSMan:\localhost\Client\TrustedHosts -Value *            
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-Item WSMan:\localhost\Client\TrustedHosts -Value *            
 set-item wsman:\localhost\Client\TrustedHosts -value Win7-VM            
 set-item wsman:\localhost\Client\TrustedHosts -value *.remotinglab.com
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The first two commands variations must be familiar by now. The 3rd variation adds all computers in &lt;a href=&#34;http://remotinglab.com/&#34;&gt;remotinglab.com&lt;/a&gt; domain to the trusted hosts on WinXP-VM computer.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The first two commands variations must be familiar by now. The 3rd variation adds all computers in &lt;a href=&#34;http://remotinglab.com/&#34;&gt;remotinglab.com&lt;/a&gt; domain to the trusted hosts on WinXP-VM computer.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Remoting to a domain computer as a non-administrator from another domain computer&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;To start a remoting a session with a remote computer, the user initiating the remoting session must&lt;/p&gt;
 &lt;ol&gt;
@@ -288,14 +541,31 @@ set-item wsman:\localhost\Client\TrustedHosts -value *.remotinglab.com
 &lt;li&gt;Be able to authenticate to the remote computer as an administrator using the Credential parameter&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Alternatively — on the remote computer, you can give non-administrator users execute permission to default session configuration. This can be done by running the following command at a elevated PowerShell prompt:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-PSSessionConfiguration Microsoft.Powershell -ShowSecurityDescriptorUI            
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Set-PSSessionConfiguration Microsoft.Powershell -ShowSecurityDescriptorUI            
 
 #In addition to the above, on a x64 computer
 Set-PSSessionConfiguration Microsoft.Powershell32 -ShowSecurityDescriptorUI
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When you use the above cmdlet, you will see a dialog box as shown here.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting8-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;When you use the above cmdlet, you will see a dialog box as shown here.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting8-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting8-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Here, you need to click add and then select the non-administrator user account. Once added, give the user Execute permission. After you click OK on the main dialog and return to PowerShell, you will be prompted to restart WinRM service. That is it. I recommend this method than the first two. This way a non-administrator user should be able to remote in to a domain computer without providing administrator credentials or adding the user to local administrators group.&lt;/p&gt;
 &lt;p&gt;A few things I discussed here today are really meant for an advanced remoting post. However, for the sake of getting started in a mixed environment, I thought this post is must. Feel free to write any questions you may have in an email or tweet to me.&lt;/p&gt;
@@ -310,20 +580,43 @@ Set-PSSessionConfiguration Microsoft.Powershell32 -ShowSecurityDescriptorUI
       <guid>https://ravichaganti.com/blog/powershell-2-0-remoting-guide-part-7-saving-remote-session-to-disk/</guid>
       <description>&lt;p&gt;In &lt;a href=&#34;http://139.59.40.198/blog/?p=1151&#34;&gt;part 6&lt;/a&gt; of the &lt;a href=&#34;http://139.59.40.198/blog/?cat=240&#34;&gt;remoting series&lt;/a&gt; we looked at how we can use Import-PSSession cmdlet to execute remote commands as if they were local. This is nice but this will last only while the session ($s in the example) is alive. The moment we kill the session — using Rem0ve-PSSession, remoting session will also get killed. In this part of the series, we will look at how we can save a remoting session to disk so that we don’t even have to explicitly create a session.&lt;/p&gt;
 &lt;p&gt;This is achieved using &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd347679.aspx&#34;&gt;Export-PSSession&lt;/a&gt; cmdlet. This cmdlet lets us import commands from a remote session and save the same in a PowerShell module on the local disk. This cmdlet can get cmdlets, functions, aliases, and other command types in to a PowerShell module. The following example shows how we can achieve this.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {Import-Module ActiveDirectory}
 Export-PSSession -Session $s -OutputModule ADRemoteCommands -AllowClobber -Module ActiveDirectory
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, the first two lines should be quite familiar by now. The third line is where the magic happens. We tell Export-PSSession cmdlet to export all the commands, aliases, functions, etc available in PS Session $s to a module on hard disk and name it ADRemoteCommands.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;In the above example, the first two lines should be quite familiar by now. The third line is where the magic happens. We tell Export-PSSession cmdlet to export all the commands, aliases, functions, etc available in PS Session $s to a module on hard disk and name it ADRemoteCommands.&lt;/p&gt;
 &lt;p&gt;If the Export-PSSession is successful, you will see output similar to what is shown here&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting7-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting7-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting7-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;In the above output, it is clear that Export-PSSession generates .psm1, .psd1 and format data file for the module automatically. Now, you can load the module at any later point in time to get access to the remote commands.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do we import the saved module?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;If you observe the output closely, path where the module files are stored is same as $Env:PSModulePath. So, you don’t need to specify the absolute path to the module.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-Module ADRemoteCommands
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This imports all remote commands available in the module to local session. Whenever we execute a remote command, implicit remoting kicks in, establishes the remote session, executes the command in remote session and returns the output. All this is done without you really using any remoting related cmdlets. If establishing a remote session requires a password, you will be prompted for one.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-Module ADRemoteCommands
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This imports all remote commands available in the module to local session. Whenever we execute a remote command, implicit remoting kicks in, establishes the remote session, executes the command in remote session and returns the output. All this is done without you really using any remoting related cmdlets. If establishing a remote session requires a password, you will be prompted for one.&lt;/p&gt;
 &lt;p&gt;This brings us to the end of Part 7. With this, I covered all the remoting basics and we can now move on to more advanced topics like session options and WSMan configuration required for PS Remoting. Stay tuned for that..!&lt;/p&gt;
 </description>
     </item>
@@ -341,33 +634,76 @@ Export-PSSession -Session $s -OutputModule ADRemoteCommands -AllowClobber -Modul
 &lt;p&gt;Using Invoke-Command is certainly not the choice because it involves setting up a session to the remote computer and then sending a script block to execute in that session. This is quite tedious. Although interactive remoting can eliminate the drawbacks of Invoke-Command, it is specific one remote session. So, if you are connected to the Exchange 2010 remote session, your SharePoint 2010 session is not available. This is where implicit remoting becomes important.&lt;/p&gt;
 &lt;p&gt;Implicit remoting can be used to bring remote commands to a local session. In implicit remoting, once you import remote commands in to a local session, you don’t have to worry about the PS session details. You can import any number of remote sessions in to the local session making it possible to access cmdlets from different product technologies in the same local session. PowerShell will take care of that for you in the background.&lt;/p&gt;
 &lt;p&gt;Now, we can connect do a different remote session and import cmdlets from that session also.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
 Import-PSSession -Session $s
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, within the local session, we have access to AD cmdlets from one computer and SharePoint 2010 cmdlets from another machine. This makes it easy to manage both from the same computer and local session without worrying much about creating / destroying sessions.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now, within the local session, we have access to AD cmdlets from one computer and SharePoint 2010 cmdlets from another machine. This makes it easy to manage both from the same computer and local session without worrying much about creating / destroying sessions.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Nice. So, how do we use implicit remoting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Well, we have to first create a persistent PS session using New-PSSession and then use that to import remote commands in to local session. You can do it as shown here&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Import-PSSession -Session $s
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default, Import-PSSession imports all commands except for commands that have the same names as commands in the current session. To import all the commands, use the AllowClobber parameter.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;By default, Import-PSSession imports all commands except for commands that have the same names as commands in the current session. To import all the commands, use the AllowClobber parameter.&lt;/p&gt;
 &lt;p&gt;If you import a command with the same name as a command in the current session, the imported command hides or replaces the original commands. Essentially, imported commands take precedence over the local commands with same name. Irrespective of whether those commands were loaded after importing a session or before. However, aliases are an exception. Original aliases in the local session take precedence over imported aliases.&lt;/p&gt;
 &lt;p&gt;To know more about the command precedence, read&lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd347579.aspx&#34;&gt; about_Command_Precedence&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do we differentiate between local &amp;amp; remote commands or avoid name conflicts while importing?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Import-PSSession provide -Prefix parameter which adds the specified prefix to the nouns in the names of imported commands. For example,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-PSSession -Session $s -Prefix RS
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;will prefix RS to all the cmdlets imported from a remote computer. So, if Get-Command was imported using this method, the local session will have Get-RSCommand and when you use this cmdlet, PowerShell implicitly runs this command inside the remote session.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Import-PSSession -Session $s -Prefix RS
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;will prefix RS to all the cmdlets imported from a remote computer. So, if Get-Command was imported using this method, the local session will have Get-RSCommand and when you use this cmdlet, PowerShell implicitly runs this command inside the remote session.&lt;/p&gt;
 &lt;p&gt;As we discussed earlier in this post, PowerShell manages implicit remoting in the background. So, the behavior of Invoke-Command — creates/destroys a PS session every time we execute a remote command — exists with implicit remoting too. Hence, you will see that executing remote commands over this method a bit slow. To work around this, import-PSSession adds a -asJob parameter to all the commands imported in to the local session.&lt;/p&gt;
 &lt;p&gt;For example,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Import-PSSession -Session $s -Prefix RS            
 
 Get-RSProcess -asJob
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;will run Get-Process on the remote computer as a background job. The original Get-Process has no -asJob parameter.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;will run Get-Process on the remote computer as a background job. The original Get-Process has no -asJob parameter.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do we import modules or snap-ins in to local session?&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {Import-Module ActiveDirectory}
 Import-PSSession -Session $s -Module ActiveDirectory
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example, we first create a PS session, import active directory module using Invoke-Command and then import the session in to the local session. This makes all the active directory cmdlets available in the local session.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;In the above example, we first create a PS session, import active directory module using Invoke-Command and then import the session in to the local session. This makes all the active directory cmdlets available in the local session.&lt;/p&gt;
 &lt;p&gt;This is the end of part 6 of the remoting series. In the next post, I will talk about how we can save the imported session to hard disk.&lt;/p&gt;
 </description>
     </item>
@@ -381,49 +717,117 @@ Import-PSSession -Session $s -Module ActiveDirectory
       <description>&lt;p&gt;In this part of the &lt;a href=&#34;http://139.59.40.198/blog/?cat=240&#34;&gt;remoting series&lt;/a&gt;, I will talk about using Enter-PSSession and Exit-PSSession cmdlets to perform interactive remoting.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Why do you need interactive remoting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;To understand the advantages of interactive remoting in PowerShell 2.0, let us first look at some gotchas with Invoke-Command. Take an example of a remote system where SharePoint 2010 is installed. SharePoint 2010 provides native PowerShell cmdlets and these cmdlets can be accesses only if you load Microsoft.SharePoint.PowerShell PS snap-in. So, to do this using Invoke-Command&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE            
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE            
 
 #load the PS Snap-in to enable SharePoint PS cmdlets
 Invoke-Command -Session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
 
 #$s has the PowerShell cmdlets now
 Invoke-Command -Session $s -ScriptBlock {Get-SPWeb http://sp2010-wfe:999}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you look at the above code, we will have to use a persistent session so that we can use SharePoint cmdlets in subsequent Invoke-Command calls.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;If you look at the above code, we will have to use a persistent session so that we can use SharePoint cmdlets in subsequent Invoke-Command calls.&lt;/p&gt;
 &lt;p&gt;Another caveat will be the unavailability of remote computer cmdlets in the local PowerShell session — in this case, the SharePoint 2010 cmdlets. This — essentially – means that we cannot use Get-Help or Get-Command cmdlets against the SharePoint 2010 cmdlets in the local session unless we pass that as a script block to Invoke-Command.&lt;/p&gt;
 &lt;p&gt;One more disadvantage of using Invoke-Command is unavailability of command completion. Unless the cmdlet you are using inside the scriptblock is available locally, you cannot use tab completion. This can be a pain for many, including me.&lt;/p&gt;
 &lt;p&gt;This where interactive remoting comes in to play.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do you start interactive remoting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Enter-PSSession enables interactive sessions with remote computer. You can use this cmdlet the same way you’d use Invoke-Command.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName SP2010-WFE
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting5-1.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName SP2010-WFE
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting5-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting5-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As shown in the above screenshot, PowerShell prompt changes to reflect that you are in the remote session. Now, taking the above example of SharePoint 2010 cmdlets, you can load the PS Snap-in as if you were loading it locally without using Invoke-Command&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Add-PSSnapin Microsoft.SharePoint.PowerShell
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once the snap-in loaded, you will have access to all the SharePoint 2010 cmdlets as if they are available on the local computer. You can verify that by using Get-Help against one of the SharePoint 2010 cmdlets.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Get-Help Get-SPWeb -Full
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Enter-PSSession when used with -ComputerName parameter, creates a PSSession in the background and uses that throughout the life of a remote session.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Add-PSSnapin Microsoft.SharePoint.PowerShell
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Once the snap-in loaded, you will have access to all the SharePoint 2010 cmdlets as if they are available on the local computer. You can verify that by using Get-Help against one of the SharePoint 2010 cmdlets.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Get-Help Get-SPWeb -Full
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Enter-PSSession when used with -ComputerName parameter, creates a PSSession in the background and uses that throughout the life of a remote session.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How do I exit a interactive session?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;You can use Exit-PSSession to come out of an interactive PS Session. This will close any temporary session created in the background. So, it means that any variables or data you created during the interactive session won’t be available once you exit the session.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;How about using persistent sessions in interative remoting?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Oh yes, that is a great idea. In fact, it will be advantageous to use persistent sessions. By using a persistent session, you can enter and exit the interactive session as many times as you like. All the data and variables you created in the remote session will persist until you remove the session. You can do it the same way you used persistent sessions with Invoke-Command.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
 Enter-PSSession -Session $s
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Can I enter an existing PSSession?&lt;/strong&gt;&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Can I enter an existing PSSession?&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Yes. You can use Get-PSSession cmdlet to see a list of all available/opened PS Sessions and then use Enter-PSSession as shown above to start interactive remoting. As you see here, I will pipe Get-PSSession output to Format-List cmdlet to get all session details.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting5-2.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting5-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting5-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;There are four ways to enter an existing PS Session for interactive remoting. I have highlighted the available options in the above screenshot. You can use which ever way is convenient.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -id 1
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -id 1
 Enter-PSSession -InstanceId 55a417ed-f903-4265-a4dc-c892c2500e0d
 Enter-PSSession -Name Session1            
 
 $s = Get-PSSession -Id 1
 Enter-PSSession -Session $s
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;All of the above options start interactive session using the persistent session “session1”. It is just more than one way to do the same thing.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;All of the above options start interactive session using the persistent session “session1”. It is just more than one way to do the same thing.&lt;/p&gt;
 &lt;p&gt;Alright. This brings us to the end of this part on Interactive remoting sessions. In this next part, I will talk about something called implicit remoting. Stay tuned..!&lt;/p&gt;
 </description>
     </item>
@@ -438,46 +842,127 @@ Enter-PSSession -Session $s
 &lt;p&gt;Once you have &lt;!-- raw HTML omitted --&gt;enabled remoting&lt;!-- raw HTML omitted --&gt; on all your computers, you can use&lt;!-- raw HTML omitted --&gt; Invoke-Command&lt;!-- raw HTML omitted --&gt; cmdlet to run commands and scripts on local computer or on remote computer(s). There are many possible variations of this cmdlet. I will cover most of them here.&lt;/p&gt;
 &lt;h4 id=&#34;invoke-command-to-run-commands-on-local-or-remote-computer&#34;&gt;Invoke-Command to run commands on local or remote computer&lt;/h4&gt;
 &lt;p&gt;You can invoke a command on local or remote computer(s) using the below method:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The ScriptBlock parameter can be used to specify a list of commands you want to run on the remote computer.  ComputerName parameter is not required for running commands on the local machine. If you want to run the same command on multiple remote computers, you can supply the computer names as a comma separated list to ComputerName parameter or use a text file as shown in the example here&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;!-- raw HTML omitted --&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The ScriptBlock parameter can be used to specify a list of commands you want to run on the remote computer.  ComputerName parameter is not required for running commands on the local machine. If you want to run the same command on multiple remote computers, you can supply the computer names as a comma separated list to ComputerName parameter or use a text file as shown in the example here&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;All command names and variables in the ScriptBlock are evaluated on the remote computer. So, if you do something like -ScriptBlock {Get-Process -Name $procName}, PowerShell expects the remote computer session to have $procName defined. You can however pass variables on the local computer to a remote session when using Invoke-Command. This brings us to the next point in our discussion.&lt;/p&gt;
 &lt;h4 id=&#34;passing-local-variables-as-arguments-to-remote-computer&#34;&gt;Passing local variables as arguments to remote computer&lt;/h4&gt;
 &lt;p&gt;Taking the above example, we can pass the Name of the process you are looking for as a variable to the script block. ArgumentList parameter helps you achieve this. You can do this as shown here.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$procName = &amp;#34;powerShell&amp;#34;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$procName = &amp;#34;powerShell&amp;#34;
 Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {param ($Name) Get-Process -Name $Name} -ArgumentList $procName
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above example may be a simple one but it shows how to use -ArgumentList parameter to pass local variables to the remote session.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The above example may be a simple one but it shows how to use -ArgumentList parameter to pass local variables to the remote session.&lt;/p&gt;
 &lt;h4 id=&#34;invoke-command-to-execute-scripts-on-remote-computers&#34;&gt;Invoke-Command to execute scripts on remote computer(s)&lt;/h4&gt;
 &lt;p&gt;Using ScriptBlock parameter can be quite tedious when you have to execute a bunch of PowerShell commands. This can be confusing when you have loops and conditional statements inside the scriptblock. Invoke-Command provides FilePath parameter to address this. You can use this parameter as shown below&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Make a note that the script you provide as FilePath must exist on the local machine or at a place accessible to the local machine.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Make a note that the script you provide as FilePath must exist on the local machine or at a place accessible to the local machine.&lt;/p&gt;
 &lt;h4 id=&#34;using--session-parameter-for-better-performance-and-sharing-data-between-commands&#34;&gt;Using -Session parameter for better performance and sharing data between commands&lt;/h4&gt;
 &lt;p&gt;Whenever you run Invoke-Command with -ComputerName parameter, a temporary session gets established to execute the remote command. So, establishing a session every time you use this cmdlet can be time consuming. So, to avoid that we can use a persistent connection to the remote computer and that is what -Session uses. You can create a persistent connection to a remote computer by using New-PSSession cmdlet as shown here&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, $s contains the session details for the persistent connection. We can use $s to invoke a command on the remote computer and the syntax for that will be&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Commad -Session $s -ScriptBlock {get-Process}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;$s contains all the variables you create / modify when you execute commands on the remote computer. So, subsequent command execution with $s as the session will have access to all of the variables created / updated on the remote computer. For example,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = new-pssession -computername SP2010-WFE
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = New-PSSession -ComputerName SP2010-WFE
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now, $s contains the session details for the persistent connection. We can use $s to invoke a command on the remote computer and the syntax for that will be&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Commad -Session $s -ScriptBlock {get-Process}
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;$s contains all the variables you create / modify when you execute commands on the remote computer. So, subsequent command execution with $s as the session will have access to all of the variables created / updated on the remote computer. For example,&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$s = new-pssession -computername SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {$fileCount = (Get-ChildItem C:\ -Recurse).Count}
 invoke-command -session $s -scriptblock {$fileCount}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We could access $fileCount variable only because we used a persistent session to run the command. This would not have been possible if used -ComputerName to invoke the remote command.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;We could access $fileCount variable only because we used a persistent session to run the command. This would not have been possible if used -ComputerName to invoke the remote command.&lt;/p&gt;
 &lt;h4 id=&#34;running-remote-command-as-a-background-job&#34;&gt;Running remote command as a background job&lt;/h4&gt;
 &lt;p&gt;The example shown above — which gets the total file count on C:\ of a remote machine — can be quite time consuming based on how big is C:\ on the remote computer. In such case, you will have to wait for the remote command to complete execution. To avoid this, you can use -AsJob parameter to run the command as a background job on the remote computer.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once you run this, you will see the job details listed as shown here:&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting4-1.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Once you run this, you will see the job details listed as shown here:&lt;/p&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting4-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting4-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Now, you can use Get-Job and receive job cmdlets to see the output from the background job as shown below.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Get-Job -id 1 | Receive-Job
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A complete discussion on Background jobs deserves a series of posts. I will plan to do that next. If you don’t want to wait and learn about it right away, you can read about it @ &lt;!-- raw HTML omitted --&gt;&lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd315273.aspx&#34;&gt;http://technet.microsoft.com/en-us/library/dd315273.aspx&lt;/a&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Get-Job -id 1 | Receive-Job
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;A complete discussion on Background jobs deserves a series of posts. I will plan to do that next. If you don’t want to wait and learn about it right away, you can read about it @ &lt;!-- raw HTML omitted --&gt;&lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd315273.aspx&#34;&gt;http://technet.microsoft.com/en-us/library/dd315273.aspx&lt;/a&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
 &lt;h4 id=&#34;specifying-credentials-required-for-remoting&#34;&gt;Specifying credentials required for remoting&lt;/h4&gt;
 &lt;p&gt;As we have seen the &lt;!-- raw HTML omitted --&gt;enable remoting post&lt;!-- raw HTML omitted --&gt;, you can use PowerShell remoting between computers in a workgroup environment too. All of the examples I showed above assume that you have access to remote computer as an administrator. This method works quite well in a domain environment where the logged on user has administrator credentials to access any computer in the domain. However, this will not work in a workgroup setup. Within a workgroup you need to pass the credentials along with Invoke-Command. To do that,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$cred = Get-Credential
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;$cred = Get-Credential
 Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process} -Credential $cred
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the example above, Get-Credential prompts for the credentials to access remote computer and uses the same while calling Invoke-Command cmdlet.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;In the example above, Get-Credential prompts for the credentials to access remote computer and uses the same while calling Invoke-Command cmdlet.&lt;/p&gt;
 &lt;p&gt;This is the end of this article on Invoke-Command. Invoke-Command has many other parameters which are not discussed here. They are more advanced and used in specific scenarios. I will discuss those use cases as we proceed further in this series of posts on PowerShell 2.0 remoting.&lt;/p&gt;
 </description>
     </item>
@@ -494,28 +979,63 @@ Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process} -Credential 
 &lt;h4 id=&#34;enable-psremoting&#34;&gt;Enable-PSRemoting&lt;/h4&gt;
 &lt;p&gt;Note: You have to run this at a elevated PowerShell prompt. Also, all your active networks should be set to “Home” or “Work” network location. Setting firewall exceptions for remoting will fail if the network location is set to “Public”.&lt;/p&gt;
 &lt;p&gt;Yes. That is it. You will be asked to respond to a couple of questions — based on OS architecture — as you see in the screenshot here.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting3-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting3-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting3-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;As you see above, Enable-PSRemoting internally uses Set-WSManQuickConfig and a few &lt;!-- raw HTML omitted --&gt;other cmdlets&lt;!-- raw HTML omitted --&gt;. The second prompt around Microsoft.PowerShell32 will appear only on x64 OS. However, you should always use the more comprehensive Enable-PSRemoting cmdlet. If you don’t want to see all these prompts and but want to enable remoting in a more slient manner, you can use the -force parameter along with the cmdlet. Other parameters to Enable-PSRemoting cmdlet include -confirm and -whatif. You can run this cmdlet on all machines where you want to be able to receive commands from other machines in the network.&lt;/p&gt;
 &lt;p&gt;How can you verify if remoting is enabled or not? You can use the Enter-PSSession cmdlet to test if remoting is enabled on the local machine or not.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName localhost
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If remoting is enabled and functional, you will see the prompt changing to something like this:&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting3-2.png&#34;/&gt; 
-&lt;/figure&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Enter-PSSession -ComputerName localhost
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;If remoting is enabled and functional, you will see the prompt changing to something like this:&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting3-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting3-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;h4 id=&#34;powershell-remoting-in-a-workgroup-environment&#34;&gt;PowerShell remoting in a workgroup environment&lt;/h4&gt;
 &lt;p&gt;You will not be able to connect to a computer in workgroup just by running Enable-PSRemoting cmdlet. This is essentially because the security levels on a workgroup joined computer are more stringent than on a domain joined computer.&lt;/p&gt;
 &lt;p&gt;On Windows XP systems, you need to make sure the local security policy to enable classic mode authentication for network logons. This cabe be done by opening “Local Security Policy” from Control Panel -&amp;gt; Administrative Tools. Over there, navigate to Local Policies -&amp;gt; Security Options and double click on “Network Access: Sharing and Security Model for local accounts” and set it to classic.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting3-3.png&#34;/&gt; 
-&lt;/figure&gt;
+
+
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting3-3.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting3-3.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Once the above change is made, you can enable remoting using Enable-PSremoting and then run:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;set-item&lt;/span&gt; wsman&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;localhost\client\trustedhosts -value *
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;On Vista and later operating systems in workgroup model, you need to run the above cmdlet only. After these steps are performed, you should be able to send commands to a remote computer in a workgroup enviroment.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;set-item&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;wsman&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;localhost&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;trustedhosts&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-value&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;On Vista and later operating systems in workgroup model, you need to run the above cmdlet only. After these steps are performed, you should be able to send commands to a remote computer in a workgroup enviroment.&lt;/p&gt;
 &lt;p&gt;To enable remoting for multiple computers in an enterprise or domain environment, you can use group policy. For more information on this, refer to the “HOW TO ENABLE REMOTING IN AN ENTERPRISE” section at &lt;!-- raw HTML omitted --&gt;&lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd347642.aspx&#34;&gt;http://technet.microsoft.com/en-us/library/dd347642.aspx&lt;/a&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
 &lt;p&gt;In the next set of posts, we will see how to execute commands on remote machines using various cmdlets available within PowerShell remoting.&lt;/p&gt;
 </description>
@@ -590,9 +1110,16 @@ The &lt;a href=&#34;http://technet.microsoft.com/en-us/library/dd819469.aspx&#34
 &lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;To be able run scripts and commands on remote computers, the user performing remote script execution must be a member of the administrators group on the remote machine or should be able to provide administrator credentials at the time of remote execution. Also, on client versions of Windows such as Windows Vista and Windows 7, network location must be set either to Home or Work. WS-Management may not function properly if the network location is set to Public.&lt;/p&gt;
 &lt;p&gt;Here is the setup I have to experiment with PowerShell remoting. I will use these virtual machines and the Windows Server 2008 R2 OS to write my file browser PowerPack using PowerShell remoting. This will help me get a good coverage of all supported operating system families.&lt;/p&gt;
-&lt;figure&gt;
-    &lt;img src=&#34;https://ravichaganti.com/images/remoting1-1.png&#34;/&gt; 
-&lt;/figure&gt;
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; &gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/remoting1-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/remoting1-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
 
 &lt;p&gt;&lt;!-- raw HTML omitted --&gt;Jonathan Medd&lt;!-- raw HTML omitted --&gt; is currently writing a PowerShell cmdlet series in which he is talking about remoting cmdlets also. What I am going to write here is not a repeat of that. In the &lt;!-- raw HTML omitted --&gt;next pos&lt;!-- raw HTML omitted --&gt;t, we will look &lt;!-- raw HTML omitted --&gt;at how to configure the available systems to enable&lt;!-- raw HTML omitted --&gt; at an overview of PowerShell remoting  cmdlets. I will also talk about various methods to enable PowerShell remoting. So, stay tuned..!&lt;/p&gt;
 </description>

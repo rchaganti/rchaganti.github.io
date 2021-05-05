@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -168,191 +168,426 @@
 <p>In the last part of the series, you learned about functions in Go language. Functions are first-class citizens in Golang. What this means is that you can not only use function declarations as just reusable code blocks but you can also assign functions to variables, use functions as parameters on other functions, and even return functions from other functions. This is achieved using function literals which are also known as anonymous functions.</p>
 <h2 id="function-literals">Function literals</h2>
 <p>Go language specification defines a function literal syntax as follows.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">FunctionLit = <span style="color:#0ff;font-weight:bold">&#34;func&#34;</span> Signature FunctionBody .
-</code></pre></div><p>Compare this to the function declaration syntax.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">FunctionDecl = <span style="color:#0ff;font-weight:bold">&#34;func&#34;</span> FunctionName Signature [ FunctionBody ] .
-</code></pre></div><p>The difference is in the name of the function. The function literals or anonymous functions do not have a name or an identifier. The function declaration binds an identifier to a function whereas function literals do not have a name or an identifier (and, therefore called anonymous functions) and can be assigned to a variable, passed to another function, and returned from a function.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">FunctionLit</span> <span class="p">=</span> <span class="s">&#34;func&#34;</span> <span class="nx">Signature</span> <span class="nx">FunctionBody</span> <span class="p">.</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Compare this to the function declaration syntax.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">FunctionDecl</span> <span class="p">=</span> <span class="s">&#34;func&#34;</span> <span class="nx">FunctionName</span> <span class="nx">Signature</span> <span class="p">[</span> <span class="nx">FunctionBody</span> <span class="p">]</span> <span class="p">.</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The difference is in the name of the function. The function literals or anonymous functions do not have a name or an identifier. The function declaration binds an identifier to a function whereas function literals do not have a name or an identifier (and, therefore called anonymous functions) and can be assigned to a variable, passed to another function, and returned from a function.</p>
 <h3 id="inline-execution">Inline execution</h3>
 <p>Here is an example of inline execution of a function literal.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
-    <span style="color:#fff;font-weight:bold">func</span>() {
-		fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function!&#34;</span>)
-	}()
-}
-</code></pre></div><p>In the above example, the function literal inside <code>main</code> is the function literal. It has no name or an identifier. And, the parenthesis at the end of the function literal make it execute inline. So, when you run this, the first <code>Println</code> gets called and then the <code>Println</code> inside the anonymous function gets called.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello from main!&#34;</span><span class="p">)</span>
+    <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello from an anonymous function!&#34;</span><span class="p">)</span>
+	<span class="p">}()</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, the function literal inside <code>main</code> is the function literal. It has no name or an identifier. And, the parenthesis at the end of the function literal make it execute inline. So, when you run this, the first <code>Println</code> gets called and then the <code>Println</code> inside the anonymous function gets called.</p>
 <h2 id="passing-arguments">Passing arguments</h2>
 <p>You can pass arguments to these anonymous functions.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
-	<span style="color:#fff;font-weight:bold">func</span>(version <span style="color:#fff;font-weight:bold">float64</span>) {
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span>, version)
-	}(<span style="color:#ff0;font-weight:bold">1.15</span>)
-}
-</code></pre></div><p>This example declares one parameter to the function called <code>version</code> which is of <code>float64</code> data type. And, at the end of function literal definition, you can pass the value associated with the version parameter within the parenthesis.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello from main!&#34;</span><span class="p">)</span>
+	<span class="kd">func</span><span class="p">(</span><span class="nx">version</span> <span class="kt">float64</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span><span class="p">,</span> <span class="nx">version</span><span class="p">)</span>
+	<span class="p">}(</span><span class="mf">1.15</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This example declares one parameter to the function called <code>version</code> which is of <code>float64</code> data type. And, at the end of function literal definition, you can pass the value associated with the version parameter within the parenthesis.</p>
 <h2 id="assigning-functions-to-variables">Assigning functions to variables</h2>
 <p>Function literals, as mentioned earlier, can be assigned to variables. It is like any other value that you assign to a variable. Here is an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Hello from main!&#34;</span>)
-	f := <span style="color:#fff;font-weight:bold">func</span>(version <span style="color:#fff;font-weight:bold">float64</span>) {
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span>, version)
-	}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello from main!&#34;</span><span class="p">)</span>
+	<span class="nx">f</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">version</span> <span class="kt">float64</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Hello from an anonymous function in Go language %.2f!&#34;</span><span class="p">,</span> <span class="nx">version</span><span class="p">)</span>
+	<span class="p">}</span>
 
-	f(<span style="color:#ff0;font-weight:bold">1.15</span>)
-}
-</code></pre></div><p>This example is similar the previous one. The only difference is the missing the parenthesis at the end of function literal. Instead, the function gets assigned to a variable and we use the variable &ndash; <code>f(1.15)</code> &ndash; to invoke the function. The value 1.15 gets passed to the anonymous function. So, what do you think the type of variable <code>f</code> will be? You can check that by adding <code>fmt.Printf(&quot;\n%T&quot;, f)</code> to the above example. This will be the output.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>
-Hello from main!
-Hello from an anonymous function in Go language <span style="color:#ff0;font-weight:bold">1.15</span>!
-<span style="color:#fff;font-weight:bold">func</span>(<span style="color:#fff;font-weight:bold">float64</span>)
-</code></pre></div><p>So the variable <code>f</code> is of <code>func()</code> type. This leads us into the custom and user-defined function types.</p>
+	<span class="nf">f</span><span class="p">(</span><span class="mf">1.15</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This example is similar the previous one. The only difference is the missing the parenthesis at the end of function literal. Instead, the function gets assigned to a variable and we use the variable &ndash; <code>f(1.15)</code> &ndash; to invoke the function. The value 1.15 gets passed to the anonymous function. So, what do you think the type of variable <code>f</code> will be? You can check that by adding <code>fmt.Printf(&quot;\n%T&quot;, f)</code> to the above example. This will be the output.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="nx">function</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">Hello</span> <span class="nx">from</span> <span class="nx">main</span><span class="p">!</span>
+<span class="nx">Hello</span> <span class="nx">from</span> <span class="nx">an</span> <span class="nx">anonymous</span> <span class="nx">function</span> <span class="nx">in</span> <span class="nx">Go</span> <span class="nx">language</span> <span class="mf">1.15</span><span class="p">!</span>
+<span class="kd">func</span><span class="p">(</span><span class="kt">float64</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>So the variable <code>f</code> is of <code>func()</code> type. This leads us into the custom and user-defined function types.</p>
 <h2 id="custom-function-types">Custom function types</h2>
 <p>Similar to defining a struct, you can define a custom function type. The general syntax for defining a custom function type is:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">type</span> &lt;<span style="color:#fff;font-weight:bold">func</span>-name&gt; <span style="color:#fff;font-weight:bold">func</span>(&lt;parameter1 parameter-<span style="color:#ff0;font-weight:bold">1</span><span style="color:#fff;font-weight:bold">type</span>, parameter2 parameter2-<span style="color:#fff;font-weight:bold">type</span>&gt;) &lt;<span style="color:#fff;font-weight:bold">return</span>-<span style="color:#fff;font-weight:bold">type</span>&gt; 
-</code></pre></div><p>For example, <code>type concat func(fName, lName string)</code> string defines a new custom function type named <code>concat</code>. This defines the signature of the function.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="p">&lt;</span><span class="kd">func</span><span class="o">-</span><span class="nx">name</span><span class="p">&gt;</span> <span class="kd">func</span><span class="p">(&lt;</span><span class="nx">parameter1</span> <span class="nx">parameter</span><span class="o">-</span><span class="mi">1</span><span class="kd">type</span><span class="p">,</span> <span class="nx">parameter2</span> <span class="nx">parameter2</span><span class="o">-</span><span class="kd">type</span><span class="p">&gt;)</span> <span class="p">&lt;</span><span class="k">return</span><span class="o">-</span><span class="kd">type</span><span class="p">&gt;</span> 
+</code></pre></td></tr></table>
+</div>
+</div><p>For example, <code>type concat func(fName, lName string)</code> string defines a new custom function type named <code>concat</code>. This defines the signature of the function.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+<span class="kd">type</span> <span class="nx">concat</span> <span class="kd">func</span><span class="p">(</span><span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> s concat = <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
-		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, fName, lName)
-		<span style="color:#fff;font-weight:bold">return</span> msg
-	}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s</span> <span class="nx">concat</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+		<span class="nx">msg</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s %s rocks!&#34;</span><span class="p">,</span> <span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">msg</span>
+	<span class="p">}</span>
 
-	fmt.Println(s(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;%T&#34;</span>, s)
-}
-</code></pre></div><p>In the <code>main</code> function, you can use the new function type to create a variable and assign the function to it. The above example declares and initializes variable <code>s</code> for this purpose. You can then use variable <code>s</code> as you have already seen earlier. When you run this example, you will see that the type of the variable <code>s</code> is <code>main.concat</code> which is the custom function type.</p>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">s</span><span class="p">(</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Language&#34;</span><span class="p">))</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%T&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the <code>main</code> function, you can use the new function type to create a variable and assign the function to it. The above example declares and initializes variable <code>s</code> for this purpose. You can then use variable <code>s</code> as you have already seen earlier. When you run this example, you will see that the type of the variable <code>s</code> is <code>main.concat</code> which is the custom function type.</p>
 <h2 id="passing-functions-as-arguments">Passing functions as arguments</h2>
 <p>Function literals can be passed as arguments to other functions. You have learned how to create a custom function type in the previous section. The following example demonstrates how to pass that custom function type as an argument to another function. Take a look.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+<span class="kd">type</span> <span class="nx">concat</span> <span class="kd">func</span><span class="p">(</span><span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span>
 
-<span style="color:#fff;font-weight:bold">func</span> wrapper(s concat) {
-	fmt.Println(s(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
-}
+<span class="kd">func</span> <span class="nf">wrapper</span><span class="p">(</span><span class="nx">s</span> <span class="nx">concat</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">s</span><span class="p">(</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Language&#34;</span><span class="p">))</span>
+<span class="p">}</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
-		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
-		<span style="color:#fff;font-weight:bold">return</span> msg
-	}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">l</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+		<span class="nx">msg</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s %s rocks!&#34;</span><span class="p">,</span> <span class="nx">f</span><span class="p">,</span> <span class="nx">l</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">msg</span>
+	<span class="p">}</span>
 
-	wrapper(a)
-}
-</code></pre></div><p>The function that is getting passed to the <code>wrapper</code> function need not be of a custom function type. The custom type in this example takes <code>string</code> arguments and returns <code>string</code> type. You can define any function signature as an argument and match that signature in the function literal body that you define.</p>
+	<span class="nf">wrapper</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The function that is getting passed to the <code>wrapper</code> function need not be of a custom function type. The custom type in this example takes <code>string</code> arguments and returns <code>string</code> type. You can define any function signature as an argument and match that signature in the function literal body that you define.</p>
 <h2 id="functions-as-return-values">Functions as return values</h2>
 <p>In Go language, you can not only pass functions as arguments but you can also return functions from other functions. Here is a variation of the above example to demonstrate this.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> wrapper() <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
-	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
-		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
-		<span style="color:#fff;font-weight:bold">return</span> msg
-	}
-	<span style="color:#fff;font-weight:bold">return</span> a
-}
+<span class="kd">func</span> <span class="nf">wrapper</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">l</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+		<span class="nx">msg</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s %s rocks!&#34;</span><span class="p">,</span> <span class="nx">f</span><span class="p">,</span> <span class="nx">l</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">msg</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">a</span>
+<span class="p">}</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	concat := wrapper()
-	fmt.Println(concat(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
-}
-</code></pre></div><p>The wrapper function in this update example takes no arguments but returns a function. Within the <code>wrapper</code> function body, you simply declare and initialize a function literal and return that. In the <code>main</code> function, a variable called <code>concat</code> gets initialized to the return value of the <code>wrapper</code> function which is a function. Finally, the <code>concat</code> function literal gets invoked with the string arguments.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">concat</span> <span class="o">:=</span> <span class="nf">wrapper</span><span class="p">()</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">concat</span><span class="p">(</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Language&#34;</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The wrapper function in this update example takes no arguments but returns a function. Within the <code>wrapper</code> function body, you simply declare and initialize a function literal and return that. In the <code>main</code> function, a variable called <code>concat</code> gets initialized to the return value of the <code>wrapper</code> function which is a function. Finally, the <code>concat</code> function literal gets invoked with the string arguments.</p>
 <p>So, what happened to the custom type that you saw an earlier example? Can you still use that custom type as a return value? Yes, of course. Here is the updated example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">type</span> concat <span style="color:#fff;font-weight:bold">func</span>(fName, lName <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span>
+<span class="kd">type</span> <span class="nx">concat</span> <span class="kd">func</span><span class="p">(</span><span class="nx">fName</span><span class="p">,</span> <span class="nx">lName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span>
 
-<span style="color:#fff;font-weight:bold">func</span> wrapper() concat {
-	a := <span style="color:#fff;font-weight:bold">func</span>(f, l <span style="color:#fff;font-weight:bold">string</span>) <span style="color:#fff;font-weight:bold">string</span> {
-		msg := fmt.Sprintf(<span style="color:#0ff;font-weight:bold">&#34;%s %s rocks!&#34;</span>, f, l)
-		<span style="color:#fff;font-weight:bold">return</span> msg
-	}
+<span class="kd">func</span> <span class="nf">wrapper</span><span class="p">()</span> <span class="nx">concat</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">l</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+		<span class="nx">msg</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s %s rocks!&#34;</span><span class="p">,</span> <span class="nx">f</span><span class="p">,</span> <span class="nx">l</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">msg</span>
+	<span class="p">}</span>
 
-	<span style="color:#fff;font-weight:bold">return</span> a
-}
+	<span class="k">return</span> <span class="nx">a</span>
+<span class="p">}</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	concat := wrapper()
-	fmt.Println(concat(<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Language&#34;</span>))
-}
-</code></pre></div><p>This brings this part to the final concept around function literals called closures.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">concat</span> <span class="o">:=</span> <span class="nf">wrapper</span><span class="p">()</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">concat</span><span class="p">(</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Language&#34;</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This brings this part to the final concept around function literals called closures.</p>
 <h2 id="closures">Closures</h2>
 <p>Wikipedia describes closures as below.</p>
 <blockquote>
 <p>In programming languages, a closure, also lexical closure or function closure, is a technique for implementing lexically scoped name binding in a language with first-class functions. Operationally, a closure is a record storing a function together with an environment. The environment is a mapping associating each free variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or reference to which the name was bound when the closure was created. Unlike a plain function, a closure allows the function to access those captured variables through the closure&rsquo;s copies of their values or references, even when the function is invoked outside their scope.</p>
 </blockquote>
 <p>That is a lot to digest but pay attention to the last sentence. If we have to put that in simple words, a closure can access the variables defined outside its scope. Here is an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> (
-	<span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
-)
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+<span class="p">)</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	lang := <span style="color:#0ff;font-weight:bold">&#34;Go Language&#34;</span>
-	<span style="color:#fff;font-weight:bold">func</span>() {
-		fmt.Println(lang, <span style="color:#0ff;font-weight:bold">&#34;rocks!&#34;</span>)
-	}()
-}
-</code></pre></div><p>In the above example, the function literal inside the <code>main</code> function can access the variable <code>lang</code> defined outside its scope. A closure in Go has access to its surrounding state and it gets bound to that. The state of the closure becomes unique when it is created.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">lang</span> <span class="o">:=</span> <span class="s">&#34;Go Language&#34;</span>
+	<span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">lang</span><span class="p">,</span> <span class="s">&#34;rocks!&#34;</span><span class="p">)</span>
+	<span class="p">}()</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, the function literal inside the <code>main</code> function can access the variable <code>lang</code> defined outside its scope. A closure in Go has access to its surrounding state and it gets bound to that. The state of the closure becomes unique when it is created.</p>
 <p>Take a look at this example to understand this.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> (
-	<span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
-)
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+<span class="p">)</span>
 
-<span style="color:#fff;font-weight:bold">func</span> sub() <span style="color:#fff;font-weight:bold">func</span>() <span style="color:#fff;font-weight:bold">int</span> {
-	a := <span style="color:#ff0;font-weight:bold">100</span>
-	<span style="color:#fff;font-weight:bold">return</span> <span style="color:#fff;font-weight:bold">func</span>() <span style="color:#fff;font-weight:bold">int</span> {
-		a = a - <span style="color:#ff0;font-weight:bold">10</span>
-		<span style="color:#fff;font-weight:bold">return</span> a
-	}
-}
+<span class="kd">func</span> <span class="nf">sub</span><span class="p">()</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="mi">100</span>
+	<span class="k">return</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="p">=</span> <span class="nx">a</span> <span class="o">-</span> <span class="mi">10</span>
+		<span class="k">return</span> <span class="nx">a</span>
+	<span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
 
-	a1 := sub()
-	a2 := sub()
+	<span class="nx">a1</span> <span class="o">:=</span> <span class="nf">sub</span><span class="p">()</span>
+	<span class="nx">a2</span> <span class="o">:=</span> <span class="nf">sub</span><span class="p">()</span>
 
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a1 %d&#34;</span>, a1())
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a2 %d&#34;</span>, a2())
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nValue from a1 %d&#34;</span><span class="p">,</span> <span class="nf">a1</span><span class="p">())</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nValue from a2 %d&#34;</span><span class="p">,</span> <span class="nf">a2</span><span class="p">())</span>
 
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a1 again %d&#34;</span>, a1())
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nValue from a2 again %d&#34;</span>, a2())
-}
-</code></pre></div><p>In the <code>sub()</code> function, variable a gets initialized to 100. Also, <code>sub()</code> function returns a function in which variable <code>a</code> gets decremented by 10 and the resulting value gets returned. In this main function, variables <code>a1</code> and <code>a2</code> get initialized to the closure returned from <code>sub()</code> function. Now, the interesting part comes when you invoke these closures. Here is the output.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>function.<span style="color:#fff;font-weight:bold">go</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nValue from a1 again %d&#34;</span><span class="p">,</span> <span class="nf">a1</span><span class="p">())</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nValue from a2 again %d&#34;</span><span class="p">,</span> <span class="nf">a2</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the <code>sub()</code> function, variable a gets initialized to 100. Also, <code>sub()</code> function returns a function in which variable <code>a</code> gets decremented by 10 and the resulting value gets returned. In this main function, variables <code>a1</code> and <code>a2</code> get initialized to the closure returned from <code>sub()</code> function. Now, the interesting part comes when you invoke these closures. Here is the output.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="nx">function</span><span class="p">.</span><span class="k">go</span>
 
-Value from a1 <span style="color:#ff0;font-weight:bold">90</span>
-Value from a2 <span style="color:#ff0;font-weight:bold">90</span>
-Value from a1 again <span style="color:#ff0;font-weight:bold">80</span>
-Value from a2 again <span style="color:#ff0;font-weight:bold">80</span>
-PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt;
-</code></pre></div><p>The first calls to <code>a1</code> and <code>a2</code> return the same value. And, then when you call these closures again, they return the same value. What does this mean? This demonstrates that the closures do have a unique and isolated state when they get created. So, when you created a1 and a2, each of them have variable <code>a</code> at 100 and when these closures get invoked, value of <code>a</code> gets decremented by 10. Therefore, each set of invocation of these closures return the same value.</p>
+<span class="nx">Value</span> <span class="nx">from</span> <span class="nx">a1</span> <span class="mi">90</span>
+<span class="nx">Value</span> <span class="nx">from</span> <span class="nx">a2</span> <span class="mi">90</span>
+<span class="nx">Value</span> <span class="nx">from</span> <span class="nx">a1</span> <span class="nx">again</span> <span class="mi">80</span>
+<span class="nx">Value</span> <span class="nx">from</span> <span class="nx">a2</span> <span class="nx">again</span> <span class="mi">80</span>
+<span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The first calls to <code>a1</code> and <code>a2</code> return the same value. And, then when you call these closures again, they return the same value. What does this mean? This demonstrates that the closures do have a unique and isolated state when they get created. So, when you created a1 and a2, each of them have variable <code>a</code> at 100 and when these closures get invoked, value of <code>a</code> gets decremented by 10. Therefore, each set of invocation of these closures return the same value.</p>
 <p>As you proceed learning more advanced concepts in Go language, you will start seeing real use cases of closures. Stay tuned.</p>
 
         

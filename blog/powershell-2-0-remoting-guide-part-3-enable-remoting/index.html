@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of the series of articleson PowerShell 2.0 remoting, we will look at how to enable remoting in different scenarios. This post assumes that you are running a supported operating system and you have installed all necesary pre-requisitesoftware.
 So, how do you enable remoting?
@@ -155,28 +155,63 @@ Enable-PSRemoting Note: You have to run this at a elevated PowerShell prompt." /
 <h4 id="enable-psremoting">Enable-PSRemoting</h4>
 <p>Note: You have to run this at a elevated PowerShell prompt. Also, all your active networks should be set to “Home” or “Work” network location. Setting firewall exceptions for remoting will fail if the network location is set to “Public”.</p>
 <p>Yes. That is it. You will be asked to respond to a couple of questions — based on OS architecture — as you see in the screenshot here.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting3-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting3-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting3-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see above, Enable-PSRemoting internally uses Set-WSManQuickConfig and a few <!-- raw HTML omitted -->other cmdlets<!-- raw HTML omitted -->. The second prompt around Microsoft.PowerShell32 will appear only on x64 OS. However, you should always use the more comprehensive Enable-PSRemoting cmdlet. If you don’t want to see all these prompts and but want to enable remoting in a more slient manner, you can use the -force parameter along with the cmdlet. Other parameters to Enable-PSRemoting cmdlet include -confirm and -whatif. You can run this cmdlet on all machines where you want to be able to receive commands from other machines in the network.</p>
 <p>How can you verify if remoting is enabled or not? You can use the Enter-PSSession cmdlet to test if remoting is enabled on the local machine or not.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Enter-PSSession -ComputerName localhost
-</code></pre></div><p>If remoting is enabled and functional, you will see the prompt changing to something like this:</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting3-2.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Enter-PSSession -ComputerName localhost
+</code></pre></td></tr></table>
+</div>
+</div><p>If remoting is enabled and functional, you will see the prompt changing to something like this:</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting3-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting3-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <h4 id="powershell-remoting-in-a-workgroup-environment">PowerShell remoting in a workgroup environment</h4>
 <p>You will not be able to connect to a computer in workgroup just by running Enable-PSRemoting cmdlet. This is essentially because the security levels on a workgroup joined computer are more stringent than on a domain joined computer.</p>
 <p>On Windows XP systems, you need to make sure the local security policy to enable classic mode authentication for network logons. This cabe be done by opening “Local Security Policy” from Control Panel -&gt; Administrative Tools. Over there, navigate to Local Policies -&gt; Security Options and double click on “Network Access: Sharing and Security Model for local accounts” and set it to classic.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting3-3.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting3-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting3-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Once the above change is made, you can enable remoting using Enable-PSremoting and then run:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">set-item</span> wsman<span style="color:#f00">:</span>localhost\client\trustedhosts -value *
-</code></pre></div><p>On Vista and later operating systems in workgroup model, you need to run the above cmdlet only. After these steps are performed, you should be able to send commands to a remote computer in a workgroup enviroment.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">set-item</span> <span class="n">wsman</span><span class="err">:</span><span class="n">localhost</span><span class="p">\</span><span class="n">client</span><span class="p">\</span><span class="n">trustedhosts</span> <span class="n">-value</span> <span class="p">*</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>On Vista and later operating systems in workgroup model, you need to run the above cmdlet only. After these steps are performed, you should be able to send commands to a remote computer in a workgroup enviroment.</p>
 <p>To enable remoting for multiple computers in an enterprise or domain environment, you can use group policy. For more information on this, refer to the “HOW TO ENABLE REMOTING IN AN ENTERPRISE” section at <!-- raw HTML omitted --><a href="http://technet.microsoft.com/en-us/library/dd347642.aspx">http://technet.microsoft.com/en-us/library/dd347642.aspx</a><!-- raw HTML omitted --></p>
 <p>In the next set of posts, we will see how to execute commands on remote machines using various cmdlets available within PowerShell remoting.</p>
 

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="As I started preparing slides and demos for my session on Azure Bicep at the Global Azure Bootcamp 2021, I made a bunch of notes. As a part of this new series of articles on Azure Bicep, I will start sharing those notes here.
 Azure Bicep is a new Domain-Specific Language (DSL) for declaratively deploying Azure resources. Bicep is not a general purpose programming language but a transparent abstraction for Azure Resource Manager (ARM) Templates.">
@@ -170,7 +170,26 @@ Azure Bicep is a new Domain-Specific Language (DSL) for declaratively deploying 
 <p>Pulumi, on the other hand, provides an SDK that you can use in your favorite language and define your infrastructure as imperative scripts or programs. I have not spent much time on Pulumi because of my non-developer background but Pulumi claims that they can provide day zero support for any new resource or resource provider.</p>
 <p>Both Terraform and Pulumi support multiple cloud deployments. These are not tools that are specifically written for Microsoft Azure. Microsoft could have chosen to adapt one of these but they instead chose to write their own language that makes authoring ARM templates easier. This is an important step since there are many customers who have heavily invested in ARM templates. If Microsoft moves away from ARM templates, this section of customers won&rsquo;t be happy. Creating a transpiler that provides simple and concise declarative way of generating ARM templates will help maintain the backward compatibility while ensuring that those who are just starting with Microsoft Azure do not get freaked out looking at ARM templates.</p>
 <p>With Bicep, you don&rsquo;t have to worry about learning ARM template language and author thousands of lines of JSON documents. You simply write a Bicep file that declaratively defines the Azure infrastructure, transpile it into an ARM template, and finally use the methods that are already known to you to provision the generated ARM template. Simple. But, how simple is Bicep language? Let us look at an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param storageAccountName string
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">param storageAccountName string
 param accessTier string = &#39;Hot&#39;
 param location string = &#39;WestUS2&#39;
 
@@ -185,48 +204,96 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
     accessTier: accessTier
   }
 }
-</code></pre></div><p>The 26 lines in the above example is what you need to create a reusable Bicep file that can generate ARM template to provision an Azure storage account. This, when compiled, produces the following ARM template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
-  <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-  <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-    <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>
-    },
-    <span style="font-weight:bold">&#34;accessTier&#34;</span>: {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-      <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
-    },
-    <span style="font-weight:bold">&#34;location&#34;</span>: {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-      <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;WestUS2&#34;</span>
-    }
-  },
-  <span style="font-weight:bold">&#34;functions&#34;</span>: [],
-  <span style="font-weight:bold">&#34;resources&#34;</span>: [
-    {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
-      <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-06-01&#34;</span>,
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
-      <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;location&#39;)]&#34;</span>,
-      <span style="font-weight:bold">&#34;sku&#34;</span>: {
-        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>
-      },
-      <span style="font-weight:bold">&#34;kind&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;StorageV2&#34;</span>,
-      <span style="font-weight:bold">&#34;properties&#34;</span>: {
-        <span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
-      }
-    }
-  ],
-  <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-    <span style="font-weight:bold">&#34;_generator&#34;</span>: {
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
-      <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.126.58533&#34;</span>,
-      <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;6796585337478950038&#34;</span>
-    }
-  }
-}
-</code></pre></div><p>The generated template is almost twice the size of the Bicep file. This ARM template can be deployed by supplying the necessary parameter values as another JSON or at the command line when using Azure CLI or Azure PowerShell.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The 26 lines in the above example is what you need to create a reusable Bicep file that can generate ARM template to provision an Azure storage account. This, when compiled, produces the following ARM template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;storageAccountName&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;Hot&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;WestUS2&#34;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;functions&#34;</span><span class="p">:</span> <span class="p">[],</span>
+  <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Storage/storageAccounts&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2019-06-01&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;location&#39;)]&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;sku&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;StorageV2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="s2">&#34;Hot&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;_generator&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;bicep&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;0.3.126.58533&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;templateHash&#34;</span><span class="p">:</span> <span class="s2">&#34;6796585337478950038&#34;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The generated template is almost twice the size of the Bicep file. This ARM template can be deployed by supplying the necessary parameter values as another JSON or at the command line when using Azure CLI or Azure PowerShell.</p>
 <p>This is a trivial example but consider the flexibility you will have with a language of its own to generate the ARM templates. You don&rsquo;t have to worry about the JSON syntax gotchas or worry about how you can effectively decompose larger ARM templates into smaller linked templates. Bicep provides not just the constructs of a typical programming language but also a way to compose your Azure infrastructure definitions as smaller reusable modules.</p>
 <p>With Bicep being a transpiler for ARM templates, your existing CI and CD pipelines don&rsquo;t have to change. All you may have to do is add an additional <code>bicep build</code> step that brings the ARM template into the pipeline.</p>
 <p>Alright. This is a quick overview of what Bicep is and why you may want to look at it. In the next part of this series, you will see how you can get started with Bicep. Stay tuned.</p>

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of the remoting series, we look at how CredSSP can be used for multi-hop authentication in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or PowerShell remoting, per se. Credential Security Service Provider (CredSSP) is a new security service provider that enables an application to delegate the user’s credentials from the client to the target server. Multi-hop support in Windows Remote Management uses CredSSP for authentication.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -143,15 +143,36 @@
         <p>In this part of the <a href="http://139.59.40.198/blog/?cat=240">remoting series</a>, we look at how <a href="http://msdn.microsoft.com/en-us/library/cc226764(PROT.10).aspx">CredSSP </a>can be used for <a href="http://msdn.microsoft.com/en-us/library/ee309365(VS.85).aspx">multi-hop authentication</a> in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or PowerShell remoting, per se. Credential Security Service Provider (CredSSP) is a new security service provider that enables an application to delegate the user’s credentials from the client to the target server. Multi-hop support in Windows Remote Management uses CredSSP for authentication. Since PowerShell 2.0 remoting is built on top of WinRM, we can use CredSSP to perform multi-hop authentication.</p>
 <p><strong>So, what is multi-hop authentication?</strong></p>
 <p>Well, let us look at an example to understand what is multi-hop authentication. Imagine a group of computers as shown here and you establish a remoting session from computer A (client) to computer B (server) and then from computer B, you try to create a file in a file share on computer C.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting12-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting12-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting12-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Now, within the remoting session to computer B, we want to execute a command — as below — to create test.txt on computer C.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName Test-PC.SP2010lab.com -credential SP2010LAB\Administrator -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
-</code></pre></div><figure>
-    <img src="https://ravichaganti.com/images/remoting12-2.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName Test-PC.SP2010lab.com -credential SP2010LAB\Administrator -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
+</code></pre></td></tr></table>
+</div>
+</div>
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting12-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting12-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>This command results in an “Access Denied” error as shown above. This command fails since the remote session tries to access the file share using the machine credentilas instead of the credentials used to invoke the remote session. We could have successfully created the text file if there was a way to pass or delegate credentials from the client so that we can authenticate to the file share. This is what is called multi-hop authentication and PowerShell remoting enables this using CredSSP.</p>
 <p><strong>How do we delegate credentials?</strong></p>
@@ -161,29 +182,65 @@
 <blockquote>
 <p><strong>Note</strong>: You need to run these cmdlets in an elevated prompt.</p>
 </blockquote>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Enable-WSManCredSSP -Role Client -DelegateComputer &#34;*.SP2010lab.com&#34;
-</code></pre></div><p>As shown here, you can use <a href="http://technet.microsoft.com/en-us/library/dd819469.aspx">Enable-WSManCredSSP</a> cmdlet to enable CredSSP authentication and specify the computer role as client. When the computer role is defined as a client, you can also specify the DelegateComputer parameter to specify the server or servers that receive the delegated credentials from the client. The delegateComputer accepts wildcards as shown above. You can also specify “*” to specify all computers in the network.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Enable-WSManCredSSP -Role Client -DelegateComputer &#34;*.SP2010lab.com&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>As shown here, you can use <a href="http://technet.microsoft.com/en-us/library/dd819469.aspx">Enable-WSManCredSSP</a> cmdlet to enable CredSSP authentication and specify the computer role as client. When the computer role is defined as a client, you can also specify the DelegateComputer parameter to specify the server or servers that receive the delegated credentials from the client. The delegateComputer accepts wildcards as shown above. You can also specify “*” to specify all computers in the network.</p>
 <p>When <a href="http://technet.microsoft.com/en-us/library/dd819469.aspx">Enable-WSManCredSSP</a> cmdlet is used to enable CredSSP on the client by specifying client in the role parameter. The cmdlet then performs the following:</p>
 <ul>
 <li>The WS-Management setting &lt;localhost|computername&gt;\Client\Auth\CredSSP is set to true.</li>
 <li>Sets the Windows CredSSP policy AllowFreshCredentials to WSMan/Delegate on the client.</li>
 </ul>
 <p>Now, we will enable CredSSP on computer B and deginate that as server.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Enable-WSManCredSSP -Role Server
-</code></pre></div><p>The above cmdlet enables CredSSP on computer B and sets the WS-Management setting &lt;localhost|computername&gt;\Service\Auth\CredSSP is to true. Now, we can use Invoke-Command to run the script block as shown at the beginning of this post. However, we will specify the authentication method as CredSSP and pass the credentials.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName test-pc.SP2010lab.com -Credential SP2010Lab\Administrator -Authentication CredSSP -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
-</code></pre></div><figure>
-    <img src="https://ravichaganti.com/images/remoting12-3.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Enable-WSManCredSSP -Role Server
+</code></pre></td></tr></table>
+</div>
+</div><p>The above cmdlet enables CredSSP on computer B and sets the WS-Management setting &lt;localhost|computername&gt;\Service\Auth\CredSSP is to true. Now, we can use Invoke-Command to run the script block as shown at the beginning of this post. However, we will specify the authentication method as CredSSP and pass the credentials.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName test-pc.SP2010lab.com -Credential SP2010Lab\Administrator -Authentication CredSSP -ScriptBlock {[System.IO.File]::Create(\\FileServer\Share\Test.txt)}
+</code></pre></td></tr></table>
+</div>
+</div>
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting12-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting12-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see here,  we see the output from Create() method which shows the details of the newly created file.</p>
 <blockquote>
 <p><strong>Caution:</strong> CredSSP authentication delegates the user’s credentials from the local computer to a remote computer. This practice increases the security risk of the remote operation. If the remote computer is compromised, when credentials are passed to it, the credentials can be used to control the network session.</p>
 </blockquote>
 <p>You can use <a href="http://technet.microsoft.com/en-us/library/dd819469.aspx">Disable-WSManCredSSP</a> to disable CredSSP authentication on a client or a server computer.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Disable-WSManCredSSP -Role Client            
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Disable-WSManCredSSP -Role Client            
 Disable-WSManCredSSP -Role Server
-</code></pre></div><p>You can use <a href="http://technet.microsoft.com/en-us/library/dd819468.aspx">Get-WSManCredSSP</a> cmdlet to verify if a computer has CredSSP enabled and also the role (client/server).</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can use <a href="http://technet.microsoft.com/en-us/library/dd819468.aspx">Get-WSManCredSSP</a> cmdlet to verify if a computer has CredSSP enabled and also the role (client/server).</p>
 <p>This is it for now. We will look at few more aspects of PowerShell remoting in the next part of this series. Stay tuned..!</p>
 
         

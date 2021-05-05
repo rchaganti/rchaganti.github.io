@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -179,8 +179,15 @@
 <script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azrm.json"></script>
 
 <p>In this starter template, you see that the value of <code>tenantId</code> defaults to the value of the <code>tenantId</code> property from the <code>subscription()</code> standard template function. The value to the <code>objectId</code> property is coming from a template parameter. You can retrieve the object ID of an AAD user using <code>az ad user show</code> command.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">az ad user show --id Ravikanth@azure.com --query objectId
-</code></pre></div><p>You can deploy the above template to create a Key Vault by clicking on the Deploy To Azure button below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">az ad user show --id Ravikanth@azure.com --query objectId
+</code></pre></td></tr></table>
+</div>
+</div><p>You can deploy the above template to create a Key Vault by clicking on the Deploy To Azure button below.</p>
 
     <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fa5b15709b6803abaf3d4eca4308052eb37c31fbd%2fazKVbeginner.azrm.json" target="_blank">
         <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
@@ -208,7 +215,21 @@
 <p>Now, with this updated template you have a functional key vault that can be used to store secrets needed for other resource configurations. So, how do you use ARM templates to store secrets in a key vault?</p>
 <h3 id="adding-secrets-to-vault">Adding secrets to vault</h3>
 <p>Once you have a key vault provisioned, you can add the <code>Microsoft.KeyVault/vaults/secrets</code> resource to the template to add secrets to the vault. The following resource definition will do that job.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
 	&#34;type&#34;: &#34;Microsoft.KeyVault/vaults/secrets&#34;,
 	&#34;name&#34;: &#34;[concat(variables(&#39;keyVaultName&#39;), &#39;/&#39;, parameters(&#39;secretName&#39;))]&#34;,
 	&#34;apiVersion&#34;: &#34;2018-02-14&#34;,
@@ -218,7 +239,9 @@
 		&#34;contentType&#34; : &#34;string&#34;
 	}
 }
-</code></pre></div><p>In this resource definition, the type of the resource is <code>Microsoft.KeyVault/vaults/secrets</code>. The <code>secretName</code> that you want to use will be provided as the name of the resource and the value will be set in the resource properties.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In this resource definition, the type of the resource is <code>Microsoft.KeyVault/vaults/secrets</code>. The <code>secretName</code> that you want to use will be provided as the name of the resource and the value will be set in the resource properties.</p>
 <p>Here is the full template that can be used to provision a key vault and then add a secret to it.</p>
 <script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerStoreSecret.azrm.json"></script>
 
@@ -231,7 +254,19 @@
 
 <h3 id="retrieve-vault-secret">Retrieve vault secret</h3>
 <p>Finally, when you have to use the secret as another resource property value, you can do that using a property definition as shown below.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;adminPassword&#34;: {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;adminPassword&#34;: {
     &#34;reference&#34;: {
         &#34;keyVault&#34;: {
         &#34;id&#34;: &#34;/subscriptions/&lt;SubscriptionID&gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/&lt;KeyVaultName&gt;&#34;
@@ -239,7 +274,9 @@
         &#34;secretName&#34;: &#34;vmAdminPassword&#34;
     }
 }
-</code></pre></div><p>You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.</p>
 <h2 id="summary">Summary</h2>
 <p>In this part, you learned how to create an Azure Key Vault, add secrets to the vault, and retrieve the secrets. This knowledge will come handy when you attempt creating virtual machines that require a predefined administrator password. In the next part, you will learn about resource dependencies in ARM templates.</p>
 

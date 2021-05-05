@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="As a part of this series, we will go through the language semantics of writing ARM templates. We will explore each and every aspect of the ARM template language and go through multiple examples to understand the concepts better. We won’t focus much on the resource types and resource definitions until we complete the discussion around the language semantics and artifacts.
 Let us get started.
@@ -156,37 +156,72 @@ Tools for the job JSON templates for ARM can be edited in notepad too." />
 <p>JSON templates for ARM can be edited in notepad too. But, there are better tools that can help us with this.</p>
 <h5 id="visual-studio">Visual Studio</h5>
 <p>Visual Studio, along with <a href="https://azure.microsoft.com/en-us/downloads/">Azure SDK</a>, provides an easy way to get started with the template creation. You get started by creating a Resource Group project and just keep adding resources to the project and VS automatically generates the JSON for you. You can then customize it the way you want. More than the auto-generation of JSON, what I like is the intellisense capability that shows me the properties I can use within a template for a resource type.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate2-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate2-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate2-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>For more information on how to get started with using <a href="https://azure.microsoft.com/en-us/blog/azure-resource-manager-2-5-for-visual-studio/">Visual Studio to create ARM templates</a>, read this <a href="https://azure.microsoft.com/en-us/blog/azure-resource-manager-2-5-for-visual-studio/">Azure team blog post</a>.</p>
 <h5 id="visual-studio-code">Visual Studio Code</h5>
 <p>Visual Studio Code is my favorite. It loads up much faster than the full-blown Visual Studio and it is very easy to use. However, at the time of this writing, there is no ARM template authoring support like what VS has. However, it has some minimal auto-completion support based on what the editor understands from the schema.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate2-2.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate2-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate2-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <h5 id="sublime-text">Sublime Text</h5>
 <p>Sublime Text has a <a href="https://packagecontrol.io/packages/AzureResourceManager">Azure Resource Manager package</a> that gives a bunch of snippets for quick ARM template authoring. For example, after you activate ARM package, you can type <em>arm:t</em> and press tab to add a skeleton of the ARM template.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate2-3.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate2-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate2-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Sublime does provide some level of property auto-completion but it is still buggy. But, if your first choice is sublime, you have ARM template authoring support to some extent.</p>
 <p>There may be many other editors or IDEs with JSON support. Visual Studio is the first-class citizen as far as ARM template support is concerned and I hope VS code gets a similar level of template authoring support soon. Now that we know what we need to start template authoring, let us start with the language discussion.</p>
 <h4 id="introducing-arm-template-language">Introducing ARM template language</h4>
 <p>I have mentioned this several times already but will say it one more time before I start. ARM templates are based on JSON syntax. So, to be able to appreciate and understand the way we write ARM templates, you need to know how JSON synatx works. I am not going to write about the JSON syntax here but I have an article that I <a href="http://www.powershellmagazine.com/2014/12/01/a-json-primer-for-administrators/">published on PowerShell Magazine and that should give you a good overview</a>.</p>
 <p>Here is the basic structure of an ARM template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-   <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span>,
-   <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;&#34;</span>,
-   <span style="font-weight:bold">&#34;parameters&#34;</span>: {  },
-   <span style="font-weight:bold">&#34;variables&#34;</span>: {  },
-   <span style="font-weight:bold">&#34;resources&#34;</span>: [  ],
-   <span style="font-weight:bold">&#34;outputs&#34;</span>: {  }
-}
-</code></pre></div><h5 id="schema">$schema</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+   <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+   <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+   <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>  <span class="p">},</span>
+   <span class="nt">&#34;variables&#34;</span><span class="p">:</span> <span class="p">{</span>  <span class="p">},</span>
+   <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>  <span class="p">],</span>
+   <span class="nt">&#34;outputs&#34;</span><span class="p">:</span> <span class="p">{</span>  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="schema">$schema</h5>
 <p>This element is mandatory and the value must be the location of JSON schema file for the ARM template language. The JSON schema is what is used to find the right set of properties for resources etc. You can find the latest schema URL listed at <a href="https://github.com/Azure/azure-resource-manager-schemas/">https://github.com/Azure/azure-resource-manager-schemas/</a>. When you start a new resource group project using Visual Studio, this property gets filled for you.</p>
 <h5 id="contentversion">ContentVersion</h5>
 <p>This is another mandatory element and you can use this to specify the version of the template you are authoring. As a part of the ARM authoring process, I suggest that you use the source control and build process to auto-update this element value instead of manually entering a version number.</p>

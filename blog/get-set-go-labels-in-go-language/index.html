@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control flow. What you have seen in the examples with these statements was an unlabeled way to break or continue the iteration. Go language supports labels that let you transfer control to the place in the (same function) code where the label is defined.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -159,179 +159,398 @@
 <p>In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control flow. What you have seen in the examples with these statements was an unlabeled way to break or continue the iteration. Go language supports labels that let you transfer control to the place in the (same function) code where the label is defined. There are different ways to use labeled statements.</p>
 <h2 id="goto">Goto</h2>
 <p>Similar to <code>break</code> and <code>continue</code>, the <code>[goto](https://golang.org/ref/spec#Goto_statements)</code> statement in Go language transfers the control to the place in the code where a specific label is defined within the same function. Here is an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	num := <span style="color:#ff0;font-weight:bold">1</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">num</span> <span class="o">:=</span> <span class="mi">1</span>
 
-jumpTo:
-	<span style="color:#fff;font-weight:bold">for</span> num &lt;= <span style="color:#ff0;font-weight:bold">10</span> {
-		<span style="color:#fff;font-weight:bold">if</span> num%<span style="color:#ff0;font-weight:bold">2</span> == <span style="color:#ff0;font-weight:bold">0</span> {
-			num++
-			<span style="color:#fff;font-weight:bold">goto</span> jumpTo
-		}
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\n num has value set to %d&#34;</span>, num)
-		num++
-	}
+<span class="nx">jumpTo</span><span class="p">:</span>
+	<span class="k">for</span> <span class="nx">num</span> <span class="o">&lt;=</span> <span class="mi">10</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">num</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+			<span class="nx">num</span><span class="o">++</span>
+			<span class="k">goto</span> <span class="nx">jumpTo</span>
+		<span class="p">}</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\n num has value set to %d&#34;</span><span class="p">,</span> <span class="nx">num</span><span class="p">)</span>
+		<span class="nx">num</span><span class="o">++</span>
+	<span class="p">}</span>
 
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nFinal value of num is %d&#34;</span>, num)
-}
-</code></pre></div><p>The above example&rsquo;s purpose is to print all odd numbers between 1 and 10. In this, the <code>goto</code> statement is used to jump to the start of the loop again. Note the way the label &ndash; <code>jumpTo</code> &ndash; is defined. The general syntax for defining a label in a Go program is <code>identifier:</code> and then with the <code>goto</code> statement, you just use the identifier &ndash; <code>goto jumpTo</code>.</p>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nFinal value of num is %d&#34;</span><span class="p">,</span> <span class="nx">num</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above example&rsquo;s purpose is to print all odd numbers between 1 and 10. In this, the <code>goto</code> statement is used to jump to the start of the loop again. Note the way the label &ndash; <code>jumpTo</code> &ndash; is defined. The general syntax for defining a label in a Go program is <code>identifier:</code> and then with the <code>goto</code> statement, you just use the identifier &ndash; <code>goto jumpTo</code>.</p>
 <p>Here is the output from this program.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
- num has value set to <span style="color:#ff0;font-weight:bold">1</span>
- num has value set to <span style="color:#ff0;font-weight:bold">3</span> 
- num has value set to <span style="color:#ff0;font-weight:bold">5</span> 
- num has value set to <span style="color:#ff0;font-weight:bold">7</span> 
- num has value set to <span style="color:#ff0;font-weight:bold">9</span> 
-Final value of num is <span style="color:#ff0;font-weight:bold">11</span>
-</code></pre></div><p>The scope of a label is the function where it is defined. With the <code>goto</code> statement, it does not matter where the label is defined within the function. For example, the following program works as well. Of course, without printing all the odd number values.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">1</span>
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">3</span> 
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">5</span> 
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">7</span> 
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">9</span> 
+<span class="nx">Final</span> <span class="nx">value</span> <span class="nx">of</span> <span class="nx">num</span> <span class="nx">is</span> <span class="mi">11</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The scope of a label is the function where it is defined. With the <code>goto</code> statement, it does not matter where the label is defined within the function. For example, the following program works as well. Of course, without printing all the odd number values.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	num := <span style="color:#ff0;font-weight:bold">1</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">num</span> <span class="o">:=</span> <span class="mi">1</span>
 
-	<span style="color:#fff;font-weight:bold">for</span> num &lt;= <span style="color:#ff0;font-weight:bold">10</span> {
-		<span style="color:#fff;font-weight:bold">if</span> num%<span style="color:#ff0;font-weight:bold">2</span> == <span style="color:#ff0;font-weight:bold">0</span> {
-			num++
-			<span style="color:#fff;font-weight:bold">goto</span> jumpTo
-		}
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\n num has value set to %d&#34;</span>, num)
-		num++
-	}
+	<span class="k">for</span> <span class="nx">num</span> <span class="o">&lt;=</span> <span class="mi">10</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">num</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+			<span class="nx">num</span><span class="o">++</span>
+			<span class="k">goto</span> <span class="nx">jumpTo</span>
+		<span class="p">}</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\n num has value set to %d&#34;</span><span class="p">,</span> <span class="nx">num</span><span class="p">)</span>
+		<span class="nx">num</span><span class="o">++</span>
+	<span class="p">}</span>
 
-jumpTo:
-	fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nFinal value of num is %d&#34;</span>, num)
-}
-</code></pre></div><p>This produces output as shown below.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+<span class="nx">jumpTo</span><span class="p">:</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nFinal value of num is %d&#34;</span><span class="p">,</span> <span class="nx">num</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This produces output as shown below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
- num has value set to <span style="color:#ff0;font-weight:bold">1</span>
-Final value of num is <span style="color:#ff0;font-weight:bold">3</span>
-</code></pre></div><p>Function scope of a label also means that you cannot have the same label identifier declared multiple times even within different code blocks within the same function. Also, using <code>goto</code> has a couple of caveats.</p>
+ <span class="nx">num</span> <span class="nx">has</span> <span class="nx">value</span> <span class="nx">set</span> <span class="nx">to</span> <span class="mi">1</span>
+<span class="nx">Final</span> <span class="nx">value</span> <span class="nx">of</span> <span class="nx">num</span> <span class="nx">is</span> <span class="mi">3</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Function scope of a label also means that you cannot have the same label identifier declared multiple times even within different code blocks within the same function. Also, using <code>goto</code> has a couple of caveats.</p>
 <ul>
 <li>Since <code>goto</code> can be used to jump forward in the program flow, you cannot jump over a variable declaration.</li>
 <li>You cannot jump into a new code block.</li>
 </ul>
 <h2 id="continue-and-break-with-labels">Continue and Break with labels</h2>
 <p>If you look at the <code>continue</code> and <code>break</code> statement syntax from the <a href="https://golang.org/ref/spec#Continue_statements">Go language specification</a>, you will notice that these statements have an optional label.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">BreakStmt = <span style="color:#0ff;font-weight:bold">&#34;break&#34;</span> [ Label ] .
-ContinueStmt = <span style="color:#0ff;font-weight:bold">&#34;continue&#34;</span> [ Label ] .
-</code></pre></div><p><code>Break</code> statement works only within a <code>for</code> loop, <code>switch</code> or <code>select</code> statement while <code>continue</code> works only in a loop. You have already seen examples of <code>break</code> and <code>continue</code> within a <code>for</code> loop. Similar to the <code>goto</code> statement, you just need to suffix the label identifier to <code>continue</code> and <code>break</code> statements.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">BreakStmt</span> <span class="p">=</span> <span class="s">&#34;break&#34;</span> <span class="p">[</span> <span class="nx">Label</span> <span class="p">]</span> <span class="p">.</span>
+<span class="nx">ContinueStmt</span> <span class="p">=</span> <span class="s">&#34;continue&#34;</span> <span class="p">[</span> <span class="nx">Label</span> <span class="p">]</span> <span class="p">.</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>Break</code> statement works only within a <code>for</code> loop, <code>switch</code> or <code>select</code> statement while <code>continue</code> works only in a loop. You have already seen examples of <code>break</code> and <code>continue</code> within a <code>for</code> loop. Similar to the <code>goto</code> statement, you just need to suffix the label identifier to <code>continue</code> and <code>break</code> statements.</p>
 <p>Continue statement without a label, it skips the current iteration of the innermost loop. First, take a look at this example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Go" data-lang="Go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-Go" data-lang="Go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	s1 := []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">1</span>, <span style="color:#ff0;font-weight:bold">2</span>, <span style="color:#ff0;font-weight:bold">5</span>, <span style="color:#ff0;font-weight:bold">6</span>, <span style="color:#ff0;font-weight:bold">9</span>, <span style="color:#ff0;font-weight:bold">10</span>}
-	<span style="color:#fff;font-weight:bold">for</span> i := <span style="color:#ff0;font-weight:bold">0</span>; i &lt; <span style="color:#ff0;font-weight:bold">3</span>; i++ {
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\n\ni is %d&#34;</span>, i)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">}</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\n\ni is %d&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
 
-		<span style="color:#fff;font-weight:bold">for</span> _, j := <span style="color:#fff;font-weight:bold">range</span> s1 {
-			<span style="color:#fff;font-weight:bold">if</span> j%<span style="color:#ff0;font-weight:bold">2</span> == <span style="color:#ff0;font-weight:bold">0</span> {
-				<span style="color:#fff;font-weight:bold">continue</span>
-			}
-			fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nj is %d&#34;</span>, j)
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">j</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s1</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">j</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+				<span class="k">continue</span>
+			<span class="p">}</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nj is %d&#34;</span><span class="p">,</span> <span class="nx">j</span><span class="p">)</span>
 
-		}
-	}
-}
-</code></pre></div><p>This is straightforward. Within the inner loop, if you encounter an even number, you simply go to the next iteration using <code>continue</code>. Here is the output from this program.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is straightforward. Within the inner loop, if you encounter an even number, you simply go to the next iteration using <code>continue</code>. Here is the output from this program.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
-i is <span style="color:#ff0;font-weight:bold">0</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">5</span>
-j is <span style="color:#ff0;font-weight:bold">9</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">0</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">5</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">9</span>
 
-i is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">5</span>
-j is <span style="color:#ff0;font-weight:bold">9</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">5</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">9</span>
 
-i is <span style="color:#ff0;font-weight:bold">2</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">5</span>
-j is <span style="color:#ff0;font-weight:bold">9</span>
-</code></pre></div><p>Now, imagine based on the condition being checked in the inner loop, you may want to simply start again from the outer loop. You can achieve this with a simple change of adding the label to the continue statement.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">2</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">5</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">9</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, imagine based on the condition being checked in the inner loop, you may want to simply start again from the outer loop. You can achieve this with a simple change of adding the label to the continue statement.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	s1 := []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">1</span>, <span style="color:#ff0;font-weight:bold">2</span>, <span style="color:#ff0;font-weight:bold">5</span>, <span style="color:#ff0;font-weight:bold">6</span>, <span style="color:#ff0;font-weight:bold">9</span>, <span style="color:#ff0;font-weight:bold">10</span>}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">}</span>
 
-jumpTo:
-	<span style="color:#fff;font-weight:bold">for</span> i := <span style="color:#ff0;font-weight:bold">0</span>; i &lt; <span style="color:#ff0;font-weight:bold">3</span>; i++ {
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\n\ni is %d&#34;</span>, i)
+<span class="nx">jumpTo</span><span class="p">:</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\n\ni is %d&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
 
-		<span style="color:#fff;font-weight:bold">for</span> _, j := <span style="color:#fff;font-weight:bold">range</span> s1 {
-			<span style="color:#fff;font-weight:bold">if</span> j%<span style="color:#ff0;font-weight:bold">2</span> == <span style="color:#ff0;font-weight:bold">0</span> {
-				<span style="color:#fff;font-weight:bold">continue</span> jumpTo
-			}
-			fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nj is %d&#34;</span>, j)
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">j</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s1</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">j</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+				<span class="k">continue</span> <span class="nx">jumpTo</span>
+			<span class="p">}</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nj is %d&#34;</span><span class="p">,</span> <span class="nx">j</span><span class="p">)</span>
 
-		}
-	}
-}
-</code></pre></div><p>The only change here is that a label &ndash; called <code>jumpTo</code> &ndash; is added right before the outer <code>for</code> loop. And, the same identifier is added to <code>continue</code> statement inside the innermost loop. You can clearly see the difference in the control flow when you run this program. Here is what you will see.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The only change here is that a label &ndash; called <code>jumpTo</code> &ndash; is added right before the outer <code>for</code> loop. And, the same identifier is added to <code>continue</code> statement inside the innermost loop. You can clearly see the difference in the control flow when you run this program. Here is what you will see.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
 
-i is <span style="color:#ff0;font-weight:bold">0</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">0</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
       
-i is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
       
-i is <span style="color:#ff0;font-weight:bold">2</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-</code></pre></div><p>Since the innermost loop reinitializes every time it is reached during execution, you will never go beyond the second element in the slice. The labeled <code>continue</code> becomes very useful in case of nested loops where exiting the current scope based on a condition is needed.</p>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">2</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Since the innermost loop reinitializes every time it is reached during execution, you will never go beyond the second element in the slice. The labeled <code>continue</code> becomes very useful in case of nested loops where exiting the current scope based on a condition is needed.</p>
 <p>Similarly, labels can be used with <code>break</code> statement as well. For this, just replace <code>continue</code> with <code>break</code> in the above example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	s1 := []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">1</span>, <span style="color:#ff0;font-weight:bold">2</span>, <span style="color:#ff0;font-weight:bold">5</span>, <span style="color:#ff0;font-weight:bold">6</span>, <span style="color:#ff0;font-weight:bold">9</span>, <span style="color:#ff0;font-weight:bold">10</span>}
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">}</span>
 
-jumpTo:
-	<span style="color:#fff;font-weight:bold">for</span> i := <span style="color:#ff0;font-weight:bold">0</span>; i &lt; <span style="color:#ff0;font-weight:bold">3</span>; i++ {
-		fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\n\ni is %d&#34;</span>, i)
+<span class="nx">jumpTo</span><span class="p">:</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\n\ni is %d&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
 
-		<span style="color:#fff;font-weight:bold">for</span> _, j := <span style="color:#fff;font-weight:bold">range</span> s1 {
-			<span style="color:#fff;font-weight:bold">if</span> j%<span style="color:#ff0;font-weight:bold">2</span> == <span style="color:#ff0;font-weight:bold">0</span> {
-				<span style="color:#fff;font-weight:bold">break</span> jumpTo
-			}
-			fmt.Printf(<span style="color:#0ff;font-weight:bold">&#34;\nj is %d&#34;</span>, j)
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">j</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s1</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">j</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+				<span class="k">break</span> <span class="nx">jumpTo</span>
+			<span class="p">}</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;\nj is %d&#34;</span><span class="p">,</span> <span class="nx">j</span><span class="p">)</span>
 
-		}
-	}
-}
-</code></pre></div><p>The following snippet shows the output both with and without the label to illustrate the difference.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The following snippet shows the output both with and without the label to illustrate the difference.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
-<span style="color:#007f7f">//without break label
-</span><span style="color:#007f7f"></span>i is <span style="color:#ff0;font-weight:bold">0</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
+<span class="c1">//without break label
+</span><span class="c1"></span><span class="nx">i</span> <span class="nx">is</span> <span class="mi">0</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
 
-i is <span style="color:#ff0;font-weight:bold">1</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
 
-i is <span style="color:#ff0;font-weight:bold">2</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span><span style="color:#fff;font-weight:bold">for</span>.<span style="color:#fff;font-weight:bold">go</span>
+<span class="nx">i</span> <span class="nx">is</span> <span class="mi">2</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+<span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="k">for</span><span class="p">.</span><span class="k">go</span>
 
-<span style="color:#007f7f">//with break label
-</span><span style="color:#007f7f"></span>i is <span style="color:#ff0;font-weight:bold">0</span>
-j is <span style="color:#ff0;font-weight:bold">1</span>
-</code></pre></div><p>This is it about using labeled statements in Go. When you write some &ldquo;real&rdquo; Go code other than these trivial examples, you will understand the advantages of these labeled statements in control flow. In this next part, you will learn about functions in Go.</p>
+<span class="c1">//with break label
+</span><span class="c1"></span><span class="nx">i</span> <span class="nx">is</span> <span class="mi">0</span>
+<span class="nx">j</span> <span class="nx">is</span> <span class="mi">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is it about using labeled statements in Go. When you write some &ldquo;real&rdquo; Go code other than these trivial examples, you will understand the advantages of these labeled statements in control flow. In this next part, you will learn about functions in Go.</p>
 
         
 

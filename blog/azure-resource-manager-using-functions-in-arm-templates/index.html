@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Expressions in ARM template language are a way to reduce complexity in the templates. Using parameters and variables in ARM templates always requires the use of expressions. Parameter and variable values are combined with standard (built-in) template functions (STF) to create complex expressions to implement the business requirements and implement known configurations. Updated ARM template syntax introduced the ability to implement user-defined functions for complicated expressions and use repeatedly in your templates.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -180,28 +180,59 @@
     </figure>
     
 <p>In the last part, you tried a few examples of STF already. At a high level, you can classify the STF into two categories &ndash; compile-time and run-time. The examples that we have seen so far are compile-time functions. The compile-time functions evaluate before the deployment begins. The run-time functions evaluate once the deployment begins. One example of a run-time function is the <code>listKeys()</code> function. Using this template function, here is how you retrieve the storage account key for a given storage account.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">[
-    <span style="color:#f00">listKeys(</span>
-        <span style="color:#f00">resourceId(</span>
-            <span style="color:#f00">&#39;Microsoft.Storage/storageAccounts&#39;</span>, <span style="color:#f00">concat(</span>
-                <span style="color:#f00">&#39;sacct&#39;</span>, <span style="color:#f00">&#39;-&#39;</span>, <span style="color:#f00">uniqueString(</span>
-                    <span style="color:#f00">resourceGroup().id</span>
-                <span style="color:#f00">)</span>
-            <span style="color:#f00">)</span>
-        <span style="color:#f00">)</span>, <span style="color:#f00">&#39;</span><span style="color:#ff0;font-weight:bold">2019-06-01</span><span style="color:#f00">&#39;</span>
-    <span style="color:#f00">).keys</span>[<span style="color:#ff0;font-weight:bold">0</span>]<span style="color:#f00">.value</span>
-]
-</code></pre></div><p>In the above example, two arguments are passed to the <code>listKeys()</code> <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#list">function</a>. First one is the <code>resourceId()</code> <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid">function</a> to retrieve the unique ID of the storage account that you provisioned. Second parameter is the API version used to deploy the resource. The final part of the expression <code>.keys[0].value</code> is the array reference to retrieve the value of primary storage key.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+    <span class="err">listKeys(</span>
+        <span class="err">resourceId(</span>
+            <span class="err">&#39;Microsoft.Storage/storageAccounts&#39;</span><span class="p">,</span> <span class="err">concat(</span>
+                <span class="err">&#39;sacct&#39;</span><span class="p">,</span> <span class="err">&#39;-&#39;</span><span class="p">,</span> <span class="err">uniqueString(</span>
+                    <span class="err">resourceGroup().id</span>
+                <span class="err">)</span>
+            <span class="err">)</span>
+        <span class="err">)</span><span class="p">,</span> <span class="err">&#39;</span><span class="mi">2019-06-01</span><span class="err">&#39;</span>
+    <span class="err">).keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="err">.value</span>
+<span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, two arguments are passed to the <code>listKeys()</code> <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#list">function</a>. First one is the <code>resourceId()</code> <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid">function</a> to retrieve the unique ID of the storage account that you provisioned. Second parameter is the API version used to deploy the resource. The final part of the expression <code>.keys[0].value</code> is the array reference to retrieve the value of primary storage key.</p>
 <p>Here is another example of a run-time function. This is called <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#reference">reference()</a>. This function returns the runtime state of a resource.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">[
-    <span style="color:#f00">reference(</span>
-        <span style="color:#f00">concat(&#39;Microsoft.Storage/storageAccounts/&#39;</span>, <span style="color:#f00">concat(</span>
-                <span style="color:#f00">&#39;sacct&#39;</span>, <span style="color:#f00">&#39;-&#39;</span>, <span style="color:#f00">uniqueString(resourceGroup().id)</span>
-            <span style="color:#f00">)</span>, <span style="color:#f00">&#39;</span><span style="color:#ff0;font-weight:bold">2019-06-01</span><span style="color:#f00">&#39;</span>
-        <span style="color:#f00">)</span>
-    <span style="color:#f00">).primaryEndpoints.blob</span>
-]
-</code></pre></div><p>Similar to the expression that used <code>listKeys()</code> function, this one too uses a prefix string, a unique string generated using the resource group ID, and the API version string to retrieve the storage blob URI. This blob URI is retrieved using <code>.primaryEndpoints.blob</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+    <span class="err">reference(</span>
+        <span class="err">concat(&#39;Microsoft.Storage/storageAccounts/&#39;</span><span class="p">,</span> <span class="err">concat(</span>
+                <span class="err">&#39;sacct&#39;</span><span class="p">,</span> <span class="err">&#39;-&#39;</span><span class="p">,</span> <span class="err">uniqueString(resourceGroup().id)</span>
+            <span class="err">)</span><span class="p">,</span> <span class="err">&#39;</span><span class="mi">2019-06-01</span><span class="err">&#39;</span>
+        <span class="err">)</span>
+    <span class="err">).primaryEndpoints.blob</span>
+<span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Similar to the expression that used <code>listKeys()</code> function, this one too uses a prefix string, a unique string generated using the resource group ID, and the API version string to retrieve the storage blob URI. This blob URI is retrieved using <code>.primaryEndpoints.blob</code>.</p>
 <p>In the above example, <code>concat('sacct', '-', uniqueString(resourceGroup().id))</code> sub-expression is used to generate a unique name for the storage account. What if you want to use a similar expression for multiple resource names in the ARM template to ensure that your ARM template uses more known configuration? One way to do that is to repeat the expression multiple times with different prefixes as needed. The second and a better way is to create and use an user-defined functions (UDF) where you get the ability to parameterize expressions and reuse the same in your ARM templates like you use built-in functions.</p>
 <h2 id="user-defined-functions">User-defined functions</h2>
 <p>With user-defined functions (UDF), you can create your own functions by combining multiple standard template functions into a complicated expression. The following syntax describes how the user-defined functions can be added to ARM templates.</p>
@@ -211,14 +242,27 @@
 <script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=userDefinedFunctionExample.json"></script>
 
 <p>In the above example, one parameters &ndash; prefix &ndash; allows you to use the expression with varying input. The output value within the UDF is set to the transformed expression that will use the parameter and return a unique resource name. How do you use this UDF in your template? Simple, like any other built-in function in an expression.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;variables&#34;</span><span style="color:#f00">:</span> {
-	<span style="font-weight:bold">&#34;virtualNetworkAddressPrefix&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/16&#34;</span>,
-	<span style="font-weight:bold">&#34;virtualNetworkName&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;[armin30.uniqueResourceName(&#39;vnet&#39;)]&#34;</span>,
-	<span style="font-weight:bold">&#34;virtualNetworkSubnetName&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;[armin30.uniqueResourceName(&#39;subnet&#39;)]&#34;</span>,
-	<span style="font-weight:bold">&#34;storageAccountName&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;[armin30.uniqueResourceName(&#39;sacct&#39;)]&#34;</span>,
-	<span style="font-weight:bold">&#34;virtualNetworkSubnetAddressPrefix&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;10.0.1.0/24&#34;</span>
-}
-</code></pre></div><p>A UDF is accessed using the <em>namespace.functionName</em> notation with a list of comma-separated parameter values. This example assign output value from <code>armin30.uniqueResourceName()</code> function to variables. You can use the UDF directly in resource properties as well.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;variables&#34;</span><span class="err">:</span> <span class="p">{</span>
+	<span class="nt">&#34;virtualNetworkAddressPrefix&#34;</span> <span class="p">:</span> <span class="s2">&#34;10.0.0.0/16&#34;</span><span class="p">,</span>
+	<span class="nt">&#34;virtualNetworkName&#34;</span> <span class="p">:</span> <span class="s2">&#34;[armin30.uniqueResourceName(&#39;vnet&#39;)]&#34;</span><span class="p">,</span>
+	<span class="nt">&#34;virtualNetworkSubnetName&#34;</span> <span class="p">:</span> <span class="s2">&#34;[armin30.uniqueResourceName(&#39;subnet&#39;)]&#34;</span><span class="p">,</span>
+	<span class="nt">&#34;storageAccountName&#34;</span> <span class="p">:</span> <span class="s2">&#34;[armin30.uniqueResourceName(&#39;sacct&#39;)]&#34;</span><span class="p">,</span>
+	<span class="nt">&#34;virtualNetworkSubnetAddressPrefix&#34;</span> <span class="p">:</span> <span class="s2">&#34;10.0.1.0/24&#34;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>A UDF is accessed using the <em>namespace.functionName</em> notation with a list of comma-separated parameter values. This example assign output value from <code>armin30.uniqueResourceName()</code> function to variables. You can use the UDF directly in resource properties as well.</p>
 <h3 id="limitations-of-udf">Limitations of UDF</h3>
 <p>There are few limitations when using user-defined functions.</p>
 <ul>

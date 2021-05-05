@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In part 6 of the remoting series we looked at how we can use Import-PSSession cmdlet to execute remote commands as if they were local. This is nice but this will last only while the session ($s in the example) is alive. The moment we kill the session — using Rem0ve-PSSession, remoting session will also get killed. In this part of the series, we will look at how we can save a remoting session to disk so that we don’t even have to explicitly create a session.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -142,20 +142,43 @@
         
         <p>In <a href="http://139.59.40.198/blog/?p=1151">part 6</a> of the <a href="http://139.59.40.198/blog/?cat=240">remoting series</a> we looked at how we can use Import-PSSession cmdlet to execute remote commands as if they were local. This is nice but this will last only while the session ($s in the example) is alive. The moment we kill the session — using Rem0ve-PSSession, remoting session will also get killed. In this part of the series, we will look at how we can save a remoting session to disk so that we don’t even have to explicitly create a session.</p>
 <p>This is achieved using <a href="http://technet.microsoft.com/en-us/library/dd347679.aspx">Export-PSSession</a> cmdlet. This cmdlet lets us import commands from a remote session and save the same in a PowerShell module on the local disk. This cmdlet can get cmdlets, functions, aliases, and other command types in to a PowerShell module. The following example shows how we can achieve this.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {Import-Module ActiveDirectory}
 Export-PSSession -Session $s -OutputModule ADRemoteCommands -AllowClobber -Module ActiveDirectory
-</code></pre></div><p>In the above example, the first two lines should be quite familiar by now. The third line is where the magic happens. We tell Export-PSSession cmdlet to export all the commands, aliases, functions, etc available in PS Session $s to a module on hard disk and name it ADRemoteCommands.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, the first two lines should be quite familiar by now. The third line is where the magic happens. We tell Export-PSSession cmdlet to export all the commands, aliases, functions, etc available in PS Session $s to a module on hard disk and name it ADRemoteCommands.</p>
 <p>If the Export-PSSession is successful, you will see output similar to what is shown here</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting7-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting7-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting7-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>In the above output, it is clear that Export-PSSession generates .psm1, .psd1 and format data file for the module automatically. Now, you can load the module at any later point in time to get access to the remote commands.</p>
 <p><strong>How do we import the saved module?</strong></p>
 <p>If you observe the output closely, path where the module files are stored is same as $Env:PSModulePath. So, you don’t need to specify the absolute path to the module.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Import-Module ADRemoteCommands
-</code></pre></div><p>This imports all remote commands available in the module to local session. Whenever we execute a remote command, implicit remoting kicks in, establishes the remote session, executes the command in remote session and returns the output. All this is done without you really using any remoting related cmdlets. If establishing a remote session requires a password, you will be prompted for one.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Import-Module ADRemoteCommands
+</code></pre></td></tr></table>
+</div>
+</div><p>This imports all remote commands available in the module to local session. Whenever we execute a remote command, implicit remoting kicks in, establishes the remote session, executes the command in remote session and returns the output. All this is done without you really using any remoting related cmdlets. If establishing a remote session requires a password, you will be prompted for one.</p>
 <p>This brings us to the end of Part 7. With this, I covered all the remoting basics and we can now move on to more advanced topics like session options and WSMan configuration required for PS Remoting. Stay tuned for that..!</p>
 
         

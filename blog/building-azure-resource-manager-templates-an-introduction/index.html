@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Azure Resource Manager isn’t a new thing! It was announced during Build 2014. ARM is certainly the preferred way, with more and more services getting ARM support, to deploy Azure services. Microsoft also announced that the upcoming Azure Stack release will feature Azure Resource Manager and the template deployment. This means that learning how to use ARM and write you own templates is an essential skill not just for public cloud but also for the private and hybrid cloud administrators.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -149,17 +149,33 @@
 <p>Before you we go ahead start our discussion of ARM template language, let us first quickly review different methods of deploying these templates. This is not a detailed walk-through of these different methods since the focus of this article series is not on the deployment but building templates. After you write a custom ARM template, you can choose between any of these methods to deploy those templates.</p>
 <h4 id="new-template-deployment-preview-portal">New Template Deployment (Preview Portal)</h4>
 <p>The Azure Preview portal has an option to supply the ARM template contents (JSON) and then use a wizard-based method to start the deployment.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate1-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate1-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate1-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>To start this, as shown in the picture, click on the <em>+ icon</em> and scroll down to click on <em>Template Deployment</em>. The wizard that starts after this pretty much self-explanatory. As with any GUI and click-here methods, this is a manual method. I do not prefer this method.</p>
 <h4 id="azure-powershell">Azure PowerShell</h4>
 <p><a href="https://github.com/Azure/azure-powershell/releases">Azure PowerShell</a> (the following example uses 1.0 preview) is my preferred option. You can just supply a template file and template parameter file to the <em>New-AzureRmResourceGroupDeployment</em> cmdlet.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">Login-AzureRmAccount
-<span style="color:#fff;font-weight:bold">New-AzureRmResourceGroup</span> -Name ExampleResourceGroup -Location <span style="color:#0ff;font-weight:bold">&#34;West US&#34;</span>
-<span style="color:#fff;font-weight:bold">New-AzureRmResourceGroupDeployment</span> -Name ExampleDeployment -ResourceGroupName ExampleResourceGroup -TemplateFile C:\ARMTemplates\SingleVMDeploy.json -TemplateParameterFile C:\ARMTemplates\SingleVMDeploy-parameter.json
-</code></pre></div><p>This method, like any other PowerShell-based method, can be completely automated and can be made a part of your CI/CD pipeline.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">Login-AzureRmAccount</span>
+<span class="nb">New-AzureRmResourceGroup</span> <span class="n">-Name</span> <span class="n">ExampleResourceGroup</span> <span class="n">-Location</span> <span class="s2">&#34;West US&#34;</span>
+<span class="nb">New-AzureRmResourceGroupDeployment</span> <span class="n">-Name</span> <span class="n">ExampleDeployment</span> <span class="n">-ResourceGroupName</span> <span class="n">ExampleResourceGroup</span> <span class="n">-TemplateFile</span> <span class="n">C:</span><span class="p">\</span><span class="n">ARMTemplates</span><span class="p">\</span><span class="n">SingleVMDeploy</span><span class="p">.</span><span class="n">json</span> <span class="n">-TemplateParameterFile</span> <span class="n">C:</span><span class="p">\</span><span class="n">ARMTemplates</span><span class="p">\</span><span class="n">SingleVMDeploy-parameter</span><span class="p">.</span><span class="n">json</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This method, like any other PowerShell-based method, can be completely automated and can be made a part of your CI/CD pipeline.</p>
 <p>If you prefer, you can do the same with <a href="https://github.com/Azure/azure-xplat-cli/releases">Azure CLI</a> as well.</p>
 <h4 id="arm-rest-api">ARM REST API</h4>
 <p>The <a href="https://msdn.microsoft.com/en-in/library/azure/dn790549.aspx">template deployment API in the ARM REST API</a> provides a way to deploy custom ARM templates programatically using any language that supports REST interfaces. For example, you can use the following API request to create a template deployment. You can supply the JSON template along with all parameter information in the same request or as a link to a blob in your storage account.</p>

@@ -5,20 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
-  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others.">
+    In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Building Azure Resource Manager Templates – Defining Resource Dependencies"/>
 <meta name="twitter:description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
-  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others."/>
+    In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others."/>
 
     <meta property="og:title" content="Building Azure Resource Manager Templates – Defining Resource Dependencies" />
 <meta property="og:description" content="We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.
-  In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others." />
+    In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-defining-resource-dependencies/" />
 <meta property="article:published_time" content="2015-12-08T00:00:00+00:00" />
@@ -148,14 +148,47 @@
         
         
         <p>We will continue learning about building ARM templates by looking at how we can define dependencies between resources. To recap, here is the scenario we are working on.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate6-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate6-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate6-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>In the earlier parts of this series, we created the storage account, virtual network, a public IP, a load balancer, and added all inbound NAT rules required for the virtual machine RDP access. If you notice, we have components that depend on others. For example, the inbound NAT rules depend on the load balancer. Similarly, VMs depend on network interfaces which in turn depend on the virtual network. In the absence of dependencies, ARM will attempt to deploy these resources in parallel which may result in errors. So, within the resource template, we need to define these dependencies so that ARM can make decisions about the deployment sequence. There are multiple ways of doing this.</p>
 <h4 id="using-dependson">Using DependsOn</h4>
 <p>If you have noticed in the earlier parts of this series, we have used <em>DependsOn</em> property within the resource element.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
     &#34;apiVersion&#34;: &#34;2015-06-15&#34;,
     &#34;type&#34;: &#34;Microsoft.Network/loadBalancers/inboundNatRules&#34;,
     &#34;copy&#34;: {
@@ -177,14 +210,50 @@
         &#34;enableFloatingIP&#34;: false
     }
 }
-</code></pre></div><p>If you look at line number 11, we added <em>DependsOn</em> property to define that the <em>inboundNatRules</em> depend on the load balancer configuration. This is straightforward and very easy to define. You can use template language functions such as <em>ResourceId()</em> or <em>concat()</em> as well within the value of <em>DependsOn</em> and dynamically build these dependencies. You can provide more than one value here as a comma-separated list.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;dependsOn&#34;: [
+</code></pre></td></tr></table>
+</div>
+</div><p>If you look at line number 11, we added <em>DependsOn</em> property to define that the <em>inboundNatRules</em> depend on the load balancer configuration. This is straightforward and very easy to define. You can use template language functions such as <em>ResourceId()</em> or <em>concat()</em> as well within the value of <em>DependsOn</em> and dynamically build these dependencies. You can provide more than one value here as a comma-separated list.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;dependsOn&#34;: [
     &#34;Microsoft.Network/loadBalancers/loadBalancer&#34;,
     &#34;Microsoft.Network/virtualNetworks/vNet1&#34;
 ]
-</code></pre></div><h4 id="using-references">Using References</h4>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="using-references">Using References</h4>
 <p>The second method is to define reference to the dependent resource. Let us create a virtual network interface the AD VM in our scenario. This depends on the virtual network resource that we already created.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
     &#34;apiVersion&#34;: &#34;2015-05-01-preview&#34;,
     &#34;type&#34;: &#34;Microsoft.Network/networkInterfaces&#34;,
     &#34;name&#34;: &#34;dcvmnif&#34;,
@@ -204,11 +273,110 @@
         ]
     }
 }
-</code></pre></div><p>Observe line number 9. We used the reference() function to get a reference to the virtual network object we created and get the subnet name from there and use it to construct the <em>IPConfiguration</em> name. When ARM engine finds this reference, it creates an implicit dependency on the virtual network that we referenced. There is no need here to specify <em>DependsOn</em> property.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Observe line number 9. We used the reference() function to get a reference to the virtual network object we created and get the subnet name from there and use it to construct the <em>IPConfiguration</em> name. When ARM engine finds this reference, it creates an implicit dependency on the virtual network that we referenced. There is no need here to specify <em>DependsOn</em> property.</p>
 <p>Note that we cannot use the reference() function as a part of the resource instance name. This is because the ARM engine must know the names of the resource instances before the deployment can start.</p>
 <h4 id="child-or-nested-resources">Child or Nested Resources</h4>
 <p>The 3rd way to define dependencies is to use child resources. Let us see an example before we discuss this further.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
     &#34;apiVersion&#34;: &#34;2015-06-15&#34;,
     &#34;type&#34;: &#34;Microsoft.Compute/virtualMachines&#34;,
     &#34;name&#34;: &#34;[Parameters(&#39;dcVMName&#39;)]&#34;,
@@ -301,7 +469,9 @@
         }
     ]
 }
-</code></pre></div><p>This example is quite long. It is the virtual machine resource instance that we need for the domain controller. Apart from all the virtual machine properties such as storage profile and OS profile, we have something interesting at line number 61. We have another resources element within the VM resource definition. As with the top-level resources element, this is also a JSON array and contains the resource definition for the <a href="http://www.powershellmagazine.com/2014/08/05/understanding-azure-vm-dsc-extension/">VM DSC extension</a>. It is obvious that VM DSC extension without a VM is meaningless. By defining this as a child or nested resource inside the VM resource definition, we are creating an implicit dependency between the VM and the VM DSC extension. When ARM engine looks at this in the template, it schedules VM creation before the DSC extension. BTW, this VM DSC extension has the DSC configuration required to build the domain controller in this deployment.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>This example is quite long. It is the virtual machine resource instance that we need for the domain controller. Apart from all the virtual machine properties such as storage profile and OS profile, we have something interesting at line number 61. We have another resources element within the VM resource definition. As with the top-level resources element, this is also a JSON array and contains the resource definition for the <a href="http://www.powershellmagazine.com/2014/08/05/understanding-azure-vm-dsc-extension/">VM DSC extension</a>. It is obvious that VM DSC extension without a VM is meaningless. By defining this as a child or nested resource inside the VM resource definition, we are creating an implicit dependency between the VM and the VM DSC extension. When ARM engine looks at this in the template, it schedules VM creation before the DSC extension. BTW, this VM DSC extension has the DSC configuration required to build the domain controller in this deployment.</p>
 <p>Always make sure you that you create enough flexibility within the template for someone else to take this and deploy the template in their own environment.To this extent, I have used a parameter called <em>assetLocation</em> (line 75) in the DSC extension properties. You can call this whatever you want. This parameter specifies where all the template assets such as DSC configuration scripts and any additional template files are stored.</p>
 <p>So far in this part, we have seen three different ways of defining dependencies between resources. If you check the template that we <a href="https://github.com/rchaganti/armseries/blob/master/arm-series_Storage-VirtualNet-LB_vNIC-VM.json">built so far for this scenario</a>, you will observe that I have added a few more variables and parameters needed for the DC VM and its configuration.</p>
 <p>Go ahead and deploy this.</p>

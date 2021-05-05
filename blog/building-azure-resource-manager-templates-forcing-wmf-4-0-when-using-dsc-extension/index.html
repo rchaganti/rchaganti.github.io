@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="This subject won&rsquo;t really need a post of its own but I will do it anyway. In the previous part of this ARM series, I showed how we can use the domain join extension instead of DSC to join a VM to an existing AD domain. This resulted is huge savings in time taken to deploy the entire scenario. When I was talking to my good friend, fellow PowerShell MVP and all-things-Azure guru, Ben Gelens, he was quick to point that the delays when using DSC extension here could be due to the install of WMF 5.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -146,7 +146,46 @@
         
         <p>This subject won&rsquo;t really need a post of its own but I will do it anyway. In the previous part of this <a href="http://azrs.tk/armseries">ARM series</a>, I showed how we can use the domain join extension instead of DSC to join a VM to an existing AD domain. This resulted is huge savings in time taken to deploy the entire scenario. When I was talking to my good friend, fellow PowerShell MVP and all-things-Azure guru, <a href="https://twitter.com/bgelens">Ben Gelens</a>, he was quick to point that the delays when using DSC extension here could be due to the install of WMF 5.0. Indeed!</p>
 <p>When you use Azure DSC extension, it by default installs latest available version of WMF 5.0 (production preview at the time of this writing) which requires a reboot! Therefore, using DSC extension in ARM templates for down-level OS such as Windows Server 2012 or 2012 R2, there will be delays. But, there is a workaround. We can force DSC extension to use WMF 4.0. Here is how we do that.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
     &#34;type&#34;: &#34;Microsoft.Compute/virtualMachines/extensions&#34;,
     &#34;copy&#34;: {
         &#34;name&#34;: &#34;vmDomainLoop&#34;,
@@ -181,7 +220,9 @@
         }
     }
 }
-</code></pre></div><p>Observe line number 19. We use the WmfVersion property and set it to 4.0. This forces DSC extension to use WMF 4.0 instead of installing latest WMF 5.0 bits. Remember to use this method, for down-level OS where WMF / PS 5.0 isn’t available by default and where you don’t need any features provided by WMF / PS 5.0, to make sure deployment times are optimized.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Observe line number 19. We use the WmfVersion property and set it to 4.0. This forces DSC extension to use WMF 4.0 instead of installing latest WMF 5.0 bits. Remember to use this method, for down-level OS where WMF / PS 5.0 isn’t available by default and where you don’t need any features provided by WMF / PS 5.0, to make sure deployment times are optimized.</p>
 <p><strong>Note:</strong> If you need to do this outside an ARM template, <a href="https://blogs.msdn.microsoft.com/powershell/2015/10/01/how-to-use-wmf-4-with-azure-dsc-extension-in-azure-cloud-service-manager-asm/">you can do so by creating the JSON needed for this and then use the Azure PowerShell cmdlets</a>.</p>
 <p>You can click the Deploy to Azure button below to deploy the sample scenario detailed in this article series.</p>
 

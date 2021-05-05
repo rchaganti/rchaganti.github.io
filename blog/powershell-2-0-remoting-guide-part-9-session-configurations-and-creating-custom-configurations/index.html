@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In part2 of this series on PowerShell remoting we quickly looked at various cmdlets that form part of overall remoting infrastructure. The list there included cmdlets related to PS Session configuration. Now that we have gone through the basics of remoting, it is time for us to dig in to these additional cmdlets and explore what they really do.
 So, in this part, we will look at all the PS session configurtion cmdlets, discuss how to create custom PS Session configurations and the need for it.">
@@ -163,35 +163,79 @@ Set-PSSessionConfiguration
 Get-PSSessionConfiguration</p>
 <p><strong>How do I create a new session configuration?</strong></p>
 <p>Register-PSSessionConfiguration cmdlet can be used to create a new session configuration. You can use a C# asembly or a PowerShell script as a startup script for this new session configuration. This startup script can be used to customize the remoting experience. For example, create a script the imports Active Directory module using import-module cmdlet as shown here.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Import-Module ActiveDirectory
-</code></pre></div><p>Save this script as startupscript.ps1 or any name of your choice on the local computer. Now, use the Register-PSSessionConfiguration cmdlet to create a new session configuration. This can be done by running:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Register-PSSessionConfiguration -Name &#34;ActiveDirectory&#34; -StartupScript C:\scripts\StartupScript.ps1
-</code></pre></div><p>You will be prompted to confirm this action and at the end to restart WinRM service on the local computer.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Import-Module ActiveDirectory
+</code></pre></td></tr></table>
+</div>
+</div><p>Save this script as startupscript.ps1 or any name of your choice on the local computer. Now, use the Register-PSSessionConfiguration cmdlet to create a new session configuration. This can be done by running:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Register-PSSessionConfiguration -Name &#34;ActiveDirectory&#34; -StartupScript C:\scripts\StartupScript.ps1
+</code></pre></td></tr></table>
+</div>
+</div><p>You will be prompted to confirm this action and at the end to restart WinRM service on the local computer.</p>
 <blockquote>
 <p>Note: You must enable script execution on the local computer to be able to use the startup script as a part of session configuration</p>
 </blockquote>
 <p><strong>How do I see available session configurations?</strong></p>
 <p>Get-PSSessionConfiguration cmdlet lists all the available session configurations on the local computer.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting9-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting9-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting9-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see in the above output, Get-PSSessionConfiguration lists all available session configurations on the local computer and who has permission to access the configuration. No permissions have been assigned yet to the new active directory configuration.</p>
 <p><strong>How do I give permissions to a session configuration?</strong></p>
 <p>You can use Set-PSSessionConfiguration to allow access to invoke the new session configuration. To do this,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Set-PSSessionConfiguration -Name ActiveDirectory -ShowSecurityDescriptorUI
-</code></pre></div><p>This opens up the dialog to add permissions to invoke this session configuration. As you see in the screenshot here, administrators group has no invoke permission on this session configuration.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting9-2.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Set-PSSessionConfiguration -Name ActiveDirectory -ShowSecurityDescriptorUI
+</code></pre></td></tr></table>
+</div>
+</div><p>This opens up the dialog to add permissions to invoke this session configuration. As you see in the screenshot here, administrators group has no invoke permission on this session configuration.</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting9-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting9-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Select Allow -&gt; Invoke permission here and click OK. You will be prompted to restart the WinRM service. Now, an administrator or a member of administrators group will be able to use this session configuration.</p>
 <p><strong>How do I invoke a session configuration?</strong></p>
 <p>You can use New-PSSession, Enter-PSSession and Invoke-Command cmdlets to load a session configuration othen than the default configuration. The ConfigurationName parameter can be used to specify the session configuration.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory      
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory      
 Enter-PSSession -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory            
 Invoke-Command -ComputerName SP2010-WFE -ConfigurationName ActiveDirectory -ScriptBlock {Get-Process}
-</code></pre></div><blockquote>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p>Note: To be able to use the -StartupScript, script execution policy must be set to signed or unrestricted on the local computer where the session configuration is registered.</p>
 </blockquote>
 <p>In an earlier post — <a href="http://139.59.40.198/blog/?p=1151">part 6: Implict remoting sessions</a> — we used Invoke-Command to load the active directory module within a persistent sesion and then use that persistent session to import active directory cmdlets in to local session. However, by using a session configuration that import active directory module as a startup script, we will have all the AD cmdlets available as soon as we connect to the remote session.</p>

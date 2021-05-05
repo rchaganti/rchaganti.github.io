@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -146,16 +146,37 @@
 </blockquote>
 <p>The concepts of remoting output are explained in a TechNet article at <a href="http://technet.microsoft.com/en-us/library/dd347582.aspx">http://technet.microsoft.com/en-us/library/dd347582.aspx</a>. I am going to put some story around this to help you understand the concepts well.</p>
 <p>First, let us start with an obvious difference in the output received from a remote session. If you use Invoke-Command to run Get-PSDrive, you see something like this.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>You can see an additional column in the output that shows the remote computer name with PSComputerName as the column name. This won’t be displayed if you run the same cmdlet on local computer. So, if you don’t want to display this information in the remote output you can use the -HideComputerName parameter.</p>
 <p>It is also possible that some cmdlets may not display PSComputerName property. For example, Get-Date. In such a scenario you can add PSComputerName to the output of Get-Date as shown here</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
-</code></pre></div><figure>
-    <img src="https://ravichaganti.com/images/remoting11-2.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
+</code></pre></td></tr></table>
+</div>
+</div>
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p><strong>How remote command output is sent over to local computer?</strong></p>
 <p>The objects that Windows PowerShell cmdlets return cannot be transmitted over the network. So, the live objects are “serialized”. In other words, the live objects are converted into XML representations of the object and its properties. Then, the XML-based serialized object is transmitted across the network to the local session where it gets deserialized in to .NET object. This is how an <a href="http://msdn.microsoft.com/en-us/library/ms973893.aspx">MSDN </a>article defines serialization in .NET framework.</p>
@@ -164,40 +185,85 @@
 </blockquote>
 <p><strong>So, what does this mean to us in PowerShell remoting?</strong></p>
 <p>As it is defined above, the live objects are converted in to XML based representation. So, once deserialized in the local session, they don’t expose any methods that actually belong to the object. Let us see an example to understand this. First, let us look at Get-Process output in a local session and see what all methods we see.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-3.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Here, you can see a list of methods you can use against a process object. Now, let us take a look at how this looks when we execute the same command in a remote session.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-4.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-4.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-4.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>If you observe in the above screenshot, TypeName represents a deserialized object and there are no methods that you can use against a process object. A deserialized object represents a snapshot of get-process at the time of command execution in the remote session. This also means that you can’t execute methods such as Kill() against a deserialized process object. Also, no methods to modify the property set will work in the local session.</p>
 <p>Windows PowerShell blog has a nice post on <a href="http://blogs.msdn.com/powershell/archive/2010/01/07/how-objects-are-sent-to-and-from-remote-sessions.aspx">how objects are to and from a remote session</a>. I recommend that you read this post for more information.</p>
 <p><strong>What about output formatting?</strong></p>
 <p>Most deserialized objects are automatically formatted for display by entries in the Types.ps1xml or Format.ps1xml files. However, the local computer might not have formatting files for all of the deserialized objects that were generated on a remote computer. When objects are not formatted, all of the properties of each object appear in the console in a streaming list. To get formatting data from another computer, use the Get-FormatData and Export-FormatData cmdlets. Again, let us take an example to understand this.</p>
 <p>Take an example of a SharePoint 2010 farm and you want to access /run SharePoint 2010 cmdlets from a Windows 7 machine using Invoke-Command. First, if we run Get-SPSite on SharePoint 2010 web frontend, you will see</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-5.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-5.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-5.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Now, if we try to run the same in a remote session using Invoke-Command, you will see</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-6.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-6.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-6.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see in the above screenshot, the output from a remote session is quite different from the one you saw in a local session. This is because we don’t have the formatting data available on the Windows 7 computer.</p>
 <p><strong>So, how do we get the formatting data to local computer?</strong></p>
 <p>We can use Get-FormatData, Export-FormatData and Update-FormatData cmdlets to get the formatting data from a remote computer to local session. To do this:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
 Invoke-Command -session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
 Invoke-Command -Session $s -ScriptBlock {Get-FormatData -TypeName *SharePoint*} | Export-FormatData -Path C:\scripts\SharePoint.Format.ps1xml
 Update-FormatData -PrependPath C:\scripts\SharePoint.Format.ps1xml
-</code></pre></div><p>The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting11-7.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting11-7.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting11-7.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Now, with the formatting information in the local session, you can see that Get-SPSite output is formatted similar to the one we saw when we ran the cmdlet in a local session. However, make a note that this applies only to the current session. If you close and re-open the PowerShell console, the formatting data will be lost. You can add the Update-FormatData cmdlet to your PowerShell profile to make the format data across all PowerShell sessions.</p>
 <p>This is it. We are just a few more posts away from completing this PowerShell remoting series. Do let me know your feedback and let me know if you want to see something more around remoting.</p>

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of the series on WQL, we will look at what are data queries and how some of the WQL keywords &amp; operators can be used to retrieve information from WMI repository. Also, as mentioned earlier, there are many other tools that consume WQL queries to retrieve information from WMI. However, in this series, I shall use only PowerShell to demonstrate WQL.
 WQL data queries are the most simplest form of querying for WMI data.">
@@ -149,43 +149,128 @@ WQL data queries are the most simplest form of querying for WMI data." />
         
         <p>In this part of the series on WQL, we will look at what are data queries and how some of the WQL keywords &amp; operators can be used to retrieve information from WMI repository. Also, as mentioned earlier, there are many other tools that consume WQL queries to retrieve information from WMI. However, in this series, I shall use only PowerShell to demonstrate WQL.</p>
 <p>WQL data queries are the most simplest form of querying for WMI data. Data queries are used to retrieve class instances and data associations. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Select * FROM Win32_Process WHERE HandleCount&gt;=5500&#34;
-</code></pre></div><p>gives us a list of all processes with a handle count above 5500.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Select * FROM Win32_Process WHERE HandleCount&gt;=5500&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>gives us a list of all processes with a handle count above 5500.</p>
 <blockquote>
 <p><strong>Note</strong>
 You can use -filter parameter to Get-WMIObject instead of -Query. Whatever you pass as a value to -filter will be used within the WHERE clause of a WQL statement. For example, the above PowerShell example can be re-written as</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Class Win32_Process -Filter &#34;HandleCount&gt;=5500&#34;
-</code></pre></div><p>So, here is the difference between using -Query or  -Filter. You can pass any valid WQL statement as a value to -Query parameter. However, whatever value you pass as a value to -filter will always be used within the WHERE clause. So, the value to -filter must be a valid WHERE clause value with proper use of WQL operators. For example, using a PowerShell comparison operator such as -eq is not valid within -Filter.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Class Win32_Process -Filter &#34;HandleCount&gt;=5500&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>So, here is the difference between using -Query or  -Filter. You can pass any valid WQL statement as a value to -Query parameter. However, whatever value you pass as a value to -filter will always be used within the WHERE clause. So, the value to -filter must be a valid WHERE clause value with proper use of WQL operators. For example, using a PowerShell comparison operator such as -eq is not valid within -Filter.</p>
 </blockquote>
 <p>Let us use this example and discuss a few keywords.</p>
 <h4 id="select">SELECT</h4>
 <p>In the above WQL query,  we used <a href="http://msdn.microsoft.com/en-us/library/aa393276(v=VS.85).aspx">SELECT</a> statement. This statement returns instances of the specified class and any of its subclasses. As a general practice, many people retrieve WMI data by specifying SELECT * FROM <!-- raw HTML omitted -->. By using *, we retrieve all possible properties of a given WMI class. This type of query can take a while to execute and consume more bandwidth to retrieve the result set. One method to reduce the bandwidth required to retrieve the result set is to replace * with selected set of property names.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;SELECT Name FROM Win32_Process WHERE HandleCount&gt;=5500&#34;
-</code></pre></div><p>OR</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -class Win32_Process -Filter &#34;HandleCount&gt;=5500&#34; -Property Name
-</code></pre></div><h4 id="from">FROM</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;SELECT Name FROM Win32_Process WHERE HandleCount&gt;=5500&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>OR</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -class Win32_Process -Filter &#34;HandleCount&gt;=5500&#34; -Property Name
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="from">FROM</h4>
 <p>FROM statement is used to specify the class from which we need to create the instances. Remember that you can perform data queries only from one class at a time. For example, the following query will produce an invalid query error:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Select * from win32_Service, Win32_Process&#34;
-</code></pre></div><h4 id="where">WHERE</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Select * from win32_Service, Win32_Process&#34;
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="where">WHERE</h4>
 <p>As you may be familiar by now, WHERE keyword is used to narrow the scope of retrieved data based on a filter. This keyword can be used in all of the three query types. In general, WHERE clause when used with SELECT statement can take one of the following forms:</p>
 <blockquote>
 <p>SELECT * FROM class WHERE property operator constant
 SELECT * FROM class WHERE constant operator property</p>
 </blockquote>
 <p>In the above two forms, property denotes a valid property of a WMI instance, operator is any valid WQL operator and constant must be of the correct type for the property. We have already seen an example of the first form of using WHERE. Here is an example for the second form. The following query retrieve all services in stopped state.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;SELECT Name FROM Win32_Service WHERE &#39;Stopped&#39;=State&#34;
-</code></pre></div><p>Multiple groups of properties, operators, and constants can be combined in a WHERE clause using logical operators such as AND, OR, and NOT. Here are a few examples to demonstrate these.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Select * from Win32_Service Where State=&#39;Running&#39; AND StartMode=&#39;Manual&#39;&#34;
-</code></pre></div><div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM Win32_LogicalDisk WHERE Name = &#39;C:&#39; OR Name = &#39;D:&#39;&#34;
-</code></pre></div><div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM win32_Service WHERE NOT (State=&#39;Stopped&#39;)&#34;
-</code></pre></div><p>The above three examples show using AND, OR, and NOT logical operators with WHERE clause to perform multiple filters. In the third example, we can replace NOT with other WQL operators. For example, the same query can be performed in the following ways:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM win32_Service WHERE State&lt;&gt;&#39;Stopped&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;SELECT Name FROM Win32_Service WHERE &#39;Stopped&#39;=State&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>Multiple groups of properties, operators, and constants can be combined in a WHERE clause using logical operators such as AND, OR, and NOT. Here are a few examples to demonstrate these.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Select * from Win32_Service Where State=&#39;Running&#39; AND StartMode=&#39;Manual&#39;&#34;
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM Win32_LogicalDisk WHERE Name = &#39;C:&#39; OR Name = &#39;D:&#39;&#34;
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM win32_Service WHERE NOT (State=&#39;Stopped&#39;)&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The above three examples show using AND, OR, and NOT logical operators with WHERE clause to perform multiple filters. In the third example, we can replace NOT with other WQL operators. For example, the same query can be performed in the following ways:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;SELECT * FROM win32_Service WHERE State&lt;&gt;&#39;Stopped&#39;&#34;
 Get-WMIObject -Query &#34;SELECT * FROM win32_Service WHERE State!=&#39;Stopped&#39;&#34;
-</code></pre></div><p>You can also use IS, IS NOT operators within WHERE clause. However, the query will be valid only if the constant is NULL. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -query &#34;SELECT * FROM Win32_LogicalDisk WHERE FileSystem IS NULL&#34;
-</code></pre></div><p>is valid and will return the disk drive information with no file system information. However, the following example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -query &#34;SELECT * FROM Win32_LogicalDisk WHERE DriveType IS 5&#34;
-</code></pre></div><p>will result in an invalid query error.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can also use IS, IS NOT operators within WHERE clause. However, the query will be valid only if the constant is NULL. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -query &#34;SELECT * FROM Win32_LogicalDisk WHERE FileSystem IS NULL&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>is valid and will return the disk drive information with no file system information. However, the following example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -query &#34;SELECT * FROM Win32_LogicalDisk WHERE DriveType IS 5&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>will result in an invalid query error.</p>
 <p>There are many other keywords such as REFERENCES OF, ASSOCIATORS OF within the context of data queries. To keep these posts short, I will end today’s post here and discuss a few more keywords in the next post. As usual, please leave your feedback here on what can be improved and what else you want to see.</p>
 
         

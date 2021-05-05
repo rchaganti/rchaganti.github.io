@@ -5,20 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the earlier parts of this series, we briefly looked at different methods of deploying ARM templates and then basics of ARM template language. Starting today’s article, we will see our leaning in action. To get going with our leaning, we will start building the ARM template for the following scenario.
-  We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language.">
+    We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Building Azure Resource Manager Templates – Using Parameters"/>
 <meta name="twitter:description" content="In the earlier parts of this series, we briefly looked at different methods of deploying ARM templates and then basics of ARM template language. Starting today’s article, we will see our leaning in action. To get going with our leaning, we will start building the ARM template for the following scenario.
-  We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language."/>
+    We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language."/>
 
     <meta property="og:title" content="Building Azure Resource Manager Templates – Using Parameters" />
 <meta property="og:description" content="In the earlier parts of this series, we briefly looked at different methods of deploying ARM templates and then basics of ARM template language. Starting today’s article, we will see our leaning in action. To get going with our leaning, we will start building the ARM template for the following scenario.
-  We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language." />
+    We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-parameters/" />
 <meta property="article:published_time" content="2015-11-10T00:00:00+00:00" />
@@ -122,7 +122,7 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              7-minute read
+              8-minute read
             </span>
           </div>
           <div class="categories">
@@ -148,9 +148,16 @@
         
         
         <p>In the earlier parts of this <a href="http://139.59.40.198/blog/series/arm-templates/">series</a>, we briefly looked at <a href="http://139.59.40.198/blog/building-azure-resource-manager-templates-an-introduction/">different methods of deploying ARM templates</a> and then <a href="http://139.59.40.198/blog/building-azure-resource-manager-templates-the-basics/">basics of ARM template language</a>. Starting today’s article, we will see our leaning in action. To get going with our leaning, we will start building the ARM template for the following scenario.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate3-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate3-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate3-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>We will incrementally build this scenario by learning different aspects of ARM template language. We won’t be covering all resource types in Azure but we will cover every aspect of the ARM template language and functions and expressions used in the template language. We will also review best practices in building these ARM templates as we proceed forward in this series.</p>
 <p>So, what is there in the scenario that we are building?</p>
@@ -169,56 +176,119 @@
 <h4 id="create-a-resource-group">Create a Resource Group</h4>
 <p>Like I mentioned earlier, we need a resource group for deploying the components in our scenario using ARM templates. So, let us create one. You can do this using various means but I will stick to <a href="https://github.com/Azure/azure-powershell/releases">Azure PowerShell</a> for this.</p>
 <p>Note: I will be using Azure PowerShell 1.0 cmdlets. You can get these using either PackageManagement cmdlets or Web PI or just get the <!-- raw HTML omitted -->MSI package from Github<!-- raw HTML omitted -->.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">Login-AzureRmAccount
-<span style="color:#fff;font-weight:bold">New-AzureRmResourceGroup</span> -Name MyARMDemo -Location <span style="color:#0ff;font-weight:bold">&#39;West US&#39;</span>
-</code></pre></div><p>Note: An Azure resource group can contain <!-- raw HTML omitted -->resources from different regions<!-- raw HTML omitted -->.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="n">Login-AzureRmAccount</span>
+<span class="nb">New-AzureRmResourceGroup</span> <span class="n">-Name</span> <span class="n">MyARMDemo</span> <span class="n">-Location</span> <span class="s1">&#39;West US&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Note: An Azure resource group can contain <!-- raw HTML omitted -->resources from different regions<!-- raw HTML omitted -->.</p>
 <h4 id="adding-parameters">Adding Parameters</h4>
 <p>Now that we have a resource group created, let us start creating our ARM template for the scenario. First thing we need is a storage account for our resources. Storage accounts in Azure have a couple of properties — <em>name, type,</em> and <em>location</em> — that we can configure. We should ideally collect the values for <em>name</em> and <em>type</em> from the user deploying this template. This is where we will use parameters in the ARM template language. Let us first start by defining that.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span>,
-    <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-    <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-        <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;myARMDemo&#34;</span>,
-            <span style="font-weight:bold">&#34;minLength&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>,
-            <span style="font-weight:bold">&#34;maxLength&#34;</span>: <span style="color:#ff0;font-weight:bold">24</span>,
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name for the storage account.&#34;</span>
-            }
-        },
-        <span style="font-weight:bold">&#34;storageAccountType&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-            <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_GRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_ZRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Premium_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_RAGRS&#34;</span>
-            ],
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Account type based on the storage redundancy requirements.&#34;</span>
-            }
-        }
-    }
-}
-</code></pre></div><p>In the above JSON template, we added parameters sub-element to the first two mandatory elements which are <em>$schema</em> and <em>contentVersion.</em> Within the parameters element, we have two parameters needed for creating storage account. Here is the generic syntax for adding parameters.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;parameters&#34;</span><span style="color:#f00">:</span> {
-   <span style="font-weight:bold">&#34;&lt;parameterName&gt;&#34;</span> : {
-     <span style="font-weight:bold">&#34;type&#34;</span> : <span style="color:#0ff;font-weight:bold">&#34;&lt;type-of-parameter-value&gt;&#34;</span>,
-     <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;&lt;optional-default-value-of-parameter&gt;&#34;</span>,
-     <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [ <span style="color:#0ff;font-weight:bold">&#34;&lt;optional-array-of-allowed-values&gt;&#34;</span> ],
-     <span style="font-weight:bold">&#34;minValue&#34;</span>: <span style="color:#f00">&lt;optional-minimum-value-for-int-parameters&gt;</span>,
-     <span style="font-weight:bold">&#34;maxValue&#34;</span>: <span style="color:#f00">&lt;optional-maximum-value-for-int-parameters&gt;</span>,
-     <span style="font-weight:bold">&#34;minLength&#34;</span>: <span style="color:#f00">&lt;optional-minimum-length-for-string-secureString-array-parameters&gt;</span>,
-     <span style="font-weight:bold">&#34;maxLength&#34;</span>: <span style="color:#f00">&lt;optional-maximum-length-for-string-secureString-array-parameters&gt;</span>,
-     <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-         <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;&lt;optional-description-of-the parameter&gt;&#34;</span> 
-     }
-   }
-}
-</code></pre></div><p>We will be using more or less every property within the parameters element within the scenario we are developing. So, don’t worry if you don’t immediately see all of them used right away. The <em>storageAccountName</em> parameter is of string <em>type</em> and we set the <em>defaultValue</em> to ‘myARMDemo’. So, when a user deploys this template it is not mandatory to supply the parameter value. The value of <em>type</em> property should be a valid JSON type and one of the below mentioned types.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;storageAccountName&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;myARMDemo&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;minLength&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="nt">&#34;maxLength&#34;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Unique name for the storage account.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;storageAccountType&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;allowedValues&#34;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_GRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_ZRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Premium_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_RAGRS&#34;</span>
+            <span class="p">],</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Account type based on the storage redundancy requirements.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above JSON template, we added parameters sub-element to the first two mandatory elements which are <em>$schema</em> and <em>contentVersion.</em> Within the parameters element, we have two parameters needed for creating storage account. Here is the generic syntax for adding parameters.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;parameters&#34;</span><span class="err">:</span> <span class="p">{</span>
+   <span class="nt">&#34;&lt;parameterName&gt;&#34;</span> <span class="p">:</span> <span class="p">{</span>
+     <span class="nt">&#34;type&#34;</span> <span class="p">:</span> <span class="s2">&#34;&lt;type-of-parameter-value&gt;&#34;</span><span class="p">,</span>
+     <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;&lt;optional-default-value-of-parameter&gt;&#34;</span><span class="p">,</span>
+     <span class="nt">&#34;allowedValues&#34;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&#34;&lt;optional-array-of-allowed-values&gt;&#34;</span> <span class="p">],</span>
+     <span class="nt">&#34;minValue&#34;</span><span class="p">:</span> <span class="err">&lt;optional-minimum-value-for-int-parameters&gt;</span><span class="p">,</span>
+     <span class="nt">&#34;maxValue&#34;</span><span class="p">:</span> <span class="err">&lt;optional-maximum-value-for-int-parameters&gt;</span><span class="p">,</span>
+     <span class="nt">&#34;minLength&#34;</span><span class="p">:</span> <span class="err">&lt;optional-minimum-length-for-string-secureString-array-parameters&gt;</span><span class="p">,</span>
+     <span class="nt">&#34;maxLength&#34;</span><span class="p">:</span> <span class="err">&lt;optional-maximum-length-for-string-secureString-array-parameters&gt;</span><span class="p">,</span>
+     <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;&lt;optional-description-of-the parameter&gt;&#34;</span> 
+     <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>We will be using more or less every property within the parameters element within the scenario we are developing. So, don’t worry if you don’t immediately see all of them used right away. The <em>storageAccountName</em> parameter is of string <em>type</em> and we set the <em>defaultValue</em> to ‘myARMDemo’. So, when a user deploys this template it is not mandatory to supply the parameter value. The value of <em>type</em> property should be a valid JSON type and one of the below mentioned types.</p>
 <ul>
 <li>string or secureString</li>
 <li>int</li>
@@ -228,62 +298,138 @@
 </ul>
 <p>A storage account name must be at least 3 characters long and 24 characters at the most. The <em>minLength</em> and <em>maxLength</em> properties within the <em>storageAccountName</em> parameter define these constraints. The <em>metadata</em> property of the parameter is used to provide the help text to the end user deploying this template. You can put whatever string that best describes the parameter.</p>
 <p>For the <em>storageAccountType</em> property, we have set <em>allowedValues</em> property to ensure we restrict what the end user can provide as a value. This is required since there only a set of valid values for the storage account type in Azure. Note that <em>allowedValues</em> property is a JSON array and is represented using square brackets. Since we are supplying <em>allowedValues,</em> when a user deploys this template, they get to select one of the values either using dropdown or tab-complete when using PowerShell. For eample, in Azure PowerShell, this is achieved using the <em>New-AzureRmResourceGroupDeployment</em> cmdlet.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate3-2.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate3-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate3-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>We would eventually add many more parameters by the time we create the final template. The basics that we discussed here should apply to all parameters that we add in future.</p>
 <h4 id="adding-resources">Adding Resources</h4>
 <p>To be able to deploy the template, we must have at least one resource type added to the <em>resources</em> collection element. Let us go ahead and add the storage resource type to create a storage account.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span>,
-    <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-    <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-        <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;MyARMDemo&#34;</span>,
-            <span style="font-weight:bold">&#34;minLength&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>,
-            <span style="font-weight:bold">&#34;maxLength&#34;</span>: <span style="color:#ff0;font-weight:bold">24</span>,
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name for the storage account.&#34;</span>
-            }
-        },
-        <span style="font-weight:bold">&#34;storageAccountType&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-            <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_GRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_ZRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Premium_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_RAGRS&#34;</span>
-            ],
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Account type based on the storage redundancy requirements.&#34;</span>
-            }
-        }
-    },
-    <span style="font-weight:bold">&#34;resources&#34;</span>: [
-        {
-            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
-            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
-            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
-            <span style="font-weight:bold">&#34;properties&#34;</span>: {
-                <span style="font-weight:bold">&#34;accountType&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
-            }
-        }        
-    ]
-}
-</code></pre></div><p>As we learned earlier, resources element in the ARM template is a JSON array. It is a collection of comma-separated JSON objects where each JSON object represents an instance of a resource type. For a resource type, we need to configure the <em>name</em> property to identify the resource instance within the group. Note the way we are retrieving the value of <em>storageAccountName</em> parameter and assigning it to the <em>name</em> property of storage account resource. We use the <a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#parameters"><em>parameters()</em></a> function. We supply the name of the parameter to this function to retrieve its value. Also note that the functions and expressions within the JSON syntax must be enclosed within square brackets.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;name&#34;: &#34;[parameters(&#39;storageAccountName&#39;)]&#34;
-</code></pre></div><p>The <em>type</em> property is used to define the resource provider (Microsoft.Storage) and resource type (storageAccounts) within the provider. The value of <em>location</em> property identifies the region where we want to deploy the resource type. In the case of our ARM template, we are using the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#resourcegroup">resourceGroup()</a></em> function to define the location for our storage account. This function returns three attributes — <em>id, name,</em> and <em>location</em> — for the resource group within which the resource type is getting deployed. We use dot-reference to retrieve the value of location attribute.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;location&#34;: &#34;[ResourceGroup().Location]&#34;
-</code></pre></div><p>The properties element within the resource definition is a JSON object that identifies all the resource specific properties. We need to configure the storage account type setting and this is collected using the <em>storageAccountType</em> parameter. Similar to how we assigned value to the <em>name</em> property, we use the <em>parameters()</em> function to get the value of <em>storageAccountType.</em></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;storageAccountName&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;MyARMDemo&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;minLength&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="nt">&#34;maxLength&#34;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Unique name for the storage account.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;storageAccountType&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;allowedValues&#34;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_GRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_ZRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Premium_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_RAGRS&#34;</span>
+            <span class="p">],</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Account type based on the storage redundancy requirements.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Storage/storageAccounts&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[ResourceGroup().Location]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-01-preview&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;accountType&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>        
+    <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>As we learned earlier, resources element in the ARM template is a JSON array. It is a collection of comma-separated JSON objects where each JSON object represents an instance of a resource type. For a resource type, we need to configure the <em>name</em> property to identify the resource instance within the group. Note the way we are retrieving the value of <em>storageAccountName</em> parameter and assigning it to the <em>name</em> property of storage account resource. We use the <a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#parameters"><em>parameters()</em></a> function. We supply the name of the parameter to this function to retrieve its value. Also note that the functions and expressions within the JSON syntax must be enclosed within square brackets.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;name&#34;: &#34;[parameters(&#39;storageAccountName&#39;)]&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The <em>type</em> property is used to define the resource provider (Microsoft.Storage) and resource type (storageAccounts) within the provider. The value of <em>location</em> property identifies the region where we want to deploy the resource type. In the case of our ARM template, we are using the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#resourcegroup">resourceGroup()</a></em> function to define the location for our storage account. This function returns three attributes — <em>id, name,</em> and <em>location</em> — for the resource group within which the resource type is getting deployed. We use dot-reference to retrieve the value of location attribute.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;location&#34;: &#34;[ResourceGroup().Location]&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The properties element within the resource definition is a JSON object that identifies all the resource specific properties. We need to configure the storage account type setting and this is collected using the <em>storageAccountType</em> parameter. Similar to how we assigned value to the <em>name</em> property, we use the <em>parameters()</em> function to get the value of <em>storageAccountType.</em></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
    &#34;accountType&#34;: &#34;[parameters(&#39;storageAccountType&#39;)]&#34;
 }
-</code></pre></div><p>With this, we have a ARM template that can be used to deploy a storage account. But, how do we know whether this is valid or not. We can either use the <a href="https://msdn.microsoft.com/en-us/library/azure/dn790547.aspx">REST API</a> for this or PowerShell cmdlets.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>With this, we have a ARM template that can be used to deploy a storage account. But, how do we know whether this is valid or not. We can either use the <a href="https://msdn.microsoft.com/en-us/library/azure/dn790547.aspx">REST API</a> for this or PowerShell cmdlets.</p>
 <!-- raw HTML omitted -->
 <p>Once we validate the template, we can use one of the methods we discussed in the beginning of this series to deploy this template. One of the methods we discussed is the click to deploy button. So, go ahead and click on the below button and proceed to the Azure Portal (you need a valid Azure subscription).</p>
 
@@ -293,14 +439,28 @@
     <br />
 
 <p>You should see Azure Portal starting a new deployment and prompting you for parameter values.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate3-3.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate3-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate3-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>if you mouse over the small ‘i’ icon next to the parameter name, you will see the contents of the <em>metadata</em> property for the parameter displayed in a tooltip.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate3-4.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate3-4.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate3-4.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Once you fill in all required values in the wizard and click Create, the storage account gets deployed within the resource group.</p>
 <p>This is it. We have completed the first part of the ARM template development. In the next part, we will add some more resource types to the template and also learn some more artifacts in the ARM template language.</p>

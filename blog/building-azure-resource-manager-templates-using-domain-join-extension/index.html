@@ -5,20 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="The scenario that we used to understand and build ARM templates contained a domain controller VM along with one or more VMs that joined the domain service hosted by the DC VM.
-  To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete.">
+    To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Building Azure Resource Manager Templates – Using Domain Join Extension"/>
 <meta name="twitter:description" content="The scenario that we used to understand and build ARM templates contained a domain controller VM along with one or more VMs that joined the domain service hosted by the DC VM.
-  To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete."/>
+    To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete."/>
 
     <meta property="og:title" content="Building Azure Resource Manager Templates – Using Domain Join Extension" />
 <meta property="og:description" content="The scenario that we used to understand and build ARM templates contained a domain controller VM along with one or more VMs that joined the domain service hosted by the DC VM.
-  To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete." />
+    To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-domain-join-extension/" />
 <meta property="article:published_time" content="2016-02-13T00:00:00+00:00" />
@@ -122,7 +122,7 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              2-minute read
+              3-minute read
             </span>
           </div>
           <div class="categories">
@@ -148,19 +148,63 @@
         
         
         <p>The scenario that we used to understand and build ARM templates contained a domain controller VM along with one or more VMs that joined the domain service hosted by the DC VM.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate9-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate9-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate9-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>To make sure the VMs join the domain, we used PowerShell DSC configuration. One of the biggest quirks, at least what I faced, with DSC extension with ARM templates is that it takes little longer to complete. For example, the complete scenario deployment took almost 48 minutes to deploy. I am not making up that number. Here is the proof.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate9-2.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate9-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate9-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Now, 48 minutes may not sound that worse but imagine deploying tens of VMs that need to join the domain using the DSC configuration as we saw in the earlier example in this series.</p>
 <p>This is where the new JsonADDomainExtension helps! Instead of using DSC configuration to add VMs to a AD domain, we will now use this VM extension. Within the [earlier template that deployed this scenario][1], we will remove the domainJoin resource definition and replace that with JsonADDomainExtension.</p>
 <p>Here is how that new resource definition looks.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;resources&#34;: [
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;resources&#34;: [
     {
         &#34;apiVersion&#34;: &#34;2015-06-15&#34;,
         &#34;type&#34;: &#34;Microsoft.Compute/virtualMachines/extensions&#34;,
@@ -186,7 +230,9 @@
         }
     }
 ]
-</code></pre></div><p>In this extension settings, I am re-using a few parameters such as <em>adDomainName</em>, <em>adminUserName</em>, and <em>adminPassword</em>. I added a new parameter called <em>OUPath</em>. This specifies the organization unit for the VM computer account and it is not mandatory to specify this. Let’s take a quick look at the properties of this resource.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In this extension settings, I am re-using a few parameters such as <em>adDomainName</em>, <em>adminUserName</em>, and <em>adminPassword</em>. I added a new parameter called <em>OUPath</em>. This specifies the organization unit for the VM computer account and it is not mandatory to specify this. Let’s take a quick look at the properties of this resource.</p>
 <table>
 <thead>
 <tr>

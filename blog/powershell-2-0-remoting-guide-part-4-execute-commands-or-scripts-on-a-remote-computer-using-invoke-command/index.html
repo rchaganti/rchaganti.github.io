@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of PowerShell remoting series, I will discuss how to run commands or scripts on remote computer(s). Within remoting, there are couple of ways to run commands or scripts on a remote machine. This includes Invoke-Command cmdlet and interactive remoting sessions. These two methods deserve a separate post for each and hence I will discuss the Invoke-Command method in today&rsquo;s post.
 Once you have enabled remotingon all your computers, you can useInvoke-Commandcmdlet to run commands and scripts on local computer or on remote computer(s).">
@@ -147,46 +147,127 @@ Once you have enabled remotingon all your computers, you can useInvoke-Commandcm
 <p>Once you have <!-- raw HTML omitted -->enabled remoting<!-- raw HTML omitted --> on all your computers, you can use<!-- raw HTML omitted --> Invoke-Command<!-- raw HTML omitted --> cmdlet to run commands and scripts on local computer or on remote computer(s). There are many possible variations of this cmdlet. I will cover most of them here.</p>
 <h4 id="invoke-command-to-run-commands-on-local-or-remote-computer">Invoke-Command to run commands on local or remote computer</h4>
 <p>You can invoke a command on local or remote computer(s) using the below method:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }
-</code></pre></div><p>The ScriptBlock parameter can be used to specify a list of commands you want to run on the remote computer.  ComputerName parameter is not required for running commands on the local machine. If you want to run the same command on multiple remote computers, you can supply the computer names as a comma separated list to ComputerName parameter or use a text file as shown in the example here</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }
-</code></pre></div><!-- raw HTML omitted -->
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }
+</code></pre></td></tr></table>
+</div>
+</div><p>The ScriptBlock parameter can be used to specify a list of commands you want to run on the remote computer.  ComputerName parameter is not required for running commands on the local machine. If you want to run the same command on multiple remote computers, you can supply the computer names as a comma separated list to ComputerName parameter or use a text file as shown in the example here</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }
+</code></pre></td></tr></table>
+</div>
+</div><!-- raw HTML omitted -->
 <p>All command names and variables in the ScriptBlock are evaluated on the remote computer. So, if you do something like -ScriptBlock {Get-Process -Name $procName}, PowerShell expects the remote computer session to have $procName defined. You can however pass variables on the local computer to a remote session when using Invoke-Command. This brings us to the next point in our discussion.</p>
 <h4 id="passing-local-variables-as-arguments-to-remote-computer">Passing local variables as arguments to remote computer</h4>
 <p>Taking the above example, we can pass the Name of the process you are looking for as a variable to the script block. ArgumentList parameter helps you achieve this. You can do this as shown here.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$procName = &#34;powerShell&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$procName = &#34;powerShell&#34;
 Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {param ($Name) Get-Process -Name $Name} -ArgumentList $procName
-</code></pre></div><p>The above example may be a simple one but it shows how to use -ArgumentList parameter to pass local variables to the remote session.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above example may be a simple one but it shows how to use -ArgumentList parameter to pass local variables to the remote session.</p>
 <h4 id="invoke-command-to-execute-scripts-on-remote-computers">Invoke-Command to execute scripts on remote computer(s)</h4>
 <p>Using ScriptBlock parameter can be quite tedious when you have to execute a bunch of PowerShell commands. This can be confusing when you have loops and conditional statements inside the scriptblock. Invoke-Command provides FilePath parameter to address this. You can use this parameter as shown below</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1
-</code></pre></div><p>Make a note that the script you provide as FilePath must exist on the local machine or at a place accessible to the local machine.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1
+</code></pre></td></tr></table>
+</div>
+</div><p>Make a note that the script you provide as FilePath must exist on the local machine or at a place accessible to the local machine.</p>
 <h4 id="using--session-parameter-for-better-performance-and-sharing-data-between-commands">Using -Session parameter for better performance and sharing data between commands</h4>
 <p>Whenever you run Invoke-Command with -ComputerName parameter, a temporary session gets established to execute the remote command. So, establishing a session every time you use this cmdlet can be time consuming. So, to avoid that we can use a persistent connection to the remote computer and that is what -Session uses. You can create a persistent connection to a remote computer by using New-PSSession cmdlet as shown here</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
-</code></pre></div><p>Now, $s contains the session details for the persistent connection. We can use $s to invoke a command on the remote computer and the syntax for that will be</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Commad -Session $s -ScriptBlock {get-Process}
-</code></pre></div><p>$s contains all the variables you create / modify when you execute commands on the remote computer. So, subsequent command execution with $s as the session will have access to all of the variables created / updated on the remote computer. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$s = new-pssession -computername SP2010-WFE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$s = New-PSSession -ComputerName SP2010-WFE
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, $s contains the session details for the persistent connection. We can use $s to invoke a command on the remote computer and the syntax for that will be</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Commad -Session $s -ScriptBlock {get-Process}
+</code></pre></td></tr></table>
+</div>
+</div><p>$s contains all the variables you create / modify when you execute commands on the remote computer. So, subsequent command execution with $s as the session will have access to all of the variables created / updated on the remote computer. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$s = new-pssession -computername SP2010-WFE
 Invoke-Command -Session $s -ScriptBlock {$fileCount = (Get-ChildItem C:\ -Recurse).Count}
 invoke-command -session $s -scriptblock {$fileCount}
-</code></pre></div><p>We could access $fileCount variable only because we used a persistent session to run the command. This would not have been possible if used -ComputerName to invoke the remote command.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>We could access $fileCount variable only because we used a persistent session to run the command. This would not have been possible if used -ComputerName to invoke the remote command.</p>
 <h4 id="running-remote-command-as-a-background-job">Running remote command as a background job</h4>
 <p>The example shown above — which gets the total file count on C:\ of a remote machine — can be quite time consuming based on how big is C:\ on the remote computer. In such case, you will have to wait for the remote command to complete execution. To avoid this, you can use -AsJob parameter to run the command as a background job on the remote computer.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob
-</code></pre></div><p>Once you run this, you will see the job details listed as shown here:</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting4-1.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob
+</code></pre></td></tr></table>
+</div>
+</div><p>Once you run this, you will see the job details listed as shown here:</p>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting4-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting4-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Now, you can use Get-Job and receive job cmdlets to see the output from the background job as shown below.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-Job -id 1 | Receive-Job
-</code></pre></div><p>A complete discussion on Background jobs deserves a series of posts. I will plan to do that next. If you don’t want to wait and learn about it right away, you can read about it @ <!-- raw HTML omitted --><a href="http://technet.microsoft.com/en-us/library/dd315273.aspx">http://technet.microsoft.com/en-us/library/dd315273.aspx</a><!-- raw HTML omitted --></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-Job -id 1 | Receive-Job
+</code></pre></td></tr></table>
+</div>
+</div><p>A complete discussion on Background jobs deserves a series of posts. I will plan to do that next. If you don’t want to wait and learn about it right away, you can read about it @ <!-- raw HTML omitted --><a href="http://technet.microsoft.com/en-us/library/dd315273.aspx">http://technet.microsoft.com/en-us/library/dd315273.aspx</a><!-- raw HTML omitted --></p>
 <h4 id="specifying-credentials-required-for-remoting">Specifying credentials required for remoting</h4>
 <p>As we have seen the <!-- raw HTML omitted -->enable remoting post<!-- raw HTML omitted -->, you can use PowerShell remoting between computers in a workgroup environment too. All of the examples I showed above assume that you have access to remote computer as an administrator. This method works quite well in a domain environment where the logged on user has administrator credentials to access any computer in the domain. However, this will not work in a workgroup setup. Within a workgroup you need to pass the credentials along with Invoke-Command. To do that,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$cred = Get-Credential
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$cred = Get-Credential
 Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process} -Credential $cred
-</code></pre></div><p>In the example above, Get-Credential prompts for the credentials to access remote computer and uses the same while calling Invoke-Command cmdlet.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the example above, Get-Credential prompts for the credentials to access remote computer and uses the same while calling Invoke-Command cmdlet.</p>
 <p>This is the end of this article on Invoke-Command. Invoke-Command has many other parameters which are not discussed here. They are more advanced and used in specific scenarios. I will discuss those use cases as we proceed further in this series of posts on PowerShell 2.0 remoting.</p>
 
         

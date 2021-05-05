@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="A few weeks ago, I wrote about WMI Timer events using Win32_LocalTime and then mentioned how to work around the DayOfWeek issue. In today’s post, I will show you how to use WMI timer events to create complex scheduled tasks.
 As system administrators, you may have to create scheduled jobs for performing various sysadmin tasks. We generally use Task Scheduler for such jobs. However, using the regular OS task scheduler, there is no easy way to create a scheduled task that occurs — for example — every Thursday of every fourth week of a month in the third quarter of every year.">
@@ -149,12 +149,33 @@ As system administrators, you may have to create scheduled jobs for performing v
         
         <p>A few weeks ago, I wrote about <a href="http://139.59.40.198/blog/?p=1751">WMI Timer events using Win32_LocalTime</a> and then mentioned how to <a href="http://139.59.40.198/blog/?p=1773">work around the DayOfWeek issue</a>. In today’s post, I will show you how to use WMI timer events to create complex scheduled tasks.</p>
 <p>As system administrators, you may have to create scheduled jobs for performing various sysadmin tasks. We generally use Task Scheduler for such jobs. However, using the regular OS task scheduler, there is no easy way to create a scheduled task that occurs — for example — <strong>every Thursday of every fourth week of a month in the third quarter of every year.</strong></p>
-<figure>
-    <img src="https://ravichaganti.com/images/powerevents1-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/powerevents1-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/powerevents1-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As I mentioned in my earlier posts, this is one area where WMI timer events are quite useful.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
           (TargetInstance ISA &#39;Win32_LocalTime&#39;) AND
           (TargetInstance.Quarter=3) AND
           (TargetInstance.WeekInMonth=4) AND
@@ -164,7 +185,9 @@ As system administrators, you may have to create scheduled jobs for performing v
           (TargetInstance.Second=0)&#34;                        
 
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Execute your scheduled task here&#34; }
-</code></pre></div><p>However, the major drawback of Register-WMIEvent is that the event registration is alive only until the PowerShell consle window is open. So, for this task to execute, you must have the console window open at all times. This is because Register-WMIEvent creates only a temporary event consumer. <strong>So, how do we create a <a href="http://msdn.microsoft.com/en-us/library/aa390825(v=vs.85).aspx#wmi.gloss_permanent_consumer">permanent event consumer</a>?</strong></p>
+</code></pre></td></tr></table>
+</div>
+</div><p>However, the major drawback of Register-WMIEvent is that the event registration is alive only until the PowerShell consle window is open. So, for this task to execute, you must have the console window open at all times. This is because Register-WMIEvent creates only a temporary event consumer. <strong>So, how do we create a <a href="http://msdn.microsoft.com/en-us/library/aa390825(v=vs.85).aspx#wmi.gloss_permanent_consumer">permanent event consumer</a>?</strong></p>
 <p>We can use <a href="http://trevorsullivan.net/">Trevor</a>‘s (@pcgeek86) <a href="http://powerevents.codeplex.com/">PowerEvents</a> PowerShell module.</p>
 <blockquote>
 <h4 id="what-is-powerevents">What is PowerEvents?</h4>
@@ -177,7 +200,20 @@ Register-WmiEvent -Query $query -Action { Write-Host &#34;Execute your scheduled
 </blockquote>
 <h3 id="creating-an-event-filter">Creating an event filter</h3>
 <p>An event filter is an instance of the <a href="http://msdn.microsoft.com/en-us/library/aa394639(v=vs.85).aspx"><strong>__EventFilter</strong></a> system class that describes an event type and the conditions for delivering a notification. So, in our case it is the same WQL query we used in the example above. PowerEvents module provides a cmdlet to create an event filter — <em><strong>New-WMIEventFilter</strong></em>.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
               (TargetInstance ISA &#39;Win32_LocalTime&#39;) AND
               (TargetInstance.Quarter=3) AND
               (TargetInstance.WeekInMonth=4) AND
@@ -186,15 +222,31 @@ Register-WmiEvent -Query $query -Action { Write-Host &#34;Execute your scheduled
               (TargetInstance.Minute=0) AND
               (TargetInstance.Second=0)&#34;
 $taskFilter = New-WmiEventFilter -Name &#34;WQL for 3rd quarter timer event&#34; -Query $query
-</code></pre></div><p>This is it. You have the event filter created. Make a note that you need to store the event filter instance in a variable. This is required since the published version of PowerEvents has no cmdlet way to get a list of event filters. Also, see how I’d used TargetInstance.DayOfweek=9. In real world, there is no 9th DayOfWeek. This is just a <a href="http://139.59.40.198/blog/?p=1773">work around</a> we need to put in place to make sure the event gets triggered on the desired day of week — in this case 4 (Thursday). We could use a WMI query to get that list but I will save it for another post.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is it. You have the event filter created. Make a note that you need to store the event filter instance in a variable. This is required since the published version of PowerEvents has no cmdlet way to get a list of event filters. Also, see how I’d used TargetInstance.DayOfweek=9. In real world, there is no 9th DayOfWeek. This is just a <a href="http://139.59.40.198/blog/?p=1773">work around</a> we need to put in place to make sure the event gets triggered on the desired day of week — in this case 4 (Thursday). We could use a WMI query to get that list but I will save it for another post.</p>
 <h3 id="creating-an-event-consumer">Creating an event consumer</h3>
 <p>An event consumer is a recipient of notifications that report an occurrence of an event. An event consumer is either <a href="http://msdn.microsoft.com/en-us/library/aa390839(v=vs.85).aspx#wmi.gloss_temporary_consumer"><em>temporary</em></a> or <a href="http://msdn.microsoft.com/en-us/library/aa390825(v=vs.85).aspx#wmi.gloss_permanent_consumer"><em>permanent</em></a>. The cmdlet for creating an event consumer is <em><strong>New-WMIEventConsumer.</strong></em> In this post, I will show you how to create a command-line consumer. The idea is to invoke a backup script when the event fires. For a list of other consumer types, refer to <a href="http://msdn.microsoft.com/en-us/library/aa393649(v=VS.85).aspx">http://msdn.microsoft.com/en-us/library/aa393649%28v=VS.85%29.aspx</a>. Here is how we create a permanent event consumer using PowerEvents module.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$cmdConsumer = New-WmiEventConsumer -Verbose -Name &#34;bkConsumer1&#34; -ConsumerType CommandLine -CommandLineTemplate &#34;cmd.exe /c `&#34;C:\Scripts\backup.bat`&#34;&#34;
-</code></pre></div><p>The *<strong>-CommandLineTemplate*</strong> takes the path to the backup script. Also, note that the <em><strong>ConsumerType</strong></em> is set to CommandLine in this case. Again, make sure you store the instance of consumer in a variable. We need it later.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$cmdConsumer = New-WmiEventConsumer -Verbose -Name &#34;bkConsumer1&#34; -ConsumerType CommandLine -CommandLineTemplate &#34;cmd.exe /c `&#34;C:\Scripts\backup.bat`&#34;&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The *<strong>-CommandLineTemplate*</strong> takes the path to the backup script. Also, note that the <em><strong>ConsumerType</strong></em> is set to CommandLine in this case. Again, make sure you store the instance of consumer in a variable. We need it later.</p>
 <h3 id="binding-a-filter-and-consumer-together">Binding a filter and consumer together</h3>
 <p>Now, as a final step, we need to bind the event filter and the consumer together so that the backup script gets invoked when the timer event gets triggered on the specified date &amp; time. To do this, we will use <em><strong>New-WMIFilterConsumerBinding</strong></em> cmdlet.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">New-WmiFilterToConsumerBinding -Filter $taskFilter -Consumer $cmdConsumer -Verbose
-</code></pre></div><p>Remember why I said that we need to store the instances of filter and consumer? It makes it easy to bind them together.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">New-WmiFilterToConsumerBinding -Filter $taskFilter -Consumer $cmdConsumer -Verbose
+</code></pre></td></tr></table>
+</div>
+</div><p>Remember why I said that we need to store the instances of filter and consumer? It makes it easy to bind them together.</p>
 <p>This is it. The backup script gets triggered once the timer event gets fired. This is just one example of creating complex scheduling tasks using WMI timer events. And, using PowerEvents makes it easy to create permanent event consumers. Go and explore it yourself.!</p>
 
         

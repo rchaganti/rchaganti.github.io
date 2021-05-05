@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In my earlier post, I showed how Win32_LocalTime WMI class can be used to capture timer events. As mentioned there, WMI events can be quite helpful in creating complex scheduling tasks. For example, you can specify to run a script every Thursday of every fourth week of a month in the third quarter of every year. However, there is a bug in Win32_LocalTime that currently blocks this.
 I created a support incident with MS and reported this bug to them.">
@@ -150,7 +150,21 @@ I created a support incident with MS and reported this bug to them." />
         <p>In my <a href="http://139.59.40.198/blog/?p=1751">earlier post</a>, I showed how Win32_LocalTime WMI class can be used to capture timer events. As mentioned there, WMI events can be quite helpful in creating complex scheduling tasks. For example, you can specify to run a script every Thursday of every fourth week of a month in the third quarter of every year. However, there is a bug in Win32_LocalTime that currently blocks this.</p>
 <p>I created a support incident with MS and reported this bug to them. I got a response that this indeed is a bug and they provided a workaround to solve this temporarily.</p>
 <p>Let us see this with an example. I will use the same scenario I mentioned earlier: <strong>every Thursday of every fourth week of a month in the third quarter of every year</strong></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
           (TargetInstance ISA &#39;Win32_LocalTime&#39;) AND
           (TargetInstance.Quarter=3) AND
           (TargetInstance.WeekInMonth=4) AND
@@ -160,9 +174,24 @@ I created a support incident with MS and reported this bug to them." />
           (TargetInstance.Second=0)&#34;            
 
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }
-</code></pre></div><p>Observe how I used DayOfWeek property twice in the query. This is the workaround. This event fires only when DayOfWeek is used this way. However, the side effect of this is: the event fires on both Thursday (4) and Friday (5). We can workaround this in a couple of ways.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Observe how I used DayOfWeek property twice in the query. This is the workaround. This event fires only when DayOfWeek is used this way. However, the side effect of this is: the event fires on both Thursday (4) and Friday (5). We can workaround this in a couple of ways.</p>
 <p><strong>1. You can check for DayOfWeek in the -Action script block as shown here.</strong></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
           (TargetInstance ISA &#39;Win32_LocalTime&#39;) AND
           (TargetInstance.Quarter=4) AND
           (TargetInstance.WeekInMonth=1) AND
@@ -171,8 +200,24 @@ Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }
           (TargetInstance.Second=0)&#34;            
 
 Register-WmiEvent -Query $query -Action { if ($MyEvent.SourceEventArgs.NewEvent.TargetInstance.DayOfWeek -eq 5) { write-Host &#34;Event Arrived&#34; } }
-</code></pre></div><p><strong>2. You can provide some dummy DayOfWeek value, anything outside 0-6</strong>. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>2. You can provide some dummy DayOfWeek value, anything outside 0-6</strong>. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceModificationEvent WHERE
           (TargetInstance ISA &#39;Win32_LocalTime&#39;) AND
           (TargetInstance.Quarter=4) AND
           (TargetInstance.WeekInMonth=1) AND
@@ -182,7 +227,9 @@ Register-WmiEvent -Query $query -Action { if ($MyEvent.SourceEventArgs.NewEvent.
           (TargetInstance.Second=0)&#34;            
 
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }
-</code></pre></div><p>This way event fires on Thursday as desired and the second check for DayOfWeek=9 will never fire. This is it.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>This way event fires on Thursday as desired and the second check for DayOfWeek=9 will never fire. This is it.</p>
 
         
 

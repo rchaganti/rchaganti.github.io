@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Update: This article has been updated to show the latest version of the secret store module.
 In the last part, you have seen an introduction to secret management in PowerShell and towards the end you learned that they are vault extensions that provide the real functionality for storing and managing secrets. In this part of the series, you will learn more about the SecretStore vault extension for the SecretManagement PowerShell module.">
@@ -142,47 +142,137 @@ In the last part, you have seen an introduction to secret management in PowerShe
         <p><strong>Update</strong>: This article has been updated to show the latest version of the secret store module.</p>
 <p>In the last part, you have seen an introduction to secret management in PowerShell and towards the end you learned that they are vault extensions that provide the real functionality for storing and managing secrets. In this part of the series, you will learn more about the <a href="https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore">SecretStore</a> vault extension for the <a href="https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement">SecretManagement</a> PowerShell module.</p>
 <p>The SecretStore extension vault is a wrapper around the .NET Crypto API. This vault stores the secrets to the local machine based on the current user account context. You can install this from the PowerShell gallery.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Install-Module</span> -Name Microsoft.PowerShell.SecretStore
-</code></pre></div><p>This extension vault comes with a few commands that are used to configure the vault behavior.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">PS </span>C:\&gt; <span style="color:#fff;font-weight:bold">Get-Command</span> -Module Microsoft.PowerShell.SecretStore
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Install-Module</span> <span class="n">-Name</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This extension vault comes with a few commands that are used to configure the vault behavior.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\&gt;</span> <span class="nb">Get-Command</span> <span class="n">-Module</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>
 
-CommandType     Name                                               Version    Source                                          
------------     ----                                               -------    ------                                          
-Cmdlet          <span style="color:#fff;font-weight:bold">Get-SecretStoreConfiguration</span>                       0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          <span style="color:#fff;font-weight:bold">Reset-SecretStore</span>                                  0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          <span style="color:#fff;font-weight:bold">Set-SecretStoreConfiguration</span>                       0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          <span style="color:#fff;font-weight:bold">Set-SecretStorePassword</span>                            0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          <span style="color:#fff;font-weight:bold">Unlock-SecretStore</span>                                 0.9.1      Microsoft.PowerShell.SecretStore  
-</code></pre></div><p>Before you can start using this extension vault, by default, you must first set a secret store password.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Set-SecretStorePassword</span>
-</code></pre></div><p>This command prompts for entering old and new passwords. Simply enter a desired password and hit enter. Once the password is set, you can run the <code>Get-SecretStoreConfiguration</code> command to see the default vault extension configuration.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">PS </span>C:\&gt; <span style="color:#fff;font-weight:bold">Get-SecretStoreConfiguration</span>
+<span class="n">CommandType</span>     <span class="n">Name</span>                                               <span class="n">Version</span>    <span class="n">Source</span>                                          
+<span class="p">-----------</span>     <span class="p">----</span>                                               <span class="p">-------</span>    <span class="p">------</span>                                          
+<span class="n">Cmdlet</span>          <span class="nb">Get-SecretStoreConfiguration</span>                       <span class="n">0</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">1</span>      <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>                
+<span class="n">Cmdlet</span>          <span class="nb">Reset-SecretStore</span>                                  <span class="n">0</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">1</span>      <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>                
+<span class="n">Cmdlet</span>          <span class="nb">Set-SecretStoreConfiguration</span>                       <span class="n">0</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">1</span>      <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>                
+<span class="n">Cmdlet</span>          <span class="nb">Set-SecretStorePassword</span>                            <span class="n">0</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">1</span>      <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>                
+<span class="n">Cmdlet</span>          <span class="nb">Unlock-SecretStore</span>                                 <span class="n">0</span><span class="p">.</span><span class="n">9</span><span class="p">.</span><span class="n">1</span>      <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span>  
+</code></pre></td></tr></table>
+</div>
+</div><p>Before you can start using this extension vault, by default, you must first set a secret store password.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Set-SecretStorePassword</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This command prompts for entering old and new passwords. Simply enter a desired password and hit enter. Once the password is set, you can run the <code>Get-SecretStoreConfiguration</code> command to see the default vault extension configuration.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\&gt;</span> <span class="nb">Get-SecretStoreConfiguration</span>
 
-      Scope Authentication PasswordTimeout Interaction
-      ----- -------------- --------------- -----------
-CurrentUser       Password             900      Prompt
-</code></pre></div><p>As you can see, the default scope of the secret store is set <code>CurrentUser</code> and it can be otherwise set to <code>AllUsers</code>. The <code>Authentication</code> property by default requires to supply a password to manage the secrets. This can be disabled by setting the <code>Authentication</code> property to <code>None</code>. Within a session, the supplied password is valid for 900 seconds, by default. This can be changed by setting the <code>PasswordTimeout</code> property. The <code>Interaction</code> property, by default, is set to <code>Prompt</code> and can be set to <code>None</code> to ensure you are not prompted to enter password for any configuration retrieval or changes. When disabling password prompt, <a href="https://github.com/PowerShell/SecretStore/issues/49">you must ensure that you also set <code>Authentication</code> to <code>None</code></a> to avoid lockdown of secret store. In case you want to set the <code>Interaction</code> to <code>None</code> but still leave the <code>Authentication</code> to <code>Password</code>, you can use the <code>Unlock-SecretStore</code> command to unlock the vault.</p>
+      <span class="n">Scope</span> <span class="n">Authentication</span> <span class="n">PasswordTimeout</span> <span class="n">Interaction</span>
+      <span class="p">-----</span> <span class="p">--------------</span> <span class="p">---------------</span> <span class="p">-----------</span>
+<span class="n">CurrentUser</span>       <span class="n">Password</span>             <span class="n">900</span>      <span class="n">Prompt</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>As you can see, the default scope of the secret store is set <code>CurrentUser</code> and it can be otherwise set to <code>AllUsers</code>. The <code>Authentication</code> property by default requires to supply a password to manage the secrets. This can be disabled by setting the <code>Authentication</code> property to <code>None</code>. Within a session, the supplied password is valid for 900 seconds, by default. This can be changed by setting the <code>PasswordTimeout</code> property. The <code>Interaction</code> property, by default, is set to <code>Prompt</code> and can be set to <code>None</code> to ensure you are not prompted to enter password for any configuration retrieval or changes. When disabling password prompt, <a href="https://github.com/PowerShell/SecretStore/issues/49">you must ensure that you also set <code>Authentication</code> to <code>None</code></a> to avoid lockdown of secret store. In case you want to set the <code>Interaction</code> to <code>None</code> but still leave the <code>Authentication</code> to <code>Password</code>, you can use the <code>Unlock-SecretStore</code> command to unlock the vault.</p>
 <p>Once this initial configuration is complete as per your needs, you can register this extension vault with the secret management module.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Register-SecretVault</span> -ModuleName Microsoft.PowerShell.SecretStore -Name SecretStore -DefaultVault -Verbose
-</code></pre></div><p>The above command registers Microsoft.PowerShell.SecretStore module as the extension vault and sets as the default vault. The <code>Get-SecretVault</code> command retrieves all registered extension vaults.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">PS </span>C:\&gt; <span style="color:#fff;font-weight:bold">Get-SecretVault</span> 
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Register-SecretVault</span> <span class="n">-ModuleName</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span> <span class="n">-Name</span> <span class="n">SecretStore</span> <span class="n">-DefaultVault</span> <span class="n">-Verbose</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above command registers Microsoft.PowerShell.SecretStore module as the extension vault and sets as the default vault. The <code>Get-SecretVault</code> command retrieves all registered extension vaults.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\&gt;</span> <span class="nb">Get-SecretVault</span> 
 
-Name        ModuleName                       IsDefaultVault
-----        ----------                       --------------
-SecretStore Microsoft.PowerShell.SecretStore True 
-</code></pre></div><p>You can start storing secrets using the SecretManagement module commands now.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Set-Secret</span> -Name GITHUB_TOKEN -Secret <span style="color:#0ff;font-weight:bold">&#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&#39;</span>
-</code></pre></div><p>You can get a secret value by using the <code>Get-Secret</code> command. You must use <code>-AsPlainText</code> switch to return the stored secret as readable string.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Get-Secret</span> -Name GITHUB_TOKEN -AsPlainText
-</code></pre></div><p>The <code>Get-SecretInfo</code> returns the metadata information related to the secret.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">PS </span>C:\&gt; <span style="color:#fff;font-weight:bold">Get-SecretInfo</span> -Name GITHUB_TOKEN
+<span class="n">Name</span>        <span class="n">ModuleName</span>                       <span class="n">IsDefaultVault</span>
+<span class="p">----</span>        <span class="p">----------</span>                       <span class="p">--------------</span>
+<span class="n">SecretStore</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">PowerShell</span><span class="p">.</span><span class="n">SecretStore</span> <span class="n">True</span> 
+</code></pre></td></tr></table>
+</div>
+</div><p>You can start storing secrets using the SecretManagement module commands now.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Set-Secret</span> <span class="n">-Name</span> <span class="n">GITHUB_TOKEN</span> <span class="n">-Secret</span> <span class="s1">&#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can get a secret value by using the <code>Get-Secret</code> command. You must use <code>-AsPlainText</code> switch to return the stored secret as readable string.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Get-Secret</span> <span class="n">-Name</span> <span class="n">GITHUB_TOKEN</span> <span class="n">-AsPlainText</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The <code>Get-SecretInfo</code> returns the metadata information related to the secret.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">PS </span><span class="n">C:</span><span class="p">\&gt;</span> <span class="nb">Get-SecretInfo</span> <span class="n">-Name</span> <span class="n">GITHUB_TOKEN</span>
 
-Name         <span style="color:#fff;font-weight:bold">Type </span>  VaultName  
-----         ----   ---------  
-GITHUB_TOKEN String SecretStore
-</code></pre></div><p>You can remove a stored secret using the <code>Remove-Secret</code> command.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Remove-Secret</span> -Name GITHUB_TOKEN
-</code></pre></div><p>This is a quick overview of using the SecretStore extension vault with SecretManagement module. You will learn more about other extension vaults and secret management module itself in later parts of this series. Stay tuned.</p>
+<span class="n">Name</span>         <span class="nb">Type </span>  <span class="n">VaultName</span>  
+<span class="p">----</span>         <span class="p">----</span>   <span class="p">---------</span>  
+<span class="n">GITHUB_TOKEN</span> <span class="n">String</span> <span class="n">SecretStore</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can remove a stored secret using the <code>Remove-Secret</code> command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Remove-Secret</span> <span class="n">-Name</span> <span class="n">GITHUB_TOKEN</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is a quick overview of using the SecretStore extension vault with SecretManagement module. You will learn more about other extension vaults and secret management module itself in later parts of this series. Stay tuned.</p>
 
         
 

@@ -5,20 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.
-  In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity.">
+    In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Building Azure Resource Manager Templates – Using Variables"/>
 <meta name="twitter:description" content="If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.
-  In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity."/>
+    In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity."/>
 
     <meta property="og:title" content="Building Azure Resource Manager Templates – Using Variables" />
 <meta property="og:description" content="If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.
-  In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity." />
+    In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-variables/" />
 <meta property="article:published_time" content="2015-11-15T00:00:00+00:00" />
@@ -148,115 +148,256 @@
         
         
         <p>If you have been following this series on <a href="http://139.59.40.198/blog/series/arm-templates/">ARM templates</a>, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate4-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate4-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate4-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>In the <a href="http://139.59.40.198/blog/building-azure-resource-manager-templates-using-parameters/">last part</a>, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity. A virtual network and any subnets required must exist before the creation of virtual machines. So, in today’s article, we will see how we can use variables in the ARM template language while incrementally building an ARM template for our scenario and add virtual network. Towards the end, we will review some best practices guidance with regards to using parameters and variables in developing ARM templates.</p>
 <h4 id="working-with-variables">Working with Variables</h4>
 <p>Variables in ARM template language can be used to simplify the template. For example, in our template, we will be using the subnet name at multiple places. There is no point repeating the same string everywhere for this. This may also lead to human errors such as unintentional misspelling of the subnet name. This type of errors will result in failure during the deployment. Instead, we can assign subnet name as a value to a variable and refer that variable within the template as needed. Also, variables in ARM template language will let us expand or construct other variable values. We will see examples of this in the template.</p>
 <p>Here is the generic syntax for variables in ARM template language.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;variables&#34;</span><span style="color:#f00">:</span> {
-   <span style="font-weight:bold">&#34;&lt;variable-name&gt;&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;&lt;variable-value&gt;&#34;</span>,
-   <span style="font-weight:bold">&#34;&lt;variable-name&gt;&#34;</span>: { 
-       <span style="color:#f00">&lt;variable-complex-type-value&gt;</span> 
-   }
-}
-</code></pre></div><p>In general, variables is a JSON object which contains pairs of variable names and values. The variable value can be a complex type such as another JSON object. We will see these as examples as we add the variables needed to complete virtual network configuration.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;variables&#34;</span><span style="color:#f00">:</span> {
-    <span style="font-weight:bold">&#34;vNetPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/16&#34;</span>,
-    <span style="font-weight:bold">&#34;vNetSubnet1Name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>,
-    <span style="font-weight:bold">&#34;vNetSubnet1Prefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/24&#34;</span>,
-    <span style="font-weight:bold">&#34;vNetSubnet1ID&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>,
-    <span style="font-weight:bold">&#34;dnsServerPrivateIp&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.8&#34;</span>
-}
-</code></pre></div><p>For the virtual network required for our scenario, we defined a variable called <em>vNetPrefix</em> and set a value “10.0.0.0/16”. This is the overall virtual network address scope. Within this vNet, we intend to create one subnet with address prefix “10.0.0.0/24” and this is represented using the variable _vNetSubnet1Prefix. _I have added another variable named <em>dnsServerPrivateIp</em> to reserve an IP address for the AD domain controller VM. This is because we don’t want a DHCP assigned IP for the AD DC.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;variables&#34;</span><span class="err">:</span> <span class="p">{</span>
+   <span class="nt">&#34;&lt;variable-name&gt;&#34;</span><span class="p">:</span> <span class="s2">&#34;&lt;variable-value&gt;&#34;</span><span class="p">,</span>
+   <span class="nt">&#34;&lt;variable-name&gt;&#34;</span><span class="p">:</span> <span class="p">{</span> 
+       <span class="err">&lt;variable-complex-type-value&gt;</span> 
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In general, variables is a JSON object which contains pairs of variable names and values. The variable value can be a complex type such as another JSON object. We will see these as examples as we add the variables needed to complete virtual network configuration.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;variables&#34;</span><span class="err">:</span> <span class="p">{</span>
+    <span class="nt">&#34;vNetPrefix&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.0/16&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;vNetSubnet1Name&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;vNetSubnet1Prefix&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.0/24&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;vNetSubnet1ID&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;dnsServerPrivateIp&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.8&#34;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>For the virtual network required for our scenario, we defined a variable called <em>vNetPrefix</em> and set a value “10.0.0.0/16”. This is the overall virtual network address scope. Within this vNet, we intend to create one subnet with address prefix “10.0.0.0/24” and this is represented using the variable _vNetSubnet1Prefix. _I have added another variable named <em>dnsServerPrivateIp</em> to reserve an IP address for the AD domain controller VM. This is because we don’t want a DHCP assigned IP for the AD DC.</p>
 <p>You will also see that we are using another function within this variables element called <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#concat">concat()</a>.</em></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;vNetSubnet1Name&#34;</span><span style="color:#f00">:</span> <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>
-</code></pre></div><p>This function can take ‘n’ strings and concatenate them together. In the example above, we are retrieving the resource group location and then concatenate that with ‘-‘ and the value of the <em>vNetName</em> parameter. This variable value is then used to derive the value of the variable <em>vNetSubnet1ID.</em></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;vNetSubnet1ID&#34;</span><span style="color:#f00">:</span> <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>
-</code></pre></div><p>As I’d mentioned earlier, variables values can be generated dynamically based on other values. If you observe the above code snippet, we are constructing the <em>vNetSubnet1ID</em> by retrieving the resource ID for the virtual network that we are creating. The <em>resourceId()</em> function returns the unique identifier of a resource and it won’t be available until the vNet is created. This shows us that the values of variables can be derived from other related configuration settings. We have used the <em>concat()</em> function again here to concatenate the resource Id value of the vNet with ‘/subnets/’ and the value of the <em>vNetSubnet1Name</em> variable that we derived in last step. Similar to <em>parameters()</em> function, the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-authoring-templates/#variables">variables()</a></em> function gives us the value of the variable name specified.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;
-</code></pre></div><p>The <em>variables()</em> function can be used with the variables element as well as the resource definitions and outputs element. Like any other expression in template language, anytime you want to use this function, it must be enclosed in square brackets ([]).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;vNetSubnet1Name&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This function can take ‘n’ strings and concatenate them together. In the example above, we are retrieving the resource group location and then concatenate that with ‘-‘ and the value of the <em>vNetName</em> parameter. This variable value is then used to derive the value of the variable <em>vNetSubnet1ID.</em></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;vNetSubnet1ID&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>As I’d mentioned earlier, variables values can be generated dynamically based on other values. If you observe the above code snippet, we are constructing the <em>vNetSubnet1ID</em> by retrieving the resource ID for the virtual network that we are creating. The <em>resourceId()</em> function returns the unique identifier of a resource and it won’t be available until the vNet is created. This shows us that the values of variables can be derived from other related configuration settings. We have used the <em>concat()</em> function again here to concatenate the resource Id value of the vNet with ‘/subnets/’ and the value of the <em>vNetSubnet1Name</em> variable that we derived in last step. Similar to <em>parameters()</em> function, the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-authoring-templates/#variables">variables()</a></em> function gives us the value of the variable name specified.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The <em>variables()</em> function can be used with the variables element as well as the resource definitions and outputs element. Like any other expression in template language, anytime you want to use this function, it must be enclosed in square brackets ([]).</p>
 <p>We will see more about creating variables with complex value types in a later part but fundamentals that you learned here are applicable even to complex types. Now that we have the variables needed for the vNet creation, let us go ahead and add the virtual network resource definition to our template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span>,
-    <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-    <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-        <span style="font-weight:bold">&#34;storageAccountName&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;MyARMDemo&#34;</span>,
-            <span style="font-weight:bold">&#34;minLength&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>,
-            <span style="font-weight:bold">&#34;maxLength&#34;</span>: <span style="color:#ff0;font-weight:bold">24</span>,
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name for the storage account.&#34;</span>
-            }
-        },
-        <span style="font-weight:bold">&#34;storageAccountType&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-            <span style="font-weight:bold">&#34;allowedValues&#34;</span>: [
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_GRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_ZRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Premium_LRS&#34;</span>,
-                <span style="color:#0ff;font-weight:bold">&#34;Standard_RAGRS&#34;</span>
-            ],
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Account type based on the storage redundancy requirements.&#34;</span>
-            }
-        },
-        <span style="font-weight:bold">&#34;vNetName&#34;</span>: {
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;string&#34;</span>,
-            <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;myARMDemo&#34;</span>,
-            <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-                <span style="font-weight:bold">&#34;description&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Unique name of the virtual network for this deployment&#34;</span>
-            }
-        }
-    },
-    <span style="font-weight:bold">&#34;variables&#34;</span>: {
-        <span style="font-weight:bold">&#34;vNetPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/16&#34;</span>,
-        <span style="font-weight:bold">&#34;vNetSubnet1Name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>,
-        <span style="font-weight:bold">&#34;vNetSubnet1Prefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.0/24&#34;</span>,
-        <span style="font-weight:bold">&#34;vNetSubnet1ID&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>,
-        <span style="font-weight:bold">&#34;dnsServerPrivateIp&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;10.0.0.8&#34;</span>
-    },
-    <span style="font-weight:bold">&#34;resources&#34;</span>: [
-        {
-            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span>,
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
-            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
-            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
-            <span style="font-weight:bold">&#34;properties&#34;</span>: {
-                <span style="font-weight:bold">&#34;accountType&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
-            }
-        },
-        {
-            <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[parameters(&#39;vNetName&#39;)]&#34;</span>,
-            <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Network/virtualNetworks&#34;</span>,
-            <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[ResourceGroup().Location]&#34;</span>,
-            <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2015-05-01-preview&#34;</span>,
-            <span style="font-weight:bold">&#34;properties&#34;</span>: {
-                <span style="font-weight:bold">&#34;addressSpace&#34;</span>: {
-                    <span style="font-weight:bold">&#34;addressPrefixes&#34;</span>: [
-                        <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetPrefix&#39;)]&#34;</span>
-                    ]
-                },
-                <span style="font-weight:bold">&#34;subnets&#34;</span>: [
-                    {
-                        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span>,
-                        <span style="font-weight:bold">&#34;properties&#34;</span>: {
-                            <span style="font-weight:bold">&#34;addressPrefix&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;vNetSubnet1Prefix&#39;)]&#34;</span>
-                        }
-                    }
-                ]
-            }
-        }        
-    ]
-}
-</code></pre></div><p>I added a <em>vNetName</em> parameter to the parameters element so that user deploying this template can provide that as input. We can go ahead and test if this is template is valid or not.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell"><span style="color:#fff;font-weight:bold">Test-AzureRmResourceGroupDeployment</span> -ResourceGroupName myARMDemo -TemplateFile .\arm-series_Storage-VirtualNet.json -storageAccountName myARMDemo -storageAccountType Standard_LRS -vNetName myARMDemo -Verbose
-</code></pre></div><p>Once the validation is complete, we can go ahead and deploy the same to ensure it is deploy-able. To test this immediately, click on the deploy to Azure button below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;storageAccountName&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;MyARMDemo&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;minLength&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="nt">&#34;maxLength&#34;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Unique name for the storage account.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;storageAccountType&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;allowedValues&#34;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&#34;Standard_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_GRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_ZRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Premium_LRS&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;Standard_RAGRS&#34;</span>
+            <span class="p">],</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Account type based on the storage redundancy requirements.&#34;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;vNetName&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="s2">&#34;myARMDemo&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Unique name of the virtual network for this deployment&#34;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;variables&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;vNetPrefix&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.0/16&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;vNetSubnet1Name&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;vNetSubnet1Prefix&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.0/24&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;vNetSubnet1ID&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;dnsServerPrivateIp&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.8&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Storage/storageAccounts&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[ResourceGroup().Location]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-01-preview&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;accountType&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;storageAccountType&#39;)]&#34;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;vNetName&#39;)]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Network/virtualNetworks&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[ResourceGroup().Location]&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-01-preview&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;addressSpace&#34;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&#34;addressPrefixes&#34;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&#34;[variables(&#39;vNetPrefix&#39;)]&#34;</span>
+                    <span class="p">]</span>
+                <span class="p">},</span>
+                <span class="nt">&#34;subnets&#34;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span><span class="p">,</span>
+                        <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&#34;addressPrefix&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;vNetSubnet1Prefix&#39;)]&#34;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>        
+    <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>I added a <em>vNetName</em> parameter to the parameters element so that user deploying this template can provide that as input. We can go ahead and test if this is template is valid or not.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">Test-AzureRmResourceGroupDeployment</span> <span class="n">-ResourceGroupName</span> <span class="n">myARMDemo</span> <span class="n">-TemplateFile</span> <span class="p">.\</span><span class="n">arm-series_Storage-VirtualNet</span><span class="p">.</span><span class="n">json</span> <span class="n">-storageAccountName</span> <span class="n">myARMDemo</span> <span class="n">-storageAccountType</span> <span class="n">Standard_LRS</span> <span class="n">-vNetName</span> <span class="n">myARMDemo</span> <span class="n">-Verbose</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Once the validation is complete, we can go ahead and deploy the same to ensure it is deploy-able. To test this immediately, click on the deploy to Azure button below.</p>
 
     <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fportal.azure.com%2f%23create%2fMicrosoft.Template%2furi%2fhttps%253A%252F%252Fraw.githubusercontent.com%252Frchaganti%252Farmseries%252Fmaster%252Farm-series_Storage-VirtualNet.json" target="_blank">
         <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">

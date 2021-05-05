@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="While I was preparing a few demo scripts for a Bangalore IT Pro UG meet session, I tumbled upon on WMI event class Win32_VolumeChangeEvent. This one is interesting. It is derived from Win32_DeviceChangeEvent class and gives us the ability to monitor local drive events directly.For example, you can get a notification when a local drive or mount point gets removed or added. The following table shows a list of event types we can monitor.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -175,13 +175,47 @@
 <p>Let us see a few examples:</p>
 <h4 id="adding-a-new-local-drive">Adding a new local drive</h4>
 <p>We can monitor a local drive addition using the following query:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=2&#34;
-</code></pre></div><p>Using this, you can monitor removable drives such as external hard drives and flash drives.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=2&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>Using this, you can monitor removable drives such as external hard drives and flash drives.</p>
 <h4 id="removal-of-a-local-drive">Removal of a local drive</h4>
 <p>To monitor the removal of local drive events, we can use the following query:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=3&#34;
-</code></pre></div><h4 id="registering-for-the-above-events">Registering for the above events</h4>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Query for finding all device arrival events
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=3&#34;
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="registering-for-the-above-events">Registering for the above events</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Query for finding all device arrival events
 $query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=2&#34;            
 
 #Register an event subscription
@@ -197,9 +231,45 @@ $query = &#34;SELECT * FROM Win32_VolumeChangeEvent WHERE EventType=3&#34;
 Register-WmiEvent -Query $query -Action {
     Write-Host &#34;$($Event.SourceEventArgs.NewEvent.DriveName) was removed&#34;
 } | Out-Null
-</code></pre></div><p>Once we have these event registrations done, we can test this by connecting or disconnecting a local drive such as a USB flash drive.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Once we have these event registrations done, we can test this by connecting or disconnecting a local drive such as a USB flash drive.</p>
 <p>Now, let us see a “real-world” application of these events and how we can use that to create a simple script to backup some files automatically whenever a USB flash drive gets added. Here is the script to do that:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Function Backup-ScriptFolder {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Function Backup-ScriptFolder {
     Param ([string]$backupDrive,[string]$scriptFolder)
     $backupFolder = &#34;$($backupDrive)\Backup-$(Get-Date -Format MM-dd-yyyy-hh-mm)&#34;
     try {
@@ -229,7 +299,9 @@ Register-WmiEvent -Query $query -Action {
         Backup-ScriptFolder -backupdrive $Event.SourceEventArgs.NewEvent.DriveName -ScriptFolder &#34;C:\Dropbox\Scripts&#34;
     }
 } | Out-Null
-</code></pre></div><p>If you see the above code, I have a simple function <em>Backup-ScriptFolder</em> that is called within the events -Action script block. I am calling this function only when the newly added local drive has the volume name “BACKUPDRIVE”. This is to make sure I don’t make multiple copies of my backup on unnecessary drives.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you see the above code, I have a simple function <em>Backup-ScriptFolder</em> that is called within the events -Action script block. I am calling this function only when the newly added local drive has the volume name “BACKUPDRIVE”. This is to make sure I don’t make multiple copies of my backup on unnecessary drives.</p>
 <p>Now, when I add a new USB flash drive or any external hard drive with a volume name “BACKUPDRIVE”, all files from the specified folder just get copied to the newly added drive under a new folder. In the <em>Backup-ScriptFolder</em> function, <em>-BackupDrive</em> is the newly added drive letter and <em>-ScriptFolder</em> is the folder you want backup.</p>
 <p>This is a very basic implementation. You can easily extend it by adding a pretty progress bar and other features.</p>
 <p><strong>Note</strong>: Register-WMIEvent creates a temporary event consumer. Hence, the event notifications won’t be available if we close the PowerShell host. If you want to have a permanent event registration,  use <a href="http://powerevents.codeplex.com/">PowerEvents </a>module to make your life easy.</p>

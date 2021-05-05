@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="One of the ARM template authoring best practices is to decompose the JSON template, if applicable, into multiple target-specific templates. Think of this as creating re-usable code. You can leverage the re-usable parts of your code within multiple aspects of your application or the deployment.
 For linking different external templates within the main template, we need to define the Microsoft.Resources/deployments resource instance. Before we proceed let us look at the scenario for which we are building an ARM template.">
@@ -149,9 +149,16 @@ For linking different external templates within the main template, we need to de
         
         <p>One of the ARM template authoring best practices is to decompose the JSON template, if applicable, into multiple target-specific templates. Think of this as creating re-usable code. You can leverage the re-usable parts of your code within multiple aspects of your application or the deployment.</p>
 <p>For linking different external templates within the main template, we need to define the <em>Microsoft.Resources/deployments</em> resource instance. Before we proceed let us look at the scenario for which we are building an ARM template.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate7-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate7-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate7-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>So far in this series, we have looked at building an ARM template that deploys the following components of this scenario:</p>
 <ul>
@@ -162,14 +169,89 @@ For linking different external templates within the main template, we need to de
 <li>Virtual network interfaces for the DC and other VMs based on the environment type.</li>
 <li>Finally, a VM with DNS and Directory Services running in it.</li>
 </ul>
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate7-2"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate7-2" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate7-2" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>By default, the Azure based IaaS deployments use the Azure DNS. If you have deployed the template that we built in the previous part of this series, you will notice that the virtual network us configured to use Azure DNS.</p>
 <p>Since we deployed a VM that runs our own DNS and directory services, we now want to use the custom DNS in the Azure deployment so that other VMs in the deployment can join the domain that we created using the PowerShell DSC configuration.</p>
 <p>For this, we will use an external template and call it inside our main template. What we essentially need to do here is to update the existing virtual network to use the custom DNS. Here is how it looks.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
   &#34;$schema&#34;: &#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#&#34;,
   &#34;contentVersion&#34;: &#34;1.0.0.0&#34;,
   &#34;parameters&#34;: {
@@ -233,9 +315,49 @@ For linking different external templates within the main template, we need to de
     }
   ]
 }
-</code></pre></div><p>The above template is just another ARM JSON template. It has the same syntax. We have defined parameters that are needed for updating the virtual network to use the custom DNS that we just configured. let us save this as <em>vnet-with-dns-server.json</em> and store it at a location that is accessible to the ARM deployment engine. I chose to store it in a <a href="https://github.com/rchaganti/azure-quickstart-templates/blob/master/201-vm-domain-join/vnet-with-dns-server.json">public Github repository</a>.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above template is just another ARM JSON template. It has the same syntax. We have defined parameters that are needed for updating the virtual network to use the custom DNS that we just configured. let us save this as <em>vnet-with-dns-server.json</em> and store it at a location that is accessible to the ARM deployment engine. I chose to store it in a <a href="https://github.com/rchaganti/azure-quickstart-templates/blob/master/201-vm-domain-join/vnet-with-dns-server.json">public Github repository</a>.</p>
 <p>Now, we need to link this template to the main ARM template that we have been authoring. Here is how it is done in the main template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">{
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
     &#34;apiVersion&#34;: &#34;2015-01-01&#34;,
     &#34;type&#34;: &#34;Microsoft.Resources/deployments&#34;,
     &#34;name&#34;: &#34;updatevnetdns&#34;,
@@ -269,7 +391,9 @@ For linking different external templates within the main template, we need to de
         }
     }
 }
-</code></pre></div><p>Within this resource instance, we defined a dependency (line number 6) on the PowerShell DSC extension that creates the AD forest. We don’t want the linked template to execute until the DNS service is created in the DC VM. Line number 11 defines the link our external template that will configure the custom DNS settings. _vnet-with-dns-server.json _has a few parameters defined for collecting required custom DNS configuration.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Within this resource instance, we defined a dependency (line number 6) on the PowerShell DSC extension that creates the AD forest. We don’t want the linked template to execute until the DNS service is created in the DC VM. Line number 11 defines the link our external template that will configure the custom DNS settings. _vnet-with-dns-server.json _has a few parameters defined for collecting required custom DNS configuration.</p>
 <p>Within the main template, we need to pass the parameter values to the external template. This is done using the parameters element within the <em>Microsoft.Resources/deployments</em> resource instance. For the parameter values, we use either what is already gathered from the user using the main template or what is defined in the variables element of the main template. This is how state can be shared between multiple templates. If we need to return some data from the linked template to the main template, we can do so using the outputs element within the linked template. In our scenario, we don’t need any information from the linked template and therefore we will not use the outputs element.</p>
 <p>Also, notice line number 9. The mode property within the properties element is set to incremental. This is needed because we already have some of the components within the template deployed. By setting the deployment mode to incremental, we tell the deployment engine to add the new resources or update existing resource configuration within the resource group without deleting any existing resources in the group. In our example, we are updating the configuration of an existing virtual network to use the custom DNS. so, the incremental deployment mode is necessary here.</p>
 
@@ -278,9 +402,16 @@ For linking different external templates within the main template, we need to de
     </a>
     <br />
 
-<figure>
-    <img src="https://ravichaganti.com/images/armtemplate7-3.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/armtemplate7-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/armtemplate7-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Once you deploy this updated template, you will see that the virtual network within the resource group gets set to use the custom DNS deployed using the PowerShell DSC extension.</p>
 <p>In the next part of this series, we will look at adding more virtual machines to the deployment based on the <em>environmentType</em> selected within the template parameters. By the end of next part, we will completely functional ARM template that deploys our scenario end to end.</p>

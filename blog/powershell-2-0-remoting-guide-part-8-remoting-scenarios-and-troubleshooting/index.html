@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="If you have been following this remoting series and using PS remoting on a test setup or even production, you must have gone through a few initial hiccups. In fact, there could be many such issues if you are working in a mixed environment where you have a few computers in a domain and a few in workgroup. So, in this part of the remoting series I will discuss some of these issues and workarounds to resolve the same.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -144,25 +144,62 @@
 <p>A more detailed guide is available at <a href="http://technet.microsoft.com/en-us/library/dd347642.aspx">about_remote_troubleshooting</a> page on TechNet. I will list only the scenarios I have tested.</p>
 <p><strong>Remoting to a computer in workgroup from a computer in domain</strong></p>
 <p>Take an example of two computers, Win7-VM in a domain environment and WinXP-VM in a workgroup. Now, if you want to start a remoting session from Win7-VM using Enter-PSSession using:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Enter-PSSession -ComputerName WinXP-VM -Credential WinXP-VM\Administrator
-</code></pre></div><p>you will see an error message similar to the one here</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting8-1.png"/> 
-</figure>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Enter-PSSession -ComputerName WinXP-VM -Credential WinXP-VM\Administrator
+</code></pre></td></tr></table>
+</div>
+</div><p>you will see an error message similar to the one here</p>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting8-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting8-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>We can workaround this by adding the remote computer to local computer’s trusted hosts list — in this case, on Win7-VM. You can use one of the following methods.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Set-Item WSMan:\localhost\Client\TrustedHosts -Value *
-</code></pre></div><div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">set-item wsman:\localhost\Client\TrustedHosts -value WinXP-VM
-</code></pre></div><blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Set-Item WSMan:\localhost\Client\TrustedHosts -Value *
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">set-item wsman:\localhost\Client\TrustedHosts -value WinXP-VM
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p><strong>Note</strong>: WSMan:\LocalHost\Client will be available only if WinRM service is enabled and running.</p>
 </blockquote>
 <p>The first command uses a wildcard to add all computers in the network to the list of trusted hosts and the second command adds only WinXP-VM to that list. You can also supply a comma seperated list.</p>
 <p><strong>Remoting to a computer in domain from a computer in workgroup</strong></p>
 <p>Using the same example as above — if you want to establish a remoting session from WinXP-VM to Win7-VM, you can change the trusted hosts list on WinXP-VM to add the computers in the domain. Again, it can be done in multiple ways.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Set-Item WSMan:\localhost\Client\TrustedHosts -Value *            
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Set-Item WSMan:\localhost\Client\TrustedHosts -Value *            
 set-item wsman:\localhost\Client\TrustedHosts -value Win7-VM            
 set-item wsman:\localhost\Client\TrustedHosts -value *.remotinglab.com
-</code></pre></div><p>The first two commands variations must be familiar by now. The 3rd variation adds all computers in <a href="http://remotinglab.com/">remotinglab.com</a> domain to the trusted hosts on WinXP-VM computer.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The first two commands variations must be familiar by now. The 3rd variation adds all computers in <a href="http://remotinglab.com/">remotinglab.com</a> domain to the trusted hosts on WinXP-VM computer.</p>
 <p><strong>Remoting to a domain computer as a non-administrator from another domain computer</strong></p>
 <p>To start a remoting a session with a remote computer, the user initiating the remoting session must</p>
 <ol>
@@ -170,14 +207,31 @@ set-item wsman:\localhost\Client\TrustedHosts -value *.remotinglab.com
 <li>Be able to authenticate to the remote computer as an administrator using the Credential parameter</li>
 </ol>
 <p>Alternatively — on the remote computer, you can give non-administrator users execute permission to default session configuration. This can be done by running the following command at a elevated PowerShell prompt:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Set-PSSessionConfiguration Microsoft.Powershell -ShowSecurityDescriptorUI            
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Set-PSSessionConfiguration Microsoft.Powershell -ShowSecurityDescriptorUI            
 
 #In addition to the above, on a x64 computer
 Set-PSSessionConfiguration Microsoft.Powershell32 -ShowSecurityDescriptorUI
-</code></pre></div><p>When you use the above cmdlet, you will see a dialog box as shown here.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting8-2.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>When you use the above cmdlet, you will see a dialog box as shown here.</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting8-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting8-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Here, you need to click add and then select the non-administrator user account. Once added, give the user Execute permission. After you click OK on the main dialog and return to PowerShell, you will be prompted to restart WinRM service. That is it. I recommend this method than the first two. This way a non-administrator user should be able to remote in to a domain computer without providing administrator credentials or adding the user to local administrators group.</p>
 <p>A few things I discussed here today are really meant for an advanced remoting post. However, for the sake of getting started in a mixed environment, I thought this post is must. Feel free to write any questions you may have in an email or tweet to me.</p>

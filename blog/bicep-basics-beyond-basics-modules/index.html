@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -119,7 +119,7 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              4-minute read
+              5-minute read
             </span>
           </div>
           <div class="categories">
@@ -159,7 +159,24 @@
 <p>Reusability and repeatability are two basics requirements when you want to implement Infrastructure as Code (IaC) practices. You looked at how parameters can be added to Bicep files to make those programs reusable. This is the first step towards modularizing your programs. With the ARM JSON templates, you might have used linked templates that are meant to provide similar functionality. Bicep has support for modularity and helps simplify complex configurations into smaller reusable modules.</p>
 <p>In this part of the <a href="https://ravichaganti.com/series/azure-bicep">series of articles on Bicep language</a>, you will learn about modularizing Bicep files. You already have the necessary knowledge, <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">parameterizing Bicep files</a>, to start this learning.</p>
 <p>Here is an example from one of the previous parts.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param saCount int = 2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">param saCount int = 2
 
 resource sa &#39;Microsoft.Storage/storageAccounts@2019-04-01&#39; = [for index in range(0, saCount): {
   name: &#39;${index}stg${uniqueString(resourceGroup().id)}&#39;
@@ -172,20 +189,53 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-04-01&#39; = [for index 
   	accessTier: &#39;Hot&#39;
   }
 }]
-</code></pre></div><p>Add some output to this using what you learned in the <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/">previous part about using output</a> in Bicep.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">output saId array = [for i in range(0, saCount): resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, &#39;${i}stg${uniqueString(resourceGroup().id)}&#39;)]
-</code></pre></div><p>Now, save this as storageAccount.bicep. Congratulations. You just created a Bicep module! Now, to the important part. How do you consume this in another Bicep file?</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Add some output to this using what you learned in the <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/">previous part about using output</a> in Bicep.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">output saId array = [for i in range(0, saCount): resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, &#39;${i}stg${uniqueString(resourceGroup().id)}&#39;)]
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, save this as storageAccount.bicep. Congratulations. You just created a Bicep module! Now, to the important part. How do you consume this in another Bicep file?</p>
 <h2 id="consuming-a-module">Consuming a module</h2>
 <p>The <code>module</code> keyword helps in consuming a Bicep module. The syntax for consuming a Bicep module is:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = {
 	name: &lt;name-to-be-used-for-nested-deployment&gt;
 	params: {
 		&lt;param-name&gt;: &lt;param-value&gt;
 	}
 }
-</code></pre></div><p>module-identifier, similar to a resource identifier, will be used to reference the module object in other parts of the Bicep file as needed. The <code>name</code> property within the module will be used as a name for the nested deployment within the generated ARM template. This property is mandatory. And, then the <code>params</code> property will be used to supply a list of parameter values to the module.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>module-identifier, similar to a resource identifier, will be used to reference the module object in other parts of the Bicep file as needed. The <code>name</code> property within the module will be used as a name for the nested deployment within the generated ARM template. This property is mandatory. And, then the <code>params</code> property will be used to supply a list of parameter values to the module.</p>
 <p>Here is how you can consume the <code>storageAccount</code> module you created earlier.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./storageAccount.bicep&#39; = {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./storageAccount.bicep&#39; = {
   name: &#39;storageDeploy&#39;
   params: {
     saCount: 3
@@ -193,8 +243,22 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-04-01&#39; = [for index 
 }
 
 output stgResourceId array = stgModule.outputs.saId
-</code></pre></div><p>Save this example as main.bicep. Note that it is not necessary that you always store the module files at the same level as the main Bicep file. You can store all modules in a different folder and use that relative path. For example:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./modules/storageAccount.bicep&#39; = {
+</code></pre></td></tr></table>
+</div>
+</div><p>Save this example as main.bicep. Note that it is not necessary that you always store the module files at the same level as the main Bicep file. You can store all modules in a different folder and use that relative path. For example:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">module stgModule &#39;./modules/storageAccount.bicep&#39; = {
   name: &#39;storageDeploy&#39;
   params: {
     saCount: 3
@@ -202,99 +266,230 @@ output stgResourceId array = stgModule.outputs.saId
 }
 
 output stgResourceId array = stgModule.outputs.saId
-</code></pre></div><p>Also, make sure you use the Unix type path. Bicep does not support Windows backslash for cross-platform compatibility reasons. You can compile the main.bicep using <code>bicep build</code>. Here is how the generated ARM JSON will look like.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
-  <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-  <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-    <span style="font-weight:bold">&#34;_generator&#34;</span>: {
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
-      <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.255.40792&#34;</span>,
-      <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;11285400335859160700&#34;</span>
-    }
-  },
-  <span style="font-weight:bold">&#34;functions&#34;</span>: [],
-  <span style="font-weight:bold">&#34;resources&#34;</span>: [
-    {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Resources/deployments&#34;</span>,
-      <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-10-01&#34;</span>,
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;storageDeploy&#34;</span>,
-      <span style="font-weight:bold">&#34;properties&#34;</span>: {
-        <span style="font-weight:bold">&#34;expressionEvaluationOptions&#34;</span>: {
-          <span style="font-weight:bold">&#34;scope&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;inner&#34;</span>
-        },
-        <span style="font-weight:bold">&#34;mode&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Incremental&#34;</span>,
-        <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-          <span style="font-weight:bold">&#34;saCount&#34;</span>: {
-            <span style="font-weight:bold">&#34;value&#34;</span>: <span style="color:#ff0;font-weight:bold">3</span>
-          }
-        },
-        <span style="font-weight:bold">&#34;template&#34;</span>: {
-          <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
-          <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-          <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-            <span style="font-weight:bold">&#34;_generator&#34;</span>: {
-              <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
-              <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.255.40792&#34;</span>,
-              <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;7655284844148565855&#34;</span>
-            }
-          },
-          <span style="font-weight:bold">&#34;parameters&#34;</span>: {
-            <span style="font-weight:bold">&#34;saCount&#34;</span>: {
-              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;int&#34;</span>,
-              <span style="font-weight:bold">&#34;defaultValue&#34;</span>: <span style="color:#ff0;font-weight:bold">2</span>
-            }
-          },
-          <span style="font-weight:bold">&#34;functions&#34;</span>: [],
-          <span style="font-weight:bold">&#34;resources&#34;</span>: [
-            {
-              <span style="font-weight:bold">&#34;copy&#34;</span>: {
-                <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;sa&#34;</span>,
-                <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span>
-              },
-              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
-              <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-04-01&#34;</span>,
-              <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id))]&#34;</span>,
-              <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceGroup().location]&#34;</span>,
-              <span style="font-weight:bold">&#34;sku&#34;</span>: {
-                <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>
-              },
-              <span style="font-weight:bold">&#34;kind&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;StorageV2&#34;</span>,
-              <span style="font-weight:bold">&#34;properties&#34;</span>: {
-                <span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
-              }
-            }
-          ],
-          <span style="font-weight:bold">&#34;outputs&#34;</span>: {
-            <span style="font-weight:bold">&#34;saId&#34;</span>: {
-              <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;array&#34;</span>,
-              <span style="font-weight:bold">&#34;copy&#34;</span>: {
-                <span style="font-weight:bold">&#34;count&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span>,
-                <span style="font-weight:bold">&#34;input&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id)))]&#34;</span>
-              }
-            }
-          }
-        }
-      }
-    }
-  ],
-  <span style="font-weight:bold">&#34;outputs&#34;</span>: {
-    <span style="font-weight:bold">&#34;stgResourceId&#34;</span>: {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;array&#34;</span>,
-      <span style="font-weight:bold">&#34;value&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[reference(resourceId(&#39;Microsoft.Resources/deployments&#39;, &#39;storageDeploy&#39;), &#39;2019-10-01&#39;).outputs.saId.value]&#34;</span>
-    }
-  }
-}
-</code></pre></div><h2 id="module-iterations">Module iterations</h2>
+</code></pre></td></tr></table>
+</div>
+</div><p>Also, make sure you use the Unix type path. Bicep does not support Windows backslash for cross-platform compatibility reasons. You can compile the main.bicep using <code>bicep build</code>. Here is how the generated ARM JSON will look like.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;_generator&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;bicep&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;0.3.255.40792&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;templateHash&#34;</span><span class="p">:</span> <span class="s2">&#34;11285400335859160700&#34;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;functions&#34;</span><span class="p">:</span> <span class="p">[],</span>
+  <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Resources/deployments&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2019-10-01&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;storageDeploy&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;expressionEvaluationOptions&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;scope&#34;</span><span class="p">:</span> <span class="s2">&#34;inner&#34;</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;mode&#34;</span><span class="p">:</span> <span class="s2">&#34;Incremental&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;saCount&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="mi">3</span>
+          <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;template&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+          <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+          <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;_generator&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;bicep&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;0.3.255.40792&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;templateHash&#34;</span><span class="p">:</span> <span class="s2">&#34;7655284844148565855&#34;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="nt">&#34;parameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;saCount&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;int&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;defaultValue&#34;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="nt">&#34;functions&#34;</span><span class="p">:</span> <span class="p">[],</span>
+          <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;copy&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;sa&#34;</span><span class="p">,</span>
+                <span class="nt">&#34;count&#34;</span><span class="p">:</span> <span class="s2">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span>
+              <span class="p">},</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Storage/storageAccounts&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2019-04-01&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id))]&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[resourceGroup().location]&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;sku&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span>
+              <span class="p">},</span>
+              <span class="nt">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;StorageV2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="s2">&#34;Hot&#34;</span>
+              <span class="p">}</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="nt">&#34;outputs&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;saId&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;array&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;copy&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;count&#34;</span><span class="p">:</span> <span class="s2">&#34;[length(range(0, parameters(&#39;saCount&#39;)))]&#34;</span><span class="p">,</span>
+                <span class="nt">&#34;input&#34;</span><span class="p">:</span> <span class="s2">&#34;[resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, format(&#39;{0}stg{1}&#39;, range(0, parameters(&#39;saCount&#39;))[copyIndex()], uniqueString(resourceGroup().id)))]&#34;</span>
+              <span class="p">}</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputs&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;stgResourceId&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;array&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;[reference(resourceId(&#39;Microsoft.Resources/deployments&#39;, &#39;storageDeploy&#39;), &#39;2019-10-01&#39;).outputs.saId.value]&#34;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="module-iterations">Module iterations</h2>
 <p>You can use modules with iterations as well. It is straight forward to do this based on what you learned in <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/">the earlier part about iterations in Bicep</a>.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = [for &lt;item&gt; in &lt;collection&gt;: {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">module &lt;module-identifier&gt; &#39;&lt;path-to-module-file&gt;&#39; = [for &lt;item&gt; in &lt;collection&gt;: {
   name: &lt;name-to-be-used-for-nested-deployment&gt;
   params: {
     &lt;parameter-name&gt;: &lt;parameter-value&gt;
   }
 }]
-</code></pre></div><p>You can quickly build an example that uses module iteration. Start with a module first. This module will be used to create a virtual network and a subnet within that.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param vNetName string
+</code></pre></td></tr></table>
+</div>
+</div><p>You can quickly build an example that uses module iteration. Start with a module first. This module will be used to create a virtual network and a subnet within that.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">param vNetName string
 param addressPrefix string
 param subnetPrefix string
 
@@ -319,9 +514,45 @@ resource vnet &#39;Microsoft.Network/virtualNetworks@2018-11-01&#39; = {
 }
 
 output vnetId string = resourceId(&#39;Microsoft.Network/virtualNetworks&#39;, vNetName)
-</code></pre></div><p>Save this as vnet.bicep.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Save this as vnet.bicep.</p>
 <p>To consume this, create a main bicep file.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">var vNet = [
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">var vNet = [
   {
     vNetName: &#39;testNet&#39;
     addressPrefix: &#39;10.0.0.0/25&#39;
@@ -351,7 +582,9 @@ module net &#39;modules/vnet.bicep&#39; = [for network in vNet: {
 output vNetId array = [for network in vNet: {
   id: resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,network.vNetName)
 }]
-</code></pre></div><p>The variable <code>vNet</code> will hold a collection of virtual networks that need to be created. Using the collection iteration along with module declaration, you can supply the necessary parameter values needed for the module parameters.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The variable <code>vNet</code> will hold a collection of virtual networks that need to be created. Using the collection iteration along with module declaration, you can supply the necessary parameter values needed for the module parameters.</p>
 <p>As you start building complex templates, you will find modules very helpful. This is it for today. You will learn about conditional deployments in the next part of this series.</p>
 
         

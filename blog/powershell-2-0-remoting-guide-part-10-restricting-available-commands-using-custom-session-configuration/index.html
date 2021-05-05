@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="“With great power comes great responsibility”, said uncle Ben. But some people don’t just understand that. That is when you have to rip-off their powers. Similarly, the default PS Session configuration allows full access to PowerShell language, cmdlets, scripts and everything available to PowerShell. Of course, you need to authenticate as a local administrator or should have execute permission to invoke the session. Running a few cmdlets such as Stop-Service or Restart-Computer can be quite dangerous on a production server.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -142,7 +142,25 @@
         
         <p>“With great power comes great responsibility”, said uncle Ben. But some people don’t just understand that. That is when you have to rip-off their powers. Similarly, the default PS Session configuration allows full access to PowerShell language, cmdlets, scripts and everything available to PowerShell. Of course, you need to authenticate as a local administrator or should have execute permission to invoke the session. Running a few cmdlets such as Stop-Service or Restart-Computer can be quite dangerous on a production server. This is where a custom session configuration can help provide role based access to remote host using PowerShell remoting.</p>
 <p>We touched upon creating custom session configuration in <a href="http://139.59.40.198/blog/?p=1200">part 9</a> of this PowerShell <a href="http://139.59.40.198/blog/?cat=240">remoting series</a>. In this part, I will discuss how we can extend the concept of custom session configuration to restrict available commands and PowerShell language in a remote session. I will go striaght in to the startup script used to implement this since we already looked at how to create custom session configuration and assign permissions to a specific user.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$RequiredCommands = @(&#34;Get-Command&#34;,
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$RequiredCommands = @(&#34;Get-Command&#34;,
                              &#34;Get-FormatData&#34;,
                              &#34;Out-Default&#34;,
                              &#34;Select-Object&#34;,
@@ -156,13 +174,35 @@ $ExecutionContext.SessionState.Scripts.Clear()
 
 Get-Command -CommandType Cmdlet, alias, function | ?{$RequiredCommands -notcontains $_.Name} | %{$_.Visibility=&#34;Private&#34;}
 $ExecutionContext.SessionState.LanguageMode=&#34;RestrictedLanguage&#34;
-</code></pre></div><p>As you see here, We have only a few required commands. We don’t want the remote user to execute commands other than this set. BTW, this set is the absolute minimum required even to start remoting session. So, consider this as a standard required commands list. Towards the end, we set the language mode to restricted to make sure the remote user cannot execute infinite loops, etc that could potentially bring the system down. This script, when used as the startup script for a session, will result in something as shown here.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting10-1.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>As you see here, We have only a few required commands. We don’t want the remote user to execute commands other than this set. BTW, this set is the absolute minimum required even to start remoting session. So, consider this as a standard required commands list. Towards the end, we set the language mode to restricted to make sure the remote user cannot execute infinite loops, etc that could potentially bring the system down. This script, when used as the startup script for a session, will result in something as shown here.</p>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting10-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting10-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see above, get-Command lists only the commands we have in the Required Commands list. However, if you have a large list of required commands, the method you have seen in the above code is not scalable. Instead, you can use a denied list of commands that is relatively small. For example, if you don’t want your users to execute Stop-Process or Restart-Computer, your code will look like</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$DeniedCommands = @(&#34;Stop-Process&#34;,
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$DeniedCommands = @(&#34;Stop-Process&#34;,
                              &#34;Restart-Computer&#34;
                              )            
 
@@ -171,10 +211,19 @@ $ExecutionContext.SessionState.Scripts.Clear()
 
 Get-Command -CommandType Cmdlet, alias, function | ?{$DeniedCommands -contains $_.Name} | %{$_.Visibility=&#34;Private&#34;}
 $ExecutionContext.SessionState.LanguageMode=&#34;RestrictedLanguage&#34;
-</code></pre></div><p>So, if you use this code for your startup script, you will see something like this:</p>
-<figure>
-    <img src="https://ravichaganti.com/images/remoting10-2.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>So, if you use this code for your startup script, you will see something like this:</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/remoting10-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/remoting10-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>I prefer the second method.</p>
 <p>If you need to extend or modify the behavior of commands in a remote session, you need to create command proxies. You can read more about it @ <a href="http://blogs.msdn.com/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx">http://blogs.msdn.com/powershell/archive/2009/01/04/extending-and-or-modifing-commands-with-proxies.aspx</a>.</p>

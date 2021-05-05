@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the previous part of this series, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the end of the article on slices, you learned that slices are essentially references to an underlying array and any changes made to the slice will reflect in the underlying array as well. In this article, you shall learn about another reference type called pointers in Go language.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -162,63 +162,138 @@
 <p>In the previous part of this <a href="https://ravichaganti.com/series/get-set-go/">series</a>, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the end of the article on slices, you learned that slices are essentially references to an underlying array and any changes made to the slice will reflect in the underlying array as well. In this article, you shall learn about another reference type called pointers in Go language.</p>
 <h2 id="pointers">Pointers</h2>
 <p>Pointers in Go, like other languages, hold the memory address of a value. First, an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	a := <span style="color:#ff0;font-weight:bold">10</span>
-	b := &amp;a
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="mi">10</span>
+	<span class="nx">b</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">a</span>
 
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of a is&#34;</span>, a)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of b is&#34;</span>, b)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value at b is&#34;</span>, *b)
-}
-</code></pre></div><p>The first variable declaration and initialization in the above example is already known. It is a simple integer. The line where variable b is declared is special. On the right-hand side, using &amp; prefix tells Go that you want to store the memory location of the value represented by variable a. &amp; is called the addressOf operator. So, variable b gets the memory address of variable a. In the last line, the asterisk (*) dereferences the value at variable b and therefore it is called the dereferencing operator.</p>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of a is&#34;</span><span class="p">,</span> <span class="nx">a</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of b is&#34;</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value at b is&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">b</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The first variable declaration and initialization in the above example is already known. It is a simple integer. The line where variable b is declared is special. On the right-hand side, using &amp; prefix tells Go that you want to store the memory location of the value represented by variable a. &amp; is called the addressOf operator. So, variable b gets the memory address of variable a. In the last line, the asterisk (*) dereferences the value at variable b and therefore it is called the dereferencing operator.</p>
 <p>This should be clear if you run this example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>pointers.<span style="color:#fff;font-weight:bold">go</span>
-value of a is <span style="color:#ff0;font-weight:bold">10</span>
-value of b is <span style="color:#ff0;font-weight:bold">0xc000012090</span>
-value at b is <span style="color:#ff0;font-weight:bold">10</span>
-</code></pre></div><p>The second output shows the value stored in variable b which is the memory address of variable a. And, the last line in the output shows the value at the memory address represented by variable b which is the value of variable a &ndash; 10.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="nx">pointers</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">a</span> <span class="nx">is</span> <span class="mi">10</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">b</span> <span class="nx">is</span> <span class="mh">0xc000012090</span>
+<span class="nx">value</span> <span class="nx">at</span> <span class="nx">b</span> <span class="nx">is</span> <span class="mi">10</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The second output shows the value stored in variable b which is the memory address of variable a. And, the last line in the output shows the value at the memory address represented by variable b which is the value of variable a &ndash; 10.</p>
 <p>Since variable b is the address of value represented variable a, you cannot assign another integer value to b directly. Instead, you dereference and then assign a value which changes the value of variable a.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	a := <span style="color:#ff0;font-weight:bold">10</span>
-	b := &amp;a
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="mi">10</span>
+	<span class="nx">b</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">a</span>
 
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of a is&#34;</span>, a)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of b is&#34;</span>, b)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value at b is&#34;</span>, *b)
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of a is&#34;</span><span class="p">,</span> <span class="nx">a</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of b is&#34;</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value at b is&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">b</span><span class="p">)</span>
 
-	*b = <span style="color:#ff0;font-weight:bold">20</span>
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of b is&#34;</span>, b)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;value of a is&#34;</span>, a)
-}
-</code></pre></div><p>If you run this above example, you will see output similar to what is shown below.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>pointers.<span style="color:#fff;font-weight:bold">go</span>
-value of a is <span style="color:#ff0;font-weight:bold">10</span>
-value of b is <span style="color:#ff0;font-weight:bold">0xc000012090</span>
-value at b is <span style="color:#ff0;font-weight:bold">10</span>
-value of b is <span style="color:#ff0;font-weight:bold">0xc000012090</span>
-value of a is <span style="color:#ff0;font-weight:bold">20</span>
-</code></pre></div><p>If you observe the output, the memory address stored in variable b itself does not change but the value assigned to variable gets updated to 20. This is good but are there other methods we can declare pointers in Go language?</p>
+	<span class="o">*</span><span class="nx">b</span> <span class="p">=</span> <span class="mi">20</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of b is&#34;</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;value of a is&#34;</span><span class="p">,</span> <span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you run this above example, you will see output similar to what is shown below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="nx">pointers</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">a</span> <span class="nx">is</span> <span class="mi">10</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">b</span> <span class="nx">is</span> <span class="mh">0xc000012090</span>
+<span class="nx">value</span> <span class="nx">at</span> <span class="nx">b</span> <span class="nx">is</span> <span class="mi">10</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">b</span> <span class="nx">is</span> <span class="mh">0xc000012090</span>
+<span class="nx">value</span> <span class="nx">of</span> <span class="nx">a</span> <span class="nx">is</span> <span class="mi">20</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you observe the output, the memory address stored in variable b itself does not change but the value assigned to variable gets updated to 20. This is good but are there other methods we can declare pointers in Go language?</p>
 <p>The regular variable declaration syntax works for variables as well.</p>
 <p><code>var b *int = &amp;a</code></p>
 <p>The above method is just an expanded form of what you learned in the first example. In this expanded form, there is explicit declaration of pointer type which is <code>*int</code> in this case or you can call it an integer pointer. You can skip the initialization part and just declare an integer pointer. In such as case the zero value of a pointer will be set to <code>nil</code> and you cannot dereference until you assign a value.</p>
 <h3 id="using-new-function">Using new function</h3>
 <p>When you use the built-in <code>new</code> function to declare and initialize a variable, you get a pointer to its memory address. Take a look at the below example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	a := <span style="color:#fff;font-weight:bold">new</span>(<span style="color:#fff;font-weight:bold">int</span>)
-	<span style="color:#fff;font-weight:bold">println</span>(a)
-	<span style="color:#fff;font-weight:bold">println</span>(*a)
-}
-</code></pre></div><p>When you run this, the first <code>println</code> will print the memory address and when you dereference it&rsquo;s value, you will see a zero value.</p>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span>
+	<span class="nb">println</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+	<span class="nb">println</span><span class="p">(</span><span class="o">*</span><span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>When you run this, the first <code>println</code> will print the memory address and when you dereference it&rsquo;s value, you will see a zero value.</p>
 <p>This is just an introduction to pointers in Go language and you will learn more about the use cases of pointers when we discuss functions and other advanced concepts. Stay tuned.</p>
 
         

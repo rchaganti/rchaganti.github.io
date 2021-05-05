@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="There are several ways we can create a file monitoring script using PowerShell. There is also a cmdlet in PowerShellPack called Start-FileSystemWatcher to monitor file /folder changes. However, none of these methods survive a exit at the console or wherever the script is running. This is because all these methods create a temporary event consumer. As I’d mentioned in an earlier post, Trevor’s PowerEvents module makes it very easy to create permanent event consumers in PowerShell.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -146,40 +146,105 @@
         
         <p>There are several ways we can create a file monitoring script using PowerShell. There is also a cmdlet in PowerShellPack called Start-FileSystemWatcher to monitor file /folder changes. However, none of these methods survive a exit at the console or wherever the script is running. This is because all these methods create a temporary event consumer. As I’d mentioned in an earlier post, <a href="http://www.twitter.com/pcgeek86">Trevor’s </a><a href="http://powerevents.codeplex.com/">PowerEvents</a> module makes it very easy to create permanent event consumers in PowerShell. In today’s post, we shall look at how we can do that.</p>
 <p>Before we dig into that, let us first see how we can create a file monitoring script using PowerShell. Many people use CIM_DirectoryContainsFile class and create an event listener. This is how we use do that class in PowerShell.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DirectoryContainsFile&#39; AND TargetInstance.GroupComponent=&#39;Win32_Directory.Name=&#34;&#34;C:\\\\Scripts&#34;&#34;&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DirectoryContainsFile&#39; AND TargetInstance.GroupComponent=&#39;Win32_Directory.Name=&#34;&#34;C:\\\\Scripts&#34;&#34;&#39;&#34;
 Register-WmiEvent -Query $query -Action {
         Write-Host &#34;A new file $($event.SourceEventArgs.NewEvent.TargetInstance.PartComponent) got created&#34;
     }
-</code></pre></div><figure>
-    <img src="https://ravichaganti.com/images/monitor1-1.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/monitor1-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/monitor1-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see in the above output, what we get as a part of event data is just that string contained in <strong>$Event.SourceEventArgs.NewEvent.TargetInstance.PartComponent</strong>. Of course, if you are RegEx lover, you’d just parse that and find the name (extension, etc) of the new file that just got created. However, there is an efficient and easy way to do that. And, that is: monitoring the CIM_DataFile class itself. This is how we do it:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
 Register-WmiEvent -Query $query -Action {
         $event.SourceEventArgs.NewEvent.TargetInstance | Select -Expand FileName, Extension, Name | Out-Host
     }
-</code></pre></div><p>And, this is what we see in the output.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/monitor1-2.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>And, this is what we see in the output.</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/monitor1-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/monitor1-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>We selected only a few properties from the available list of properties. But, this should give you an idea why I prefer using CIM_DataFile as compared to CIM_DirectoryContainsFile when monitoring for file creation. Similarly, we can monitor file deletions and modifications by subscribing to <strong>__InstanceDeletionEvent</strong> and <strong>__InstanceModificationEvent</strong>. The usage of these two classes is more or less similar. So, I will skip those aspects in this post.</p>
 <p>However, as I mentioned earlier, we are only creating temporary event consumers by using Register-WMIEvent cmdlet. This is not really helpful since we have to keep the console window where we registered the event always open. We can solve this problem by using a permanent WMI event consumer. This is what PowerEvents module does. It helps us create any of the five permanent WMI consumers.</p>
 <p>So, for todays post, we shall look at creating a log file consumer using PowerEvents module.</p>
 <p>First, we need <a href="http://powerevents.codeplex.com/">download </a>and import the module using Import-Module cmdlet. Once this is done, we need to create an event filter for the event we want to subscribe. This is done using <strong>New-WMIEventFilter</strong> cmdlet.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
 $eventFilter = New-WmiEventFilter -Name &#34;FileMonitor&#34; -Query $query
-</code></pre></div><p>Now, we need to create a event consumer. In this case, a log file consumer.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$eventConsumer = New-WmiEventConsumer -ConsumerType LogFile -Name NewFileCreated -FileName C:\Logs\FileMonitor.log `
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, we need to create a event consumer. In this case, a log file consumer.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$eventConsumer = New-WmiEventConsumer -ConsumerType LogFile -Name NewFileCreated -FileName C:\Logs\FileMonitor.log `
  -Text &#34;New File has been created: %TargetInstance.Name%&#34;
-</code></pre></div><p>Once we have both filter and consumer, we can bind them together to create the permanent event consumer.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#This is how we create a binding
+</code></pre></td></tr></table>
+</div>
+</div><p>Once we have both filter and consumer, we can bind them together to create the permanent event consumer.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#This is how we create a binding
 New-WmiFilterToConsumerBinding -Filter $eventFilter -Consumer $eventConsumer
-</code></pre></div><p>This is it. Now, whenever a file gets created in the C:\Scripts folder, we’ll see a entry in the log file at C:\Logs\FileMonitor.log. It’d look like:</p>
-<figure>
-    <img src="https://ravichaganti.com/images/monitor1-3.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is it. Now, whenever a file gets created in the C:\Scripts folder, we’ll see a entry in the log file at C:\Logs\FileMonitor.log. It’d look like:</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/monitor1-3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/monitor1-3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>These log entries will appear even after a system reboot. This is the benefit of WMI permanent consumers. If you want to learn more about WMI query language syntax used in this post, refer to my <a href="http://139.59.40.198/blog/?p=1845">WQL series</a>.</p>
 

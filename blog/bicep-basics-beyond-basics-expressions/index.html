@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="Expressions are a critical part of any programming language. For a Domain-Specific Language (DSL) such as Bicep that transpiles to ARM template JSON, expressions add a great value in reducing the complexity in authoring templates. All built-in functions available within ARM JSON template language are available within Bicep as well. Using these functions and the supported language constructs, you can create some powerful expressions in Bicep that significantly reduces the complexity compared to JSON templates.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -162,7 +162,27 @@
 <h2 id="string-interpolation">String Interpolation</h2>
 <p>If you are familiar with languages like PowerShell or Terraform HashiCorp Configuration Language (HCL), you will know that the string interpolation syntax is used in expanding a value (parameter or variable) and then concatenating it to another string. With the ARM JSON templates, the <code>concat()</code> or <code>format()</code> functions are used for this purpose. Bicep simplifies this by using the interpolation syntax.</p>
 <p>Take a look at this example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">@maxLength(19)
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">@maxLength(19)
 param storageAccountName string = &#39;rchagantistg&#39;
 
 var resourcePrefix = &#39;hrdept&#39;
@@ -178,23 +198,74 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
     accessTier: &#39;Hot&#39;
   }
 }
-</code></pre></div><p>The <code>name</code> property of the storage account resource is assigned a value using string interpolation. This results in the following ARM JSON template representation.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;name&#34;</span><span style="color:#f00">:</span> <span style="color:#0ff;font-weight:bold">&#34;[format(&#39;{0}{1}&#39;, variables(&#39;resourcePrefix&#39;), parameters(&#39;storageAccountName&#39;))]&#34;</span>
-</code></pre></div><p>Similarly, you can combine built-in functions within these expressions. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">var storageAccountName = &#39;${resourcePrefix}${uniqueString(resourceGroup().id)}
-</code></pre></div><p>In the above example, <code>uniqueString()</code> and <code>resourceGroup()</code> are the built-in functions.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The <code>name</code> property of the storage account resource is assigned a value using string interpolation. This results in the following ARM JSON template representation.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="s2">&#34;[format(&#39;{0}{1}&#39;, variables(&#39;resourcePrefix&#39;), parameters(&#39;storageAccountName&#39;))]&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Similarly, you can combine built-in functions within these expressions. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">var storageAccountName = &#39;${resourcePrefix}${uniqueString(resourceGroup().id)}
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, <code>uniqueString()</code> and <code>resourceGroup()</code> are the built-in functions.</p>
 <h2 id="ternary-operator">Ternary Operator</h2>
 <p>Bicep language has unary and binary operators as well as a ternary operator. The unary and binary operators are something you must have already used in other languages and not difficult to understand. The ternary operator is something a bit special. Here is the general syntax of using ternary operator in Bicep language.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&lt;condition-to-evaluate&gt; ? &lt;value-if-true&gt; : &lt;value-if-false&gt;
-</code></pre></div><p>The value from ternary operator evaluation can be assigned to a variable or a resource property directly. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">var resourcePrefix = resourceGroup().location == &#39;WestUS&#39; ? &#39;wus&#39; : &#39;us&#39; 
-</code></pre></div><p>This will result in the following variable assignment in the ARM JSON template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&#34;variables&#34;: {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&lt;condition-to-evaluate&gt; ? &lt;value-if-true&gt; : &lt;value-if-false&gt;
+</code></pre></td></tr></table>
+</div>
+</div><p>The value from ternary operator evaluation can be assigned to a variable or a resource property directly. For example,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">var resourcePrefix = resourceGroup().location == &#39;WestUS&#39; ? &#39;wus&#39; : &#39;us&#39; 
+</code></pre></td></tr></table>
+</div>
+</div><p>This will result in the following variable assignment in the ARM JSON template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;variables&#34;: {
     &#34;resourcePrefix&#34;: &#34;[if(equals(resourceGroup().location, &#39;WestUS&#39;), &#39;wus&#39;, &#39;us&#39;)]&#34;
 }
-</code></pre></div><h2 id="string-indexers">String Indexers</h2>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="string-indexers">String Indexers</h2>
 <p>Bicep supports both string and array indexers. An indexer is simply a way to access an element from a collection of items. As you have learned earlier, Bicep supports variables an parameters of type of object. Object data type is similar to how you represent data in JSON format. For example, say you want to decide the access tier based on the target usage of the storage account. You may represent this as an object in Bicep.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">var resourcePrefix = {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">var resourcePrefix = {
   performance : {
     accessTier: &#39;Hot&#39; 
   }
@@ -202,14 +273,57 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
     accessTier: &#39;Cool&#39;
   }
 }
-</code></pre></div><p>To use this, you can add a parameter that collects user input around target usage of the storage account.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param targetUsage string = &#39;capacity&#39;
-</code></pre></div><p>Now, you can use the value from the parameter as a part of string indexer on the variable <code>resourcePrefix</code>.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">properties: {
+</code></pre></td></tr></table>
+</div>
+</div><p>To use this, you can add a parameter that collects user input around target usage of the storage account.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">param targetUsage string = &#39;capacity&#39;
+</code></pre></td></tr></table>
+</div>
+</div><p>Now, you can use the value from the parameter as a part of string indexer on the variable <code>resourcePrefix</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">properties: {
   accessTier: resourcePrefix[targetUsage].accessTier
 }
-</code></pre></div><p>Here is the complete Bicep file for this string indexer example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">param targetUsage string = &#39;capacity&#39;
+</code></pre></td></tr></table>
+</div>
+</div><p>Here is the complete Bicep file for this string indexer example.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">param targetUsage string = &#39;capacity&#39;
 var resourcePrefix = {
   performance : {
     accessTier: &#39;Hot&#39; 
@@ -230,20 +344,49 @@ resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
     accessTier: resourcePrefix[targetUsage].accessTier
   }
 }
-</code></pre></div><p>The <code>accessTier</code> resource property gets compiled to the following representation in ARM JSON template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;properties&#34;</span><span style="color:#f00">:</span> {
-	<span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;resourcePrefix&#39;)[parameters(&#39;targetUsage&#39;)].accessTier]&#34;</span>
-}
-</code></pre></div><h2 id="property-accessors">Property Accessors</h2>
+</code></pre></td></tr></table>
+</div>
+</div><p>The <code>accessTier</code> resource property gets compiled to the following representation in ARM JSON template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;properties&#34;</span><span class="err">:</span> <span class="p">{</span>
+	<span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;resourcePrefix&#39;)[parameters(&#39;targetUsage&#39;)].accessTier]&#34;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="property-accessors">Property Accessors</h2>
 <p>The property accessors are another variant of expressions and can be used to reference a specific property within an object in Bicep. For example, if you know the target storage usage without needing that as a parameter input, the above expression can be replaced with:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">  properties: {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">  properties: {
     accessTier: resourcePrefix.performance.accessTier
   }
-</code></pre></div><p>This results in the following within ARM JSON template.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#0ff;font-weight:bold">&#34;properties&#34;</span><span style="color:#f00">:</span> {
-	<span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;[variables(&#39;resourcePrefix&#39;).performance.accessTier]&#34;</span>
-}
-</code></pre></div><p>Similar to property accessors, Bicep also supports resource accessors. For example, the resource instance name in the above example is <code>sa</code>. So, if you want to access the <code>id</code> property of the storage account resource, you can use <code>sa.id</code>. This type expression is useful within the <code>output</code> element of the Bicep file or within a child resource specification. You will learn more about this later.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>This results in the following within ARM JSON template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="s2">&#34;properties&#34;</span><span class="err">:</span> <span class="p">{</span>
+	<span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;resourcePrefix&#39;).performance.accessTier]&#34;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Similar to property accessors, Bicep also supports resource accessors. For example, the resource instance name in the above example is <code>sa</code>. So, if you want to access the <code>id</code> property of the storage account resource, you can use <code>sa.id</code>. This type expression is useful within the <code>output</code> element of the Bicep file or within a child resource specification. You will learn more about this later.</p>
 <p>This is it for today. In the next part of this series, you will learn about iterations in Bicep language and how you can use iterations with different elements within Bicep files. Stay tuned!</p>
 
         

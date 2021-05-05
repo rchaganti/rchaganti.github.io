@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In this part of the WQL series, we shall look at extrinsic events.
 Extrinsic events represent events that do not directly link to standard WMI model. For example, Windows registry defines extrinsic events for all registry change events. For intrinsic events, having a WMI provider isn’t mandatory. This is mostly because they are defined within the standard WMI model and WMI takes care of these if there is no WMI provider for a given resource in the standard WMI model.">
@@ -150,9 +150,16 @@ Extrinsic events represent events that do not directly link to standard WMI mode
         <p>In this part of the WQL series, we shall look at extrinsic events.</p>
 <p>Extrinsic events represent events that do not directly link to standard WMI model. For example, Windows registry defines extrinsic events for all registry change events. For intrinsic events, having a WMI provider isn’t mandatory. This is mostly because they are defined within the standard WMI model and WMI takes care of these if there is no WMI provider for a given resource in the standard WMI model. However, since extrinsic events are outside of the standard WMI model, having a WMI provider is mandatory.</p>
 <p>When creating a WMI query for extrinsic events, we need to use a class derived from __ExtrinsicEvent class. Take a look at this CIM Studio capture.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/WQL9-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/WQL9-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/WQL9-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see, there is registry provider that provides extrinsic events. So, rest of this post, will use the extrinsic event classes from registry provider to show we can create event notifications for extrinsic events.</p>
 <blockquote>
@@ -160,15 +167,42 @@ Extrinsic events represent events that do not directly link to standard WMI mode
 </blockquote>
 <h3 id="monitoring-registry-value-change-events">Monitoring registry value change events</h3>
 <p>We use <em><strong>RegistryValueChangeEvent</strong></em> to monitor changes to registry values. Here is how we write a WMI query for registry value change events:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryValueChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39; AND ValueName=&#39;Name&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryValueChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39; AND ValueName=&#39;Name&#39;&#34;
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Value changed&#34; }
-</code></pre></div><p>Yes, that is it. So, when the monitored value changes, you will see the message “value changed” on the screen. However, there is one drawback here. The event notification only tells you that the value has been modified but it won’t return the new value.! Also, deleting a value is also considered modification and you receive a notification. But, agian, the notification won’t tell you that the value was deleted. See the next screen capture.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/WQL9-2.png"/> 
-</figure>
+</code></pre></td></tr></table>
+</div>
+</div><p>Yes, that is it. So, when the monitored value changes, you will see the message “value changed” on the screen. However, there is one drawback here. The event notification only tells you that the value has been modified but it won’t return the new value.! Also, deleting a value is also considered modification and you receive a notification. But, agian, the notification won’t tell you that the value was deleted. See the next screen capture.</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/WQL9-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/WQL9-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>Although I deleted the value, the resulting event notification does not tell us anything about that value deletion. So, in the -Action script block, we will have to verify the presence of registry value we are monitoring and then display the new value. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryValueChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39; AND ValueName=&#39;Name&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryValueChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39; AND ValueName=&#39;Name&#39;&#34;
 Register-WmiEvent -Query $query -Action {
             if ((Get-item HKLM:\SOFTWARE\Temp).GetValue(&#34;Name&#34;)) {
                 write-host (Get-item HKLM:\SOFTWARE\Temp).GetValue(&#34;Name&#34;)
@@ -176,16 +210,34 @@ Register-WmiEvent -Query $query -Action {
                 Write-host &#34;The registry value was deleted&#34;
             }
 }
-</code></pre></div><h3 id="monitoring-registry-key-change-events">Monitoring registry key change events</h3>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="monitoring-registry-key-change-events">Monitoring registry key change events</h3>
 <p><em><strong>RegistryKeyChangeEvent</strong></em> can be used to monitor modifications to a registry subkey. Similar to <em><strong>RegistryValueChangeEvent</strong></em>, this event notification also won’t give you any information beyond subkey modification. Here is how we use it:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryKeyChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryKeyChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND KeyPath=&#39;Software\\Temp&#39;&#34;
 Register-WmiEvent -Query $query -Action { Write-host &#34;Something changed&#34; }
-</code></pre></div><p>Once again, you need to use some technique similar to whats shown above to retrieve the “real” modification that happened.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>Once again, you need to use some technique similar to whats shown above to retrieve the “real” modification that happened.</p>
 <h3 id="monitoring-registry-tree-change-events">Monitoring registry tree change events</h3>
 <p><em><strong>RegistryTreeChangeEvent</strong></em> can be used to monitor subtree level modifications. Similar to other two event classes in the registry provider, this event class provides a notification that a change occurred but won’t tell you about what had changed. So, we got to use a method of our own to detect what change generated the event notification.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryTreeChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND RootPath=&#39;&#39;&#34;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * from RegistryTreeChangeEvent WHERE Hive=&#39;HKEY_LOCAL_MACHINE&#39; AND RootPath=&#39;&#39;&#34;
 Register-WmiEvent -Query $query -Action { Write-host &#34;Something changed&#34; }
-</code></pre></div><p>There are many vendor provided extrinsic event classes. For example, take a look at how Intel ME WMI provider uses extrinsic events for firmware state notifications: <a href="http://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/default.htm?turl=WordDocuments%2Fwmievents.htm">http://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/default.htm?turl=WordDocuments%2Fwmievents.htm</a></p>
+</code></pre></td></tr></table>
+</div>
+</div><p>There are many vendor provided extrinsic event classes. For example, take a look at how Intel ME WMI provider uses extrinsic events for firmware state notifications: <a href="http://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/default.htm?turl=WordDocuments%2Fwmievents.htm">http://software.intel.com/sites/manageability/AMT_Implementation_and_Reference_Guide/default.htm?turl=WordDocuments%2Fwmievents.htm</a></p>
 <p>This is it about extrinsic events and WMI event queries. Go and explore these using the examples I’d used through out. We shall look at WMI schema queries in the next part of this series. Stay tuned.!</p>
 
         

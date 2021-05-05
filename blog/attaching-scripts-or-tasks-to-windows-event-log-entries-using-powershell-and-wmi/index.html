@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="During a few load test iterations on a SharePoint farm, I started seeing some SQL exceptions in the application log of SharePoint servers. If you are familiar with SharePoint platform, you may have seen these events such as event ID 3355. This event complains that the SharePoint server cannot connect to SQL server. This need not really mean that the DB server is offline. So, to find out the real reason behind these event logs, I needed to start some trace activities whenever event ID 3355 gets logged.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -148,32 +148,69 @@
 <p>Initially, I was looking for <a href="http://technet.microsoft.com/en-us/library/bb490901.aspx">eventtriggers.exe</a> which is meant for attaching a script or task to an event log. However, I could neither find this on Windows Server 2008 R2 nor an external download. So, I wanted to look at other options I had.  I found that there are multiple ways to achieve this.</p>
 <h3 id="attach-to-script-or-task-to-the-event-in-windows-event-viewer">Attach to script or task to the event in Windows Event Viewer</h3>
 <p>You can find this option in event viewer. This link is available in the actions pane of event viewer upon selecting an event.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/log1-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/log1-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/log1-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>However, this method is available only if the event log entry you are interested exists in the log. Which meant that, this wizard cannot be used to specify the event ID I wanted to monitor without actually pre-selecting the event entry. In my case, I cleared the even log after some tests and did not have the entry for ID 3355 in the application log. So, this method was not an option for me to attach a script to this specific event ID. By the way, this method create a scheduled task. This will appear under Event Viewer tasks in Task Scheduler.</p>
 <p><strong>Update:</strong> We can use Task Scheduler to create an event trigger. If you go to task scheduler and click on ‘Create Task’, you can select an event as the trigger and specify an event ID there. Take a look at the image below:</p>
-<figure>
-    <img src="https://ravichaganti.com/images/log1-2.png"/> 
-</figure>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/log1-2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/log1-2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>I did not use this technique. Instead, chose to use PowerShell to do this for me.</p>
 <h3 id="create-a-wmi-event-subscription-using-register-wmievent-or-management-event-watcher-net-class-in-powershell">Create a WMI event subscription using Register-WMIEvent or Management Event Watcher .NET class in PowerShell</h3>
 <p>The <a href="http://msdn.microsoft.com/en-us/library/system.management.managementeventwatcher.aspx">System.Management.ManagementEventWatcher</a> .NET class can be used to create an event watcher. This takes a WMI query and starts listening for any specified events. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$watcher = new-object system.management.ManagementEventWatcher
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$watcher = new-object system.management.ManagementEventWatcher
 $watcher.query = &#34;Select * From __InstanceCreationEvent Where
                   TargetInstance ISA &#39;Win32_NTLogEvent&#39; AND
                   TargetInstance.LogFile=&#39;Application&#39; AND
                   targetInstance.EventCode=3355&#34;
 $watcher.WaitForNextEvent()
-</code></pre></div><p>Or, Register-WMIEvent — available in PowerShell v2 — can do the same job.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * From __InstanceCreationEvent Where
+</code></pre></td></tr></table>
+</div>
+</div><p>Or, Register-WMIEvent — available in PowerShell v2 — can do the same job.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$query = &#34;Select * From __InstanceCreationEvent Where
           TargetInstance ISA &#39;Win32_NTLogEvent&#39; AND
           TargetInstance.LogFile=&#39;Application&#39; AND
           TargetInstance.EventCode=3355&#34;
 Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived or something useful here&#34; }
-</code></pre></div><p>The WMI query here simple. We just want to monitor Application log for any event with event code 3355. Both the above methods have a drawback. They are only <a href="http://msdn.microsoft.com/en-us/library/aa392396(v=vs.85).aspx#using_temporary_event_consumers">temporary event consumers</a>. A temporary event consumer exists only as long as the host is alive. The moment we close the PowerShell host, we lose these event subscriptions. However, I did not know when this even will happen again. So, I need the WMI event subscription to survive system reboots.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The WMI query here simple. We just want to monitor Application log for any event with event code 3355. Both the above methods have a drawback. They are only <a href="http://msdn.microsoft.com/en-us/library/aa392396(v=vs.85).aspx#using_temporary_event_consumers">temporary event consumers</a>. A temporary event consumer exists only as long as the host is alive. The moment we close the PowerShell host, we lose these event subscriptions. However, I did not know when this even will happen again. So, I need the WMI event subscription to survive system reboots.</p>
 <h3 id="create-a-permanent-wmi-event-consumer-in-powershell">Create a permanent WMI event consumer in PowerShell</h3>
 <p>So, the best choice for me here was to create a <a href="http://msdn.microsoft.com/en-us/library/aa392396(v=vs.85).aspx#using_permanent_event_consumers">permanent event consumer</a> that can survive system reboots as well. I can create a WMI permanent consumer of command-line type in PowerShell.</p>
 <blockquote>
@@ -181,7 +218,28 @@ Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived or somet
 You need to have the knowledge of WMI Query language to create WMI event consumers (permanent or temporary) in PowerShell.  If you are new to WMI or WMI query language, refer to my eGuide on ‘<em><strong>WMI Query Language via PowerShell</strong></em>‘ available at http://139.59.40.198/blog/?page_id=2134</p>
 </blockquote>
 <p>As I explained in the last chapter of my WQL eguide, creating a WMI event consumer in PowerShell requires lot of typing. So, I chose a shortcut and used the <a href="http://powerevents.codeplex.com/">PowerEvents</a> module. This module provides an easy way to create WMI event consumers using cmdlets. So, as a solution to my event log monitoring problem, I used the following 4 lines of PowerShell code.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Import-Module PowerEvents            
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Import-Module PowerEvents            
 
 #Create a WMI Query for the event log entry
 $query = &#34;SELECT * FROM __InstanceCreationEvent WHERE
@@ -198,7 +256,9 @@ $consumer = New-WmiEventConsumer -Verbose -Name &#34;Event Consumer for Event ID
 
 #Bind the filter and consumer together         
 New-WmiFilterToConsumerBinding -Filter $filter -Consumer $consumer -Verbose
-</code></pre></div><p>The above code is really self-explanatory. Whenever there is an event ID with a code 3355, this permanent WMI event consumer will trigger C:\debug\event.cmd which in turn starts a trace or some kind of logging.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>The above code is really self-explanatory. Whenever there is an event ID with a code 3355, this permanent WMI event consumer will trigger C:\debug\event.cmd which in turn starts a trace or some kind of logging.</p>
 <p>This is it for today. Hope this is helpful.</p>
 
         

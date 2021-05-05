@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the first part of this new series of articles on Azure Bicep, you learnt about what is Azure Bicep and why it is needed. In this part, you will learn about how to get started with Azure Bicep.
 Installing Bicep To start working with Bicep you will need, at a minimum, the Bicep CLI. There are multiple ways to get Bicep CLI on to your system. On Windows systems, you can use any of the following methods.">
@@ -122,7 +122,7 @@ Installing Bicep To start working with Bicep you will need, at a minimum, the Bi
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              4-minute read
+              5-minute read
             </span>
           </div>
           <div class="categories">
@@ -180,60 +180,211 @@ Installing Bicep To start working with Bicep you will need, at a minimum, the Bi
 </ul>
 <h3 id="powershell">PowerShell</h3>
 <p>Here is a PowerShell script that I use to install Bicep on my development system. This is a modified version of what is available in <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/bicep-install?tabs=azure-powershell#manual-with-powershell">Bicep documentation page</a>.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">[<span style="color:#fff;font-weight:bold">CmdletBinding</span>()]
-<span style="color:#fff;font-weight:bold">param</span> ()
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="p">[</span><span class="k">CmdletBinding</span><span class="p">()]</span>
+<span class="k">param</span> <span class="p">()</span>
 
-<span style="color:#007f7f"># Variables</span>
-$bicepFolder = <span style="color:#0ff;font-weight:bold">&#34;$env:USERPROFILE\.bicep&#34;</span>
-$bicepShell = <span style="color:#0ff;font-weight:bold">&#34;%USERPROFILE%\.bicep&#34;</span>
-$bicepExe = <span style="color:#0ff;font-weight:bold">&#34;$bicepFolder\bicep.exe&#34;</span>
-$bicepUrl = <span style="color:#0ff;font-weight:bold">&#39;https://github.com/Azure/bicep/releases/latest/download/bicep-win-x64.exe&#39;</span>
+<span class="c"># Variables</span>
+<span class="nv">$bicepFolder</span> <span class="p">=</span> <span class="s2">&#34;$env:USERPROFILE\.bicep&#34;</span>
+<span class="nv">$bicepShell</span> <span class="p">=</span> <span class="s2">&#34;%USERPROFILE%\.bicep&#34;</span>
+<span class="nv">$bicepExe</span> <span class="p">=</span> <span class="s2">&#34;$bicepFolder\bicep.exe&#34;</span>
+<span class="nv">$bicepUrl</span> <span class="p">=</span> <span class="s1">&#39;https://github.com/Azure/bicep/releases/latest/download/bicep-win-x64.exe&#39;</span>
 
-<span style="color:#007f7f"># Create the install folder</span>
-<span style="color:#fff;font-weight:bold">Write-Verbose</span> -Message <span style="color:#0ff;font-weight:bold">&#34;Creating $bicepFolder&#34;</span>
-$installDir = <span style="color:#fff;font-weight:bold">New-Item</span> -ItemType Directory -Path $bicepFolder -Force
-$installDir.Attributes += <span style="color:#0ff;font-weight:bold">&#39;Hidden&#39;</span>
+<span class="c"># Create the install folder</span>
+<span class="nb">Write-Verbose</span> <span class="n">-Message</span> <span class="s2">&#34;Creating $bicepFolder&#34;</span>
+<span class="nv">$installDir</span> <span class="p">=</span> <span class="nb">New-Item</span> <span class="n">-ItemType</span> <span class="n">Directory</span> <span class="n">-Path</span> <span class="nv">$bicepFolder</span> <span class="n">-Force</span>
+<span class="nv">$installDir</span><span class="p">.</span><span class="n">Attributes</span> <span class="p">+=</span> <span class="s1">&#39;Hidden&#39;</span>
 
-<span style="color:#007f7f"># Fetch the latest Bicep CLI binary</span>
-<span style="color:#fff;font-weight:bold">Write-Verbose</span> -Message <span style="color:#0ff;font-weight:bold">&#39;Downloading latest Bicep binary&#39;</span>
-(<span style="color:#fff;font-weight:bold">New-Object</span> Net.WebClient).DownloadFile($bicepUrl, $bicepExe)
+<span class="c"># Fetch the latest Bicep CLI binary</span>
+<span class="nb">Write-Verbose</span> <span class="n">-Message</span> <span class="s1">&#39;Downloading latest Bicep binary&#39;</span>
+<span class="p">(</span><span class="nb">New-Object</span> <span class="n">Net</span><span class="p">.</span><span class="n">WebClient</span><span class="p">).</span><span class="n">DownloadFile</span><span class="p">(</span><span class="nv">$bicepUrl</span><span class="p">,</span> <span class="nv">$bicepExe</span><span class="p">)</span>
 
-<span style="color:#007f7f"># Add bicep to your PATH</span>
-<span style="color:#fff;font-weight:bold">Write-Verbose</span> -Message <span style="color:#0ff;font-weight:bold">&#39;Updating PATH variable&#39;</span>
-$currentPath = (<span style="color:#fff;font-weight:bold">Get-Item</span> -path <span style="color:#0ff;font-weight:bold">&#34;HKCU:\Environment&#34;</span> ).GetValue(<span style="color:#0ff;font-weight:bold">&#39;Path&#39;</span>, <span style="color:#0ff;font-weight:bold">&#39;&#39;</span>, <span style="color:#0ff;font-weight:bold">&#39;DoNotExpandEnvironmentNames&#39;</span>)
-<span style="color:#fff;font-weight:bold">if</span> (-not $currentPath.Contains($bicepShell)) { setx PATH ($currentPath + <span style="color:#0ff;font-weight:bold">&#34;;$bicepShell&#34;</span>) }
-<span style="color:#fff;font-weight:bold">if</span> (-not $env:path.Contains($bicepFolder)) { $env:path += <span style="color:#0ff;font-weight:bold">&#34;;$bicepFolder&#34;</span> }
+<span class="c"># Add bicep to your PATH</span>
+<span class="nb">Write-Verbose</span> <span class="n">-Message</span> <span class="s1">&#39;Updating PATH variable&#39;</span>
+<span class="nv">$currentPath</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Get-Item</span> <span class="n">-path</span> <span class="s2">&#34;HKCU:\Environment&#34;</span> <span class="p">).</span><span class="n">GetValue</span><span class="p">(</span><span class="s1">&#39;Path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;DoNotExpandEnvironmentNames&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$currentPath</span><span class="p">.</span><span class="n">Contains</span><span class="p">(</span><span class="nv">$bicepShell</span><span class="p">))</span> <span class="p">{</span> <span class="n">setx</span> <span class="n">PATH</span> <span class="p">(</span><span class="nv">$currentPath</span> <span class="p">+</span> <span class="s2">&#34;;$bicepShell&#34;</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$env:path</span><span class="p">.</span><span class="n">Contains</span><span class="p">(</span><span class="nv">$bicepFolder</span><span class="p">))</span> <span class="p">{</span> <span class="nv">$env:path</span> <span class="p">+=</span> <span class="s2">&#34;;$bicepFolder&#34;</span> <span class="p">}</span>
 
-<span style="color:#007f7f"># Verify you can now access the &#39;bicep&#39; command.</span>
-bicep --version
-<span style="color:#007f7f"># Done!</span>
-</code></pre></div><h3 id="azure-cli">Azure CLI</h3>
+<span class="c"># Verify you can now access the &#39;bicep&#39; command.</span>
+<span class="n">bicep</span> <span class="p">-</span><span class="n">-version</span>
+<span class="c"># Done!</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="azure-cli">Azure CLI</h3>
 <p>Azure CLI, version 2.20.0 and above, has a sub command to work with Bicep. So, any command that reference Bicep will auto-trigger Bicep install if it is not already installed. You can manually install as well using the <code>az bicep install</code> command.</p>
 <h2 id="authoring-bicep-files">Authoring Bicep Files</h2>
 <p>I recommend that you use <a href="https://code.visualstudio.com/">Visual Studio Code</a> for authoring Bicep files. The <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep">Azure Bicep extension</a> helps in providing auto-completion and linting for the Bicep language. This extension gets activated when you open or save a .bicep file in VS Code and provides snippets that will get you started. Since Bicep language uses the resource API specification, the Bicep language service behind VS Code will be capable of providing context-aware auto completion.</p>
-<p><img src="https://ravichaganti.com/images/bicepvscode.png" alt=""></p>
+<p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicepvscode.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/bicepvscode.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
 <p>If the resource type is specified, using the Bicep language services, you will get tips around other missing mandatory properties.</p>
-<p><img src="https://ravichaganti.com/images/bicepvscode2.png" alt=""></p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicepvscode2.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/bicepvscode2.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
 <p>With this context-aware completion, not just the resource property names but also the possible property values are shown as well.</p>
-<p><img src="https://ravichaganti.com/images/bicepvscode3.png" alt=""></p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicepvscode3.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/bicepvscode3.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
 <p>Overall, if you are using Bicep for generating ARM templates, this VS Code extension is must.</p>
 <h3 id="basic-syntax">Basic Syntax</h3>
 <p>Before you get started with authoring ARM templates as Bicep files, you need to first understand the basic structure of program in Bicep.</p>
 <p>Start with the minimum required elements in the Bicep file.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">resource &lt;resource-symbolic-name&gt; &#39;&lt;resource-type&gt;@&lt;api-version&gt;&#39; = {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">resource &lt;resource-symbolic-name&gt; &#39;&lt;resource-type&gt;@&lt;api-version&gt;&#39; = {
   name: &#39;name-of-resource&#39;
   location: &#39;location-of-resource&#39;
   properties: {
      &lt;other-resource-properties&gt;
   }
 }
-</code></pre></div><h4 id="resource-keyword">Resource keyword</h4>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="resource-keyword">Resource keyword</h4>
 <p>The resource keyword is what you can define/declare a resource that you want to provision. The resource-symbolic-name is an identifier given to this instance of the resource. You can, in other parts of the Bicep file, refer to the properties of this resource instance using this symbolic name. This is not the name of the resource as it appears in Azure Portal after deployment.</p>
 <p>For each resource instance, you must provide the resource type and API version of the resource type to use. This must be provided in the format <code>'Microsoft.Provider/Type@APIVersion'</code>. For example, <code>Microsoft.Storage/storageAccounts@2019-06-01</code> is the valid resource type and version specification for Azure storage account resource.</p>
 <h4 id="resource-properties">Resource Properties</h4>
 <p>Within the resource properties, you must specify <code>name</code> of the resource and <code>location</code> for resources that require a location. Based on what resource type you intend to provision, there may be other properties that you have to specify. For example, storage account resource type needs <code>kind</code> and <code>sku</code> properties as well. The <code>properties</code> object is then used group all other resource specific properties. For example, for an Azure storage account, you may want to specify an <code>accesstier</code>.</p>
 <p>With Bicep, these are the minimum required elements in a Bicep file to generate the ARM template. Here is an example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">resource sa &#39;Microsoft.Storage/storageAccounts@2019-06-01&#39; = {
   name: &#39;rchagantisabicep&#39;
   location: &#39;WestUS&#39;
   kind: &#39;StorageV2&#39;
@@ -244,41 +395,97 @@ bicep --version
     accessTier: &#39;Hot&#39;
   }
 }
-</code></pre></div><p>You can generate an ARM template by compiling this Bicep file.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">bicep build main.bicep
-</code></pre></div><p>The generated ARM template will be similar to what is shown below.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="font-weight:bold">&#34;$schema&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span>,
-  <span style="font-weight:bold">&#34;contentVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;1.0.0.0&#34;</span>,
-  <span style="font-weight:bold">&#34;functions&#34;</span>: [],
-  <span style="font-weight:bold">&#34;resources&#34;</span>: [
-    {
-      <span style="font-weight:bold">&#34;type&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Microsoft.Storage/storageAccounts&#34;</span>,
-      <span style="font-weight:bold">&#34;apiVersion&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;2019-06-01&#34;</span>,
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;rchagantisabicep&#34;</span>,
-      <span style="font-weight:bold">&#34;location&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;WestUS&#34;</span>,
-      <span style="font-weight:bold">&#34;kind&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;StorageV2&#34;</span>,
-      <span style="font-weight:bold">&#34;sku&#34;</span>: {
-        <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Standard_LRS&#34;</span>
-      },
-      <span style="font-weight:bold">&#34;properties&#34;</span>: {
-        <span style="font-weight:bold">&#34;accessTier&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;Hot&#34;</span>
-      }
-    }
-  ],
-  <span style="font-weight:bold">&#34;metadata&#34;</span>: {
-    <span style="font-weight:bold">&#34;_generator&#34;</span>: {
-      <span style="font-weight:bold">&#34;name&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;bicep&#34;</span>,
-      <span style="font-weight:bold">&#34;version&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;0.3.126.58533&#34;</span>,
-      <span style="font-weight:bold">&#34;templateHash&#34;</span>: <span style="color:#0ff;font-weight:bold">&#34;15768260597240828360&#34;</span>
-    }
-  }
-}
-</code></pre></div><p>You can deploy this using your favorite command &ndash; either Azure CLI or Azure PowerShell.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">az deployment group create --resource-group bicep --template-file c:<span style="color:#0ff;font-weight:bold">\\</span>sandbox<span style="color:#0ff;font-weight:bold">\\</span>main.json
-</code></pre></div><p>In fact, when using Azure CLI (2.20.0 or later) , it is not necessary to even compile the Bicep file. Azure CLI will take care of that. So, the following command will have the same effect as the previous one.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">az deployment group create --resource-group bicep --template-file c:<span style="color:#0ff;font-weight:bold">\\</span>sandbox<span style="color:#0ff;font-weight:bold">\\</span>main.bicep
-</code></pre></div><p>Alright. This is it for today. Tomorrow, you will learn what is beyond basics!</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can generate an ARM template by compiling this Bicep file.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">bicep build main.bicep
+</code></pre></td></tr></table>
+</div>
+</div><p>The generated ARM template will be similar to what is shown below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;$schema&#34;</span><span class="p">:</span> <span class="s2">&#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;contentVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0.0&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;functions&#34;</span><span class="p">:</span> <span class="p">[],</span>
+  <span class="nt">&#34;resources&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.Storage/storageAccounts&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2019-06-01&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;rchagantisabicep&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;WestUS&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;StorageV2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;sku&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Standard_LRS&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;accessTier&#34;</span><span class="p">:</span> <span class="s2">&#34;Hot&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;_generator&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;bicep&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;0.3.126.58533&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;templateHash&#34;</span><span class="p">:</span> <span class="s2">&#34;15768260597240828360&#34;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>You can deploy this using your favorite command &ndash; either Azure CLI or Azure PowerShell.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">az deployment group create --resource-group bicep --template-file c:<span class="se">\\</span>sandbox<span class="se">\\</span>main.json
+</code></pre></td></tr></table>
+</div>
+</div><p>In fact, when using Azure CLI (2.20.0 or later) , it is not necessary to even compile the Bicep file. Azure CLI will take care of that. So, the following command will have the same effect as the previous one.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">az deployment group create --resource-group bicep --template-file c:<span class="se">\\</span>sandbox<span class="se">\\</span>main.bicep
+</code></pre></td></tr></table>
+</div>
+</div><p>Alright. This is it for today. Tomorrow, you will learn what is beyond basics!</p>
 
         
 

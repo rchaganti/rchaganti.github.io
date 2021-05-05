@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="This is not a part of the WQL series I am doing. I happend to take a look at the WMI timer events while providing feedback to an upcoming (cool) PowerEvents module by Trevor (@pcgeek86). BTW, this module will be released on November 30th. So, watch out for the annoncement.
 Coming to the subject of this post, in WMI, there are 3 types of events possible. They are Timer events, Intrinsic events, and extrinsic events.">
@@ -156,29 +156,71 @@ Coming to the subject of this post, in WMI, there are 3 types of events possible
 </ol>
 <p>Prior to Windows 2003, we have had to use <a href="http://msdn.microsoft.com/en-us/library/aa394620(v=VS.85).aspx">__AbsoluteTimerInstruction</a> class and <a href="http://msdn.microsoft.com/en-us/library/aa394654(v=VS.85).aspx">__IntervalTimerInstruction</a> class to define these events. However, that isn’t necessary anymore with the introduction of <a href="http://msdn.microsoft.com/en-us/library/aa394171(v=VS.85).aspx">Win32_LocalTime</a> or <a href="http://msdn.microsoft.com/en-us/library/aa394510(v=VS.85).aspx">Win32_UTCTime</a> WMI classes. With these two classes, we can use the standard WMI eventing model to consume timer events.</p>
 <p>Let us take a look at Win32_LocalTime. This class represents an instance of Win32_CurrentTime.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/localtime1-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/localtime1-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/localtime1-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>As you see in the above screenshot, an instance of this class represents the current date and time. There are a few special properties that tell you which quarter of the year, week in the current month, and etc. Do refer to the MSDN link for this class and read about the properties. Especially, the DayOfWeek property. It always indicates Sunday as zero irrespective of the system culture and langauge settings.</p>
 <p>Since, these this class supports standard WMI eventing model, we can use an intrinsic event query to consume these events. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Setup WQL query
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Setup WQL query
 $query = &#34;SELECT * FROM __InstanceModificationEvent WHERE TargetInstance ISA &#39;Win32_LocalTime&#39;&#34;
 #Register WMI Event
 Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Second&#34; -Action { Write-Host &#34;Event Received&#34; }
-</code></pre></div><p>will result in displaying “Event Received” message at the console every one second. This is because the event fires every one second and that is the smallest time segment supported. Now, this won’t be very useful unless you want to flood your consumer with a bunch of useless messages every one second. Let us look at another example:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Setup WQL query
+</code></pre></td></tr></table>
+</div>
+</div><p>will result in displaying “Event Received” message at the console every one second. This is because the event fires every one second and that is the smallest time segment supported. Now, this won’t be very useful unless you want to flood your consumer with a bunch of useless messages every one second. Let us look at another example:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Setup WQL query
 $query = &#34;SELECT * FROM __InstanceModificationEvent WHERE TargetInstance ISA
             &#39;Win32_LocalTime&#39; AND TargetInstance.Hour=14
                               AND TargetInstance.Minute=30
                               AND TargetInstance.Second=0&#34;
 #Register WMI Event
 Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Day-14.30PM&#34; -Action { Write-Host &#34;Event Received&#34; }
-</code></pre></div><p>In this example, we use WQL query to register for a WMI event that fires every day at 14.30 hours. Note that the hours value is in 24 hour format. Now, this is useful. I can use the -Action script block to do something better like running a backup script when this event fires. Similarly, you can also create event registrations for events occurring on specific day of every quarter (Quarter) or specific week (WeekInMonth) of every month.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>In this example, we use WQL query to register for a WMI event that fires every day at 14.30 hours. Note that the hours value is in 24 hour format. Now, this is useful. I can use the -Action script block to do something better like running a backup script when this event fires. Similarly, you can also create event registrations for events occurring on specific day of every quarter (Quarter) or specific week (WeekInMonth) of every month.</p>
 <p>WMI Timer events can be used to create some very advanced scheduling jobs. Register-WMIEvent creates a temporary consumer but just imagine being able to create a permanent consumer and use that for scheduling several administrative tasks. I will update this post once Trevor (@pcgeek86) releases his PowerEvents module and show you some cool tricks.</p>
 <p><strong>However, here is the catch:</strong> There is a bug that causes DayOfWeek to stop triggering any timer events.
 <strong>Update:</strong> I posted this question on DayOfWeek at <a href="http://social.msdn.microsoft.com/Forums/en-US/etw/thread/06b7ae7f-737e-47f2-9ae2-a5b8d4c125a9">http://social.msdn.microsoft.com/Forums/en-US/etw/thread/06b7ae7f-737e-47f2-9ae2-a5b8d4c125a9</a></p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">#Setup WQL query for DayOfWeek
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">#Setup WQL query for DayOfWeek
 $query = &#34;SELECT * FROM __InstanceModificationEvent WHERE TargetInstance ISA
             &#39;Win32_LocalTime&#39; AND TargetInstance.=3
                               AND TargetInstance.Hour=12
@@ -186,7 +228,9 @@ $query = &#34;SELECT * FROM __InstanceModificationEvent WHERE TargetInstance ISA
                               AND TargetInstance.Second=0&#34;
 #Register WMI Event
 Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Tuesday-12-16PM&#34; -Action { Write-Host &#34;Start backup&#34; }
-</code></pre></div><p>This is a dissappointing bug and I am going to check if MS has any answer. Their documentation for Win32_LocalTime uses a WQL query that has DayOfWeek property. I’d experimented with the same query in PowerShell, VBScript &amp; C#. It worked no where. So, timer events are quite useful in creating advanced scheduling jobs but the current bug is keeping it away from “real” world use.</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is a dissappointing bug and I am going to check if MS has any answer. Their documentation for Win32_LocalTime uses a WQL query that has DayOfWeek property. I’d experimented with the same query in PowerShell, VBScript &amp; C#. It worked no where. So, timer events are quite useful in creating advanced scheduling jobs but the current bug is keeping it away from “real” world use.</p>
 <p>I will update this post with the details I find out or get from Microsoft. Keep watching this space.</p>
 
         

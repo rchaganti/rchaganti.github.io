@@ -20,27 +20,68 @@
       <description>&lt;p&gt;At the recent Ignite event, Microsoft announced the release candidate 2 update of PowerShell &lt;code&gt;SecretManagement&lt;/code&gt; module and the &lt;code&gt;SecretStore&lt;/code&gt; extension vault modules. Both modules have been bumped up to version 0.9.1.&lt;/p&gt;
 &lt;p&gt;In the updated release, the secret management module has added support for secret metadata. The extension vault module must implement support for the metadata for this to work. To this extent, the SecretStore module has been updated to support metadata as well.&lt;/p&gt;
 &lt;p&gt;This metadata can be useful in tagging additional non-sensitive details that describe the secret. For example, you can use secret metadata if you want to store the tenant or subscription associated with the secret.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt; -Name GITHUB_TOKEN -Secret &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt; -Metadata @{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The additional metadata can be retrieved using the &lt;code&gt;Get-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN | &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;fl &lt;/span&gt;*
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can update existing metadata or add new metadata by using the &lt;code&gt;Set-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN -Metadata @{&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;TestKey&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;TestValue&amp;#39;&lt;/span&gt;;&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;=&lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Another good update that I have seen is about more meaningful error messages. For example, when you run &lt;code&gt;Get-Secret&lt;/code&gt; command when no vaults are registered, you will see a more friendly error message.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN
-WARNING&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; 
-        There are currently no extension vaults registered.
-        At least one vault must be registered before SecretManagement can add or retrieve secrets.
-        You can download SecretManagement extension vault modules from PowerShellGallery.
-        https&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;//aka.ms/SecretManagementVaults
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Set-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Secret&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Metadata&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;@{&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The additional metadata can be retrieved using the &lt;code&gt;Get-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-SecretInfo&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;fl &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can update existing metadata or add new metadata by using the &lt;code&gt;Set-SecretInfo&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Set-SecretInfo&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Metadata&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;@{&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;TestKey&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;TestValue&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;github_handle&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;rchaganti&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Another good update that I have seen is about more meaningful error messages. For example, when you run &lt;code&gt;Get-Secret&lt;/code&gt; command when no vaults are registered, you will see a more friendly error message.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;WARNING&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; 
+        &lt;span class=&#34;n&#34;&gt;There&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;are&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;currently&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;no&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;extension&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;vaults&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;registered&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;At&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;least&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;one&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;vault&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;must&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;be&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;registered&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;before&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;can&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;add&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;or&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;retrieve&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;secrets&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;You&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;can&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;download&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;extension&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;vault&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;modules&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PowerShellGallery&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;https&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;//&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;aka&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ms&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagementVaults&lt;/span&gt;
         
-&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; The secret GITHUB_TOKEN was not found.
-At line&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;1 char&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;1
-+ &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; ObjectNotFound&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; (Microsoft.Power...etSecretCommand&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;GetSecretCommand) [&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;], ItemNotFound 
-   Exception
-    + FullyQualifiedErrorId &lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt; GetSecretNotFound,Microsoft.PowerShell.SecretManagement.GetSecretCommand
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Microsoft announced that the RC2 release of the SecretManagement and SecretStore modules are go live versions and will most probably be promoted to GA release if there are no high-risk bugs.&lt;/p&gt;
+&lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;The&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;was&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;found&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;At&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;line&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;char&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CategoryInfo&lt;/span&gt;          &lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ObjectNotFound&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Power&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;etSecretCommand&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GetSecretCommand&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ItemNotFound&lt;/span&gt; 
+   &lt;span class=&#34;n&#34;&gt;Exception&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;FullyQualifiedErrorId&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GetSecretNotFound&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GetSecretCommand&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Microsoft announced that the RC2 release of the SecretManagement and SecretStore modules are go live versions and will most probably be promoted to GA release if there are no high-risk bugs.&lt;/p&gt;
 </description>
     </item>
     
@@ -53,47 +94,137 @@ At line&lt;span style=&#34;color:#f00&#34;&gt;:&lt;/span&gt;1 char&lt;span style
       <description>&lt;p&gt;&lt;strong&gt;Update&lt;/strong&gt;: This article has been updated to show the latest version of the secret store module.&lt;/p&gt;
 &lt;p&gt;In the last part, you have seen an introduction to secret management in PowerShell and towards the end you learned that they are vault extensions that provide the real functionality for storing and managing secrets. In this part of the series, you will learn more about the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore&#34;&gt;SecretStore&lt;/a&gt; vault extension for the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement&#34;&gt;SecretManagement&lt;/a&gt; PowerShell module.&lt;/p&gt;
 &lt;p&gt;The SecretStore extension vault is a wrapper around the .NET Crypto API. This vault stores the secrets to the local machine based on the current user account context. You can install this from the PowerShell gallery.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretStore
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This extension vault comes with a few commands that are used to configure the vault behavior.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Command&lt;/span&gt; -Module Microsoft.PowerShell.SecretStore
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Install-Module&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This extension vault comes with a few commands that are used to configure the vault behavior.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-Command&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Module&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;
 
-CommandType     Name                                               Version    Source                                          
------------     ----                                               -------    ------                                          
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;                       0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Reset-SecretStore&lt;/span&gt;                                  0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStoreConfiguration&lt;/span&gt;                       0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStorePassword&lt;/span&gt;                            0.9.1      Microsoft.PowerShell.SecretStore                
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unlock-SecretStore&lt;/span&gt;                                 0.9.1      Microsoft.PowerShell.SecretStore  
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before you can start using this extension vault, by default, you must first set a secret store password.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretStorePassword&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command prompts for entering old and new passwords. Simply enter a desired password and hit enter. Once the password is set, you can run the &lt;code&gt;Get-SecretStoreConfiguration&lt;/code&gt; command to see the default vault extension configuration.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;CommandType&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt;                                               &lt;span class=&#34;n&#34;&gt;Version&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;Source&lt;/span&gt;                                          
+&lt;span class=&#34;p&#34;&gt;-----------&lt;/span&gt;     &lt;span class=&#34;p&#34;&gt;----&lt;/span&gt;                                               &lt;span class=&#34;p&#34;&gt;-------&lt;/span&gt;    &lt;span class=&#34;p&#34;&gt;------&lt;/span&gt;                                          
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;                       &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;                
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Reset-SecretStore&lt;/span&gt;                                  &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;                
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Set-SecretStoreConfiguration&lt;/span&gt;                       &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;                
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Set-SecretStorePassword&lt;/span&gt;                            &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;                
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Unlock-SecretStore&lt;/span&gt;                                 &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;  
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Before you can start using this extension vault, by default, you must first set a secret store password.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Set-SecretStorePassword&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This command prompts for entering old and new passwords. Simply enter a desired password and hit enter. Once the password is set, you can run the &lt;code&gt;Get-SecretStoreConfiguration&lt;/code&gt; command to see the default vault extension configuration.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-SecretStoreConfiguration&lt;/span&gt;
 
-      Scope Authentication PasswordTimeout Interaction
-      ----- -------------- --------------- -----------
-CurrentUser       Password             900      Prompt
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As you can see, the default scope of the secret store is set &lt;code&gt;CurrentUser&lt;/code&gt; and it can be otherwise set to &lt;code&gt;AllUsers&lt;/code&gt;. The &lt;code&gt;Authentication&lt;/code&gt; property by default requires to supply a password to manage the secrets. This can be disabled by setting the &lt;code&gt;Authentication&lt;/code&gt; property to &lt;code&gt;None&lt;/code&gt;. Within a session, the supplied password is valid for 900 seconds, by default. This can be changed by setting the &lt;code&gt;PasswordTimeout&lt;/code&gt; property. The &lt;code&gt;Interaction&lt;/code&gt; property, by default, is set to &lt;code&gt;Prompt&lt;/code&gt; and can be set to &lt;code&gt;None&lt;/code&gt; to ensure you are not prompted to enter password for any configuration retrieval or changes. When disabling password prompt, &lt;a href=&#34;https://github.com/PowerShell/SecretStore/issues/49&#34;&gt;you must ensure that you also set &lt;code&gt;Authentication&lt;/code&gt; to &lt;code&gt;None&lt;/code&gt;&lt;/a&gt; to avoid lockdown of secret store. In case you want to set the &lt;code&gt;Interaction&lt;/code&gt; to &lt;code&gt;None&lt;/code&gt; but still leave the &lt;code&gt;Authentication&lt;/code&gt; to &lt;code&gt;Password&lt;/code&gt;, you can use the &lt;code&gt;Unlock-SecretStore&lt;/code&gt; command to unlock the vault.&lt;/p&gt;
+      &lt;span class=&#34;n&#34;&gt;Scope&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Authentication&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PasswordTimeout&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Interaction&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;-----&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;--------------&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;---------------&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;-----------&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;CurrentUser&lt;/span&gt;       &lt;span class=&#34;n&#34;&gt;Password&lt;/span&gt;             &lt;span class=&#34;n&#34;&gt;900&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Prompt&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;As you can see, the default scope of the secret store is set &lt;code&gt;CurrentUser&lt;/code&gt; and it can be otherwise set to &lt;code&gt;AllUsers&lt;/code&gt;. The &lt;code&gt;Authentication&lt;/code&gt; property by default requires to supply a password to manage the secrets. This can be disabled by setting the &lt;code&gt;Authentication&lt;/code&gt; property to &lt;code&gt;None&lt;/code&gt;. Within a session, the supplied password is valid for 900 seconds, by default. This can be changed by setting the &lt;code&gt;PasswordTimeout&lt;/code&gt; property. The &lt;code&gt;Interaction&lt;/code&gt; property, by default, is set to &lt;code&gt;Prompt&lt;/code&gt; and can be set to &lt;code&gt;None&lt;/code&gt; to ensure you are not prompted to enter password for any configuration retrieval or changes. When disabling password prompt, &lt;a href=&#34;https://github.com/PowerShell/SecretStore/issues/49&#34;&gt;you must ensure that you also set &lt;code&gt;Authentication&lt;/code&gt; to &lt;code&gt;None&lt;/code&gt;&lt;/a&gt; to avoid lockdown of secret store. In case you want to set the &lt;code&gt;Interaction&lt;/code&gt; to &lt;code&gt;None&lt;/code&gt; but still leave the &lt;code&gt;Authentication&lt;/code&gt; to &lt;code&gt;Password&lt;/code&gt;, you can use the &lt;code&gt;Unlock-SecretStore&lt;/code&gt; command to unlock the vault.&lt;/p&gt;
 &lt;p&gt;Once this initial configuration is complete as per your needs, you can register this extension vault with the secret management module.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt; -ModuleName Microsoft.PowerShell.SecretStore -Name SecretStore -DefaultVault -Verbose
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above command registers Microsoft.PowerShell.SecretStore module as the extension vault and sets as the default vault. The &lt;code&gt;Get-SecretVault&lt;/code&gt; command retrieves all registered extension vaults.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt; 
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Register-SecretVault&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-ModuleName&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-DefaultVault&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Verbose&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The above command registers Microsoft.PowerShell.SecretStore module as the extension vault and sets as the default vault. The &lt;code&gt;Get-SecretVault&lt;/code&gt; command retrieves all registered extension vaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-SecretVault&lt;/span&gt; 
 
-Name        ModuleName                       IsDefaultVault
-----        ----------                       --------------
-SecretStore Microsoft.PowerShell.SecretStore True 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can start storing secrets using the SecretManagement module commands now.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt; -Name GITHUB_TOKEN -Secret &lt;span style=&#34;color:#0ff;font-weight:bold&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can get a secret value by using the &lt;code&gt;Get-Secret&lt;/code&gt; command. You must use &lt;code&gt;-AsPlainText&lt;/code&gt; switch to return the stored secret as readable string.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt; -Name GITHUB_TOKEN -AsPlainText
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;Get-SecretInfo&lt;/code&gt; returns the metadata information related to the secret.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt; -Name GITHUB_TOKEN
+&lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;ModuleName&lt;/span&gt;                       &lt;span class=&#34;n&#34;&gt;IsDefaultVault&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;----&lt;/span&gt;        &lt;span class=&#34;p&#34;&gt;----------&lt;/span&gt;                       &lt;span class=&#34;p&#34;&gt;--------------&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;True&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can start storing secrets using the SecretManagement module commands now.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Set-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Secret&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;ThIsIsANAPIKeyFoRGitHUBAuthentICation&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can get a secret value by using the &lt;code&gt;Get-Secret&lt;/code&gt; command. You must use &lt;code&gt;-AsPlainText&lt;/code&gt; switch to return the stored secret as readable string.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-AsPlainText&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The &lt;code&gt;Get-SecretInfo&lt;/code&gt; returns the metadata information related to the secret.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-SecretInfo&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt;
 
-Name         &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Type &lt;/span&gt;  VaultName  
-----         ----   ---------  
-GITHUB_TOKEN String SecretStore
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can remove a stored secret using the &lt;code&gt;Remove-Secret&lt;/code&gt; command.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt; -Name GITHUB_TOKEN
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is a quick overview of using the SecretStore extension vault with SecretManagement module. You will learn more about other extension vaults and secret management module itself in later parts of this series. Stay tuned.&lt;/p&gt;
+&lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt;         &lt;span class=&#34;nb&#34;&gt;Type &lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;VaultName&lt;/span&gt;  
+&lt;span class=&#34;p&#34;&gt;----&lt;/span&gt;         &lt;span class=&#34;p&#34;&gt;----&lt;/span&gt;   &lt;span class=&#34;p&#34;&gt;---------&lt;/span&gt;  
+&lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;String&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can remove a stored secret using the &lt;code&gt;Remove-Secret&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Remove-Secret&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;GITHUB_TOKEN&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This is a quick overview of using the SecretStore extension vault with SecretManagement module. You will learn more about other extension vaults and secret management module itself in later parts of this series. Stay tuned.&lt;/p&gt;
 </description>
     </item>
     
@@ -106,30 +237,62 @@ GITHUB_TOKEN String SecretStore
       <description>&lt;p&gt;&lt;strong&gt;Update&lt;/strong&gt;: This article has been updated to show the latest version of the secret management module.&lt;/p&gt;
 &lt;p&gt;Within the infrastructure automation, you always stumble upon a need to store and retrieve credentials. For example, imagine deploying a database instance and you want the database administrator username and password to be same across based on some IT standard. For this, you either have to hardcode the values in a script or prompt the user running the automation for these values. Storing secrets such as passwords, API keys, etc is a big NO. You should never do that. And, prompting a user will hamper the automation flow and will require manual intervention. This is where secret vaults play a role. You can store all secrets in a vault (local or remote) and then on-demand you can retrieve these values from the vault and consume in your automation. This method is most preferred when delegating automation tasks, running scripts in CI / CD pipelines, and in general anything that requires unattended automation.&lt;/p&gt;
 &lt;p&gt;Within many of my PowerShell scripts, I have used Windows Credential Manager to store and retrieve secrets. PowerShell gallery has a bunch of modules that enable secret management in PowerShell. There are other 3rd party vaults such as &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Hashicorp Vault&lt;/a&gt;. At Ignite 2019, PowerShell team &lt;a href=&#34;https://myignite.techcommunity.microsoft.com/sessions/83981?source=sessions&#34;&gt;introduced secrets management in PowerShell&lt;/a&gt;. This is available on &lt;a href=&#34;https://github.com/powershell/secretmanagement&#34;&gt;GitHub&lt;/a&gt; and &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement&#34;&gt;PowerShell Gallery&lt;/a&gt; as well.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretManagement
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This module provides the plumbing needed to register secret vaults and then store/retrieve secrets from the registered vaults.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;PS &lt;/span&gt;C:\&amp;gt; &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Command&lt;/span&gt; -Module Microsoft.PowerShell.SecretManagement
-
-CommandType     Name                                               Version    Source                                          
------------     ----                                               -------    ------                                          
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-Secret&lt;/span&gt;                                         0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretInfo&lt;/span&gt;                                     0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Get-SecretVault&lt;/span&gt;                                    0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Register-SecretVault&lt;/span&gt;                               0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Remove-Secret&lt;/span&gt;                                      0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-Secret&lt;/span&gt;                                         0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretInfo&lt;/span&gt;                                     0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Set-SecretVaultDefault&lt;/span&gt;                             0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Test-SecretVault&lt;/span&gt;                                   0.9.1      Microsoft.PowerShell.SecretManagement           
-Cmdlet          &lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Unregister-SecretVault&lt;/span&gt;                             0.9.1      Microsoft.PowerShell.SecretManagement  
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before you can start managing secrets, you need to register a secret vault. By default, there is no registered vault.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Install-Module&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This module provides the plumbing needed to register secret vaults and then store/retrieve secrets from the registered vaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;PS &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-Command&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Module&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;CommandType&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt;                                               &lt;span class=&#34;n&#34;&gt;Version&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;Source&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;-----------&lt;/span&gt;     &lt;span class=&#34;p&#34;&gt;----&lt;/span&gt;                                               &lt;span class=&#34;p&#34;&gt;-------&lt;/span&gt;    &lt;span class=&#34;p&#34;&gt;------&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Get-Secret&lt;/span&gt;                                         &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Get-SecretInfo&lt;/span&gt;                                     &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Get-SecretVault&lt;/span&gt;                                    &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Register-SecretVault&lt;/span&gt;                               &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Remove-Secret&lt;/span&gt;                                      &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Set-Secret&lt;/span&gt;                                         &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Set-SecretInfo&lt;/span&gt;                                     &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Set-SecretVaultDefault&lt;/span&gt;                             &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Test-SecretVault&lt;/span&gt;                                   &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;           
+&lt;span class=&#34;n&#34;&gt;Cmdlet&lt;/span&gt;          &lt;span class=&#34;nb&#34;&gt;Unregister-SecretVault&lt;/span&gt;                             &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;      &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretManagement&lt;/span&gt;  
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Before you can start managing secrets, you need to register a secret vault. By default, there is no registered vault.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Note: The earlier alpha version of this module had a built-in vault  that was a wrapper around the Windows Credential Manager. It has now been &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore&#34;&gt;moved out as a vault extension&lt;/a&gt;.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;You can verify that using the &lt;code&gt;Get-SecretVault&lt;/code&gt; command. The secret management module vault extensions can be developed to add support for many secret vaults that already exist out there. There are bunch of them already on the &lt;a href=&#34;https://devblogs.microsoft.com/powershell/secrets-management-module-vault-extensions/#:~:text=The%20purpose%20of%20the%20Secrets%20Management%20module%20is,that%20allows%20registration%20of%20other%20secrets%20storage/retrieval%20solutions.&#34;&gt;PowerShell gallery&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;You can download the vault extension from PowerShell gallery the same way you download any module.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;color:#fff;font-weight:bold&#34;&gt;Install-Module&lt;/span&gt; -Name Microsoft.PowerShell.SecretStore
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Each secret store or the vault extension may have it&amp;rsquo;s own configuration. In the next part of this series of articles on secret management in PowerShell, you will learn how to use the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore&#34;&gt;SecretStore&lt;/a&gt; vault extension.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Install-Module&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SecretStore&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Each secret store or the vault extension may have it&amp;rsquo;s own configuration. In the next part of this series of articles on secret management in PowerShell, you will learn how to use the &lt;a href=&#34;https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore&#34;&gt;SecretStore&lt;/a&gt; vault extension.&lt;/p&gt;
 &lt;p&gt;Stay tuned!&lt;/p&gt;
 </description>
     </item>

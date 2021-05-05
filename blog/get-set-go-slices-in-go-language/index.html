@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="In the previous part of this series, you learned about arrays in Go language. As you have learned, arrays have a fixed size and therefore you cannot resize (grow or shrink) arrays. This limitation can be overcome using slices in Go language. In this part, you will learn about slices and how to use this data type in your Go programs.
 Slices A slice in Go language is a slice of an underlying array!">
@@ -172,112 +172,247 @@ Slices A slice in Go language is a slice of an underlying array!" />
 <h3 id="slice-literal">Slice literal</h3>
 <p>The syntax for declaring a variable as a slice is <code>var s1 = []int{1,2}</code>. This declare a slice of integers and initializes with two elements. This is similar to how you declared array variables. The only difference is that there is no size specification. You can avoid any values in the declaration to create an empty slice of integers. For example,  <code>var s2 = []int{}</code>. However, you cannot add elements (to an empty slice or at an index that is out of bound) using the indexer syntax. For example, specifying <code>s2[0]= 100</code> will result in an error. The indexer method works only when updating an existing element at a specific index in the slice. To add elements to an empty slice, you need use the built-in <code>append()</code> method.</p>
 <p>Here is a quick example that shows both these methods.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> s1 = []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">1</span>, <span style="color:#ff0;font-weight:bold">2</span>}
-	s1[<span style="color:#ff0;font-weight:bold">0</span>] = <span style="color:#ff0;font-weight:bold">10</span>
-	fmt.Println(s1)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s1</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">}</span>
+	<span class="nx">s1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="mi">10</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">s1</span><span class="p">)</span>
 
-	<span style="color:#fff;font-weight:bold">var</span> s2 = []<span style="color:#fff;font-weight:bold">int</span>{}
-	s2 = <span style="color:#fff;font-weight:bold">append</span>(s2, <span style="color:#ff0;font-weight:bold">100</span>)
-	s2 = <span style="color:#fff;font-weight:bold">append</span>(s2, <span style="color:#ff0;font-weight:bold">200</span>)
-	fmt.Println(s2)
-}
-</code></pre></div><p>With slices, unlike arrays, you can append elements. This essentially changes the size of the slice. You can use the <code>len()</code> built-in function to find the current number of elements and the <code>cap()</code> function to find the maximum capacity of the slice. Review the below example to understand the difference between length and capacity in-depth.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+	<span class="kd">var</span> <span class="nx">s2</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{}</span>
+	<span class="nx">s2</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="nx">s2</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s2</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">s2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>With slices, unlike arrays, you can append elements. This essentially changes the size of the slice. You can use the <code>len()</code> built-in function to find the current number of elements and the <code>cap()</code> function to find the maximum capacity of the slice. Review the below example to understand the difference between length and capacity in-depth.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> s1 = []<span style="color:#fff;font-weight:bold">int</span>{<span style="color:#ff0;font-weight:bold">1</span>, <span style="color:#ff0;font-weight:bold">2</span>}
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Initial len and cap&#34;</span>, <span style="color:#fff;font-weight:bold">len</span>(s1), <span style="color:#fff;font-weight:bold">cap</span>(s1))
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s1</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Initial len and cap&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s1</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span>
 
-	s1 = <span style="color:#fff;font-weight:bold">append</span>(s1, <span style="color:#ff0;font-weight:bold">3</span>)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;len and cap after adding 3rd element&#34;</span>, <span style="color:#fff;font-weight:bold">len</span>(s1), <span style="color:#fff;font-weight:bold">cap</span>(s1))
+	<span class="nx">s1</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;len and cap after adding 3rd element&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s1</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span>
 
-	s1 = <span style="color:#fff;font-weight:bold">append</span>(s1, <span style="color:#ff0;font-weight:bold">4</span>)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;len and cap after adding 4th element&#34;</span>, <span style="color:#fff;font-weight:bold">len</span>(s1), <span style="color:#fff;font-weight:bold">cap</span>(s1))
+	<span class="nx">s1</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;len and cap after adding 4th element&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s1</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span>
 
-	s1 = <span style="color:#fff;font-weight:bold">append</span>(s1, <span style="color:#ff0;font-weight:bold">5</span>)
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;len and cap after adding 5th element&#34;</span>, <span style="color:#fff;font-weight:bold">len</span>(s1), <span style="color:#fff;font-weight:bold">cap</span>(s1))
-}
-</code></pre></div><p>When you run this, you will see the following output.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">PS C:<span style="color:#0ff;font-weight:bold">\G</span>itHub<span style="color:#0ff;font-weight:bold">\G</span>etSetGo&gt; go run .<span style="color:#0ff;font-weight:bold">\s</span>lices.go
-Initial len and cap <span style="color:#ff0;font-weight:bold">2</span> <span style="color:#ff0;font-weight:bold">2</span>
-len and cap after adding 3rd element <span style="color:#ff0;font-weight:bold">3</span> <span style="color:#ff0;font-weight:bold">4</span>
-len and cap after adding 4th element <span style="color:#ff0;font-weight:bold">4</span> <span style="color:#ff0;font-weight:bold">4</span>
-len and cap after adding 5th element <span style="color:#ff0;font-weight:bold">5</span> <span style="color:#ff0;font-weight:bold">8</span>
-</code></pre></div><p>If you observe the above output, the initial length and capacity of the slice is what you initialized it to &ndash; with two elements. After adding a third element, the capacity changed to 4 and stayed as 4 even after the adding the 4th element. However, the moment the 5th element gets added, the capacity of the slice jumps to 8. So, what is happening here?</p>
+	<span class="nx">s1</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;len and cap after adding 5th element&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s1</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>When you run this, you will see the following output.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">PS C:<span class="se">\G</span>itHub<span class="se">\G</span>etSetGo&gt; go run .<span class="se">\s</span>lices.go
+Initial len and cap <span class="m">2</span> <span class="m">2</span>
+len and cap after adding 3rd element <span class="m">3</span> <span class="m">4</span>
+len and cap after adding 4th element <span class="m">4</span> <span class="m">4</span>
+len and cap after adding 5th element <span class="m">5</span> <span class="m">8</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you observe the above output, the initial length and capacity of the slice is what you initialized it to &ndash; with two elements. After adding a third element, the capacity changed to 4 and stayed as 4 even after the adding the 4th element. However, the moment the 5th element gets added, the capacity of the slice jumps to 8. So, what is happening here?</p>
 <p>With the <code>append</code> function, whenever you add an element, if the length exceeds the current capacity of the slice, Go simply doubles the capacity. So, when we added the 3rd element, the capacity doubled to 4 and then we added the 5th element, it doubled to 8.</p>
 <h3 id="using-make">Using Make</h3>
 <p>Slices can also be declared and initialized using the <code>make</code> built-in function. The syntax for using make to create a slice is as follows.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">var</span> name = <span style="color:#fff;font-weight:bold">make</span>(slice-<span style="color:#fff;font-weight:bold">type</span>, slice-length, slice-capacity)
-</code></pre></div><p>Here is an example that uses <code>make</code> function.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">name</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="nx">slice</span><span class="o">-</span><span class="kd">type</span><span class="p">,</span> <span class="nx">slice</span><span class="o">-</span><span class="nx">length</span><span class="p">,</span> <span class="nx">slice</span><span class="o">-</span><span class="nx">capacity</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Here is an example that uses <code>make</code> function.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> s3 = <span style="color:#fff;font-weight:bold">make</span>([]<span style="color:#fff;font-weight:bold">int</span>, <span style="color:#ff0;font-weight:bold">2</span>, <span style="color:#ff0;font-weight:bold">4</span>)
-	s3[<span style="color:#ff0;font-weight:bold">0</span>] = <span style="color:#ff0;font-weight:bold">10</span>
-	s3[<span style="color:#ff0;font-weight:bold">1</span>] = <span style="color:#ff0;font-weight:bold">20</span>
-	s3 = <span style="color:#fff;font-weight:bold">append</span>(s3, <span style="color:#ff0;font-weight:bold">20</span>)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s3</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+	<span class="nx">s3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="mi">10</span>
+	<span class="nx">s3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="mi">20</span>
+	<span class="nx">s3</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s3</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 
-	fmt.Println(s3, <span style="color:#fff;font-weight:bold">len</span>(s3), <span style="color:#fff;font-weight:bold">cap</span>(s3))
-}
-</code></pre></div><p>In this example, the last integer value that is used to specify the capacity of the slice is optional. By default, the capacity will be same as length. The code in the above example creates a slice with length of 2 and capacity of 4. And, observe how the 3rd element is added. You have to use the append function since adding the 3rd element exceeds the length specified when using <code>make</code> function. This behavior is different from what you seen above with append method on a slice created using slice literal syntax.</p>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">s3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s3</span><span class="p">),</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">s3</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In this example, the last integer value that is used to specify the capacity of the slice is optional. By default, the capacity will be same as length. The code in the above example creates a slice with length of 2 and capacity of 4. And, observe how the 3rd element is added. You have to use the append function since adding the 3rd element exceeds the length specified when using <code>make</code> function. This behavior is different from what you seen above with append method on a slice created using slice literal syntax.</p>
 <h3 id="slicing-arrays">Slicing arrays</h3>
 <p>Yet another method of creating a slice is to slice an existing array! Take a look at this example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> languages = [<span style="color:#ff0;font-weight:bold">6</span>]<span style="color:#fff;font-weight:bold">string</span>{<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Python&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Rust&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Java&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;C#&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;PowerShell&#34;</span>}
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Elements in the string array are&#34;</span>, languages)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">languages</span> <span class="p">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Python&#34;</span><span class="p">,</span> <span class="s">&#34;Rust&#34;</span><span class="p">,</span> <span class="s">&#34;Java&#34;</span><span class="p">,</span> <span class="s">&#34;C#&#34;</span><span class="p">,</span> <span class="s">&#34;PowerShell&#34;</span><span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Elements in the string array are&#34;</span><span class="p">,</span> <span class="nx">languages</span><span class="p">)</span>
 
-	<span style="color:#fff;font-weight:bold">var</span> langSlice = languages[<span style="color:#ff0;font-weight:bold">0</span>:<span style="color:#ff0;font-weight:bold">2</span>]
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nElements in the derived slice are&#34;</span>, langSlice)
+	<span class="kd">var</span> <span class="nx">langSlice</span> <span class="p">=</span> <span class="nx">languages</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nElements in the derived slice are&#34;</span><span class="p">,</span> <span class="nx">langSlice</span><span class="p">)</span>
 
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nSlicing without a start index is similar to using start index 0&#34;</span>, languages[:<span style="color:#ff0;font-weight:bold">3</span>])
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nSlicing without an end index gets all elements from start_index till end of the array&#34;</span>, languages[<span style="color:#ff0;font-weight:bold">4</span>:])
-}
-</code></pre></div><p>In the above example, the <code>languages</code> array has six elements. A slice of these elements &ndash; from index 0 to 2 &ndash; is assigned to the variable <code>langSlice</code>. This variable is of slice data type. In the variable assignment, you have specified the the slice as start_index:end_index in square brackets. In this specification,</p>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nSlicing without a start index is similar to using start index 0&#34;</span><span class="p">,</span> <span class="nx">languages</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nSlicing without an end index gets all elements from start_index till end of the array&#34;</span><span class="p">,</span> <span class="nx">languages</span><span class="p">[</span><span class="mi">4</span><span class="p">:])</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>In the above example, the <code>languages</code> array has six elements. A slice of these elements &ndash; from index 0 to 2 &ndash; is assigned to the variable <code>langSlice</code>. This variable is of slice data type. In the variable assignment, you have specified the the slice as start_index:end_index in square brackets. In this specification,</p>
 <ul>
 <li>The end_index in excluded. So, when the indexes specified are 0 and 2, the resulting slice will have elements from index 0 and 1 but not 2.</li>
 <li>Both start_index and end_index are optional. So, for example, if you specify [:3], the first three elements from the array. If you specify [4:], elements from index 4 till the end of the array get assigned to the slice. Finally, skipping both &ndash; [:] &ndash; will simply return all elements from the array.</li>
 </ul>
 <p>You learned in an earlier part of this series that slices are reference types. This means that when you update an element in the slice the element in the underlying array gets updated as well.</p>
 <p>Take a look at this example.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#fff;font-weight:bold">package</span> main
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#fff;font-weight:bold">import</span> <span style="color:#0ff;font-weight:bold">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#fff;font-weight:bold">func</span> main() {
-	<span style="color:#fff;font-weight:bold">var</span> languages = [<span style="color:#ff0;font-weight:bold">6</span>]<span style="color:#fff;font-weight:bold">string</span>{<span style="color:#0ff;font-weight:bold">&#34;Go&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Python&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Rust&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;Java&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;C#&#34;</span>, <span style="color:#0ff;font-weight:bold">&#34;PowerShell&#34;</span>}
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;Elements in the string array are&#34;</span>, languages)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">languages</span> <span class="p">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;Go&#34;</span><span class="p">,</span> <span class="s">&#34;Python&#34;</span><span class="p">,</span> <span class="s">&#34;Rust&#34;</span><span class="p">,</span> <span class="s">&#34;Java&#34;</span><span class="p">,</span> <span class="s">&#34;C#&#34;</span><span class="p">,</span> <span class="s">&#34;PowerShell&#34;</span><span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Elements in the string array are&#34;</span><span class="p">,</span> <span class="nx">languages</span><span class="p">)</span>
 
-	<span style="color:#fff;font-weight:bold">var</span> langSlice = languages[<span style="color:#ff0;font-weight:bold">0</span>:<span style="color:#ff0;font-weight:bold">2</span>]
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nElements in the derived slice are&#34;</span>, langSlice)
+	<span class="kd">var</span> <span class="nx">langSlice</span> <span class="p">=</span> <span class="nx">languages</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nElements in the derived slice are&#34;</span><span class="p">,</span> <span class="nx">langSlice</span><span class="p">)</span>
 
-	langSlice[<span style="color:#ff0;font-weight:bold">1</span>] = <span style="color:#0ff;font-weight:bold">&#34;C++&#34;</span>
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nElements in the updated slice are&#34;</span>, langSlice)
+	<span class="nx">langSlice</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;C++&#34;</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nElements in the updated slice are&#34;</span><span class="p">,</span> <span class="nx">langSlice</span><span class="p">)</span>
 
-	fmt.Println(<span style="color:#0ff;font-weight:bold">&#34;\nElements in the underlying array are&#34;</span>, languages)
-}
-</code></pre></div><p>If you run this above example, you will see output similar to what is shown here.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">PS C:<span style="color:#f00">\</span>GitHub<span style="color:#f00">\</span>GetSetGo&gt; <span style="color:#fff;font-weight:bold">go</span> run .<span style="color:#f00">\</span>slices.<span style="color:#fff;font-weight:bold">go</span>
-Elements in the <span style="color:#fff;font-weight:bold">string</span> array are [Go Python Rust Java C<span style="color:#f00">#</span> PowerShell]
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;\nElements in the underlying array are&#34;</span><span class="p">,</span> <span class="nx">languages</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you run this above example, you will see output similar to what is shown here.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">PS</span> <span class="nx">C</span><span class="p">:</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">GetSetGo</span><span class="p">&gt;</span> <span class="k">go</span> <span class="nx">run</span> <span class="p">.</span><span class="err">\</span><span class="nx">slices</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">Elements</span> <span class="nx">in</span> <span class="nx">the</span> <span class="kt">string</span> <span class="nx">array</span> <span class="nx">are</span> <span class="p">[</span><span class="nx">Go</span> <span class="nx">Python</span> <span class="nx">Rust</span> <span class="nx">Java</span> <span class="nx">C</span><span class="err">#</span> <span class="nx">PowerShell</span><span class="p">]</span>
 
-Elements in the derived slice are [Go Python]
+<span class="nx">Elements</span> <span class="nx">in</span> <span class="nx">the</span> <span class="nx">derived</span> <span class="nx">slice</span> <span class="nx">are</span> <span class="p">[</span><span class="nx">Go</span> <span class="nx">Python</span><span class="p">]</span>
 
-Elements in the updated slice are [Go C++]
+<span class="nx">Elements</span> <span class="nx">in</span> <span class="nx">the</span> <span class="nx">updated</span> <span class="nx">slice</span> <span class="nx">are</span> <span class="p">[</span><span class="nx">Go</span> <span class="nx">C</span><span class="o">++</span><span class="p">]</span>
 
-Elements in the underlying array are [Go C++ Rust Java C<span style="color:#f00">#</span> PowerShell]
-</code></pre></div><p>As you see here, once you update an element in the derived slice, the underlying array also gets updated. This brings us to the discussion around pointers in Go language which is the subject of next part in this series.</p>
+<span class="nx">Elements</span> <span class="nx">in</span> <span class="nx">the</span> <span class="nx">underlying</span> <span class="nx">array</span> <span class="nx">are</span> <span class="p">[</span><span class="nx">Go</span> <span class="nx">C</span><span class="o">++</span> <span class="nx">Rust</span> <span class="nx">Java</span> <span class="nx">C</span><span class="err">#</span> <span class="nx">PowerShell</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>As you see here, once you update an element in the derived slice, the underlying array also gets updated. This brings us to the discussion around pointers in Go language which is the subject of next part in this series.</p>
 <p>Stay tuned.</p>
 
         

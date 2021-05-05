@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Language" content="en">
-
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
     <meta name="description" content="As we saw in the previous post, Select queries can be used to retrieve instances of WMI class. But select queries are not the only way to query for instances. We can also use Associators Of keyword to the same. However, there is a difference. Select queries always return a collection of instances of a WMI class where as “Associators Of” returns a collection of WMI objects that belong to different WMI classes or associated WMI classes.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
@@ -146,16 +146,30 @@
         
         <p>As we saw in the previous post, Select queries can be used to retrieve instances of WMI class. But select queries are not the only way to query for instances. We can also use <a href="http://msdn.microsoft.com/en-us/library/aa384793(v=VS.85).aspx">Associators Of</a> keyword to the same. However, there is a difference. Select queries always return a collection of instances of a WMI class where as “Associators Of” returns a collection of WMI objects that belong to different WMI classes or associated WMI classes. Before we dig too much in to this, let us first understand what are associated WMI classes.</p>
 <p>Take an example of a network adapter.WMI has several classes that represent network adapter information. Let us look at Win32_NetworkAdapter. This WMI class is associated with Win32_NetworkAdapterConfiguration, Win32_NetworkProtocol, and Win32_SystemDriver.</p>
-<figure>
-    <img src="https://ravichaganti.com/images/WQL4-1.png"/> 
-</figure>
+
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/WQL4-1.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/WQL4-1.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
 
 <p>If you look at the above output (from CIM Studio’s association tab for a selected class), you will see that Win32_NetworkAdapterconfiguration is associated to Win32_NetworkAdapter through an association class named Win32_NetworkAdapterSetting. And, the other two classes — Win32_NetworkProtocol &amp; Win32_SystemDriver — are associated through an association class named Win32_ProtocolBinding. Make a note of the terminology I used here: associated Class &amp; association class. We will re-visit this later in this post.</p>
 <p>So, the basic syntax of this “Associators Of” keyword is:</p>
 <p>ASSOCIATORS OF {ObjectPath}</p>
 <p>Note that the braces are part of the syntax. Any valid object path can be used for ObjectPath. Let us look at an example to understand this.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12}&#34;
-</code></pre></div><p>The above snippet shows the basic usage of Associators Of. Make a note of the syntax inside curly braces. This query — when executed — gets all the instances of all associated classes (see above screenshot). So, this can take a while and the output can be overwhelming. Remember, this query without DeviceID=12 will not return anything. We have to specify a qualifier to get the associated instances. This qualifier can be any property from the source WMI class.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12}&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>The above snippet shows the basic usage of Associators Of. Make a note of the syntax inside curly braces. This query — when executed — gets all the instances of all associated classes (see above screenshot). So, this can take a while and the output can be overwhelming. Remember, this query without DeviceID=12 will not return anything. We have to specify a qualifier to get the associated instances. This qualifier can be any property from the source WMI class.</p>
 <p>The output of above query can be overwhelming as the number of associated classes is very large and each associated class may have more than one instance. You can use WHERE clause to filter this out. However, the usage of WHERE clause is a bit different from how you do that with SELECT queries. There are predefined keywords that you can use with WHERE clause. They are:</p>
 <p>ASSOCIATORS OF {ObjectPath} WHERE
 AssocClass = AssocClassName
@@ -171,30 +185,93 @@ Role = PropertyName</p>
 <p>Let us see the examples for some of these now.</p>
 <p><strong>ClassDefsOnly</strong></p>
 <p>Let us first see a way to list only the associated class names as shown in the screenshot above. You can use the subclause ClassDefsOnly for this purpose.</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ClassDefsOnly&#34;
-</code></pre></div><p>This will list all the associated class names and methods &amp; properties associated with each of those classes.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ClassDefsOnly&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>This will list all the associated class names and methods &amp; properties associated with each of those classes.</p>
 <p><strong>AssocClass</strong></p>
 <p>If you want to retrieve the instance of associated class though a single association class:</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Associators of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_ProtocolBinding&#34;
-</code></pre></div><p>This will result in the driver &amp; protocol information bound to network adapter with device ID 12.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WmiObject -Query &#34;Associators of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_ProtocolBinding&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>This will result in the driver &amp; protocol information bound to network adapter with device ID 12.</p>
 <p><strong>ResultClass</strong></p>
 <p>This subclause indicates that you want to retrieve the end points associated only with the specified ResultClass. For example,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration&#34;
-</code></pre></div><p><strong>Why the heck do you need associators of?</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>Why the heck do you need associators of?</strong></p>
 <p>Technically, you don’t need to use this keyword. You can script or parse away to glory to get the same results as what “Associators Of “keyword can do for you. Take an example of Win32_NetworkAdapter class itself. Win32_NetworkAdapter stores the physical adapter details and Win32_NetworkAdapterConfiguration stores the software (IP) configuration pertaining to each adapter instance. These two classes are associated using the Win32_NetworkAdapterSetting association class. To get the IP configuration information without using “Associators of” keyword is not a straight forward task. In layman terms, this is because there is no common key between WIn32_NetworkAdapter and Win32_NetworkAdapterConfiguration. You may think that you can use Win32_NetworkAdapterSetting class to retrieve the information. However, when you run</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Class Win32_NetworkAdapaterSetting
-</code></pre></div><p>you will see lot of information related to all network adapters in the system but there is no easy way to filter out that for a specific device. Now, if you use “Associators Of” keyword, you can get the IP information by running</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration&#34;
-</code></pre></div><p>Or</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_NetworkAdapterSetting&#34;
-</code></pre></div><p>You may now ask me why not just run “gwmi Win32_NetworkAdapaterConfiguration -Filter ‘Index=12′”. Yes, you can. This is probably the simplest way to get IP information without what is shown above. The examples above are intended only to show the usage of “Associators Of” keyword.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Class Win32_NetworkAdapaterSetting
+</code></pre></td></tr></table>
+</div>
+</div><p>you will see lot of information related to all network adapters in the system but there is no easy way to filter out that for a specific device. Now, if you use “Associators Of” keyword, you can get the IP information by running</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>Or</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_NetworkAdapterSetting&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>You may now ask me why not just run “gwmi Win32_NetworkAdapaterConfiguration -Filter ‘Index=12′”. Yes, you can. This is probably the simplest way to get IP information without what is shown above. The examples above are intended only to show the usage of “Associators Of” keyword.</p>
 <p>On the same lines, let us look at another example. For a moment think that Get-Service cmdlet never existed. Now, if you want to get the dependent services of any specific service without using “associators Of”, you would do that by parsing Win32_DependentService instances. However, using the keyword discussed today, you can the do same by</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where ResultRole=Dependent&#34;
-</code></pre></div><p>To get a list of services that must be started before starting a specific service,</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where ResultRole=Antecedent&#34;
-</code></pre></div><p>To get a list of both dependent and required services</p>
-<div class="highlight"><pre style="color:#e5e5e5;background-color:#000;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where AssocClass=Win32_DependentService&#34;
-</code></pre></div><p>I shall conclude today’s post here and discuss “References Of” in the next post. I intentionally left a few Sub clauses for you to figure out yourself.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where ResultRole=Dependent&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>To get a list of services that must be started before starting a specific service,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where ResultRole=Antecedent&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>To get a list of both dependent and required services</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Get-WMIObject -Query &#34;Associators of {Win32_Service.Name=&#39;Winmgmt&#39;} Where AssocClass=Win32_DependentService&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>I shall conclude today’s post here and discuss “References Of” in the next post. I intentionally left a few Sub clauses for you to figure out yourself.</p>
 
         
 
