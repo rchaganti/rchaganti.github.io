@@ -7,34 +7,34 @@
     <meta http-equiv="Content-Language" content="en">
     <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="I wrote a series of articles to introduce Bicep language fundamentals. I really enjoyed working on these articles and learnt quite a lot in that process.
-The Bicep team released version 0.3.539 of Bicep command line as well as the VS Code extension a few hours ago and it came with a lot of goodness &ndash; bug fixes as well as new shiny things! One of the first things that caught my eye was the Bicep visualizer.">
+    <meta name="description" content="While using the Azure CLI container image for one of my side projects, I started looking for an image that contains Bicep CLI as well. I found Mikolaj Mackowiak&rsquo;s Bicep-cli image. This was what I really needed and it includes both Azure CLI and Bicep CLI. However, just as a fun side project, I wanted to publish my own image as well.
+I started with Alpine base image and started building everything needed for Azure CLI and Bicep CLI.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Bicep Visualizer"/>
-<meta name="twitter:description" content="I wrote a series of articles to introduce Bicep language fundamentals. I really enjoyed working on these articles and learnt quite a lot in that process.
-The Bicep team released version 0.3.539 of Bicep command line as well as the VS Code extension a few hours ago and it came with a lot of goodness &ndash; bug fixes as well as new shiny things! One of the first things that caught my eye was the Bicep visualizer."/>
+<meta name="twitter:title" content="Bicep Container Image"/>
+<meta name="twitter:description" content="While using the Azure CLI container image for one of my side projects, I started looking for an image that contains Bicep CLI as well. I found Mikolaj Mackowiak&rsquo;s Bicep-cli image. This was what I really needed and it includes both Azure CLI and Bicep CLI. However, just as a fun side project, I wanted to publish my own image as well.
+I started with Alpine base image and started building everything needed for Azure CLI and Bicep CLI."/>
 
-    <meta property="og:title" content="Bicep Visualizer" />
-<meta property="og:description" content="I wrote a series of articles to introduce Bicep language fundamentals. I really enjoyed working on these articles and learnt quite a lot in that process.
-The Bicep team released version 0.3.539 of Bicep command line as well as the VS Code extension a few hours ago and it came with a lot of goodness &ndash; bug fixes as well as new shiny things! One of the first things that caught my eye was the Bicep visualizer." />
+    <meta property="og:title" content="Bicep Container Image" />
+<meta property="og:description" content="While using the Azure CLI container image for one of my side projects, I started looking for an image that contains Bicep CLI as well. I found Mikolaj Mackowiak&rsquo;s Bicep-cli image. This was what I really needed and it includes both Azure CLI and Bicep CLI. However, just as a fun side project, I wanted to publish my own image as well.
+I started with Alpine base image and started building everything needed for Azure CLI and Bicep CLI." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/bicep-visualizer/" />
-<meta property="article:published_time" content="2021-05-15T00:00:00+00:00" />
-<meta property="article:modified_time" content="2021-05-15T00:00:00+00:00" />
+<meta property="og:url" content="https://ravichaganti.com/blog/bicep-container-image/" />
+<meta property="article:published_time" content="2021-05-20T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-05-20T00:00:00+00:00" />
 
 
 
     
-      <base href="https://ravichaganti.com/blog/bicep-visualizer/">
+      <base href="https://ravichaganti.com/blog/bicep-container-image/">
     
     <title>
-  Bicep Visualizer · Ravikanth Chaganti
+  Bicep Container Image · Ravikanth Chaganti
 </title>
 
     
-      <link rel="canonical" href="https://ravichaganti.com/blog/bicep-visualizer/">
+      <link rel="canonical" href="https://ravichaganti.com/blog/bicep-container-image/">
     
 
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
@@ -110,41 +110,46 @@ The Bicep team released version 0.3.539 of Bicep command line as well as the VS 
     <article>
       <header>
         <div class="post-title">
-          <h1 class="title">Bicep Visualizer</h1>
+          <h1 class="title">Bicep Container Image</h1>
         </div>
         <div class="post-meta">
           <div class="date">
             <span class="posted-on">
               <i class="fas fa-calendar"></i>
-              <time datetime='2021-05-15T00:00:00Z'>
-                May 15, 2021
+              <time datetime='2021-05-20T00:00:00Z'>
+                May 20, 2021
               </time>
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              2-minute read
+              1-minute read
             </span>
           </div>
           <div class="categories">
   <i class="fas fa-folder"></i>
     <a href="https://ravichaganti.com/categories/azure/">Azure</a>
       <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/bicep/">Bicep</a></div>
+    <a href="https://ravichaganti.com/categories/bicep/">Bicep</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/docker/">Docker</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/containers/">Containers</a></div>
 
           <div class="tags">
   <i class="fas fa-tag"></i>
     <a href="https://ravichaganti.com/tags/azure/">Azure</a>
       <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/bicep/">Bicep</a></div>
+    <a href="https://ravichaganti.com/tags/bicep/">Bicep</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/docker/">Docker</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/containers/">Containers</a></div>
 
         </div>
       </header>
       <hr>
       <div>
         
-        
-          <nav id="TableOfContents"></nav>
-          <hr>
         
         
     <figure >
@@ -154,18 +159,45 @@ The Bicep team released version 0.3.539 of Bicep command line as well as the VS 
         
     </figure>
     
-<p>I wrote <a href="http://ravichaganti.com/series/azure-bicep/">a series of articles</a> to introduce Bicep language fundamentals. I really enjoyed working on these articles and learnt quite a lot in that process.</p>
-<p>The Bicep team <a href="https://github.com/Azure/bicep/releases/tag/v0.3.539">released version 0.3.539</a> of Bicep command line as well as the <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep">VS Code extension</a> a few hours ago and it came with a lot of goodness &ndash; bug fixes as well as new shiny things! One of the first things that caught my eye was the <a href="https://github.com/Azure/bicep/pull/2357">Bicep visualizer.</a></p>
-<p>If you are looking for a way to upgrade your local version of Bicep command line, you can run the <a href="https://github.com/rchaganti/bicephelpers/blob/main/installBicep.ps1">installBicep.ps1 script</a> from my <a href="https://github.com/rchaganti/bicephelpers">bicephelpers GitHub repo</a>. The VS Code extension should auto-update.</p>
-<p>Once you have both these updates in place, you can open a Bicep program in VS Code editor and hit CTRL+SHIFT+P to bring up the Bicep visualizer. Here is how it looks. I chose the <a href="https://github.com/Azure/bicep/tree/main/docs/examples/301/nested-vms-in-virtual-network">nested VMs Bicep template</a> for this.</p>
-<p>
+<p>While using the <a href="https://hub.docker.com/_/microsoft-azure-cli">Azure CLI container image</a> for one of my side projects, I started looking for an image that contains Bicep CLI as well. I found <a href="https://github.com/miqm">Mikolaj Mackowiak&rsquo;s</a> <a href="https://hub.docker.com/r/miqm/bicep-cli">Bicep-cli image</a>. This was what I really needed and it includes both Azure CLI and Bicep CLI. However, just as a fun side project, I wanted to publish my own image as well.</p>
+<p>I started with Alpine base image and started building everything needed for Azure CLI and Bicep CLI. However, as I started building all dependencies, the size of this image grew from 5MB to ~1GB. This is when I switched the base layer to Microsoft&rsquo;s Azure CLI image and just added Bicep as a layer.</p>
+<p>Here is how my Dockerfile looks now.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">FROM</span><span class="s"> mcr.microsoft.com/azure-cli:latest</span><span class="err">
+</span><span class="err"></span><span class="k">LABEL</span> <span class="nv">maintainer</span><span class="o">=</span><span class="s2">&#34;ravikanth@ravichaganti.com&#34;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="k">RUN</span> curl -Lo bicep.bin https://github.com/Azure/bicep/releases/latest/download/bicep-linux-musl-x64<span class="err">
+</span><span class="err"></span><span class="k">RUN</span> chmod +x ./bicep.bin<span class="err">
+</span><span class="err"></span><span class="k">RUN</span> mv ./bicep.bin /usr/local/bin/bicep<span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>This is available in my <a href="https://github.com/rchaganti/bicephelpers">Bicephelpers GitHub repository</a> and I have a <a href="https://github.com/rchaganti/bicephelpers/blob/main/.github/workflows/buildDockerImage.yml">GitHub action that builds this image</a> and pushes to Docker Hub.</p>
+<p>You can pull this image using the following command line.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">docker image pull ravikanth/bicep:latest
+</code></pre></td></tr></table>
+</div>
+</div><p>
 <link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
 <div class="box" >
   <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
     <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicepviz.gif" />
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicep.gif" />
     </div>
-    <a href="https://ravichaganti.com/images/bicepviz.gif" itemprop="contentUrl"></a>
+    <a href="https://ravichaganti.com/images/bicep.gif" itemprop="contentUrl"></a>
   </figure>
 </div>
  
@@ -229,25 +261,7 @@ The Bicep team released version 0.3.539 of Bicep command line as well as the VS 
     </div>
 </div>
 </p>
-<p>Instead of opening a new editor window for the visualization, you can choose to open it to the side of the existing editor window.</p>
-
-
-<div class="box" >
-  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-    <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/bicepviz2.png" />
-    </div>
-    <a href="https://ravichaganti.com/images/bicepviz2.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
-
-<p>This is a good start. Here is what on my wish list for this.</p>
-<ul>
-<li>Add support for exporting the generated visualization to a PNG or other format.</li>
-<li>Navigating to a location in the Bicep program or resource definition when I click on a resource in the visualization</li>
-<li>Resources represented with the actual Azure icons</li>
-</ul>
-<p>What is your wish list?</p>
+<p>I will continue to update this whenever Azure CLI or Bicep CLI get updated.</p>
 
         
 
@@ -280,10 +294,10 @@ text-align: center;
 </style>
 
 <span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/bicep-visualizer\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/bicep-visualizer\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/bicep-visualizer\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/bicep-visualizer\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/bicep-container-image\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/bicep-container-image\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/bicep-container-image\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/bicep-container-image\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
 </div>
       </div>
 
@@ -302,11 +316,11 @@ text-align: center;
         
         
           
-            <li>
-              <a href="https://ravichaganti.com/blog/bicep-container-image/">Bicep Container Image</a>
-            </li>
-          
         
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/bicep-visualizer/">Bicep Visualizer</a>
+            </li>
           
         
           
