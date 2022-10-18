@@ -6,10 +6,810 @@
     <description>Recent content in Containers on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 10 Oct 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 18 Oct 2022 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/tags/containers/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Understanding container images - The fundamentals</title>
+      <link>https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/</link>
+      <pubDate>Tue, 18 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/</guid>
+      <description>&lt;p&gt;Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a &lt;a href=&#34;http://localhost:1313/tags/containers/&#34;&gt;series of articles&lt;/a&gt; I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images and provided the tooling that made it super easy to run container instances from these images. This meant the user space tools abstracted all complex details and removed the need to know the inner workings of containers. Like every other technology, knowing the internals of how something is built becomes important when troubleshooting issues or optimizing what the technology does. And, of course, knowing / learning internals is fun too!&lt;/p&gt;
+&lt;p&gt;Today&amp;rsquo;s article is a collection of my notes [I made] as I started digging into how container images are built. First, the basics.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: This article uses Docker engine as an example. The fundamental concepts around how container images are managed do not change between different container engines.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;the-basics&#34;&gt;The basics&lt;/h3&gt;
+&lt;p&gt;Let us step back a bit and understand why there is a need for container images. Before containerization was made famous by Docker Inc., IT shops have used virtualization as a way to deploy multiple applications on single physical server. Virtualization vendors provided a set of tools to do this efficiently and sometimes in an automated manner. However, each virtual machine requires full operating system and application dependencies. Assuming that a single VM took ~10GB [very optimistic assumption] of space for OS alone, running 100 of them on a physical system will consume ~1TB. If all your VMs are running the same OS, this is a huge waste of disk space just to store duplicate files. You had to install application dependencies in each VM separately even when a majority of the applications have common dependencies. These limitations brought a bunch of operational challenges, such as patching / updates, portability, and distribution, as well.&lt;/p&gt;
+&lt;p&gt;Some virtualization vendors provided using differencing disks [for application code and dependencies] that shared a single parent disk containing an operating system. This, to some extent, helped but came with performance penalties and the same set of operational challenges.&lt;/p&gt;
+&lt;p&gt;When &lt;a href=&#34;https://www.docker.com/press-release/dotcloud-inc-now-docker-inc/&#34;&gt;dotCloud&lt;/a&gt;, the company where Docker was born, started playing with Linux constructs to run applications as isolated processes [containers], they developed a method to package application code and dependencies in a way that did not result in the same challenges as virtual machines. This packaging made distribution of application code easy but solved the portability issues. What worked on a developer workstation worked in the production without a change. This packaging is what we call a container image. A container image is an immutable package of operating system files, application code, and any application dependencies. Container images consist of reusable layers that are stacked on top of each other. Before you dive into consuming or creating images, it is important to understand the Linux construct used in dealing with container images. It is called Union File System.&lt;/p&gt;
+&lt;h4 id=&#34;union-file-system&#34;&gt;Union File System&lt;/h4&gt;
+&lt;p&gt;The Union File System (&lt;a href=&#34;https://unionfs.filesystems.org/&#34;&gt;UnionFS&lt;/a&gt;) in Linux allows merging contents of one or more file systems [directories] while keeping the content [physically] separate. There are different implementations such as AUFS and  OverlayFS that are meant for union mounts. Each of these different implementations have its pros and cons. To understand the concept of union file system, let us take OverlayFS as an example.&lt;/p&gt;
+&lt;p&gt;OverlayFS deals with layers of content &amp;ndash; one or more lower layers and one upper layer. The lower layers are treated as read-only and the upper layer as read-write. OverlayFS provides a unified view of these layers through a union mount.&lt;/p&gt;
+&lt;p&gt;
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+  
+
+
+
+  
+
+
+&lt;script src=&#34;https://code.jquery.com/jquery-1.12.4.min.js&#34; integrity=&#34;sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://ravichaganti.com/js/load-photoswipe.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css&#34; integrity=&#34;sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=&#34; crossorigin=&#34;anonymous&#34; /&gt;
+&lt;link rel=&#34;stylesheet&#34; href=&#34;https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css&#34; integrity=&#34;sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=&#34; crossorigin=&#34;anonymous&#34; /&gt;
+&lt;script src=&#34;https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js&#34; integrity=&#34;sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js&#34; integrity=&#34;sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=&#34; crossorigin=&#34;anonymous&#34;&gt;&lt;/script&gt;
+
+
+&lt;div class=&#34;pswp&#34; tabindex=&#34;-1&#34; role=&#34;dialog&#34; aria-hidden=&#34;true&#34;&gt;
+
+&lt;div class=&#34;pswp__bg&#34;&gt;&lt;/div&gt;
+
+&lt;div class=&#34;pswp__scroll-wrap&#34;&gt;
+    
+    &lt;div class=&#34;pswp__container&#34;&gt;
+      &lt;div class=&#34;pswp__item&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;pswp__item&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;pswp__item&#34;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&#34;pswp__ui pswp__ui--hidden&#34;&gt;
+    &lt;div class=&#34;pswp__top-bar&#34;&gt;
+      
+      &lt;div class=&#34;pswp__counter&#34;&gt;&lt;/div&gt;
+      &lt;button class=&#34;pswp__button pswp__button--close&#34; title=&#34;Close (Esc)&#34;&gt;&lt;/button&gt;
+      &lt;button class=&#34;pswp__button pswp__button--share&#34; title=&#34;Share&#34;&gt;&lt;/button&gt;
+      &lt;button class=&#34;pswp__button pswp__button--fs&#34; title=&#34;Toggle fullscreen&#34;&gt;&lt;/button&gt;
+      &lt;button class=&#34;pswp__button pswp__button--zoom&#34; title=&#34;Zoom in/out&#34;&gt;&lt;/button&gt;
+      
+      
+      &lt;div class=&#34;pswp__preloader&#34;&gt;
+        &lt;div class=&#34;pswp__preloader__icn&#34;&gt;
+          &lt;div class=&#34;pswp__preloader__cut&#34;&gt;
+            &lt;div class=&#34;pswp__preloader__donut&#34;&gt;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&#34;pswp__share-modal pswp__share-modal--hidden pswp__single-tap&#34;&gt;
+      &lt;div class=&#34;pswp__share-tooltip&#34;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;button class=&#34;pswp__button pswp__button--arrow--left&#34; title=&#34;Previous (arrow left)&#34;&gt;
+    &lt;/button&gt;
+    &lt;button class=&#34;pswp__button pswp__button--arrow--right&#34; title=&#34;Next (arrow right)&#34;&gt;
+    &lt;/button&gt;
+    &lt;div class=&#34;pswp__caption&#34;&gt;
+      &lt;div class=&#34;pswp__caption__center&#34;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/p&gt;
+&lt;p&gt;As you see in this depiction, the merged or the union view takes content from both lower and upper layers. If a file exists in both layers, such as file F3, the file in upper layer overrides the one in lower layer(s). Each file or directory operation has a specific result.&lt;/p&gt;
+&lt;h4 id=&#34;adding-new-files&#34;&gt;Adding new files&lt;/h4&gt;
+&lt;p&gt;When adding a new file, OverlayFS adds it to the upper layer.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&#34;deleting-an-existing-file&#34;&gt;Deleting an existing file&lt;/h4&gt;
+&lt;p&gt;When you delete a file or folder from the upper layer, it gets, well, deleted. However, when you delete a file that is in the lower layer(s), a special character device gets created with the same name in the upper layer. The lower layers are read-only and therefore no files or folders get deleted from there. The character device in the upper layer indicates that the file or folder should be hidden from the unified view.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-3.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-3.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&#34;modify-an-existing-file&#34;&gt;Modify an existing file&lt;/h4&gt;
+&lt;p&gt;There won&amp;rsquo;t be any special change if you modify a file that exists in the upper layer. However, if you modify a file in the lower layer(s), the file first gets copied up to the upper layer, and then the changes are made to this copy.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-4.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-4.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Talk is cheap. Let us see this in action.&lt;/p&gt;
+&lt;h4 id=&#34;overlayfs-in-action&#34;&gt;OverlayFS in action&lt;/h4&gt;
+&lt;p&gt;Before creating a union mount, you must first prepare a few directories.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ mkdir lower upper merged work demo
+$ &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; demo
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;This is a file 1 in lower layer&amp;#34;&lt;/span&gt; &amp;gt; lower/f1
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;This is a file 2 in lower layer&amp;#34;&lt;/span&gt; &amp;gt; lower/f2
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;This is a file 3 in lower layer&amp;#34;&lt;/span&gt; &amp;gt; lower/f3
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;This is a file 3 in upper layer&amp;#34;&lt;/span&gt; &amp;gt; upper/f3
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;This is a file 4 in upper layer&amp;#34;&lt;/span&gt; &amp;gt; upper/f4
+$ &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; ..
+$ tree demo/
+demo/
+├── lower
+│   ├── f1
+│   ├── f2
+│   └── f3
+├── merged
+├── upper
+│   ├── f3
+│   └── f4
+└── work
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Do not create any files in the merged or work directories. Merged will be the union mount where the unified view of lower and upper directories will be available. Now, you can use the &lt;code&gt;mount&lt;/code&gt; command to perform a union mount.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo mount overlay -t overlay -o &lt;span class=&#34;nv&#34;&gt;lowerdir&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;demo/lower/,upperdir&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;demo/upper/,workdir&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;demo/work/ demo/merged/
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The &lt;code&gt;mount&lt;/code&gt; command above mounts the directories, &lt;code&gt;lowerdir&lt;/code&gt; and &lt;code&gt;upperdir&lt;/code&gt;, as a union mount under merged folder. The &lt;code&gt;workdir&lt;/code&gt; can be considered a temporary scratch space copying files from lower to upper.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ ls -l demo/merged/
+total &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt;
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f1
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f2
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f3
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f4
+
+$ cat demo/merged/f3
+This is a file &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; in upper layer
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Once the mount command succeeds, you will see the contents of lower and upper directories merged to provide a unified view. You can now try different operations as depicted in the earlier images.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; When working with the union file system, you must make all changes in the unified mount. In the example, it is the merged directory.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h5 id=&#34;adding-file&#34;&gt;Adding file&lt;/h5&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;A new file called f5 in merged view&amp;#34;&lt;/span&gt; &amp;gt;  demo/merged/f5
+
+$ ls -l demo/merged/
+total &lt;span class=&#34;m&#34;&gt;20&lt;/span&gt;
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f1
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f2
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f3
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f4
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;36&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:34 f5
+
+$ ls -l demo/upper/
+total &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt;
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f3
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f4
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;36&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:34 f5
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Adding a file to the merged view adds it to the upper layer as that is the read/write layer.&lt;/p&gt;
+&lt;h5 id=&#34;deleting-a-file&#34;&gt;Deleting a file&lt;/h5&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ rm demo/merged/f2
+
+$ ls -l demo/merged/
+total &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt;
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f1
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f3
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f4
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;36&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:34 f5
+
+$ ls -l demo/upper/
+total &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt;
+c--------- &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root      root      0, &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:36 f2
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti   &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f3
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti   &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:31 f4
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti   &lt;span class=&#34;m&#34;&gt;36&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:34 f5
+
+$ ls -l demo/lower/
+total &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt;
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f1
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f2
+-rw-rw-r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; rchaganti rchaganti &lt;span class=&#34;m&#34;&gt;32&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:29 f3
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Deleting file f2 results in a special character file in upper layer. The lower layer, however, remains untouched.&lt;/p&gt;
+&lt;h5 id=&#34;modify-file&#34;&gt;Modify file&lt;/h5&gt;
+&lt;p&gt;When you modify a file, depending on where it is &amp;ndash; upper or lower &amp;ndash; a copy-up action takes place. For example, if you modify file f1 which exists in the lower layer, f1 first gets copied to the upper layer and gets modified in the upper layer.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ cat demo/merged/f1
+This is a file &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; in lower layer
+
+$ &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;adding some random content&amp;#34;&lt;/span&gt; &amp;gt;&amp;gt; demo/merged/f1
+
+$ cat demo/merged/f1
+This is a file &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; in lower layer
+adding some random content
+
+$ cat demo/upper/f1
+This is a file &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; in lower layer
+adding some random content
+
+$ cat demo/lower/f1
+This is a file &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; in lower layer
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;As you see in the above example, file f1 in the lower layer is left untouched. A copy of f1 is present in the upper layer and gets modified to add the new line.&lt;/p&gt;
+&lt;p&gt;Now that you understand how OverlayFS works, it is time to see how container engines use union file system to manage container images.&lt;/p&gt;
+&lt;h3 id=&#34;container-images&#34;&gt;Container images&lt;/h3&gt;
+&lt;p&gt;Container engines like Docker support different types of storage drivers responsible for combining stacked layers into a single unified view. Similar to what you saw in the earlier example, each layer contains only the differences from the below layer. The immutable nature of these layers makes the container image reusable and allows you to run multiple containers from a single image. Each container gets its own thin writable layer to facilitate writing to the container file system or modifying or deleting existing files. The storage driver used by the container engine is responsible for managing the copy-on-write (CoW) layer. The Docker engine defaults to overlay2 as the storage driver.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/image-layers-containers.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/image-layers-containers.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Let us dig into how this works. First, let us pull an image from the Docker hub for this exercise.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ docker pull ravikanth/hello-world:v1
+v1: Pulling from ravikanth/hello-world
+213ec9aee27d: Pull &lt;span class=&#34;nb&#34;&gt;complete&lt;/span&gt;
+0d351817f207: Pull &lt;span class=&#34;nb&#34;&gt;complete&lt;/span&gt;
+8b09275c3de5: Pull &lt;span class=&#34;nb&#34;&gt;complete&lt;/span&gt;
+Digest: sha256:9964e0545f1cbd09fc902dda80664ba4b23b5f4bd32b1a0e7ab135f819c5ed6c
+Status: Downloaded newer image &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; ravikanth/hello-world:v1
+docker.io/ravikanth/hello-world:v1
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The image that we just pulled has three layers. The &lt;code&gt;overlay2&lt;/code&gt; driver on the Docker host stores the image layers at &lt;code&gt;/var/lib/docker/overlay2&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2
+total &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt;
+drwx--x--- &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696
+drwx--x--- &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39
+drwx--x--- &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22
+drwx------ &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 l
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The directories at this location are uncompressed image layers and therefore the ID does not match the layer ID in the image. The directory named &lt;code&gt;l&lt;/code&gt; contains the symbolic links to the &lt;code&gt;diff&lt;/code&gt; directory within each uncompressed layer.&lt;/p&gt;
+&lt;p&gt;If you have multiple other images on the docker host already, you can use &lt;code&gt;docker image inspect&lt;/code&gt; command to find the right uncompressed layer IDs for a specific image.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ docker image inspect ravikanth/hello-world:v1 &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; jq -r &lt;span class=&#34;s1&#34;&gt;&amp;#39;.[0] | {Data: .GraphDriver.Data}&amp;#39;&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;s2&#34;&gt;&amp;#34;Data&amp;#34;&lt;/span&gt;: &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;LowerDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff:/var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;MergedDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/merged&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;UpperDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/diff&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;WorkDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/work&amp;#34;&lt;/span&gt;
+  &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The property names &amp;ndash; &lt;code&gt;LowerDir&lt;/code&gt;, &lt;code&gt;UpperdDir&lt;/code&gt;, &lt;code&gt;MergeDir&lt;/code&gt;, and &lt;code&gt;WorkDir&lt;/code&gt; &amp;ndash; in the above output should be familiar by now. The layer IDs listed in the output will correlate to the &lt;code&gt;ls&lt;/code&gt; output earlier. If you observe this output, the &lt;code&gt;LowerDir&lt;/code&gt; property has more than one layer associated with it as the value.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;/var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff
+/var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;These layers are represented in the order of their position in the container image. Therefore, &lt;code&gt;ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22&lt;/code&gt; is the lowest layer and &lt;code&gt;d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39&lt;/code&gt; is the layer above the lowest layer. From the image pull output, you see that there are three layers in this image. The layer represented by &lt;code&gt;UpperDir&lt;/code&gt; is the topmost layer in this image.&lt;/p&gt;
+&lt;p&gt;Now that we know the order of the layers, let us move on to see what is there in each of these uncompressed layer directories.&lt;/p&gt;
+&lt;p&gt;The lowest layer contains three entries.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22
+total &lt;span class=&#34;m&#34;&gt;8&lt;/span&gt;
+-rw-------  &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root    &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 committed
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;19&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 diff
+-rw-r--r--  &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;26&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 link
+
+$ sudo ls -l /var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff
+total &lt;span class=&#34;m&#34;&gt;68&lt;/span&gt;
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 bin
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 dev
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 etc
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 home
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 lib
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;5&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 media
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 mnt
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 opt
+dr-xr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 proc
+drwx------  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 root
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 run
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 sbin
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 srv
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 sys
+drwxrwxrwt  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 tmp
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 usr
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 var
+
+$ sudo cat /var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/link
+BOOTVTCSKJUJXUJWX765MW7TMJ
+
+$ sudo ls -l /var/lib/docker/overlay2/l/BOOTVTCSKJUJXUJWX765MW7TMJ
+lrwxrwxrwx &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;72&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 /var/lib/docker/overlay2/l/BOOTVTCSKJUJXUJWX765MW7TMJ -&amp;gt; ../ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This image is based on &lt;code&gt;alpine:latest&lt;/code&gt; and therefore &lt;code&gt;diff&lt;/code&gt; directory in the lowest layer contains the OS files. Let us move to the next layer. If you look at the last command in the output, file named&lt;code&gt;link&lt;/code&gt; in the uncompressed layer is referencing the &lt;code&gt;diff&lt;/code&gt; directory in the same layer.&lt;/p&gt;
+&lt;p&gt;Let us move to the next layer in the stack.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39
+total &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt;
+-rw------- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root    &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 committed
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 diff
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;26&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 link
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;28&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 lower
+drwx------ &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 work
+
+$ sudo ls -l /var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff
+total &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; 10:54 hello.txt
+
+$ sudo cat /var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff/hello.txt
+
+$ sudo cat /var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/link
+FYTORA5MEBUHE4B4ZY4IPI3P5D
+
+$ sudo cat /var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/lower
+l/BOOTVTCSKJUJXUJWX765MW7TMJ
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;All uncompressed layers above the lowest layer contain five entries. The &lt;code&gt;diff&lt;/code&gt; directory contains the contents of the layer &amp;ndash; a zero-byte hello.txt file in this case. The file named lower points to the lower layer in the stack. And, in this example, it naturally points to the lower layer &lt;code&gt;diff&lt;/code&gt; directory. You can ignore the rest of the entries in this uncompressed layer. In each layer, the &lt;code&gt;link&lt;/code&gt; file contains the symbolic link to the layer&amp;rsquo;s &lt;code&gt;diff&lt;/code&gt; directory.&lt;/p&gt;
+&lt;p&gt;Finally, we have one more layer to look at.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696
+total &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt;
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 diff
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;26&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 link
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;57&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 lower
+drwx------ &lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 15:32 work
+
+$ sudo ls -l /var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/diff
+total &lt;span class=&#34;m&#34;&gt;4&lt;/span&gt;
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;35&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; 10:54 hello.txt
+
+$ sudo cat /var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/diff/hello.txt
+this is an update to the hello.txt
+
+$ sudo cat /var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/link
+S2YWWPZHW75GE3EIQ7ULNMR5RZ
+
+$ sudo cat /var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/lower
+l/FYTORA5MEBUHE4B4ZY4IPI3P5D:l/BOOTVTCSKJUJXUJWX765MW7TMJ
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This layer has two layers below it and therefore you see two entries (separated by :) in the file named &lt;code&gt;lower&lt;/code&gt;. Similar to the previous layer, the &lt;code&gt;diff&lt;/code&gt; directory in the layer contains a file named hello.txt. As this is the upper layer or the topmost layer, when a container is created using this image, you should see the contents of this hello.txt file within the container.&lt;/p&gt;
+&lt;p&gt;To better understand this, you need to visualize this layer structure.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-layers-1.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-layers-1.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;As described earlier, container images are immutable. You cannot write anything directly to these layers. The only way to consume these layers is to create a container instance. You can do that using the &lt;code&gt;docker run&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ docker run -d --name helloworld ravikanth/hello-world:v1 sleep &lt;span class=&#34;m&#34;&gt;1000000&lt;/span&gt;
+cff3f0322cb6765f06575bba9405d8ffeb0fecac237c5f615b906a9546d2a413
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: Starting this container in the background will help in exploring the copy-on-write operations.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In an earlier illustration, you saw how more than one container can be created from a single image and how each gets its own copy-on-write (CoW) read/write layer. So, in theory, this CoW layer must be somehow getting associated with the uncompressed image layers that you explored. This association can be found by running the docker container inspect command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ docker container inspect helloworld &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; jq -r &lt;span class=&#34;s1&#34;&gt;&amp;#39;.[0] | {Data: .GraphDriver.Data}&amp;#39;&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;s2&#34;&gt;&amp;#34;Data&amp;#34;&lt;/span&gt;: &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;LowerDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751-init/diff:/var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/diff:/var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff:/var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;MergedDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/merged&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;UpperDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/diff&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;WorkDir&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/work&amp;#34;&lt;/span&gt;
+  &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This looks similar to what you have seen in the image information. The &lt;code&gt;LowerDir&lt;/code&gt; has four different layers in the below order.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751-init/diff
+/var/lib/docker/overlay2/cf0b92185c9ba3bdf11d19e53252063def37acf80fe3491597fd5a8914e1a696/diff
+/var/lib/docker/overlay2/d63b70e8f22063b1eb4296b70c2e231392e28b104475104e14f7346530e0dd39/diff
+/var/lib/docker/overlay2/ec861e1affe1b78197b7cc7f6f4381c6de0e490e04a60dc1ff684a9f7ddeab22/diff
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This is essentially the three image layers you saw earlier and an additional container layer. You may have observed &lt;code&gt;MergeDir&lt;/code&gt; and &lt;code&gt;WorkDir&lt;/code&gt; in the image information output. However, as images are immutable, these values do not matter much for an image. In the case of a container, these values do matter. Therefore, the &lt;code&gt;/var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/merged&lt;/code&gt; directory contains the unified view of all image layers.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/merged
+total &lt;span class=&#34;m&#34;&gt;72&lt;/span&gt;
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 bin
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 18:10 dev
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 18:10 etc
+-rw-r--r--  &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root   &lt;span class=&#34;m&#34;&gt;35&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; 10:54 hello.txt
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 home
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 lib
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;5&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 media
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 mnt
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 opt
+dr-xr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 proc
+drwx------  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 root
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 run
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 sbin
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 srv
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 sys
+drwxrwxrwt  &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 tmp
+drwxr-xr-x  &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 usr
+drwxr-xr-x &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 14:17 var
+
+$ sudo cat /var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/merged/hello.txt
+this is an update to the hello.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now, try writing a new file in the running container.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ docker &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; helloworld touch /hello-world.txt
+rchaganti@ubuntu02:~$ docker &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; helloworld ls -l
+total &lt;span class=&#34;m&#34;&gt;60&lt;/span&gt;
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 bin
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;5&lt;/span&gt; root     root           &lt;span class=&#34;m&#34;&gt;340&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:40 dev
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:40 etc
+-rw-r--r--    &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root     root             &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 13:11 hello-world.txt
+-rw-r--r--    &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root     root            &lt;span class=&#34;m&#34;&gt;35&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; 05:24 hello.txt
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 home
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 lib
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;5&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 media
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 mnt
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 opt
+dr-xr-xr-x  &lt;span class=&#34;m&#34;&gt;252&lt;/span&gt; root     root             &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:40 proc
+drwx------    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 root
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 run
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 sbin
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 srv
+dr-xr-xr-x   &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt; root     root             &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 12:40 sys
+drwxrwxrwt    &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 tmp
+drwxr-xr-x    &lt;span class=&#34;m&#34;&gt;7&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 usr
+drwxr-xr-x   &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt; root     root          &lt;span class=&#34;m&#34;&gt;4096&lt;/span&gt; Aug  &lt;span class=&#34;m&#34;&gt;9&lt;/span&gt; 08:47 var
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can see that a new file got added inside the container. The view represents the contents of &lt;code&gt;MergedDir&lt;/code&gt;. You can check the directory represented by &lt;code&gt;UpperDir&lt;/code&gt; to see if it appears there as well.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ sudo ls -l /var/lib/docker/overlay2/38705da4838102c3b9d2ae8aeb49844dac84dae95881df61fcffd1685caf9751/diff
+total &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+-rw-r--r-- &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; root root &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Oct &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; 18:41 hello-world.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;If you follow the same steps you followed to determine the links between multiple image layers, you will see the association between the CoW layer and the lower immutable image layers.&lt;/p&gt;
+
+
+&lt;div class=&#34;box&#34; style=&#34;max-width:450px&#34;&gt;
+  &lt;figure  itemprop=&#34;associatedMedia&#34; itemscope itemtype=&#34;http://schema.org/ImageObject&#34;&gt;
+    &lt;div class=&#34;img&#34;&gt;
+      &lt;img itemprop=&#34;thumbnail&#34; src=&#34;https://ravichaganti.com/images/overlay-layers-2.png&#34; /&gt;
+    &lt;/div&gt;
+    &lt;a href=&#34;https://ravichaganti.com/images/overlay-layers-2.png&#34; itemprop=&#34;contentUrl&#34;&gt;&lt;/a&gt;
+  &lt;/figure&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This is one messy diagram but it demonstrates the point. The topmost layer is the CoW read/write layer and all layers below are read-only layers. I mentioned earlier that this is a temporary lived read/write layer. What happens if we stop and start the container? What happens if we remove the container?&lt;/p&gt;
+&lt;p&gt;Try it yourself. Hint: The file you created within the container survives a container restart.&lt;/p&gt;
+&lt;p&gt;Oh, BTW, you can use a tool called &lt;a href=&#34;https://github.com/wagoodman/dive&#34;&gt;dive&lt;/a&gt; to look into the container images. While that is a great time saver, it is not as much fun as exploring the images manually &amp;ndash; the hard way.&lt;/p&gt;
+&lt;p&gt;This is one long article but I had fun refining the notes I made to write this. This article showed how images are managed by the storage driver. You may have read elsewhere that container images can be used with any container engine. How is that made possible? Let us review that in the next article around Open Container Initiative (OCI) and the OCI image specification.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>CUE language VS Code development container feature</title>
