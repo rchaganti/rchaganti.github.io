@@ -8,36 +8,36 @@
     <script src="https://ravichaganti.com/js/view.js"></script>
     <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="In an earlier article, we looked at different containerization options in Microsoft Azure. In today&rsquo;s article, we shall start with Azure Container Instances (ACI) and learn the fundamentals. In a later article, we will learn how to perform multi-container applications to ACI.
-Azure Container Instances Azure Container Instances (ACI) service offers a quick and easy way to run containers in the Microsoft Azure cloud. It is as simple as running a container locally using the Docker engine.">
+    <meta name="description" content="In the previous article, we looked at getting started with Azure Container Instances service, learned some basic concepts of ACI, and saw an example of provisioning a hello-world application. In this article, we shall extend this knowledge by provisioning a multi-container application to ACI using Bicep templates. You can also use a YAML method of provisioning multi-container applications to ACI. We shall look at this later.
+As we learned earlier, a container group resembles a Kubernetes pod.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Understanding and using Azure Container Instances service - The Basics"/>
-<meta name="twitter:description" content="In an earlier article, we looked at different containerization options in Microsoft Azure. In today&rsquo;s article, we shall start with Azure Container Instances (ACI) and learn the fundamentals. In a later article, we will learn how to perform multi-container applications to ACI.
-Azure Container Instances Azure Container Instances (ACI) service offers a quick and easy way to run containers in the Microsoft Azure cloud. It is as simple as running a container locally using the Docker engine."/>
+<meta name="twitter:title" content="Understanding and using Azure Container Instances service - Multi-container Applications using Bicep"/>
+<meta name="twitter:description" content="In the previous article, we looked at getting started with Azure Container Instances service, learned some basic concepts of ACI, and saw an example of provisioning a hello-world application. In this article, we shall extend this knowledge by provisioning a multi-container application to ACI using Bicep templates. You can also use a YAML method of provisioning multi-container applications to ACI. We shall look at this later.
+As we learned earlier, a container group resembles a Kubernetes pod."/>
 
-    <meta property="og:title" content="Understanding and using Azure Container Instances service - The Basics" />
-<meta property="og:description" content="In an earlier article, we looked at different containerization options in Microsoft Azure. In today&rsquo;s article, we shall start with Azure Container Instances (ACI) and learn the fundamentals. In a later article, we will learn how to perform multi-container applications to ACI.
-Azure Container Instances Azure Container Instances (ACI) service offers a quick and easy way to run containers in the Microsoft Azure cloud. It is as simple as running a container locally using the Docker engine." />
+    <meta property="og:title" content="Understanding and using Azure Container Instances service - Multi-container Applications using Bicep" />
+<meta property="og:description" content="In the previous article, we looked at getting started with Azure Container Instances service, learned some basic concepts of ACI, and saw an example of provisioning a hello-world application. In this article, we shall extend this knowledge by provisioning a multi-container application to ACI using Bicep templates. You can also use a YAML method of provisioning multi-container applications to ACI. We shall look at this later.
+As we learned earlier, a container group resembles a Kubernetes pod." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/" />
-<meta property="article:published_time" content="2022-11-02T00:00:00+00:00" />
-<meta property="article:modified_time" content="2022-11-02T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-01-containerization-in-azure/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/" />
+<meta property="og:url" content="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/" />
+<meta property="article:published_time" content="2022-11-03T00:00:00+00:00" />
+<meta property="article:modified_time" content="2022-11-03T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-01-containerization-in-azure/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/" />
 
 
 
 
 
     
-      <base href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">
+      <base href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">
     
     <title>
-  Understanding and using Azure Container Instances service - The Basics · Ravikanth Chaganti
+  Understanding and using Azure Container Instances service - Multi-container Applications using Bicep · Ravikanth Chaganti
 </title>
 
     
-      <link rel="canonical" href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">
+      <link rel="canonical" href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">
     
 
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
@@ -75,7 +75,7 @@ Azure Container Instances Azure Container Instances (ACI) service offers a quick
     
   
   
-    <body onload="getViews( &#34;https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/&#34; )" class="colorscheme-auto">
+    <body onload="getViews( &#34;https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/&#34; )" class="colorscheme-auto">
   
     <main class="wrapper">
       <nav class="navigation">
@@ -115,19 +115,19 @@ Azure Container Instances Azure Container Instances (ACI) service offers a quick
     <article>
       <header>
         <div class="post-title">
-          <h1 class="title">Understanding and using Azure Container Instances service - The Basics</h1>
+          <h1 class="title">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</h1>
         </div>
         <div class="post-meta">
           <div class="date">
             <span class="posted-on">
               <i class="fas fa-calendar"></i>
-              <time datetime='2022-11-02T00:00:00Z'>
-                November 2, 2022
+              <time datetime='2022-11-03T00:00:00Z'>
+                November 3, 2022
               </time>
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              4-minute read
+              3-minute read
             </span>
           </div>
           <div class="categories">
@@ -156,10 +156,9 @@ Azure Container Instances Azure Container Instances (ACI) service offers a quick
       <div>
         
         
-        <p>In an earlier article, we looked at <a href="https://ravichaganti.com/blog/2022-11-01-containerization-in-azure">different containerization options</a> in Microsoft Azure. In today&rsquo;s article, we shall start with Azure Container Instances (ACI) and learn the fundamentals. In a later article, we will learn how to perform multi-container applications to ACI.</p>
-<h3 id="azure-container-instances">Azure Container Instances</h3>
-<p>Azure Container Instances (ACI) service offers a quick and easy way to run containers in the Microsoft Azure cloud. It is as simple as running a container locally using the Docker engine. ACI does not provide full container orchestration. ACI is great for applications that require faster startup times and hassle-free management. ACI runs inside Azure VMs and therefore provides isolation enabled by virtualization.</p>
-<p>Let us start by provisioning a simple container instance using a Bicep template. This is an <a href="https://learn.microsoft.com/en-us/azure/container-instances/container-instances-quickstart-bicep?tabs=CLI">example from Microsoft&rsquo;s documentation</a> on ACI.</p>
+        <p>In the previous article, we looked at <a href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">getting started with Azure Container Instances service</a>, learned some basic concepts of ACI, and saw an example of provisioning a hello-world application. In this article, we shall extend this knowledge by provisioning a multi-container application to ACI using Bicep templates. You can also use a YAML method of provisioning multi-container applications to ACI. We shall look at this later.</p>
+<p>As we learned earlier, a container group resembles a Kubernetes pod. The containers within the group share resources such as network and storage. The resource usage of containers can be controlled at the container group level. As a general rule of thumb, we should group containers with similar lifecycle and resource requirements into a container group. The multi-container groups are available for Linux containers only at the moment. Based on the region, there will be additional restrictions in terms of resource allocation.</p>
+<p>Let us start with an example.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -227,25 +226,32 @@ Azure Container Instances Azure Container Instances (ACI) service offers a quick
 </span><span class="lnt">63
 </span><span class="lnt">64
 </span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
 </span></code></pre></td>
 <td class="lntd">
 <pre class="chroma"><code class="language-fallback" data-lang="fallback">@description(&#39;Name for the container group&#39;)
-param name string = &#39;acibicep&#39;
+param name string = &#39;aciVoteApplication&#39;
 
 @description(&#39;Location for all resources.&#39;)
 param location string = resourceGroup().location
-
-@description(&#39;Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries. Images from private registries require additional registry credentials.&#39;)
-param image string = &#39;mcr.microsoft.com/azuredocs/aci-helloworld&#39;
-
-@description(&#39;Port to open on the container and the public IP address.&#39;)
-param port int = 80
-
-@description(&#39;The number of CPU cores to allocate to the container.&#39;)
-param cpuCores int = 1
-
-@description(&#39;The amount of memory to allocate to the container in gigabytes.&#39;)
-param memoryInGb int = 2
 
 @description(&#39;The behavior of Azure runtime if container has stopped.&#39;)
 @allowed([
@@ -261,19 +267,49 @@ resource containerGroup &#39;Microsoft.ContainerInstance/containerGroups@2021-09
   properties: {
     containers: [
       {
-        name: name
+        name: &#39;azure-vote-backend&#39;
         properties: {
-          image: image
+          image: &#39;mcr.microsoft.com/oss/bitnami/redis:6.0.8&#39;
           ports: [
             {
-              port: port
+              port: 6379
               protocol: &#39;TCP&#39;
+            }
+          ]
+          environmentVariables: [
+            {
+              name: &#39;ALLOW_EMPTY_PASSWORD&#39;
+              value: &#39;yes&#39;
             }
           ]
           resources: {
             requests: {
-              cpu: cpuCores
-              memoryInGB: memoryInGb
+              cpu: 1
+              memoryInGB: 1
+            }
+          }
+        }
+      }
+      {
+        name: &#39;azure-vote-frontend&#39;
+        properties: {
+          image: &#39;mcr.microsoft.com/azuredocs/azure-vote-front:v2&#39;
+          ports: [
+            {
+              port: 80
+              protocol: &#39;TCP&#39;
+            }
+          ]
+          environmentVariables: [
+            {
+              name: &#39;REDIS&#39;
+              value: &#39;localhost&#39;
+            }
+          ]
+          resources: {
+            requests: {
+              cpu: 1
+              memoryInGB: 1
             }
           }
         }
@@ -285,7 +321,7 @@ resource containerGroup &#39;Microsoft.ContainerInstance/containerGroups@2021-09
       type: &#39;Public&#39;
       ports: [
         {
-          port: port
+          port: 80
           protocol: &#39;TCP&#39;
         }
       ]
@@ -294,26 +330,28 @@ resource containerGroup &#39;Microsoft.ContainerInstance/containerGroups@2021-09
 }
 
 output containerIPv4Address string = containerGroup.properties.ipAddress.ip
+
 </code></pre></td></tr></table>
 </div>
-</div><p>To provision this, we can use Azure CLI commands.</p>
+</div><p>This example is like the earlier single-container ACI example. However, we are adding a second container in this multi-container group example. <strong>Each container within an ACI group can reference the other using localhost only</strong>. Therefore, in the example above, we are mapping the REDIS environment variable to <code>localhost</code> instead of the name of the Redis container.</p>
+<p>We can provision this ACI container group using the following Azure CLI command.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"> az deployment group create --template-file aci.bicep --resource-group bicep
+<pre class="chroma"><code class="language-shell" data-lang="shell">az deployment group create --template-file aci-mcg.bicep --resource-group bicep
 </code></pre></td></tr></table>
 </div>
-</div><p>Once provisioned, the template returns the public IP address of the container instance. If we browse to this IP, we shall see the following displayed in the browser.</p>
+</div><p>Output from the Bicep template gives us the IP address of the container group, which can be used to access the voting application that we just provisioned to the ACI container group.</p>
 <p>
 <link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
 <div class="box" style="max-width:450px">
   <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
     <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/aci_1.png" />
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/aci_2.png" />
     </div>
-    <a href="https://ravichaganti.com/images/aci_1.png" itemprop="contentUrl"></a>
+    <a href="https://ravichaganti.com/images/aci_2.png" itemprop="contentUrl"></a>
   </figure>
 </div>
  
@@ -377,19 +415,7 @@ output containerIPv4Address string = containerGroup.properties.ipAddress.ip
     </div>
 </div>
 </p>
-<p>Let us now look at the Bicep template&rsquo;s contents to understand more about ACI.</p>
-<h4 id="container-groups">Container Groups</h4>
-<p>In ACI, the containers are created within a container group. The resource type used to create a container group is <code>Microsoft.ContainerInstance/containerGroups</code>. A container group is a top-level resource in ACI. A container group is simply a group of containers scheduled on the same host. Like a Kubernetes pod, all containers within the container group share the lifecycle, network, and storage.</p>
-<blockquote>
-<p>At the time of writing, only Linux containers are supported in a multi-container group.</p>
-</blockquote>
-<p>A container group resource definition contains a collection of container specifications. In the example above, we specified only one container to be created within the group. The <code>properties</code> object within the container resource contains additional properties, such as the image to be pulled for creating the containers, ports to publish, and resource requests and limits.</p>
-<p>Each container within this collection is allocated resources specified in the container definition. For example, in the above template, we allocate one CPU core and 2GB of memory to the container. This is called a resource request. We can also set a resource limit. The resource limits of a container instance must be greater than or equal to the resource request. When the resource limit property is not set in the container instance property, the container&rsquo;s maximum resource usage will be the same as its resource request.</p>
-<blockquote>
-<p>We will learn more about resource allocation in ACI in a later post.</p>
-</blockquote>
-<p>We can specify the restart policy at the container group level. This is done using the <code>restartPolicy</code> property within the container group properties. This property has three possible values &ndash; <code>Always</code>, <code>Never</code>, and <code>OnFailure</code> &ndash; with <code>Always</code> being the default. Container instances are billed by the second, so using an appropriate restart policy is important. If the restart policy is set to <code>Never</code> or <code>OnFailure</code>, the containers in the container group are stopped and set to <code>Terminated</code> state once the application exits. This configuration will be useful for running serverless workloads that just perform the function and exit. For such containerized applications, setting <code>restartPolicy</code> to <code>Always</code> can be disastrous as ACI continues to restart the container even after the application exits.</p>
-<p>What happens when we have multiple containers in a container group? We shall explore that in the next article!</p>
+<p>This is it. In a future article, we shall see how to provision applications across multiple multi-container groups and what role virtual networks play in such a scenario.</p>
 
         
 
@@ -422,10 +448,10 @@ text-align: center;
 </style>
 
 <span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
 </div>
         <script src="https://giscus.app/client.js"
         data-repo="rchaganti/rchaganti.github.io"
@@ -460,11 +486,11 @@ text-align: center;
         
         
           
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</a>
-            </li>
-          
         
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">Understanding and using Azure Container Instances service - The Basics</a>
+            </li>
           
         
           
@@ -498,11 +524,11 @@ text-align: center;
         
         
           
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</a>
-            </li>
-          
         
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">Understanding and using Azure Container Instances service - The Basics</a>
+            </li>
           
         
           
@@ -530,11 +556,11 @@ text-align: center;
         
         
           
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</a>
-            </li>
-          
         
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/">Understanding and using Azure Container Instances service - The Basics</a>
+            </li>
           
         
         </ul>
