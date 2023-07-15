@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <script src="https://ravichaganti.com/js/view.js"></script>
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="The earlier article introduced you to the Azure SDK for Go. In the example towards the end of that article, you may have noticed how the NewAzureCLICredential method of the azidentity package was used to access locally available Azure CLI credentials. This is perfect for local development and is not recommended for production environments. The Azure SDK supports different types of credentials depending on where your Go code is running. In this article in the Azure SDK for Go series, you will learn about each of these credential types and when you use each of these credentials.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Azure SDK for Go - Authentication methods for local development environment"/>
+<meta name="twitter:description" content="The earlier article introduced you to the Azure SDK for Go. In the example towards the end of that article, you may have noticed how the NewAzureCLICredential method of the azidentity package was used to access locally available Azure CLI credentials. This is perfect for local development and is not recommended for production environments. The Azure SDK supports different types of credentials depending on where your Go code is running. In this article in the Azure SDK for Go series, you will learn about each of these credential types and when you use each of these credentials."/>
+
+    <meta property="og:title" content="Azure SDK for Go - Authentication methods for local development environment" />
+<meta property="og:description" content="The earlier article introduced you to the Azure SDK for Go. In the example towards the end of that article, you may have noticed how the NewAzureCLICredential method of the azidentity package was used to access locally available Azure CLI credentials. This is perfect for local development and is not recommended for production environments. The Azure SDK supports different types of credentials depending on where your Go code is running. In this article in the Azure SDK for Go series, you will learn about each of these credential types and when you use each of these credentials." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-for-local-dev-environment/" />
+<meta property="article:published_time" content="2023-07-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-07-15T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2023-07-13-getting-started-with-azure-sdk-for-go/" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-for-local-dev-environment/">
+    
+    <title>
+  Azure SDK for Go - Authentication methods for local development environment · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-for-local-dev-environment/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  
+    <body onload="getViews( &#34;https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-for-local-dev-environment/&#34; )" class="colorscheme-auto">
+  
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Azure SDK for Go - Authentication methods for local development environment</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2023-07-15T00:00:00Z'>
+                July 15, 2023
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              6-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure/">azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/go/">go</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure/">azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/go/">go</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>The <a href="https://ravichaganti.com/blog/2023-07-13-getting-started-with-azure-sdk-for-go">earlier article introduced</a> you to the Azure SDK for Go. In the example towards the end of that article, you may have noticed how the <code>NewAzureCLICredential</code> method of the <code>azidentity</code> package was used to access locally available Azure CLI credentials. This is perfect for local development and is not recommended for production environments. The Azure SDK supports different types of credentials depending on where your Go code is running. In this article in the <a href="https://ravichaganti.com/series/azure-go/">Azure SDK for Go series</a>, you will learn about each of these credential types and when you use each of these credentials.</p>
+<blockquote>
+<p>All code samples presented in this series will be available at <a href="https://github.com/rchaganti/azure-go">rchaganti/azure-go: Learning Azure SDK for Go (github.com)</a></p>
+</blockquote>
+<h2 id="azidentity-package"><code>azidentity</code> package</h2>
+<p>The <code>azidentity</code> package provides Azure Active Directory (or <a href="https://techcommunity.microsoft.com/t5/microsoft-entra-azure-ad-blog/azure-ad-is-becoming-microsoft-entra-id/ba-p/2520436">should we call it Entra</a>!) authentication support through different types of token credential implementations. <a href="https://twitter.com/parkplusplus/status/1670139726081449985">Azure SDK clients are lazily initialized</a>; therefore, authentication and authorization do not occur until an actual Azure resource operation is performed. Therefore, the following program will not return an error even when the local Azure CLI credentials are unavailable.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;log&#34;</span>
+
+	<span class="s">&#34;github.com/Azure/azure-sdk-for-go/sdk/azidentity&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nf">NewDefaultAzureCredential</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This is an important point to remember because many of us think this method should fail when no credentials are available or when the credentials are invalid.</p>
+<blockquote>
+<p>To authenticate and access/manage Azure services, your user account needs appropriate permissions/roles assigned to it. In the examples outlined in this series, it is assumed that you have the appropriate permissions.</p>
+</blockquote>
+<h3 id="credential-types">Credential Types</h3>
+<p>The <code>azidentity</code> package supports authentication through different types of credentials. At a higher level, these credentials can be classified as development (or local) and production (or hosted service) types. Note that this is not an official classification. The development type credentials are useful in local dev, test, and debug scenarios. This includes:</p>
+<ul>
+<li>Azure CLI credentials</li>
+<li>Device code credentials</li>
+<li>Interactive browser-based credentials</li>
+<li>Username and Password credentials</li>
+<li>Environment credentials</li>
+</ul>
+<p>The hosted service or production-type credentials are useful in Azure-hosted service scenarios. This includes:</p>
+<ul>
+<li>Environment credentials</li>
+<li>Managed identity credentials</li>
+<li>Workload identity credentials</li>
+</ul>
+<p>The next few sections of this article will walk you through the different credential types for local development, test, and debug and show you how you can use these credentials to authenticate your Go programs.</p>
+<h3 id="azure-cli-credential">Azure CLI credential</h3>
+<p>In the previous part of this series, you have seen an example that used the <code>NewAzureCLICredential()</code> method to retrieve locally available credentials. This method returns a token credential implemented as the <code>AzureCLICredential</code> type.</p>
+<p>The <code>NewAzureCLICredential()</code> method takes an optional parameter of type <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzureCLICredentialOptions">AzureCLICredentialOptions</a>. Using this struct, you can specify the additional tenants for which the credential may acquire tokens. If you need only the home tenant of the logged in user, you can specify <code>nil</code> as the parameter value.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// github.com/rchaganti/azure-go/02-auth101/azcli.go
+</span><span class="c1"></span><span class="nx">cred</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nf">NewAzureCLICredential</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>When you use this method in a program and there are no Azure CLI credentials available locally, the program will exit with an error prompting you to run <code>az login</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ go run azcli.go 
+2023/07/15 06:59:49 AzureCLICredential: ERROR: Please run <span class="s1">&#39;az login&#39;</span> to setup account.
+<span class="nb">exit</span> status <span class="m">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="interactive-browser-login">Interactive browser login</h3>
+<p>When you run <code>az login</code>, you will typically see an interactive browser window open automatically and you will be prompted to login to your Azure account. Once the login is successful, the authentication process returns the token credentials that can be cached locally. The same method can be implemented in your Go programs managing Azure or accessing Azure services. This is done using the <code>NewInteractiveBrowserCredential</code> method. You can pass optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#InteractiveBrowserCredentialOptions"><code>InteractiveBrowserCredentialOptions</code></a> parameter to modify the allowed tenants, specify a login hint, and enable support for disconnected clouds such Azure stack. The usage of this method is similar to what you have already seen for Azure CLI credentials.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// github.com/rchaganti/azure-go/02-auth101/interactivebrowser.go
+</span><span class="c1"></span><span class="nx">cred</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nf">NewInteractiveBrowserCredential</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This method fails if the local session has no support for an interactive browser.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ go run interactivebrowser.go 
+2023/07/15 07:14:05 InteractiveBrowserCredential: exec: <span class="s2">&#34;xdg-open,x-www-browser,www-browser&#34;</span>: executable file not found in <span class="nv">$PATH</span>
+<span class="nb">exit</span> status <span class="m">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If there is a browser available, you will see a screen similar to what is shown below. You can login to an account that is authorized to access Azure services and authenticate.</p>
+<p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/azlogin.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/azlogin.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
+<h3 id="device-code-credential">Device code credential</h3>
+<p>The device code base authentication should be familiar to you if you have used Azure PowerShell or similar tools in the past. This is especially useful in scenarios where your local environment lacks Azure CLI or a browser for interactive login. This method generates an alpha-numeric code that you need to input into a browser window for authentication. The <code>azidentity</code> package provides the <code>NewDeviceCodeCredential()</code> method to achieve device code based authentication. This method takes an optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#DeviceCodeCredentialOptions">DeviceCodeCredentialOptions</a> parameter using which you can specify additional allowed tenants and a custom prompt.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// github.com/rchaganti/azure-go/02-auth101/devicecode.go
+</span><span class="c1"></span><span class="nx">deviceCodeCredOptions</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">azidentity</span><span class="p">.</span><span class="nx">DeviceCodeCredentialOptions</span><span class="p">{</span>
+    <span class="nx">UserPrompt</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">deviceCodeMessage</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nx">DeviceCodeMessage</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Enter code %s at https://microsoft.com/devicelogin to complete authentication.\n&#34;</span><span class="p">,</span> <span class="nx">deviceCodeMessage</span><span class="p">.</span><span class="nx">UserCode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">nil</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="nx">cred</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nf">NewDeviceCodeCredential</span><span class="p">(</span><span class="nx">deviceCodeCredOptions</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The custom prompt is implemented using the <code>UserPrompt</code> field of the <code>DeviceCodeCredentialOptions</code> struct.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ go run devicecode.go 
+Enter code HMYPYSK8J at https://microsoft.com/devicelogin to <span class="nb">complete</span> authentication.
+</code></pre></td></tr></table>
+</div>
+</div><p>In the absence of the custom user prompt, you will receive the default message from Azure AD.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ go run devicecode.go 
+To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code I3MPW7LML to authenticate.
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="username-and-password-credential">Username and Password credential</h3>
+<p>This method of using username and password is slightly involved and is not recommended for security reasons. However, a developer may use this within the local environment. The <code>NewUsernamePasswordCredential()</code> method in the <code>azidentity</code> package is used for this type of authentication. The account you use must satisfy the following requirements.</p>
+<ul>
+<li>It should be a school or work account and not a Microsoft account</li>
+<li>You need an <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Azure AD application registration</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret">A client secret must exist</a> within the Azure AD application</li>
+<li>The Azure AD application registration <a href="https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/grant-admin-consent?pivots=portal">must be granted admin consent</a></li>
+</ul>
+<p>The <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewUsernamePasswordCredential"><code>NewUsernamePasswordCredential()</code></a> takes a few parameters such as <code>tenantID</code>, <code>clientID</code>, <code>username</code>, <code>password</code> and includes <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#UsernamePasswordCredentialOptions"><code>UsernamePasswordCredentialOptions</code></a> that are used to specify additional allowed tenants and enabling authentication in disconnected cloud scenarios. <code>tenantID</code> is the Azure tenant ID and <code>clientID</code> is the Azure AD application ID.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// github.com/rchaganti/azure-go/02-auth101/usernamepassword.go
+</span><span class="c1"></span><span class="nx">cred</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">azidentity</span><span class="p">.</span><span class="nf">NewUsernamePasswordCredential</span><span class="p">(</span><span class="nx">tenantID</span><span class="p">,</span> <span class="nx">clientID</span><span class="p">,</span> <span class="nx">username</span><span class="p">,</span> <span class="nx">password</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If all the pre-requisites are met, and username and password are valid, executing this program must return a list of resource groups within the subscription.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ go run usernamepassword.go <span class="p">|</span> jq .<span class="o">[]</span>.id
+<span class="s2">&#34;/subscriptions/5073ff70820/resourceGroups/cloud-shell-storage-southeastasia&#34;</span>
+<span class="s2">&#34;/subscriptions/5073ff70820/resourceGroups/NetworkWatcherRG&#34;</span>
+<span class="s2">&#34;/subscriptions/5073ff70820/resourceGroups/DefaultResourceGroup-EUS&#34;</span>
+<span class="s2">&#34;/subscriptions/5073ff70820/resourceGroups/az&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The use of environment credentials is applicable to hosted/deployed services as well. Therefore, you shall see a demonstration of that in the next part of this series.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-for-local-dev-environment\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-for-local-dev-environment\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-for-local-dev-environment\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-for-local-dev-environment\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+        <script src="https://giscus.app/client.js"
+        data-repo="rchaganti/rchaganti.github.io"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOEIN4I84CS4rW"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in azure-go</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/2023-07-13-getting-started-with-azure-sdk-for-go/">Getting Started with Azure SDK for Go</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2023
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+        
+    
+    
+
+  </body>
+
+</html>
