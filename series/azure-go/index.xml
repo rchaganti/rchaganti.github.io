@@ -6,10 +6,124 @@
     <description>Recent content in azure-go on Ravikanth Chaganti</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 18 Jul 2023 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://ravichaganti.com/series/azure-go/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Azure SDK for Go - Authentication methods - Environmental credential</title>
+      <link>https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/</link>
+      <pubDate>Tue, 18 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/</guid>
+      <description>&lt;p&gt;In the last part of this series, you learned how to use different credential types in a local development environment. Another method you can use within local development and in a hosted/deployed service is providing credentials through environment variables. This is done using the &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewEnvironmentCredential&#34;&gt;&lt;code&gt;NewEnvironmentCredential()&lt;/code&gt;&lt;/a&gt; method in the &lt;code&gt;azidentity&lt;/code&gt; package.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// github.com/rchaganti/azure-go/02-auth101/envCredential.go
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;cred&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;azidentity&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;NewEnvironmentCredential&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Fatal&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;This credential type supports multiple types of authentication in the following order.&lt;/p&gt;
+&lt;h2 id=&#34;service-principal-with-client-secret&#34;&gt;Service principal with client secret&lt;/h2&gt;
+&lt;p&gt;In this method, you can export the tenant ID, client ID, and client secret of an Azure AD application as environment variables. These variable values get retrieved using &lt;code&gt;NewEnvironmentCredential(),&lt;/code&gt; and the client will be authenticated using these values.&lt;/p&gt;
+&lt;p&gt;To use this method, you need an &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal&#34;&gt;Azure AD application&lt;/a&gt; with a &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret&#34;&gt;client secret&lt;/a&gt;, a necessary role assignment for the user, and &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/grant-admin-consent?pivots=portal&#34;&gt;admin consent should be granted&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Once you complete the appropriate Azure AD application registration and configuration, you can set the environment variables for this authentication method.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_TENANT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;tenant-id&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_CLIENT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;client-id&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_CLIENT_SECRET&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;client-secret&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You will receive an appropriate error message if these values are invalid. You will receive the following error if the application does not have the right permissions or role assignment.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ go run envCredential.go 
+EnvironmentCredential will authenticate with ClientSecretCredential
+ClientSecretCredential.GetToken&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; acquired a token &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; scope &lt;span class=&#34;s2&#34;&gt;&amp;#34;https://management.core.windows.net//.default&amp;#34;&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;
+2023/07/18 04:43:16 GET https://management.azure.com/subscriptions/5073ff70820/resourcegroups
+--------------------------------------------------------------------------------
+RESPONSE 403: &lt;span class=&#34;m&#34;&gt;403&lt;/span&gt; Forbidden
+ERROR CODE: AuthorizationFailed
+--------------------------------------------------------------------------------
+&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;s2&#34;&gt;&amp;#34;error&amp;#34;&lt;/span&gt;: &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;code&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;AuthorizationFailed&amp;#34;&lt;/span&gt;,
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;message&amp;#34;&lt;/span&gt;: &lt;span class=&#34;s2&#34;&gt;&amp;#34;The client &amp;#39;8887f900&amp;#39; with object id &amp;#39;8887f900&amp;#39; does not have authorization to perform action &amp;#39;Microsoft.Resources/subscriptions/resourcegroups/read&amp;#39; over scope &amp;#39;/subscriptions/5073ff70820&amp;#39; or the scope is invalid. If access was recently granted, please refresh your credentials.&amp;#34;&lt;/span&gt;
+  &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+--------------------------------------------------------------------------------
+&lt;span class=&#34;nb&#34;&gt;exit&lt;/span&gt; status &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;service-principal-with-a-certificate&#34;&gt;Service principal with a certificate&lt;/h2&gt;
+&lt;p&gt;To use a client certificate instead of a client secret, you can use the &lt;code&gt;AZURE_CLIENT_CERTIFICATE_PATH&lt;/code&gt; environment variable. If you set both the client secret and certificate variables, the client secret gets precedence.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_TENANT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;tenant-id&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_CLIENT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;client-id&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_CLIENT_CERTIFICATE_PATH&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;path-to-client-certificate&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The prerequisites for using this method are the same as the earlier one. Instead of creating a client secret, you must &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-self-signed-certificate&#34;&gt;create a client certificate&lt;/a&gt;. If the certificate you created requires a password, you can specify that using the optional&lt;code&gt;AZURE_CLIENT_CERTIFICATE_PASSWORD&lt;/code&gt; variable.&lt;/p&gt;
+&lt;h2 id=&#34;with-username-and-password&#34;&gt;With username and password&lt;/h2&gt;
+&lt;p&gt;This method is not recommended, but if you prefer username and password-based authentication, you can set the AZURE_CLIENT_ID, AZURE_USERNAME, and AZURE_PASSWORD environment variables.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_CLIENT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;client-id&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_USERNAME&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;user@domain&amp;#39;&lt;/span&gt;
+$ &lt;span class=&#34;nb&#34;&gt;export&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;AZURE_PASSWORD&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;P@ssw0rd&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;To specify a tenant to authenticate, use the optional &lt;code&gt;AZURE_TENANT_ID&lt;/code&gt; environment variable. The authentication methods you saw in the previous article support optional options parameter to customize the behavior. With these options, you can specify additional tenants allowed for multitenant authentication. When using environment credentials, this can be specified using an optional environment variable called &lt;code&gt;AZURE_ADDITIONALLY_ALLOWED_TENANTS&lt;/code&gt;. You can specify a comma-separated list of tenant IDs as a value. If you specify &amp;lsquo;*&amp;rsquo; as the value of this variable, you enable requesting tokens from any tenant.&lt;/p&gt;
+&lt;p&gt;If all three methods are set as environment variables, the client secret takes precedence over the others. The Go code for using any of these methods is the same as shown at the beginning of this article. The environment credential method can be used in development and production (hosted/deployed) service scenarios.&lt;/p&gt;
+&lt;p&gt;In the next part of this series, you will learn how to use managed identity credentials within your Go code.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Azure SDK for Go - Authentication methods for local development environment</title>
@@ -78,10 +192,10 @@
 &lt;li&gt;Managed identity credentials&lt;/li&gt;
 &lt;li&gt;Workload identity credentials&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;The next few sections of this article will walk you through the different credential types for local development, test, and debug and show you how you can use these credentials to authenticate your Go programs.&lt;/p&gt;
+&lt;p&gt;The next few sections of this article will walk you through the different credential types for local development, testing, and debugging and show you how to use these credentials to authenticate your Go programs.&lt;/p&gt;
 &lt;h3 id=&#34;azure-cli-credential&#34;&gt;Azure CLI credential&lt;/h3&gt;
 &lt;p&gt;In the previous part of this series, you have seen an example that used the &lt;code&gt;NewAzureCLICredential()&lt;/code&gt; method to retrieve locally available credentials. This method returns a token credential implemented as the &lt;code&gt;AzureCLICredential&lt;/code&gt; type.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;NewAzureCLICredential()&lt;/code&gt; method takes an optional parameter of type &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzureCLICredentialOptions&#34;&gt;AzureCLICredentialOptions&lt;/a&gt;. Using this struct, you can specify the additional tenants for which the credential may acquire tokens. If you need only the home tenant of the logged in user, you can specify &lt;code&gt;nil&lt;/code&gt; as the parameter value.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;NewAzureCLICredential()&lt;/code&gt; method takes an optional parameter of type &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzureCLICredentialOptions&#34;&gt;AzureCLICredentialOptions&lt;/a&gt;. Using this struct, you can specify the additional tenants for which the credential may acquire tokens. If you need only the home tenant of the logged-in user, you can specify &lt;code&gt;nil&lt;/code&gt; as the parameter value.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
@@ -112,7 +226,7 @@
 &lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h3 id=&#34;interactive-browser-login&#34;&gt;Interactive browser login&lt;/h3&gt;
-&lt;p&gt;When you run &lt;code&gt;az login&lt;/code&gt;, you will typically see an interactive browser window open automatically and you will be prompted to login to your Azure account. Once the login is successful, the authentication process returns the token credentials that can be cached locally. The same method can be implemented in your Go programs managing Azure or accessing Azure services. This is done using the &lt;code&gt;NewInteractiveBrowserCredential&lt;/code&gt; method. You can pass optional &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#InteractiveBrowserCredentialOptions&#34;&gt;&lt;code&gt;InteractiveBrowserCredentialOptions&lt;/code&gt;&lt;/a&gt; parameter to modify the allowed tenants, specify a login hint, and enable support for disconnected clouds such Azure stack. The usage of this method is similar to what you have already seen for Azure CLI credentials.&lt;/p&gt;
+&lt;p&gt;When you run &lt;code&gt;az login&lt;/code&gt;, you will typically see an interactive browser window open automatically, and you will be prompted to log in to your Azure account. Once the login is successful, the authentication process returns the token credentials that can be cached locally. The same method can be implemented in your Go programs managing Azure or accessing Azure services. This is done using the &lt;code&gt;NewInteractiveBrowserCredential&lt;/code&gt; method. You can pass the optional &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#InteractiveBrowserCredentialOptions&#34;&gt;&lt;code&gt;InteractiveBrowserCredentialOptions&lt;/code&gt;&lt;/a&gt; parameter to modify the allowed tenants, specify a login hint, and enable support for disconnected clouds such as Azure stack. The usage of this method is similar to what you have already seen for Azure CLI credentials.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
@@ -142,7 +256,7 @@
 &lt;span class=&#34;nb&#34;&gt;exit&lt;/span&gt; status &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;If there is a browser available, you will see a screen similar to what is shown below. You can login to an account that is authorized to access Azure services and authenticate.&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;If a browser is available, you will see a screen similar to what is shown below. You can log in to an authorized account to access Azure services and authenticate.&lt;/p&gt;
 &lt;p&gt;
 &lt;link rel=&#34;stylesheet&#34; href=&#34;https://ravichaganti.com/css/hugo-easy-gallery.css&#34; /&gt;
 &lt;div class=&#34;box&#34; &gt;
@@ -215,7 +329,7 @@
 &lt;/div&gt;
 &lt;/p&gt;
 &lt;h3 id=&#34;device-code-credential&#34;&gt;Device code credential&lt;/h3&gt;
-&lt;p&gt;The device code base authentication should be familiar to you if you have used Azure PowerShell or similar tools in the past. This is especially useful in scenarios where your local environment lacks Azure CLI or a browser for interactive login. This method generates an alpha-numeric code that you need to input into a browser window for authentication. The &lt;code&gt;azidentity&lt;/code&gt; package provides the &lt;code&gt;NewDeviceCodeCredential()&lt;/code&gt; method to achieve device code based authentication. This method takes an optional &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#DeviceCodeCredentialOptions&#34;&gt;DeviceCodeCredentialOptions&lt;/a&gt; parameter using which you can specify additional allowed tenants and a custom prompt.&lt;/p&gt;
+&lt;p&gt;The device code base authentication should be familiar if you have used Azure PowerShell or similar tools. This is especially useful when your local environment lacks Azure CLI or a browser for interactive login. This method generates an alpha-numeric code that you need to input into a browser window for authentication. The &lt;code&gt;azidentity&lt;/code&gt; package provides the &lt;code&gt;NewDeviceCodeCredential()&lt;/code&gt; method to achieve device code-based authentication. This method takes an optional &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#DeviceCodeCredentialOptions&#34;&gt;DeviceCodeCredentialOptions&lt;/a&gt; parameter using which you can specify additional allowed tenants and a custom prompt.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
@@ -269,14 +383,14 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 &lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h3 id=&#34;username-and-password-credential&#34;&gt;Username and Password credential&lt;/h3&gt;
-&lt;p&gt;This method of using username and password is slightly involved and is not recommended for security reasons. However, a developer may use this within the local environment. The &lt;code&gt;NewUsernamePasswordCredential()&lt;/code&gt; method in the &lt;code&gt;azidentity&lt;/code&gt; package is used for this type of authentication. The account you use must satisfy the following requirements.&lt;/p&gt;
+&lt;p&gt;This method of using a username and password is slightly involved and is not recommended for security reasons. However, a developer may use this within the local environment. The &lt;code&gt;NewUsernamePasswordCredential()&lt;/code&gt; method in the &lt;code&gt;azidentity&lt;/code&gt; package is used for this type of authentication. The account you use must satisfy the following requirements.&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;It should be a school or work account and not a Microsoft account&lt;/li&gt;
-&lt;li&gt;You need an &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal&#34;&gt;Azure AD application registration&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret&#34;&gt;A client secret must exist&lt;/a&gt; within the Azure AD application&lt;/li&gt;
+&lt;li&gt;It should be a school or work account and not a Microsoft account.&lt;/li&gt;
+&lt;li&gt;You need an &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal&#34;&gt;Azure AD application registration.&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret&#34;&gt;A client secret must exist&lt;/a&gt; within the Azure AD application.&lt;/li&gt;
 &lt;li&gt;The Azure AD application registration &lt;a href=&#34;https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/grant-admin-consent?pivots=portal&#34;&gt;must be granted admin consent&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;The &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewUsernamePasswordCredential&#34;&gt;&lt;code&gt;NewUsernamePasswordCredential()&lt;/code&gt;&lt;/a&gt; takes a few parameters such as &lt;code&gt;tenantID&lt;/code&gt;, &lt;code&gt;clientID&lt;/code&gt;, &lt;code&gt;username&lt;/code&gt;, &lt;code&gt;password&lt;/code&gt; and includes &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#UsernamePasswordCredentialOptions&#34;&gt;&lt;code&gt;UsernamePasswordCredentialOptions&lt;/code&gt;&lt;/a&gt; that are used to specify additional allowed tenants and enabling authentication in disconnected cloud scenarios. &lt;code&gt;tenantID&lt;/code&gt; is the Azure tenant ID and &lt;code&gt;clientID&lt;/code&gt; is the Azure AD application ID.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewUsernamePasswordCredential&#34;&gt;&lt;code&gt;NewUsernamePasswordCredential()&lt;/code&gt;&lt;/a&gt; takes a few parameters such as &lt;code&gt;tenantID&lt;/code&gt;, &lt;code&gt;clientID&lt;/code&gt;, &lt;code&gt;username&lt;/code&gt;, and &lt;code&gt;password&lt;/code&gt; and includes &lt;a href=&#34;https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#UsernamePasswordCredentialOptions&#34;&gt;&lt;code&gt;UsernamePasswordCredentialOptions&lt;/code&gt;&lt;/a&gt; that specify additional allowed tenants and enable authentication in disconnected cloud scenarios. &lt;code&gt;tenantID&lt;/code&gt; is the Azure tenant ID, and &lt;code&gt;clientID&lt;/code&gt; is the Azure AD application ID.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
@@ -293,7 +407,7 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;If all the pre-requisites are met, and username and password are valid, executing this program must return a list of resource groups within the subscription.&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;If all the prerequisites are met and the username and password are valid, executing this program must return a list of resource groups within the subscription.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1

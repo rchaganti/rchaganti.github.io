@@ -20,7 +20,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-for-local-dev-environment/" />
 <meta property="article:published_time" content="2023-07-15T00:00:00+00:00" />
-<meta property="article:modified_time" content="2023-07-15T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2023-07-13-getting-started-with-azure-sdk-for-go/" />
+<meta property="article:modified_time" content="2023-07-15T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2023-07-13-getting-started-with-azure-sdk-for-go/" />
 
 
 
@@ -204,10 +204,10 @@
 <li>Managed identity credentials</li>
 <li>Workload identity credentials</li>
 </ul>
-<p>The next few sections of this article will walk you through the different credential types for local development, test, and debug and show you how you can use these credentials to authenticate your Go programs.</p>
+<p>The next few sections of this article will walk you through the different credential types for local development, testing, and debugging and show you how to use these credentials to authenticate your Go programs.</p>
 <h3 id="azure-cli-credential">Azure CLI credential</h3>
 <p>In the previous part of this series, you have seen an example that used the <code>NewAzureCLICredential()</code> method to retrieve locally available credentials. This method returns a token credential implemented as the <code>AzureCLICredential</code> type.</p>
-<p>The <code>NewAzureCLICredential()</code> method takes an optional parameter of type <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzureCLICredentialOptions">AzureCLICredentialOptions</a>. Using this struct, you can specify the additional tenants for which the credential may acquire tokens. If you need only the home tenant of the logged in user, you can specify <code>nil</code> as the parameter value.</p>
+<p>The <code>NewAzureCLICredential()</code> method takes an optional parameter of type <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzureCLICredentialOptions">AzureCLICredentialOptions</a>. Using this struct, you can specify the additional tenants for which the credential may acquire tokens. If you need only the home tenant of the logged-in user, you can specify <code>nil</code> as the parameter value.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -238,7 +238,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="interactive-browser-login">Interactive browser login</h3>
-<p>When you run <code>az login</code>, you will typically see an interactive browser window open automatically and you will be prompted to login to your Azure account. Once the login is successful, the authentication process returns the token credentials that can be cached locally. The same method can be implemented in your Go programs managing Azure or accessing Azure services. This is done using the <code>NewInteractiveBrowserCredential</code> method. You can pass optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#InteractiveBrowserCredentialOptions"><code>InteractiveBrowserCredentialOptions</code></a> parameter to modify the allowed tenants, specify a login hint, and enable support for disconnected clouds such Azure stack. The usage of this method is similar to what you have already seen for Azure CLI credentials.</p>
+<p>When you run <code>az login</code>, you will typically see an interactive browser window open automatically, and you will be prompted to log in to your Azure account. Once the login is successful, the authentication process returns the token credentials that can be cached locally. The same method can be implemented in your Go programs managing Azure or accessing Azure services. This is done using the <code>NewInteractiveBrowserCredential</code> method. You can pass the optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#InteractiveBrowserCredentialOptions"><code>InteractiveBrowserCredentialOptions</code></a> parameter to modify the allowed tenants, specify a login hint, and enable support for disconnected clouds such as Azure stack. The usage of this method is similar to what you have already seen for Azure CLI credentials.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -268,7 +268,7 @@
 <span class="nb">exit</span> status <span class="m">1</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>If there is a browser available, you will see a screen similar to what is shown below. You can login to an account that is authorized to access Azure services and authenticate.</p>
+</div><p>If a browser is available, you will see a screen similar to what is shown below. You can log in to an authorized account to access Azure services and authenticate.</p>
 <p>
 <link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
 <div class="box" >
@@ -341,7 +341,7 @@
 </div>
 </p>
 <h3 id="device-code-credential">Device code credential</h3>
-<p>The device code base authentication should be familiar to you if you have used Azure PowerShell or similar tools in the past. This is especially useful in scenarios where your local environment lacks Azure CLI or a browser for interactive login. This method generates an alpha-numeric code that you need to input into a browser window for authentication. The <code>azidentity</code> package provides the <code>NewDeviceCodeCredential()</code> method to achieve device code based authentication. This method takes an optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#DeviceCodeCredentialOptions">DeviceCodeCredentialOptions</a> parameter using which you can specify additional allowed tenants and a custom prompt.</p>
+<p>The device code base authentication should be familiar if you have used Azure PowerShell or similar tools. This is especially useful when your local environment lacks Azure CLI or a browser for interactive login. This method generates an alpha-numeric code that you need to input into a browser window for authentication. The <code>azidentity</code> package provides the <code>NewDeviceCodeCredential()</code> method to achieve device code-based authentication. This method takes an optional <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#DeviceCodeCredentialOptions">DeviceCodeCredentialOptions</a> parameter using which you can specify additional allowed tenants and a custom prompt.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -395,14 +395,14 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="username-and-password-credential">Username and Password credential</h3>
-<p>This method of using username and password is slightly involved and is not recommended for security reasons. However, a developer may use this within the local environment. The <code>NewUsernamePasswordCredential()</code> method in the <code>azidentity</code> package is used for this type of authentication. The account you use must satisfy the following requirements.</p>
+<p>This method of using a username and password is slightly involved and is not recommended for security reasons. However, a developer may use this within the local environment. The <code>NewUsernamePasswordCredential()</code> method in the <code>azidentity</code> package is used for this type of authentication. The account you use must satisfy the following requirements.</p>
 <ul>
-<li>It should be a school or work account and not a Microsoft account</li>
-<li>You need an <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Azure AD application registration</a></li>
-<li><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret">A client secret must exist</a> within the Azure AD application</li>
+<li>It should be a school or work account and not a Microsoft account.</li>
+<li>You need an <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Azure AD application registration.</a></li>
+<li><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#option-3-create-a-new-application-secret">A client secret must exist</a> within the Azure AD application.</li>
 <li>The Azure AD application registration <a href="https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/grant-admin-consent?pivots=portal">must be granted admin consent</a></li>
 </ul>
-<p>The <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewUsernamePasswordCredential"><code>NewUsernamePasswordCredential()</code></a> takes a few parameters such as <code>tenantID</code>, <code>clientID</code>, <code>username</code>, <code>password</code> and includes <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#UsernamePasswordCredentialOptions"><code>UsernamePasswordCredentialOptions</code></a> that are used to specify additional allowed tenants and enabling authentication in disconnected cloud scenarios. <code>tenantID</code> is the Azure tenant ID and <code>clientID</code> is the Azure AD application ID.</p>
+<p>The <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#NewUsernamePasswordCredential"><code>NewUsernamePasswordCredential()</code></a> takes a few parameters such as <code>tenantID</code>, <code>clientID</code>, <code>username</code>, and <code>password</code> and includes <a href="https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#UsernamePasswordCredentialOptions"><code>UsernamePasswordCredentialOptions</code></a> that specify additional allowed tenants and enable authentication in disconnected cloud scenarios. <code>tenantID</code> is the Azure tenant ID, and <code>clientID</code> is the Azure AD application ID.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -419,7 +419,7 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 <span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>If all the pre-requisites are met, and username and password are valid, executing this program must return a list of resource groups within the subscription.</p>
+</div><p>If all the prerequisites are met and the username and password are valid, executing this program must return a list of resource groups within the subscription.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -505,6 +505,12 @@ text-align: center;
       <nav>
         <ul>
         
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/">Azure SDK for Go - Authentication methods - Environmental credential</a>
+            </li>
+          
         
           
         
