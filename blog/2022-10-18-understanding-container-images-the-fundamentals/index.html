@@ -8,15 +8,15 @@
     <script src="https://ravichaganti.com/js/view.js"></script>
     <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
     <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images and provided the tooling that made it super easy to run container instances from these images.">
+    <meta name="description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images. It also provided the tooling that made running container instances from these images easy.">
     <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Understanding container images - The fundamentals"/>
-<meta name="twitter:description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images and provided the tooling that made it super easy to run container instances from these images."/>
+<meta name="twitter:description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images. It also provided the tooling that made running container instances from these images easy."/>
 
     <meta property="og:title" content="Understanding container images - The fundamentals" />
-<meta property="og:description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images and provided the tooling that made it super easy to run container instances from these images." />
+<meta property="og:description" content="Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a series of articles I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images. It also provided the tooling that made running container instances from these images easy." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/" />
 <meta property="article:published_time" content="2022-10-18T00:00:00+00:00" />
@@ -143,17 +143,17 @@
       <div>
         
         
-        <p>Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a <a href="http://localhost:1313/tags/containers/">series of articles</a> I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images and provided the tooling that made it super easy to run container instances from these images. This meant the user space tools abstracted all complex details and removed the need to know the inner workings of containers. Like every other technology, knowing the internals of how something is built becomes important when troubleshooting issues or optimizing what the technology does. And, of course, knowing / learning internals is fun too!</p>
+        <p>Containers have been around for a while. There is no need for an introduction to containers anymore but If you are still looking for some background, you can read a <a href="https://ravichaganti.com/tags/containers/">series of articles</a> I have written on this blog. Docker simplified working with containers by introducing a way to package your applications and application dependencies as container images. It also provided the tooling that made running container instances from these images easy. This meant the user space tools abstracted all complex details and removed the need to know the inner workings of containers. Like every other technology, knowing the internals of how something is built becomes important when troubleshooting issues or optimizing what the technology does. And, of course, knowing / learning internals is fun too!</p>
 <p>Today&rsquo;s article is a collection of my notes [I made] as I started digging into how container images are built. First, the basics.</p>
 <blockquote>
-<p><strong>Note</strong>: This article uses Docker engine as an example. The fundamental concepts around how container images are managed do not change between different container engines.</p>
+<p><strong>Note</strong>: This article uses the Docker engine as an example. The fundamental concepts around managing container images do not change between container engines.</p>
 </blockquote>
 <h3 id="the-basics">The basics</h3>
-<p>Let us step back a bit and understand why there is a need for container images. Before containerization was made famous by Docker Inc., IT shops have used virtualization as a way to deploy multiple applications on single physical server. Virtualization vendors provided a set of tools to do this efficiently and sometimes in an automated manner. However, each virtual machine requires full operating system and application dependencies. Assuming that a single VM took ~10GB [very optimistic assumption] of space for OS alone, running 100 of them on a physical system will consume ~1TB. If all your VMs are running the same OS, this is a huge waste of disk space just to store duplicate files. You had to install application dependencies in each VM separately even when a majority of the applications have common dependencies. These limitations brought a bunch of operational challenges, such as patching / updates, portability, and distribution, as well.</p>
-<p>Some virtualization vendors provided using differencing disks [for application code and dependencies] that shared a single parent disk containing an operating system. This, to some extent, helped but came with performance penalties and the same set of operational challenges.</p>
-<p>When <a href="https://www.docker.com/press-release/dotcloud-inc-now-docker-inc/">dotCloud</a>, the company where Docker was born, started playing with Linux constructs to run applications as isolated processes [containers], they developed a method to package application code and dependencies in a way that did not result in the same challenges as virtual machines. This packaging made distribution of application code easy but solved the portability issues. What worked on a developer workstation worked in the production without a change. This packaging is what we call a container image. A container image is an immutable package of operating system files, application code, and any application dependencies. Container images consist of reusable layers that are stacked on top of each other. Before you dive into consuming or creating images, it is important to understand the Linux construct used in dealing with container images. It is called Union File System.</p>
+<p>Let us step back a bit and understand why there is a need for container images. Before containerization was made famous by Docker Inc., IT shops used virtualization as a way to deploy multiple applications on a single physical server. Virtualization vendors provide tools to do this efficiently and sometimes in an automated manner. However, each virtual machine requires a full operating system and application dependencies. Assuming that a single VM took ~10GB [very optimistic assumption] of space for OS alone, running 100 of them on a physical system will consume ~1TB. If all your VMs are running the same OS, this is a huge waste of disk space to store duplicate files. You had to install application dependencies in each VM separately, even when most applications have common dependencies. These limitations brought a bunch of operational challenges, such as patching/updates, portability, and distribution, as well.</p>
+<p>Some virtualization vendors provided using differencing disks [for application code and dependencies] that shared a single parent disk containing an operating system. This, to some extent, helped, but it came with performance penalties and the same set of operational challenges.</p>
+<p>When <a href="https://www.docker.com/press-release/dotcloud-inc-now-docker-inc/">dotCloud</a>, the company where Docker was born, started playing with Linux constructs to run applications as isolated processes [containers], they developed a method to package application code and dependencies that did not result in the same challenges as virtual machines. This packaging made the distribution of application code easy but solved the portability issues. What worked on a developer workstation worked in the production without a change. This packaging is what we call a container image. A container image is an immutable package of operating system files, application code, and dependencies. Container images consist of reusable layers that are stacked on top of each other. Before you dive into consuming or creating images, it is important to understand the Linux construct used in dealing with container images. It is called the Union File System.</p>
 <h4 id="union-file-system">Union File System</h4>
-<p>The Union File System (<a href="https://unionfs.filesystems.org/">UnionFS</a>) in Linux allows merging contents of one or more file systems [directories] while keeping the content [physically] separate. There are different implementations such as AUFS and  OverlayFS that are meant for union mounts. Each of these different implementations have its pros and cons. To understand the concept of union file system, let us take OverlayFS as an example.</p>
+<p>The Union File System (<a href="https://unionfs.filesystems.org/">UnionFS</a>) in Linux allows merging the contents of one or more file systems [directories] while keeping the content [physically] separate. Different implementations, such as AUFS and  OverlayFS, are meant for union mounts. Each of these different implementations has its pros and cons. To understand the concept of a union file system, let us take OverlayFS as an example.</p>
 <p>OverlayFS deals with layers of content &ndash; one or more lower layers and one upper layer. The lower layers are treated as read-only and the upper layer as read-write. OverlayFS provides a unified view of these layers through a union mount.</p>
 <p>
 <link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
@@ -226,7 +226,7 @@
     </div>
 </div>
 </p>
-<p>As you see in this depiction, the merged or the union view takes content from both lower and upper layers. If a file exists in both layers, such as file F3, the file in upper layer overrides the one in lower layer(s). Each file or directory operation has a specific result.</p>
+<p>As you can see in this depiction, the merged or union view takes content from both lower and upper layers. If a file exists in both layers, such as file F3, the file in the upper layer overrides the one in the lower layer(s). Each file or directory operation has a specific result.</p>
 <h4 id="adding-new-files">Adding new files</h4>
 <p>When adding a new file, OverlayFS adds it to the upper layer.</p>
 
@@ -241,7 +241,7 @@
 </div>
 
 <h4 id="deleting-an-existing-file">Deleting an existing file</h4>
-<p>When you delete a file or folder from the upper layer, it gets, well, deleted. However, when you delete a file that is in the lower layer(s), a special character device gets created with the same name in the upper layer. The lower layers are read-only and therefore no files or folders get deleted from there. The character device in the upper layer indicates that the file or folder should be hidden from the unified view.</p>
+<p>When you delete a file or folder from the upper layer, it gets deleted. However, when you delete a file that is in the lower layer(s), a special character device gets created with the same name in the upper layer. The lower layers are read-only; therefore, no files or folders get deleted. The character device in the upper layer indicates that the file or folder should be hidden from the unified view.</p>
 
 
 <div class="box" style="max-width:450px">
@@ -254,7 +254,7 @@
 </div>
 
 <h4 id="modify-an-existing-file">Modify an existing file</h4>
-<p>There won&rsquo;t be any special change if you modify a file that exists in the upper layer. However, if you modify a file in the lower layer(s), the file first gets copied up to the upper layer, and then the changes are made to this copy.</p>
+<p>There won&rsquo;t be any special change if you modify a file in the upper layer. However, if you modify a file in the lower layer(s), the file first gets copied to the upper layer, and then the changes are made to this copy.</p>
 
 
 <div class="box" style="max-width:450px">
@@ -313,7 +313,7 @@ demo/
 └── work
 </code></pre></td></tr></table>
 </div>
-</div><p>Do not create any files in the merged or work directories. Merged will be the union mount where the unified view of lower and upper directories will be available. Now, you can use the <code>mount</code> command to perform a union mount.</p>
+</div><p>Do not create any files in the merged or work directories. Merged will be the union mount, where the unified view of lower and upper directories will be available. Now, you can use the <code>mount</code> command to perform a union mount.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -322,7 +322,7 @@ demo/
 <pre class="chroma"><code class="language-shell" data-lang="shell">$ sudo mount overlay -t overlay -o <span class="nv">lowerdir</span><span class="o">=</span>demo/lower/,upperdir<span class="o">=</span>demo/upper/,workdir<span class="o">=</span>demo/work/ demo/merged/
 </code></pre></td></tr></table>
 </div>
-</div><p>The <code>mount</code> command above mounts the directories, <code>lowerdir</code> and <code>upperdir</code>, as a union mount under merged folder. The <code>workdir</code> can be considered a temporary scratch space copying files from lower to upper.</p>
+</div><p>The <code>mount</code> command above mounts the directories, <code>lowerdir</code> and <code>upperdir</code>, as a union mount under the merged folder. The <code>workdir</code> can be considered a temporary scratch space copying files from lower to upper.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -347,7 +347,7 @@ $ cat demo/merged/f3
 This is a file <span class="m">3</span> in upper layer
 </code></pre></td></tr></table>
 </div>
-</div><p>Once the mount command succeeds, you will see the contents of lower and upper directories merged to provide a unified view. You can now try different operations as depicted in the earlier images.</p>
+</div><p>Once the mount command succeeds, the contents of the lower and upper directories will be merged to provide a unified view. You can now try different operations, as depicted in the earlier images.</p>
 <blockquote>
 <p><strong>Note:</strong> When working with the union file system, you must make all changes in the unified mount. In the example, it is the merged directory.</p>
 </blockquote>
@@ -438,9 +438,9 @@ total <span class="m">12</span>
 -rw-rw-r-- <span class="m">1</span> rchaganti rchaganti <span class="m">32</span> Oct <span class="m">18</span> 12:29 f3
 </code></pre></td></tr></table>
 </div>
-</div><p>Deleting file f2 results in a special character file in upper layer. The lower layer, however, remains untouched.</p>
+</div><p>Deleting file f2 results in a special character file in the upper layer. The lower layer, however, remains untouched.</p>
 <h5 id="modify-file">Modify file</h5>
-<p>When you modify a file, depending on where it is &ndash; upper or lower &ndash; a copy-up action takes place. For example, if you modify file f1 which exists in the lower layer, f1 first gets copied to the upper layer and gets modified in the upper layer.</p>
+<p>When you modify a file, depending on where it is &ndash; upper or lower &ndash; a copy-up action takes place. For example, if you modify file f1 in the lower layer, f1 is copied to the upper layer and modified in the upper layer.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -477,10 +477,10 @@ $ cat demo/lower/f1
 This is a file <span class="m">1</span> in lower layer
 </code></pre></td></tr></table>
 </div>
-</div><p>As you see in the above example, file f1 in the lower layer is left untouched. A copy of f1 is present in the upper layer and gets modified to add the new line.</p>
-<p>Now that you understand how OverlayFS works, it is time to see how container engines use union file system to manage container images.</p>
+</div><p>As the above example shows, file f1 in the lower layer is left untouched. A copy of f1 is present in the upper layer and gets modified to add the new line.</p>
+<p>Now that you understand how OverlayFS works, it is time to see how container engines use the union file system to manage container images.</p>
 <h3 id="container-images">Container images</h3>
-<p>Container engines like Docker support different types of storage drivers responsible for combining stacked layers into a single unified view. Similar to what you saw in the earlier example, each layer contains only the differences from the below layer. The immutable nature of these layers makes the container image reusable and allows you to run multiple containers from a single image. Each container gets its own thin writable layer to facilitate writing to the container file system or modifying or deleting existing files. The storage driver used by the container engine is responsible for managing the copy-on-write (CoW) layer. The Docker engine defaults to overlay2 as the storage driver.</p>
+<p>Container engines like Docker support different types of storage drivers responsible for combining stacked layers into a single unified view. Similar to what you saw in the earlier example, each layer contains only the differences from the below layer. The immutable nature of these layers makes the container image reusable and allows you to run multiple containers from a single image. Each container gets its thin writable layer to facilitate writing to the container file system or modifying or deleting existing files. The storage driver used by the container engine is responsible for managing the copy-on-write (CoW) layer. The Docker engine defaults to overlay2 as the storage driver.</p>
 
 
 <div class="box" style="max-width:450px">
@@ -534,8 +534,8 @@ drwx--x--- <span class="m">3</span> root root <span class="m">4096</span> Oct <s
 drwx------ <span class="m">2</span> root root <span class="m">4096</span> Oct <span class="m">18</span> 15:32 l
 </code></pre></td></tr></table>
 </div>
-</div><p>The directories at this location are uncompressed image layers and therefore the ID does not match the layer ID in the image. The directory named <code>l</code> contains the symbolic links to the <code>diff</code> directory within each uncompressed layer.</p>
-<p>If you have multiple other images on the docker host already, you can use <code>docker image inspect</code> command to find the right uncompressed layer IDs for a specific image.</p>
+</div><p>The directories at this location are uncompressed image layers; therefore, the ID does not match the layer ID in the image. The directory named <code>l</code> contains the symbolic links to the <code>diff</code> directory within each uncompressed layer.</p>
+<p>If you have multiple other images on the docker host already, you can use the <code>docker image inspect</code> command to find the right uncompressed layer IDs for a specific image.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -1051,7 +1051,7 @@ text-align: center;
         
           2019 -
         
-        2023
+        2024
          Ravikanth Chaganti 
       
       
