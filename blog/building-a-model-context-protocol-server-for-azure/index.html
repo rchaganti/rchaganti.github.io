@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <script src="https://ravichaganti.com/js/view.js"></script>
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Building a Model Context Protocol server for Azure"/>
+<meta name="twitter:description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources."/>
+
+    <meta property="og:title" content="Building a Model Context Protocol server for Azure" />
+<meta property="og:description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/" />
+<meta property="article:published_time" content="2025-02-25T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-02-25T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/anthropic-model-context-protocol/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/anthropic-model-context-protocol/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/streaming-completions-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/getting-started-with-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
+    
+    <title>
+  Building a Model Context Protocol server for Azure · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  
+    <body onload="getViews( &#34;https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/&#34; )" class="colorscheme-auto">
+  
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Building a Model Context Protocol server for Azure</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2025-02-25T00:00:00Z'>
+                February 25, 2025
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/mcp/">mcp</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/agents/">agents</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/python/">python</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure/">azure</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/mcp/">mcp</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/agents/">agents</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/python/">python</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/azure/">azure</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>The <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">earlier article</a> in this <a href="https://ravichaganti.com/series/mcp/">series</a> introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The <a href="https://github.com/rchaganti/mcp-servers/tree/main/hello-world">hello-world example</a> was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources.</p>
+<p>Anthropic made bootstrap MCP server development easy by providing the <code>create-mcp-server</code> package. To get started, you need to install this as a tool locally.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Using uvx (recommended)</span>
+uvx create-mcp-server
+
+<span class="c1"># Or using pip</span>
+pip install create-mcp-server
+create-mcp-server
+</code></pre></td></tr></table>
+</div>
+</div><p>To create a new MCP server, run the <code>uvx create-mcp-server</code> command and follow the prompts on the screen.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">PS C:<span class="se">\G</span>itHub&gt; uvx create-mcp-server
+Creating a new MCP server project using uv.                                                                                                                                                                                              
+This will <span class="nb">set</span> up a Python project with MCP dependency.
+
+Let<span class="err">&#39;</span>s begin!
+
+Project name <span class="o">(</span>required<span class="o">)</span>: azure-mcp-server
+Project description <span class="o">[</span>A MCP server project<span class="o">]</span>: An MCP server to interact with Azure resources
+Project version <span class="o">[</span>0.1.0<span class="o">]</span>: 
+Project will be created at: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
+Is this correct? <span class="o">[</span>Y/n<span class="o">]</span>: Y
+Using CPython 3.13.1 interpreter at: C:<span class="se">\P</span>rogram Files<span class="se">\P</span>ython313<span class="se">\p</span>ython.exe
+Creating virtual environment at: .venv
+Resolved <span class="m">21</span> packages in 466ms
+      Built azure-mcp-server @ file:///C:/GitHub/azure-mcp-server
+Prepared <span class="m">2</span> packages in 2.02s
+Installed <span class="m">21</span> packages in 207ms
+ + annotated-types<span class="o">==</span>0.7.0
+ + <span class="nv">anyio</span><span class="o">==</span>4.8.0
+ + azure-mcp-server<span class="o">==</span>0.1.0 <span class="o">(</span>from file:///C:/GitHub/azure-mcp-server<span class="o">)</span>
+ + <span class="nv">certifi</span><span class="o">==</span>2025.1.31
+ + <span class="nv">click</span><span class="o">==</span>8.1.8
+ + <span class="nv">colorama</span><span class="o">==</span>0.4.6
+ + <span class="nv">h11</span><span class="o">==</span>0.14.0
+ + <span class="nv">httpcore</span><span class="o">==</span>1.0.7
+ + <span class="nv">httpx</span><span class="o">==</span>0.28.1
+ + httpx-sse<span class="o">==</span>0.4.0
+ + <span class="nv">idna</span><span class="o">==</span>3.10
+ + <span class="nv">mcp</span><span class="o">==</span>1.3.0
+ + <span class="nv">pydantic</span><span class="o">==</span>2.10.6
+ + pydantic-core<span class="o">==</span>2.27.2
+ + pydantic-settings<span class="o">==</span>2.8.1
+ + python-dotenv<span class="o">==</span>1.0.1
+ + <span class="nv">sniffio</span><span class="o">==</span>1.3.1
+ + sse-starlette<span class="o">==</span>2.2.1
+ + <span class="nv">starlette</span><span class="o">==</span>0.46.0
+ + typing-extensions<span class="o">==</span>4.12.2
+ + <span class="nv">uvicorn</span><span class="o">==</span>0.34.0
+
+Claude.app detected. Would you like to install the server into Claude.app now? <span class="o">[</span>Y/n<span class="o">]</span>: Y
+Settings file location: C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\A</span>ppData<span class="se">\R</span>oaming<span class="se">\C</span>laude<span class="se">\c</span>laude_desktop_config.json
+✅ Created project azure-mcp-server in azure-mcp-server
+ℹ️ To install dependencies run:
+   <span class="nb">cd</span> azure-mcp-server
+   uv sync --dev --all-extras
+</code></pre></td></tr></table>
+</div>
+</div><p>This command sets up all the dependencies needed to build an MCP server. Depending on your choice, it will also add the MCP server to the Claude Desktop configuration. The folder structure will be as follows.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">PS C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server&gt; ls
+
+    Directory: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        23-02-2025     16:26                .venv
+d-----        23-02-2025     16:26                src
+-a----        23-02-2025     19:04             <span class="m">66</span> .gitattributes
+-a----        23-02-2025     19:04           <span class="m">3238</span> .gitignore
+-a----        23-02-2025     16:26              <span class="m">5</span> .python-version
+-a----        23-02-2025     19:04           <span class="m">1088</span> LICENSE
+-a----        23-02-2025     17:31            <span class="m">553</span> pyproject.toml
+-a----        23-02-2025     19:04            <span class="m">146</span> README.md
+-a----        23-02-2025     17:31          <span class="m">46157</span> uv.lock
+</code></pre></td></tr></table>
+</div>
+</div><p>The <code>src\azure_mcp_server</code> should contain all the business logic you need to enable Azure resource management integration. By default, it contains a sample MCP Server used to manage notes.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">PS C:\GitHub\azure-mcp-server\src\azure_mcp_server&gt; ls
+
+    Directory: C:\GitHub\azure-mcp-server\src\azure_mcp_server
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        04-03-2025     08:27                __pycache__
+-a----        23-02-2025     17:53            228 .env
+-a----        04-03-2025     08:27           6561 server.py
+-a----        23-02-2025     16:26            220 __init__.py
+</code></pre></td></tr></table>
+</div>
+</div><p>This sample server implementation is a great start to learning how to implement different capabilities of an MCP server. We shall implement the tools&rsquo; capability and, in the future, look at implementing prompts and resources as well.</p>
+<p>You must decide how to authenticate to interact with the Azure resource management API. For the purpose of the demonstration, I have used client secret-based authentication. I documented these <a href="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/">requirements in an earlier article</a>. The client secret credential is better created by adding the keys and secrets as environment variables. We can use the .env file in the Python project to make this easy. You need to add the following key-value pairs to this file.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ini" data-lang="ini"><span class="na">AZURE_SUBSCRIPTION_ID</span><span class="o">=</span><span class="s">Sub-ID</span>
+<span class="na">AZURE_TENANT_ID</span><span class="o">=</span><span class="s">Tenant-ID</span>
+<span class="na">AZURE_CLIENT_ID</span><span class="o">=</span><span class="s">Client-ID</span>
+<span class="na">AZURE_CLIENT_SECRET</span><span class="o">=</span><span class="s">Secret</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>A .env file requires the load_dotenv function from the python-dotenv package, so add that as a dependency.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">uv add python-dotenv
+</code></pre></td></tr></table>
+</div>
+</div><p>We will also need the Azure resource management packages.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">uv add azure.identity
+uv add azure-mgmt-resource
+uv add azure-mgmt-subscription
+</code></pre></td></tr></table>
+</div>
+</div><p>With all the package dependencies added to the project, we can move toward adding the necessary tools. This is done in <code>server.py</code>. Before adding the code related to the tools, let us first add the functions needed to talk to the Azure resource management API.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">async</span> <span class="k">def</span> <span class="nf">list_subscriptions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="s2">&#34;&#34;&#34;List all subscriptions in the account.
+</span><span class="s2">    
+</span><span class="s2">    Args:
+</span><span class="s2">        None
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+    <span class="n">subscription_client</span> <span class="o">=</span> <span class="n">SubscriptionClient</span><span class="p">(</span><span class="n">credential</span><span class="p">)</span>
+    <span class="n">subscriptions</span> <span class="o">=</span> <span class="n">subscription_client</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+    <span class="n">subscription_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">subscriptions</span><span class="p">):</span>
+        <span class="n">subscription_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">subscription_id</span><span class="p">,</span>
+            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">subscription_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription_info</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">subscription_list</span>
+
+<span class="n">async</span> <span class="k">def</span> <span class="nf">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="s2">&#34;&#34;&#34;List all resource groups in the subscription.
+</span><span class="s2">    
+</span><span class="s2">    Args:
+</span><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
+
+    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+    <span class="n">group_list</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resource_groups</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+    <span class="n">resource_groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_list</span><span class="p">):</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resource_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resource_groups</span>
+
+<span class="n">async</span> <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="s2">&#34;&#34;&#34;List all resources in the resource group.
+</span><span class="s2">    
+</span><span class="s2">    Args:
+</span><span class="s2">        resource_group (str): The resource group name.
+</span><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
+
+    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+    <span class="n">resources</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">list_by_resource_group</span><span class="p">(</span><span class="n">resource_group</span><span class="p">)</span>
+
+    <span class="n">resource_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">resources</span><span class="p">):</span>
+        <span class="n">resource_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">resource_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource_info</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resource_list</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>These three functions are a basic implementation for getting a list of subscriptions, all resource groups in a subscription, and all resources within a resource group. You must have the docstring inside each function to describe what the function is about and its arguments, and outputs. The code within these functions is self-explanatory. If you need a quick tour of Azure resource management in Python, look at the <a href="https://learn.microsoft.com/en-us/azure/developer/python/sdk/azure-sdk-overview">Azure Python SDK</a>.</p>
+<p>An MCP server is a JSON RPC server. Every MCP server exposes the list and call tool endpoints. These are defined using the <code>handle_list_tools()</code> and <code>handle_call_tool()</code> functions.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="nd">@server.list_tools</span><span class="p">()</span>
+<span class="n">async</span> <span class="k">def</span> <span class="nf">handle_list_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">]:</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    List available tools.
+</span><span class="s2">    Each tool specifies its arguments using JSON Schema validation.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-subscriptions&#34;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all Azure subscriptions for the authenticated user.&#34;</span><span class="p">,</span>
+            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resource-groups&#34;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resource groups in an Azure subscription.&#34;</span><span class="p">,</span>
+            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resources&#34;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resources in a resource group.&#34;</span><span class="p">,</span>
+            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
+                    <span class="s2">&#34;resource_group&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">}</span>
+                <span class="p">},</span>
+                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;resource_group&#34;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">)</span>                
+    <span class="p">]</span>
+
+<span class="nd">@server.call_tool</span><span class="p">()</span>
+<span class="n">async</span> <span class="k">def</span> <span class="nf">handle_call_tool</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="bp">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">TextContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">ImageContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">EmbeddedResource</span><span class="p">]:</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Handle tool execution requests.
+</span><span class="s2">    Tools can modify server state and notify clients of changes.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-subscriptions&#34;</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_subscriptions</span><span class="p">()</span>
+        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Subscriptions:</span><span class="se">\n</span><span class="s2">&#34;</span>
+        
+        <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;ID: {subscription[&#39;id&#39;]}, Name: {subscription[&#39;name&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
+    
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resource-groups&#34;</span><span class="p">:</span>
+        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+        <span class="n">respText</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;Resource Groups in {subscription_id}:</span><span class="se">\n</span><span class="s2">&#34;</span>
+        
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;Name: {group[&#39;name&#39;]}, Location: {group[&#39;location&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
+    
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resources&#34;</span><span class="p">:</span>
+        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">resource_group</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;resource_group&#34;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+        <span class="n">respText</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;Resources in {resource_group} in the {subscription_id}:</span><span class="se">\n</span><span class="s2">&#34;</span>
+
+        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;Name: {resource[&#39;name&#39;]}, Type: {resource[&#39;type&#39;]}, Location: {resource[&#39;location&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Invalid tool name.&#34;</span>
+    
+    <span class="k">return</span> <span class="p">[</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">TextContent</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&#34;text&#34;</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">respText</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>These list and call functions are decorated using the <code>list_tools()</code> and <code>call_tools()</code> decorators respectively. The <code>handle_list_tools()</code>  returns a list of tools where each element is of type <code>types.Tool</code>. The <code>handle_call_tool()</code> returns the output from the tool call as one of the return types specified in the function signature. Depending on the return type, you must construct the value. In this example, all tools call will respond with a dictionary. This response then gets converted to text content and is returned as <code>types.TextContent</code> type. This type requires <code>type</code> and <code>text</code> properties.</p>
+<p>As the <code>create-mcp-server</code> command added the tool to the Claude Desktop application, you must be able to see the tools ready for use.</p>
+<p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" style="max-width:450px">
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/azure-mcp-01.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/azure-mcp-01.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
+<p>Once you confirm the available tools, you can try the following prompts.</p>
+<ul>
+<li>List all subscriptions I have access to in my Azure account</li>
+<li>Do I have any resource groups in the east-us region?</li>
+<li>List all virtual machines provisioned in my Research subscription.</li>
+</ul>
+<p>
+
+<div class="box" style="max-width:450px">
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/azure-mcp-02.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/azure-mcp-02.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+</p>
+<p>When you prompt, Claude will ask permission to use the available tools. If allowed, it can call the tools and get you the response.</p>
+<p>With MCP, the possibilities are endless. I am developing the <a href="https://github.com/rchaganti/azure-mcp-server">Azure MCP server</a> as an open-source project, and I will continue to add more tools, prompts, and resources to it. Do check it out and leave a comment.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+        <script src="https://giscus.app/client.js"
+        data-repo="rchaganti/rchaganti.github.io"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOEIN4I84CS4rW"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in mcp</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">Model Context Protocol by Anthropic for connecting AI models to data</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in agents</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">Model Context Protocol by Anthropic for connecting AI models to data</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in azure</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/">Using chat completion API in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/streaming-completions-azure-openai/">Streaming model responses when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/getting-started-with-azure-openai/">Getting started with Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2025
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+        
+    
+    
+
+  </body>
+
+</html>
