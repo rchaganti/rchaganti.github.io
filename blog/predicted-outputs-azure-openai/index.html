@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <script src="https://ravichaganti.com/js/view.js"></script>
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Sometimes, you may want the LLM to perform only minimal changes to what is provided as a prompt. For example, you have a couple of paragraphs of text that you want the LLM to modify to ensure no spelling mistakes. You do not want the LLM to change the overall content, but make sure the misspellings are corrected. This usually helps in reducing the LLM response latency. This is useful in scenarios where you already know a large portion of the expected response and is well-suited for code completion and error detection scenarios.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Predicted outputs in Azure OpenAI"/>
+<meta name="twitter:description" content="Sometimes, you may want the LLM to perform only minimal changes to what is provided as a prompt. For example, you have a couple of paragraphs of text that you want the LLM to modify to ensure no spelling mistakes. You do not want the LLM to change the overall content, but make sure the misspellings are corrected. This usually helps in reducing the LLM response latency. This is useful in scenarios where you already know a large portion of the expected response and is well-suited for code completion and error detection scenarios."/>
+
+    <meta property="og:title" content="Predicted outputs in Azure OpenAI" />
+<meta property="og:description" content="Sometimes, you may want the LLM to perform only minimal changes to what is provided as a prompt. For example, you have a couple of paragraphs of text that you want the LLM to modify to ensure no spelling mistakes. You do not want the LLM to change the overall content, but make sure the misspellings are corrected. This usually helps in reducing the LLM response latency. This is useful in scenarios where you already know a large portion of the expected response and is well-suited for code completion and error detection scenarios." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/predicted-outputs-azure-openai/" />
+<meta property="article:published_time" content="2025-01-10T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-01-10T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/predicted-outputs-azure-openai/">
+    
+    <title>
+  Predicted outputs in Azure OpenAI · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/predicted-outputs-azure-openai/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  
+    <body onload="getViews( &#34;https://ravichaganti.com/blog/predicted-outputs-azure-openai/&#34; )" class="colorscheme-auto">
+  
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Predicted outputs in Azure OpenAI</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2025-01-10T00:00:00Z'>
+                January 10, 2025
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/azure/">azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/openai/">openai</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/python/">python</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure/">azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/openai/">openai</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/python/">python</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>Sometimes, you may want the LLM to perform only minimal changes to what is provided as a prompt. For example, you have a couple of paragraphs of text that you want the LLM to modify to ensure no spelling mistakes. You do not want the LLM to change the overall content, but make sure the misspellings are corrected. This usually helps in reducing the LLM response latency. This is useful in scenarios where you already know a large portion of the expected response and is well-suited for code completion and error detection scenarios. In this part of the <a href="https://ravichaganti.com/series/azure-openai/">series of articles on Azure OpenAI</a>, we will use predicted outputs with Azure OpenAI to build AI applications.</p>
+<p>For this demonstration, we will use the following paragraph copied from the Azure OpenAI documentation and intentionally modified to induce a few spelling errors.</p>
+<blockquote>
+<p>An embedding is a special <strong>fromat</strong> of data representation that machine learning <strong>modles</strong> and algorithms can easily use.</p>
+<p>The embedding is an information dense representation of the <strong>sementic</strong> meaning of a piece of text.</p>
+<p>Each embedding is a <strong>vcetor</strong> of floating-point numbers, such that the distance between two embeddings in the</p>
+<p>vector space is correlated with semantic similarity <strong>betwien</strong> two inputs in the original format.</p>
+</blockquote>
+<p>I have highlighted the errors induced into the paragraph in bold.</p>
+<p>To use the predicted outputs feature, we shall provide this as the user prompt to the LLM. Along with this prompt, we will provide certain instructions as well.</p>
+<blockquote>
+<p>In the given content, find and fix all spelling mistakes.</p>
+<p>Respond with only the corrected paragraph and highlight the corrected words.</p>
+</blockquote>
+<p>In the instructions, we ask LLM to correct all misspellings and then return only the corrected paragraph with corrected words highlighted.</p>
+<p>We need to tell the LLM that we predict the response to be the same as the prompt, but supplying the prompt text to the <code>prediction</code> field of the <code>client.chat.completions.create()</code> method. Let us look at the complete code.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">AzureOpenAI</span>
+<span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
+<span class="kn">from</span> <span class="nn">rich.markdown</span> <span class="kn">import</span> <span class="n">Markdown</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+<span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+
+<span class="n">AZURE_OPENAI_API_KEY</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_API_KEY&#34;</span><span class="p">)</span>
+<span class="n">AZURE_OPENAI_ENDPOINT</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_ENDPOINT&#34;</span><span class="p">)</span>
+<span class="n">AZURE_OPENAI_DEPLOYMENT_NAME</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">AzureOpenAI</span><span class="p">(</span>
+  <span class="n">azure_endpoint</span> <span class="o">=</span> <span class="n">AZURE_OPENAI_ENDPOINT</span><span class="p">,</span> 
+  <span class="n">api_key</span> <span class="o">=</span> <span class="n">AZURE_OPENAI_API_KEY</span><span class="p">,</span>  
+  <span class="n">api_version</span> <span class="o">=</span> <span class="s2">&#34;2025-01-01-preview&#34;</span>
+<span class="p">)</span>
+
+<span class="n">content</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">An embedding is a special fromat of data representation that machine learning modles and algorithms can easily use. 
+</span><span class="s2">The embedding is an information dense representation of the sementic meaning of a piece of text. 
+</span><span class="s2">Each embedding is a vcetor of floating-point numbers, such that the distance between two embeddings in the 
+</span><span class="s2">vector space is correlated with semantic similarity betwien two inputs in the original format.
+</span><span class="s2">&#34;&#34;&#34;</span>
+
+<span class="n">instructions</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;&#34;
+</span><span class="s2">In the given content, find and fix all spelling mistakes.
+</span><span class="s2">Respond with only the corrected paragraph and highlight the corrected words.
+</span><span class="s2">&#34;&#34;&#34;</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AZURE_OPENAI_DEPLOYMENT_NAME</span><span class="p">,</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
+            <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">instructions</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
+            <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">content</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="n">prediction</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;content&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">Markdown</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<span class="n">console</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>When you run this program, you will see LLM respond with all corrected words in the paragraph.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ python.exe .<span class="se">\0</span>9_predicted_output.py
+An embedding is a special format of data representation that machine learning models and algorithms can easily use.
+The embedding is an information-dense representation of the semantic meaning of a piece of text.
+Each embedding is a vector of floating-point numbers, such that the distance between two embeddings in the
+vector space is correlated with semantic similarity between two inputs in the original format.
+</code></pre></td></tr></table>
+</div>
+</div><p>
+<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://ravichaganti.com/images/predicted-output.png" />
+    </div>
+    <a href="https://ravichaganti.com/images/predicted-output.png" itemprop="contentUrl"></a>
+  </figure>
+</div>
+ 
+
+
+
+  
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+</p>
+<p>This feature can be really useful in applications where you want to highlight spelling errors, code linting errors, and so on.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/predicted-outputs-azure-openai\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/predicted-outputs-azure-openai\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/predicted-outputs-azure-openai\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/predicted-outputs-azure-openai\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+        <script src="https://giscus.app/client.js"
+        data-repo="rchaganti/rchaganti.github.io"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOEIN4I84CS4rW"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in azure</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/">Building a Model Context Protocol server for Azure</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">Parallel tool calling in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/structured-output-azure-openai/">Structured output in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/">Implementing multiple tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in openai</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">Parallel tool calling in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/structured-output-azure-openai/">Structured output in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/">Implementing multiple tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/">Using chat completion API in Azure OpenAI</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in azure-openai</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">Parallel tool calling in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/structured-output-azure-openai/">Structured output in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/">Implementing multiple tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/using-chat-completion-api-azure-openai/">Using chat completion API in Azure OpenAI</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2025
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+        
+    
+    
+
+  </body>
+
+</html>
