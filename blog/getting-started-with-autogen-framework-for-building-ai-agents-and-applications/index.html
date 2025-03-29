@@ -23,9 +23,9 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/" />
 <meta property="article:published_time" content="2025-01-30T00:00:00+00:00" />
-<meta property="article:modified_time" content="2025-01-30T00:00:00+00:00" />
-<meta property="og:see_also" content="https://ravichaganti.com/blog/predicted-outputs-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" />
-
+<meta property="article:modified_time" content="2025-01-30T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/predicted-outputs-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" />
 
 
 
@@ -224,8 +224,8 @@
     </div>
 </div>
 </p>
-<p>This release features a layered architecture with all foundational building blocks for an event-driven system as the core package. The AgentChat layer builds upon the core layer, provides a task-driven API for group chat and code execution, and provides pre-built agents. The extensions layer provides the implementations for core interfaces and 3rd party integrations. This is where all the model clients are implemented. The AutoGen Studio is the low-code interface to enable rapid prototyping of AI agents, and AutoGen Bench provides developers tools to benchmark agents&rsquo; performance across different tasks and environments.</p>
-<p>The <a href="https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/">Magentic-One</a> application is a reference implementation that uses the AutoGen features and allows users to perform open-ended web and file-based tasks across various domains.</p>
+<p>This release features a layered architecture with all foundational building blocks for an event-driven system as the core package. The AgentChat layer builds upon the core layer, providing a task-driven API for group chat and code execution, as well as pre-built agents. The extensions layer provides implementations for core interfaces and third-party integrations. This is where all the model clients are implemented. The AutoGen Studio is a low-code interface that enables the rapid prototyping of AI agents, and AutoGen Bench provides developers with tools to benchmark agents&rsquo; performance across different tasks and environments.</p>
+<p>The <a href="https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/">Magnetic-One</a> application is a reference implementation that utilizes the AutoGen features, enabling users to perform open-ended web and file-based tasks across various domains.</p>
 <p>If you want to start with AutoGen, this is the right time. In this article, I will walk through the basics of using AutoGen. We will go from using a simple model client to creating a simple agent. In the later parts of this series, we will look at creating a team of agents. As we do that, we will learn the concepts surrounding AutoGen.</p>
 <h2 id="installing-autogen">Installing AutoGen</h2>
 <p>As with any Python package, creating a virtual environment before installing any packages is always a good practice.</p>
@@ -271,7 +271,7 @@ $ pip install <span class="s2">&#34;autogen-ext[openai,azure]&#34;</span>
 <span class="n">load_dotenv</span><span class="p">()</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>For the Azure OpenAI model client, we need to import the <code>AzureOpenAIChatCompletionClient</code> from the <code>autogen_ext.models.openai</code> package. To create a conversation with the model, we need to send the prompt as a <code>UserMessage</code> which is available in the <code>autogen_core.models</code> package.</p>
+</div><p>For the Azure OpenAI model client, we must import the <code>AzureOpenAIChatCompletionClient</code> from the <code>autogen_ext.models.openai</code> package. To create a conversation with the model, we need to send the prompt as a <code>UserMessage</code>, which is available in the <code>autogen_core.models</code> package.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -327,7 +327,7 @@ $ pip install <span class="s2">&#34;autogen-ext[openai,azure]&#34;</span>
     <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>Running this program should output something similar to this.</p>
+</div><p>Running this program should produce output similar to the following.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -509,7 +509,7 @@ You can find the library and documentation <span class="k">for</span> AutoGen <s
 </div>
 </div><p>As you see, the local model hallucinated about what AutoGen is! :)</p>
 <h2 id="create-an-agent">Create an agent</h2>
-<p>The AgentChat package provides a set of pre-built agents. These include an <a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#assistant-agent">AssistantAgent</a>, <a href="https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.UserProxyAgent">UserProxyAgent</a>, and <a href="https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.CodeExecutorAgent">CodeExecutionAgent</a>, among many others. In this article, we shall look at using the AssistantAgent. Let&rsquo;s dive into the example.</p>
+<p>The AgentChat package provides a set of pre-built agents. These include an <a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#assistant-agent">AssistantAgent</a>, <a href="https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.UserProxyAgent">UserProxyAgent</a>, and <a href="https://microsoft.github.io/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.CodeExecutorAgent">CodeExecutionAgent</a>, among others. In this article, we will examine the use of the <code>AssistantAgent</code>. Let&rsquo;s dive into the example.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -809,6 +809,22 @@ text-align: center;
     
     
     
+      <h3>See also in autogen</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
   
     
     
@@ -817,6 +833,12 @@ text-align: center;
       <nav>
         <ul>
         
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
         
           
         
@@ -844,18 +866,28 @@ text-align: center;
             </li>
           
         
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
-            </li>
-          
-        
         </ul>
       </nav>
     
   
     
     
+    
+      <h3>See also in python</h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
     
   
 </section>
