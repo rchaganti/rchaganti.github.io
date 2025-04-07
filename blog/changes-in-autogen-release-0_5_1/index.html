@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Language" content="en">
+    <script src="https://ravichaganti.com/js/view.js"></script>
+    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
+    <meta name="author" content="Ravikanth Chaganti">
+    <meta name="description" content="Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When dealing with model clients directly, you can set the json_output to a Pydantic model.">
+    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Changes in Autogen release 0.5.1"/>
+<meta name="twitter:description" content="Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When dealing with model clients directly, you can set the json_output to a Pydantic model."/>
+
+    <meta property="og:title" content="Changes in Autogen release 0.5.1" />
+<meta property="og:description" content="Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When dealing with model clients directly, you can set the json_output to a Pydantic model." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ravichaganti.com/blog/changes-in-autogen-release-0_5_1/" />
+<meta property="article:published_time" content="2025-04-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-04-06T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/predicted-outputs-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" />
+<meta property="og:see_also" content="https://ravichaganti.com/blog/teams-of-agents-in-autogen/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/" />
+
+
+
+    
+      <base href="https://ravichaganti.com/blog/changes-in-autogen-release-0_5_1/">
+    
+    <title>
+  Changes in Autogen release 0.5.1 · Ravikanth Chaganti
+</title>
+
+    
+      <link rel="canonical" href="https://ravichaganti.com/blog/changes-in-autogen-release-0_5_1/">
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+      
+        
+        
+        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
+      
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
+
+    <meta name="generator" content="Hugo 0.73.0" />
+  </head>
+
+  
+  
+    
+  
+  
+    <body onload="getViews( &#34;https://ravichaganti.com/blog/changes-in-autogen-release-0_5_1/&#34; )" class="colorscheme-auto">
+  
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://ravichaganti.com/">
+      Ravikanth Chaganti
+    </a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
+          </li>
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
+          </li>
+        
+      
+      
+    </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Changes in Autogen release 0.5.1</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2025-04-06T00:00:00Z'>
+                April 6, 2025
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              3-minute read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://ravichaganti.com/categories/autogen/">autogen</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/azure-openai/">azure-openai</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/categories/python/">python</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://ravichaganti.com/tags/azure/">azure</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/openai/">openai</a>
+      <span class="separator">•</span>
+    <a href="https://ravichaganti.com/tags/python/">python</a></div>
+
+        </div>
+      </header>
+      <hr>
+      <div>
+        
+        
+        <p>Microsoft released [version 0.5.1 of the AutoGen](<a href="https://github.com/microsoft/autogen/releases/tag/python-v0.5.1">Release python-v0.5.1 · microsoft/autogen</a>) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When dealing with model clients directly, you can set the <code>json_output</code> to a Pydantic model. Here is an example from the release notes.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">from</span> <span class="nn">autogen_core</span> <span class="kn">import</span> <span class="n">CancellationToken</span>
+<span class="kn">from</span> <span class="nn">autogen_ext.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatCompletionClient</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="c1"># Define the structured output format.</span>
+<span class="k">class</span> <span class="nc">AgentResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">thoughts</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">response</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;happy&#34;</span><span class="p">,</span> <span class="s2">&#34;sad&#34;</span><span class="p">,</span> <span class="s2">&#34;neutral&#34;</span><span class="p">]</span>
+
+ <span class="n">model_client</span> <span class="o">=</span> <span class="n">OpenAIChatCompletionClient</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&#34;gpt-4o-mini&#34;</span><span class="p">)</span>
+
+ <span class="c1"># Generate a response using the tool.</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">model_client</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&#34;Analyze input text sentiment using the tool provided.&#34;</span><span class="p">),</span>
+        <span class="n">UserMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&#34;I am happy.&#34;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&#34;user&#34;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">json_ouput</span><span class="o">=</span><span class="n">AgentResponse</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<span class="c1"># Should be a structured output.</span>
+<span class="c1"># {&#34;thoughts&#34;: &#34;The user is happy.&#34;, &#34;response&#34;: &#34;happy&#34;}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you are using <code>AssistantAgent</code>, you can use the <code>output_content_type</code> to a Pydantic model that describes the output format. The agent will automatically reflect on the tool call result and generate a <code>StructuredMessage</code> with the output content type.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">from</span> <span class="nn">autogen_agentchat.agents</span> <span class="kn">import</span> <span class="n">AssistantAgent</span>
+<span class="kn">from</span> <span class="nn">autogen_agentchat.messages</span> <span class="kn">import</span> <span class="n">TextMessage</span>
+<span class="kn">from</span> <span class="nn">autogen_agentchat.ui</span> <span class="kn">import</span> <span class="n">Console</span>
+<span class="kn">from</span> <span class="nn">autogen_core</span> <span class="kn">import</span> <span class="n">CancellationToken</span>
+<span class="kn">from</span> <span class="nn">autogen_core.tools</span> <span class="kn">import</span> <span class="n">FunctionTool</span>
+<span class="kn">from</span> <span class="nn">autogen_ext.models.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatCompletionClient</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="c1"># Define the structured output format.</span>
+<span class="k">class</span> <span class="nc">AgentResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">thoughts</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">response</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;happy&#34;</span><span class="p">,</span> <span class="s2">&#34;sad&#34;</span><span class="p">,</span> <span class="s2">&#34;neutral&#34;</span><span class="p">]</span>
+
+
+<span class="c1"># Define the function to be called as a tool.</span>
+<span class="k">def</span> <span class="nf">sentiment_analysis</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;Given a text, return the sentiment.&#34;&#34;&#34;</span>
+    <span class="k">return</span> <span class="s2">&#34;happy&#34;</span> <span class="k">if</span> <span class="s2">&#34;happy&#34;</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">else</span> <span class="s2">&#34;sad&#34;</span> <span class="k">if</span> <span class="s2">&#34;sad&#34;</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">else</span> <span class="s2">&#34;neutral&#34;</span>
+
+
+<span class="c1"># Create a FunctionTool instance with `strict=True`,</span>
+<span class="c1"># which is required for structured output mode.</span>
+<span class="n">tool</span> <span class="o">=</span> <span class="n">FunctionTool</span><span class="p">(</span><span class="n">sentiment_analysis</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&#34;Sentiment Analysis&#34;</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Create an OpenAIChatCompletionClient instance that supports structured output.</span>
+<span class="n">model_client</span> <span class="o">=</span> <span class="n">OpenAIChatCompletionClient</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&#34;gpt-4o-mini&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an AssistantAgent instance that uses the tool and model client.</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">AssistantAgent</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;assistant&#34;</span><span class="p">,</span>
+    <span class="n">model_client</span><span class="o">=</span><span class="n">model_client</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">tool</span><span class="p">],</span>
+    <span class="n">system_message</span><span class="o">=</span><span class="s2">&#34;Use the tool to analyze sentiment.&#34;</span><span class="p">,</span>
+    <span class="n">output_content_type</span><span class="o">=</span><span class="n">AgentResponse</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">on_messages_stream</span><span class="p">([</span><span class="n">TextMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&#34;I am happy today!&#34;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&#34;user&#34;</span><span class="p">)],</span> <span class="n">CancellationToken</span><span class="p">())</span>
+<span class="n">await</span> <span class="n">Console</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>This release also added support for Azure AI Search as a tool, along with enhancements to <code>SelectorGroupChat</code> and code executors.</p>
+<p>While I was testing the older examples I had built for this series, I encountered a deprecation warning.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">.venv<span class="se">\L</span>ib<span class="se">\s</span>ite-packages<span class="se">\a</span>utogen_ext<span class="se">\m</span>odels<span class="se">\o</span>penai<span class="se">\_</span>openai_client.py:379: UserWarning: Missing required field <span class="s1">&#39;structured_output&#39;</span> in ModelInfo. This field will be required in a future version of AutoGen.
+  validate_model_info<span class="o">(</span>self._model_info<span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>I dug a little deeper and understood that the <code>ModelInfo</code> object with the following structure is necessary in the future.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">model_info</span> <span class="o">=</span> <span class="n">ModelInfo</span><span class="p">(</span>
+    <span class="n">vision</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">structured_output</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">function_calling</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">streaming</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">json_output</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">family</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">aopenai_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatCompletionClient</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">),</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_API_KEY&#34;</span><span class="p">),</span>
+    <span class="n">api_version</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_API_VERSION&#34;</span><span class="p">),</span>
+    <span class="n">endpoint</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_ENDPOINT&#34;</span><span class="p">),</span>
+    <span class="n">model_info</span><span class="o">=</span><span class="n">model_info</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>If you are using agents or need tool calling, you must set the <code>function_calling</code> to <code>True</code>.</p>
+
+        
+
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+position: relative;
+text-align: left; 
+height: 36px; 
+width: 32px; 
+float: left; 
+text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+
+<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
+<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
+</div>
+        <script src="https://giscus.app/client.js"
+        data-repo="rchaganti/rchaganti.github.io"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
+        data-category="Announcements"
+        data-category-id="DIC_kwDOEIN4I84CS4rW"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+      </div>
+
+
+      <footer>
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3>See also in autogen</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/">Getting started with AutoGen framework for building AI agents and applications</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in azure-openai</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/">Getting started with AutoGen framework for building AI agents and applications</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/predicted-outputs-azure-openai/">Predicted outputs in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">Parallel tool calling in Azure OpenAI</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/structured-output-azure-openai/">Structured output in Azure OpenAI</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+    
+    
+    
+      <h3>See also in python</h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/teams-of-agents-in-autogen/">Teams of agents in AutoGen</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/">Getting started with AutoGen framework for building AI agents and applications</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      
+  <footer class="footer">
+    <section class="container">
+      
+        <p>All Rights Reserved.</p>
+      
+      
+        ©
+        
+          2019 -
+        
+        2025
+         Ravikanth Chaganti 
+      
+      
+         · 
+        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
+      
+      
+    </section>
+  </footer>
+
+    </main>
+
+        
+    
+    
+
+  </body>
+
+</html>
