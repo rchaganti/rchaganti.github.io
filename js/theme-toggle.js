@@ -51,26 +51,32 @@
   }
 
   /**
-   * Update toggle button icon and aria-label
+   * Update toggle button icon and aria-label (handles both desktop and mobile)
    */
   function updateToggleButton(theme) {
-    const toggleButton = document.getElementById('theme-toggle');
-    if (!toggleButton) return;
+    const toggleButtons = [
+      document.getElementById('theme-toggle'),
+      document.getElementById('theme-toggle-mobile')
+    ];
 
-    const sunIcon = toggleButton.querySelector('.theme-icon-sun');
-    const moonIcon = toggleButton.querySelector('.theme-icon-moon');
+    toggleButtons.forEach(toggleButton => {
+      if (!toggleButton) return;
 
-    if (theme === THEME_DARK) {
-      // Show sun icon (to switch to light)
-      if (sunIcon) sunIcon.classList.remove('hidden');
-      if (moonIcon) moonIcon.classList.add('hidden');
-      toggleButton.setAttribute('aria-label', 'Switch to light mode');
-    } else {
-      // Show moon icon (to switch to dark)
-      if (sunIcon) sunIcon.classList.add('hidden');
-      if (moonIcon) moonIcon.classList.remove('hidden');
-      toggleButton.setAttribute('aria-label', 'Switch to dark mode');
-    }
+      const sunIcon = toggleButton.querySelector('.theme-icon-sun');
+      const moonIcon = toggleButton.querySelector('.theme-icon-moon');
+
+      if (theme === THEME_DARK) {
+        // Show sun icon (to switch to light)
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+        toggleButton.setAttribute('aria-label', 'Switch to light mode');
+      } else {
+        // Show moon icon (to switch to dark)
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+        toggleButton.setAttribute('aria-label', 'Switch to dark mode');
+      }
+    });
   }
 
   /**
@@ -92,19 +98,25 @@
     const theme = getInitialTheme();
     applyTheme(theme);
 
-    // Set up toggle button click handler
-    const toggleButton = document.getElementById('theme-toggle');
-    if (toggleButton) {
-      toggleButton.addEventListener('click', toggleTheme);
+    // Set up toggle button click handlers for both desktop and mobile
+    const toggleButtons = [
+      document.getElementById('theme-toggle'),
+      document.getElementById('theme-toggle-mobile')
+    ];
 
-      // Keyboard accessibility
-      toggleButton.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleTheme();
-        }
-      });
-    }
+    toggleButtons.forEach(toggleButton => {
+      if (toggleButton) {
+        toggleButton.addEventListener('click', toggleTheme);
+
+        // Keyboard accessibility
+        toggleButton.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTheme();
+          }
+        });
+      }
+    });
 
     // Listen for system theme changes
     if (window.matchMedia) {
