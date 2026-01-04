@@ -33,6 +33,11 @@ To get started, you can install Docker Desktop or upgrade to a version above 4.4
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Local model serving - Using Docker model runner">
   <meta property="og:description" content="In the local model serving landscape, we have already looked at Ollama and LM Studio. The other option I explored was Docker Model Runner (DMR). For any developer, Docker is a part of the workflow. The DMR makes running a local model as simple as running a container. This feature was introduced as a beta in the Docker Desktop 4.40 release. The key features of DMR include:
 
@@ -45,8 +50,22 @@ Package model GGUF files as OCI artifacts and publish them to any container regi
 To get started, you can install Docker Desktop or upgrade to a version above 4.40. This installs the docker-model CLI plugin.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/local-model-serving-using-docker-model-runner/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/localllm.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Local model serving - Using Docker model runner">
+
+  
+  
+    <meta property="article:published_time" content="2025-07-16T00:00:00Z">
+    <meta property="article:modified_time" content="2025-07-16T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="inferencing">
+    
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -80,6 +99,100 @@ To get started, you can install Docker Desktop or upgrade to a version above 4.4
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Local model serving - Using Docker model runner",
+  "description": "In the local model serving landscape, we have already looked at Ollama and LM Studio. The other option I explored was Docker Model Runner (DMR). For any developer, Docker is a part of the workflow. …",
+  "articleBody": "\"In the local model serving landscape, we have already looked at Ollama and LM Studio. The other option I explored was Docker Model Runner (DMR). For any developer, Docker is a part of the workflow. The DMR makes running a local model as simple as running a container. This feature was introduced as a beta in the Docker Desktop 4.40 release. The key features of DMR include:\\nServe models on OpenAI-compatible APIs Pull and push models to and from Docker Hub. Manage local models Run and interact with models both from the command line and the Docker Desktop GUI. Package model GGUF files as OCI artifacts and publish them to any container registry To get started, you can install Docker Desktop or upgrade to a version above 4.40. This installs the docker-model CLI plugin.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 PS C:\\\\\\u0026gt; docker model Usage: docker model COMMAND Docker Model Runner Commands: df Show Docker Model Runner disk usage inspect Display detailed information on one model install-runner Install Docker Model Runner (Docker Engine only) list List the models pulled to your local environment logs Fetch the Docker Model Runner logs package Package a GGUF file into a Docker model OCI artifact, with optional licenses. ps List running models pull Pull a model from Docker Hub or HuggingFace to your local environment push Push a model to Docker Hub requests Fetch requests+responses from Docker Model Runner rm Remove local models downloaded from Docker Hub run Run a model and interact with it using a submitted prompt or chat mode status Check if the Docker Model Runner is running tag Tag a model uninstall-runner Uninstall Docker Model Runner unload Unload running models version Show the Docker Model Runner version Run \\u0026#39;docker model COMMAND --help\\u0026#39; for more information on a command. This feature can be enabled or disabled using docker model CLI or Docker Desktop GUI.\\nYou can run docker model pull command to pull a model locally. You can obtain a list of models on Docker Hub or use the Docker Desktop GUI to browse the model catalog.\\n1 2 3 PS C:\\\\\\u0026gt; docker model pull ai/llama3.2:3B-Q4_0 Downloaded 1.92GB of 1.92GB Model pulled successfully The model names follow the convention {model}:{parameters}-{quantization}.\\nTo generate a response, you can use the docker model run command.\\n1 2 3 4 PS C:\\\\\\u0026gt; docker model run ai/llama3.2:3B-Q4_0 \\u0026#34;In one sentence, what is a Llama?\\u0026#34; A llama is a domesticated mammal native to South America, closely related to alpacas, characterized by its long neck, soft fur, and distinctive ears. Token usage: 45 prompt + 34 completion = 79 total If you do not provide a prompt at the end of the command, an interactive chat session starts.\\n1 2 3 4 5 6 7 8 PS C:\\\\\\u0026gt; docker model run ai/llama3.2:3B-Q4_0 Interactive chat mode started. Type \\u0026#39;/bye\\u0026#39; to exit. \\u0026gt; In one sentence, what is a Llama? A llama is a domesticated mammal native to South America, closely related to alpacas, characterized by its long neck, soft fur, and distinctive ears. Token usage: 45 prompt + 34 completion = 79 total \\u0026gt; /bye Chat session ended. If you enable the host-side TCP support, you can use the DMR REST API programmatically to access and interact with the model.\\n1 2 3 4 5 6 7 8 9 10 11 curl http://localhost:12434/engines/llama.cpp/v1/chat/completions \\\\ -H \\u0026#34;Content-Type: application/json\\u0026#34; \\\\ -d \\u0026#39;{ \\u0026#34;model\\u0026#34;: \\u0026#34;ai/llama3.2:3B-Q4_0\\u0026#34;, \\u0026#34;messages\\u0026#34;: [ { \\u0026#34;role\\u0026#34;: \\u0026#34;user\\u0026#34;, \\u0026#34;content\\u0026#34;: \\u0026#34;In one sentence, what is a Llama?\\u0026#34; } ] }\\u0026#39; ℹ️ Last updated: 30th September 2025 \"",
+  "url": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-docker-model-runner\/",
+  "datePublished": "2025-07-16T00:00:00Z",
+  "dateModified": "2025-07-16T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/localllm.png",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-docker-model-runner\/"
+  },
+  
+  "articleSection": "\"inferencing\"",
+  
+  
+  
+  "timeRequired": "PT3M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "inferencing",
+      "item": "https:\/\/ravichaganti.com\/categories/inferencing/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Local model serving - Using Docker model runner",
+      "item": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-docker-model-runner\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

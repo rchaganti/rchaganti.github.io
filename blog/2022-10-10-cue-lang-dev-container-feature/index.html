@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="CUE language VS Code development container feature">
   <meta property="og:description" content="In an earlier article, I wrote a bit about Visual Studio Code development containers. I have been using devcontainers for different development environments extensively. This is helping me keep the environment consistent and helps me rebuild an environment from scratch almost instantly. I use dev containers for all my Go language, Python, Rust, and now CUE language learning and development work. You can find all my dev container definition in a sample repository I created on GitHub.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/2022-10-10-cue-lang-dev-container-feature/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CUE language VS Code development container feature">
+
+  
+  
+    <meta property="article:published_time" content="2022-10-10T00:00:00Z">
+    <meta property="article:modified_time" content="2022-10-10T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="cuelang">
+    <meta property="article:tag" content="cuelang"><meta property="article:tag" content="vscode"><meta property="article:tag" content="containers">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CUE language VS Code development container feature",
+  "description": "In an earlier article, I wrote a bit about Visual Studio Code development containers. I have been using devcontainers for different development environments extensively. This is helping me keep the …",
+  "articleBody": "\"In an earlier article, I wrote a bit about Visual Studio Code development containers. I have been using devcontainers for different development environments extensively. This is helping me keep the environment consistent and helps me rebuild an environment from scratch almost instantly. I use dev containers for all my Go language, Python, Rust, and now CUE language learning and development work. You can find all my dev container definition in a sample repository I created on GitHub.\\nSince I wrote the last article, devcontainers feature has evolved and a few things changed in how we define dev containers and dev container features. I realized that I needed to update some of my definitions and how I created dev container features.\\nIn this article, I will walk through creating a feature for CUE language first and then show you how to consume that feature in a dev container definition.\\nWhat is a dev container feature? To quote a Microsoft article,\\nFeatures are self-contained units of installation code, container configuration, and/or settings and extensions designed to enable new development capabilities in your dev container.\\nIn essence, you can use dev container features to any add missing tools or languages to your development environment. These features can be authored in any language of your choice available in the dev container. The default choice is a shell script. To start authoring a new feature, you can clone the feature template repository.\\nI have a repository created from this template at rchaganti/vsc-devcontainer-features: Visual Studio devcontainer features (github.com)\\nAs you see here, this template repository contains src, test, and GitHub workflows folders. All you feature definitions go into the src folder. The template comes with a standard GitHub workflow that builds and publishes the features as OCI artifacts to the GitHub Container Registry (GHCR). You can place each feature in its own subfolder under the src folder. Each feature folder must contain at least two files \\u0026ndash; devcontainer-feature.json and install.sh. The devcontainer-feature.json contains the metadata needed to describe the feature and any arguments that you need to pass to the installer script.\\ndevcontainer-feature.json For building a feature for the CUE language, here is what I have defined in the JSON.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 { \\u0026#34;id\\u0026#34;: \\u0026#34;cuelang\\u0026#34;, \\u0026#34;version\\u0026#34;: \\u0026#34;1.0.3\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;CUE Lang\\u0026#34;, \\u0026#34;options\\u0026#34;: { \\u0026#34;version\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;description\\u0026#34;: \\u0026#34;Specify a version of CUE language\\u0026#34; } }, \\u0026#34;customizations\\u0026#34;: { \\u0026#34;vscode\\u0026#34;: { \\u0026#34;extensions\\u0026#34;: [ \\u0026#34;brody715.vscode-cuelang\\u0026#34; ] } } } In this definition, id, version, and name are required fields. Any time you make a change to either the JSON definition or the install.sh script or any other artifact within the feature folder, you must bump up the version in devcontainer-feature.json. The options object can be used to define any arguments that must be passed to the install.sh script. In the above definition, there is only one property \\u0026ndash; version. The customizations section is where you can add VS Code setting default for this dev container and any extensions that you need have within the development environment. For the CUE lang, there is no official extension. Therefore, I used what is available from the community in the marketplace.\\ninstall.sh Once you have the devcontainer-feature.json ready, you can start implementing the necessary logic within install.sh script. For example, here is what I have in the install.sh for the CUE lang feature.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 #!/bin/bash set -e echo \\u0026#34;Activating feature \\u0026#39;CUELANG\\u0026#39;\\u0026#34; # CUE lang version VERSION=${VERSION:-\\u0026#34;latest\\u0026#34;} CUEURL=\\u0026#34;https://github.com/cue-lang/cue/releases/download/v${VERSION}/cue_v${VERSION}_linux_amd64.tar.gz\\u0026#34; sudo curl -Lo /tmp/cue.tar.gz ${CUEURL} sudo mkdir /tmp/cue sudo tar xvzf /tmp/cue.tar.gz -C /tmp/cue sudo cp /tmp/cue/cue /usr/local/bin/cue sudo chmod +x /usr/local/bin/cue sudo rm -rf /tmp/cue The version option coming from the dev container definition can be retrieved in the install.sh script. In this script, the CUEURL variable uses the version value passed to the install script to construct the URL needed to download the CUE lang binary.\\nGitHub workflow As mentioned earlier, the features can be referenced in different ways in a dev container definition but the most easiest and my favorite way is to publish to / consume from GHCR. The feature template repository comes with a built-in workflow to publish the feature tarballs as OCI artifacts.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 name: \\u0026#34;Release dev container features\\u0026#34; on: workflow_dispatch: push: branches: - main jobs: deploy: if: ${{ github.ref == \\u0026#39;refs/heads/main\\u0026#39; }} runs-on: ubuntu-latest steps: - uses: actions/checkout@v2 - name: \\u0026#34;Publish\\u0026#34; uses: devcontainers/action@v1 with: publish-features: \\u0026#34;true\\u0026#34; base-path-to-features: \\u0026#34;./src\\u0026#34; env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} With this in place, you should be all set. You can commit this feature into a GitHub repository and the workflow should take care of publishing the artifacts to GHCR.\\nConsuming a custom feature With the change to publish features as OCI artifacts, there is a change in consuming as well. Here is how you can consume the above CUE lang feature in a dev container definition.\\n1 2 3 4 5 6 7 8 9 10 { \\u0026#34;image\\u0026#34;: \\u0026#34;mcr.microsoft.com/vscode/devcontainers/base\\u0026#34;, \\u0026#34;settings\\u0026#34;: {}, \\u0026#34;features\\u0026#34;: { \\u0026#34;ghcr.io/rchaganti/vsc-devcontainer-features/cuelang:latest\\u0026#34; : { \\u0026#34;version\\u0026#34; : \\u0026#34;0.4.3\\u0026#34; } }, \\u0026#34;remoteUser\\u0026#34;: \\u0026#34;vscode\\u0026#34; } This is it! When you spin a dev container using this definition, you can CUE lang installed and ready to use.\\nHope you find this useful. Leave any questions / feedback you may have in the comments.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/2022-10-10-cue-lang-dev-container-feature\/",
+  "datePublished": "2022-10-10T00:00:00Z",
+  "dateModified": "2022-10-10T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/2022-10-10-cue-lang-dev-container-feature\/"
+  },
+  
+  "articleSection": "\"cuelang\"",
+  
+  
+  "keywords": "[\"cuelang\",\"vscode\",\"containers\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "cuelang",
+      "item": "https:\/\/ravichaganti.com\/categories/cuelang/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "CUE language VS Code development container feature",
+      "item": "https:\/\/ravichaganti.com\/blog\/2022-10-10-cue-lang-dev-container-feature\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

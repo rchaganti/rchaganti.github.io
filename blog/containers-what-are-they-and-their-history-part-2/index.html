@@ -26,13 +26,32 @@ In today’s article, we will see what are containers and some history behind co
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Containers – What are they? And, their history! – Part 2">
   <meta property="og:description" content="In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.
 In today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/containers-what-are-they-and-their-history-part-2/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Containers – What are they? And, their history! – Part 2">
+
+  
+  
+    <meta property="article:published_time" content="2015-02-06T00:00:00Z">
+    <meta property="article:modified_time" content="2015-02-06T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Containers">
+    <meta property="article:tag" content="Containers">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -59,6 +78,102 @@ In today’s article, we will see what are containers and some history behind co
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Containers – What are they? And, their history! – Part 2",
+  "description": "In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous …",
+  "articleBody": "\"In the earlier article, I explained the hurdles in the traditional and virtualized ways of implementing workloads. Also, we looked how the DevOps challenges are demanding changes the continuous delivery and integration processes. Towards the end, I’d mentioned that Containers are an answer.\\nIn today’s article, we will see what are containers and some history behind containerization. Let us get started. In the subsequent parts, we will dig into each building block used within container technologies and understand how to use them.\\nNote: If you are not a Linux user or never even installed Linux, lot of content that follows will sound alien. If you need to get a quick training on Linux, go ahead to edX and take the Linux Foundation course.\\nContainers are light weight isolated operating system environments running on a host. Unlike virtual machines, containers\\ndon’t need additional hardware capabilities such as Intel-VT and so on. don’t need emulated BIOS or completely virtualized hardware Instead, containers are processes running on a host operating system that provide allocation and assignment of resources such as CPU, memory, block IO, and network bandwidth and do not (or cannot) interfere with rest of the system’s resources or process.\\nTake a look at the following figure.\\nThe figure above contrasts the way containers implemented with how VMs are built. Remember that containers are complementary to virtual machines. They are not a complete replacement for virtual machines. You may end up creating virtual machines for complete isolation and then run containers inside those VMs.\\n[pullquote]The above representation is an over-simplified architecture of containers. In fact, there are no technologies shown in the picture that really are the building blocks for creating containers. We will dig into that in a bit.[/pullquote]\\nEach container is a process within the host operating system. The applications running inside the container assume exclusive access to the operating system. In reality, those applications run inside an isolated process environment. This is similar to how chroot works. Historically speaking, the concept of containerization itself is not new. Solaris Zones and Containers did something similar for a long time. Windows OS had something called Dynamic Hardware Partitioning (not on x86 systems and something that never got popular for the same reason) in Windows Server 2008. The container technology that we are going to discuss is based on Linux OS and has some history associated with it. Let us review the history a bit and then dive into the technology that is used to implement these containers.\\nHistory Google has been using the container technology to run their own services for a long time. In fact, they create more than 2 billion containers a week. While Google started using containerization in the year 2004, they formally donated the cgroups project to Linux kernel in the year 2007.\\n[pullquote]cgroups (abbreviated from control groups) is a Linux kernel feature that limits, accounts for and isolates the resource usage (CPU, memory, disk I/O, network, etc.) of a collection of processes.[/pullquote] The release of cgroups lead to creation of Linux Containers (LXC). Apart from cgroups, LXC uses kernel namespaces, apparmor and SE Linux profiles, Chroots, CGroups, and other kernel capabilities such as Seccomp policies. LXC falls somewhere in between the VMs and a chroot.\\nLMCTFY Let-me-contain-that-for-you (LMCTFY) is an open source version of Google’s container stack. LMCTFY works at the same level as LXC and therefore it is not recommended to use it along side other container technologies such as LXC. Most or all of Google’s online services run inside the containers deployed using their own container stack and they have been doing this since 2004! So, it goes without saying that they have mastered this art containerization and certainly have a solid technology in LMCTFY.\\nCreating resource isolation is only one part of the story. We still need a better way to orchestrate the whole container creation and then manage the container life cycle.\\nDocker Orchestration of the container and managing life cycle is important and this is where tools such as Docker come into picture.\\nDocker, until release 0.9, used LXC as the default execution environment. Starting with Docker 0.9, LXC was replaced with libcontainer – a library developed to access Linux kernel’s container APIs directly. With libcontainer, Docker can now perform container management without relying on other execution environments such as LXC. Although libcontainer is the new default execution environment, Docker still supports LXC. In fact, the execution driver API was added to ensure that other execution environments can be used when necessary provided they have a execution driver.\\nDocker revolutionized and brought the concepts of Linux containers to masses. In the subsequent parts of this series, we will dive into LXC, Docker, and the kernel components that help the overall containerization.\\nKubernetes While tools such as Docker provide the container life cycle management, the orchestration of multi-tier containers and container clusters is still not easy. This is where Google once again took the lead and developed Kubernetes.\\nKubernetes is an open source system for managing containerized applications across multiple hosts, providing basic mechanisms for deployment, maintenance, and scaling of applications.\\nThere are many other tools in the Docker eco-system. We will look at them when we start discussing Docker in-depth.\\nRocket Docker has a rival in Rocket. Rocket is a new container runtime, designed for composability, security, and speed.\\nFrom their FAQ, Rocket is an alternative to the Docker runtime, designed for server environments with the most rigorous security and production requirements. Rocket is oriented around the App Container specification, a new set of simple and open specifications for a portable container format.\\nThis is an interesting development and at the moment with Linux-only focus unlike Docker.\\nOthers There are other container solutions such as OpenVZ and Warden. I will not go into the details as I have not worked on any of these. I will try and pull some information on these if I get to experiment with them a bit.\\nFuture We looked at the history of container technology itself and the container solutions such as Docker. Docker has certainly brought Linux containers to lime-light. The future holds a lot. Many of the cloud providers have vouched for Docker integration and we can already see that in action with Microsoft Azure, Amazon Web Services, and Google Cloud Platform. Microsoft announced that the Docker engine will soon come to the Windows Server (both on-premises and in the cloud).\\nWith the exciting times ahead, it is time for both IT professionals and developers to start looking at the containers. Stay tuned for more in-depth information.\\nFurther Reading Cgroups [Kernel Documentation]\\nNamespaces [Kernel Documentation]\\nResource management: Linux kernel Namespaces and cgroups by Rami Rosen\\nJailing your apps using Linux namespaces\\nGetting started with LXC\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/",
+  "datePublished": "2015-02-06T00:00:00Z",
+  "dateModified": "2015-02-06T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/"
+  },
+  
+  "articleSection": "\"Containers\"",
+  
+  
+  "keywords": "[\"Containers\"]",
+  
+  
+  "timeRequired": "PT6M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Containers",
+      "item": "https:\/\/ravichaganti.com\/categories/containers/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Containers – What are they? And, their history! – Part 2",
+      "item": "https:\/\/ravichaganti.com\/blog\/containers-what-are-they-and-their-history-part-2\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

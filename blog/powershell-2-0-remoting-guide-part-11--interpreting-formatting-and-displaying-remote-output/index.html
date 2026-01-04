@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output">
   <meta property="og:description" content="In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output">
+
+  
+  
+    <meta property="article:published_time" content="2010-02-15T00:00:00Z">
+    <meta property="article:modified_time" content="2010-02-15T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="Remoting">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output",
+  "description": "In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based …",
+  "articleBody": "\"In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.\\nNote: Most of this does not apply within an interactive remoting session\\nThe concepts of remoting output are explained in a TechNet article at http://technet.microsoft.com/en-us/library/dd347582.aspx. I am going to put some story around this to help you understand the concepts well.\\nFirst, let us start with an obvious difference in the output received from a remote session. If you use Invoke-Command to run Get-PSDrive, you see something like this.\\nYou can see an additional column in the output that shows the remote computer name with PSComputerName as the column name. This won’t be displayed if you run the same cmdlet on local computer. So, if you don’t want to display this information in the remote output you can use the -HideComputerName parameter.\\nIt is also possible that some cmdlets may not display PSComputerName property. For example, Get-Date. In such a scenario you can add PSComputerName to the output of Get-Date as shown here\\n1 Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto How remote command output is sent over to local computer?\\nThe objects that Windows PowerShell cmdlets return cannot be transmitted over the network. So, the live objects are “serialized”. In other words, the live objects are converted into XML representations of the object and its properties. Then, the XML-based serialized object is transmitted across the network to the local session where it gets deserialized in to .NET object. This is how an MSDN article defines serialization in .NET framework.\\nWhy would you want to use serialization? The two most important reasons are to persist the state of an object to a storage medium so an exact copy can be recreated at a later stage, and to send the object by value from one application domain to another. For example, serialization is used to save session state in ASP.NET and to copy objects to the clipboard in Windows Forms. It is also used by remoting to pass objects by value from one application domain to another.\\nSo, what does this mean to us in PowerShell remoting?\\nAs it is defined above, the live objects are converted in to XML based representation. So, once deserialized in the local session, they don’t expose any methods that actually belong to the object. Let us see an example to understand this. First, let us look at Get-Process output in a local session and see what all methods we see.\\nHere, you can see a list of methods you can use against a process object. Now, let us take a look at how this looks when we execute the same command in a remote session.\\nIf you observe in the above screenshot, TypeName represents a deserialized object and there are no methods that you can use against a process object. A deserialized object represents a snapshot of get-process at the time of command execution in the remote session. This also means that you can’t execute methods such as Kill() against a deserialized process object. Also, no methods to modify the property set will work in the local session.\\nWindows PowerShell blog has a nice post on how objects are to and from a remote session. I recommend that you read this post for more information.\\nWhat about output formatting?\\nMost deserialized objects are automatically formatted for display by entries in the Types.ps1xml or Format.ps1xml files. However, the local computer might not have formatting files for all of the deserialized objects that were generated on a remote computer. When objects are not formatted, all of the properties of each object appear in the console in a streaming list. To get formatting data from another computer, use the Get-FormatData and Export-FormatData cmdlets. Again, let us take an example to understand this.\\nTake an example of a SharePoint 2010 farm and you want to access /run SharePoint 2010 cmdlets from a Windows 7 machine using Invoke-Command. First, if we run Get-SPSite on SharePoint 2010 web frontend, you will see\\nNow, if we try to run the same in a remote session using Invoke-Command, you will see\\nAs you see in the above screenshot, the output from a remote session is quite different from the one you saw in a local session. This is because we don’t have the formatting data available on the Windows 7 computer.\\nSo, how do we get the formatting data to local computer?\\nWe can use Get-FormatData, Export-FormatData and Update-FormatData cmdlets to get the formatting data from a remote computer to local session. To do this:\\n1 2 3 4 $s = New-PSSession -ComputerName SP2010-WFE Invoke-Command -session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell} Invoke-Command -Session $s -ScriptBlock {Get-FormatData -TypeName *SharePoint*} | Export-FormatData -Path C:\\\\scripts\\\\SharePoint.Format.ps1xml Update-FormatData -PrependPath C:\\\\scripts\\\\SharePoint.Format.ps1xml The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see\\nNow, with the formatting information in the local session, you can see that Get-SPSite output is formatted similar to the one we saw when we ran the cmdlet in a local session. However, make a note that this applies only to the current session. If you close and re-open the PowerShell console, the formatting data will be lost. You can add the Update-FormatData cmdlet to your PowerShell profile to make the format data across all PowerShell sessions.\\nThis is it. We are just a few more posts away from completing this PowerShell remoting series. Do let me know your feedback and let me know if you want to see something more around remoting.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output\/",
+  "datePublished": "2010-02-15T00:00:00Z",
+  "dateModified": "2010-02-15T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"Remoting\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output",
+      "item": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

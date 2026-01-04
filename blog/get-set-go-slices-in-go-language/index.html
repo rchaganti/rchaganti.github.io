@@ -29,6 +29,11 @@ In the previous part of this series, you learned about arrays in Go language. As
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Get set Go - Slices in Go language">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ In the previous part of this series, you learned about arrays in Go language. As
 In the previous part of this series, you learned about arrays in Go language. As you have learned, arrays have a fixed size and therefore you cannot resize (grow or shrink) arrays. This limitation can be overcome using slices in Go language. In this part, you will learn about slices and how to use this data type in your Go programs.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/get-set-go-slices-in-go-language/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Get set Go - Slices in Go language">
+
+  
+  
+    <meta property="article:published_time" content="2020-09-28T00:00:00Z">
+    <meta property="article:modified_time" content="2020-09-28T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Golang">
+    <meta property="article:tag" content="Golang"><meta property="article:tag" content="Go">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ In the previous part of this series, you learned about arrays in Go language. As
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Get set Go - Slices in Go language",
+  "description": " In the previous part of this series, you learned about arrays in Go language. As you have learned, arrays have a fixed size and therefore you cannot resize (grow or shrink) arrays. This limitation …",
+  "articleBody": "\" In the previous part of this series, you learned about arrays in Go language. As you have learned, arrays have a fixed size and therefore you cannot resize (grow or shrink) arrays. This limitation can be overcome using slices in Go language. In this part, you will learn about slices and how to use this data type in your Go programs.\\nSlices A slice in Go language is a slice of an underlying array! Yes, no pun intended. 😊\\nHere is how the Go language specification describes slices. A slice is a descriptor for a contiguous segment of an underlying array and provides access to a numbered sequence of elements from that array.\\nThere are different ways to declaring and initializing slices in Go language.\\nSlice literal The syntax for declaring a variable as a slice is var s1 = []int{1,2}. This declare a slice of integers and initializes with two elements. This is similar to how you declared array variables. The only difference is that there is no size specification. You can avoid any values in the declaration to create an empty slice of integers. For example, var s2 = []int{}. However, you cannot add elements (to an empty slice or at an index that is out of bound) using the indexer syntax. For example, specifying s2[0]= 100 will result in an error. The indexer method works only when updating an existing element at a specific index in the slice. To add elements to an empty slice, you need use the built-in append() method.\\nHere is a quick example that shows both these methods.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 package main import \\u0026#34;fmt\\u0026#34; func main() { var s1 = []int{1, 2} s1[0] = 10 fmt.Println(s1) var s2 = []int{} s2 = append(s2, 100) s2 = append(s2, 200) fmt.Println(s2) } With slices, unlike arrays, you can append elements. This essentially changes the size of the slice. You can use the len() built-in function to find the current number of elements and the cap() function to find the maximum capacity of the slice. Review the below example to understand the difference between length and capacity in-depth.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 package main import \\u0026#34;fmt\\u0026#34; func main() { var s1 = []int{1, 2} fmt.Println(\\u0026#34;Initial len and cap\\u0026#34;, len(s1), cap(s1)) s1 = append(s1, 3) fmt.Println(\\u0026#34;len and cap after adding 3rd element\\u0026#34;, len(s1), cap(s1)) s1 = append(s1, 4) fmt.Println(\\u0026#34;len and cap after adding 4th element\\u0026#34;, len(s1), cap(s1)) s1 = append(s1, 5) fmt.Println(\\u0026#34;len and cap after adding 5th element\\u0026#34;, len(s1), cap(s1)) } When you run this, you will see the following output.\\n1 2 3 4 5 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\slices.go Initial len and cap 2 2 len and cap after adding 3rd element 3 4 len and cap after adding 4th element 4 4 len and cap after adding 5th element 5 8 If you observe the above output, the initial length and capacity of the slice is what you initialized it to \\u0026ndash; with two elements. After adding a third element, the capacity changed to 4 and stayed as 4 even after the adding the 4th element. However, the moment the 5th element gets added, the capacity of the slice jumps to 8. So, what is happening here?\\nWith the append function, whenever you add an element, if the length exceeds the current capacity of the slice, Go simply doubles the capacity. So, when we added the 3rd element, the capacity doubled to 4 and then we added the 5th element, it doubled to 8.\\nUsing Make Slices can also be declared and initialized using the make built-in function. The syntax for using make to create a slice is as follows.\\n1 var name = make(slice-type, slice-length, slice-capacity) Here is an example that uses make function.\\n1 2 3 4 5 6 7 8 9 10 11 12 package main import \\u0026#34;fmt\\u0026#34; func main() { var s3 = make([]int, 2, 4) s3[0] = 10 s3[1] = 20 s3 = append(s3, 20) fmt.Println(s3, len(s3), cap(s3)) } In this example, the last integer value that is used to specify the capacity of the slice is optional. By default, the capacity will be same as length. The code in the above example creates a slice with length of 2 and capacity of 4. And, observe how the 3rd element is added. You have to use the append function since adding the 3rd element exceeds the length specified when using make function. This behavior is different from what you seen above with append method on a slice created using slice literal syntax.\\nSlicing arrays Yet another method of creating a slice is to slice an existing array! Take a look at this example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 package main import \\u0026#34;fmt\\u0026#34; func main() { var languages = [6]string{\\u0026#34;Go\\u0026#34;, \\u0026#34;Python\\u0026#34;, \\u0026#34;Rust\\u0026#34;, \\u0026#34;Java\\u0026#34;, \\u0026#34;C#\\u0026#34;, \\u0026#34;PowerShell\\u0026#34;} fmt.Println(\\u0026#34;Elements in the string array are\\u0026#34;, languages) var langSlice = languages[0:2] fmt.Println(\\u0026#34;\\\\nElements in the derived slice are\\u0026#34;, langSlice) fmt.Println(\\u0026#34;\\\\nSlicing without a start index is similar to using start index 0\\u0026#34;, languages[:3]) fmt.Println(\\u0026#34;\\\\nSlicing without an end index gets all elements from start_index till end of the array\\u0026#34;, languages[4:]) } In the above example, the languages array has six elements. A slice of these elements \\u0026ndash; from index 0 to 2 \\u0026ndash; is assigned to the variable langSlice. This variable is of slice data type. In the variable assignment, you have specified the the slice as start_index:end_index in square brackets. In this specification,\\nThe end_index in excluded. So, when the indexes specified are 0 and 2, the resulting slice will have elements from index 0 and 1 but not 2. Both start_index and end_index are optional. So, for example, if you specify [:3], the first three elements from the array. If you specify [4:], elements from index 4 till the end of the array get assigned to the slice. Finally, skipping both \\u0026ndash; [:] \\u0026ndash; will simply return all elements from the array. You learned in an earlier part of this series that slices are reference types. This means that when you update an element in the slice the element in the underlying array gets updated as well.\\nTake a look at this example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 package main import \\u0026#34;fmt\\u0026#34; func main() { var languages = [6]string{\\u0026#34;Go\\u0026#34;, \\u0026#34;Python\\u0026#34;, \\u0026#34;Rust\\u0026#34;, \\u0026#34;Java\\u0026#34;, \\u0026#34;C#\\u0026#34;, \\u0026#34;PowerShell\\u0026#34;} fmt.Println(\\u0026#34;Elements in the string array are\\u0026#34;, languages) var langSlice = languages[0:2] fmt.Println(\\u0026#34;\\\\nElements in the derived slice are\\u0026#34;, langSlice) langSlice[1] = \\u0026#34;C++\\u0026#34; fmt.Println(\\u0026#34;\\\\nElements in the updated slice are\\u0026#34;, langSlice) fmt.Println(\\u0026#34;\\\\nElements in the underlying array are\\u0026#34;, languages) } If you run this above example, you will see output similar to what is shown here.\\n1 2 3 4 5 6 7 8 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\slices.go Elements in the string array are [Go Python Rust Java C# PowerShell] Elements in the derived slice are [Go Python] Elements in the updated slice are [Go C++] Elements in the underlying array are [Go C++ Rust Java C# PowerShell] As you see here, once you update an element in the derived slice, the underlying array also gets updated. This brings us to the discussion around pointers in Go language which is the subject of next part in this series.\\nStay tuned.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/get-set-go-slices-in-go-language\/",
+  "datePublished": "2020-09-28T00:00:00Z",
+  "dateModified": "2020-09-28T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/get-set-go-slices-in-go-language\/"
+  },
+  
+  "articleSection": "\"Golang\"",
+  
+  
+  "keywords": "[\"Golang\",\"Go\"]",
+  
+  
+  "timeRequired": "PT6M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Golang",
+      "item": "https:\/\/ravichaganti.com\/categories/golang/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Get set Go - Slices in Go language",
+      "item": "https:\/\/ravichaganti.com\/blog\/get-set-go-slices-in-go-language\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

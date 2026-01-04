@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Introduction to Microsoft Agent Framework">
   <meta property="og:description" content="I have been following the Microsoft ecosystem for agent and agentic workflow development and have evaluated frameworks such as AutoGen and Semantic Kernel. In the past, I have written briefly about AutoGen. I used Semantic Kernel, along with Azure AI Foundry, to experiment with a few enterprise-ready agentic scenarios. Both frameworks are useful in their own ways, and Semantic Kernel, with its enterprise-deployment readiness, became the go-to framework for many. Microsoft announced plans to converge these frameworks into what it calls the Microsoft Agent Framework, which brings together the best parts of AutoGen and Semantic Kernel.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Introduction to Microsoft Agent Framework">
+
+  
+  
+    <meta property="article:published_time" content="2025-10-02T00:00:00Z">
+    <meta property="article:modified_time" content="2025-10-02T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Microsoft">
+    
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,100 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Introduction to Microsoft Agent Framework",
+  "description": "I have been following the Microsoft ecosystem for agent and agentic workflow development and have evaluated frameworks such as AutoGen and Semantic Kernel. In the past, I have written briefly about …",
+  "articleBody": "\"I have been following the Microsoft ecosystem for agent and agentic workflow development and have evaluated frameworks such as AutoGen and Semantic Kernel. In the past, I have written briefly about AutoGen. I used Semantic Kernel, along with Azure AI Foundry, to experiment with a few enterprise-ready agentic scenarios. Both frameworks are useful in their own ways, and Semantic Kernel, with its enterprise-deployment readiness, became the go-to framework for many. Microsoft announced plans to converge these frameworks into what it calls the Microsoft Agent Framework, which brings together the best parts of AutoGen and Semantic Kernel.\\nMicrosoft Agent Framework supports enterprise integrations using Microsoft 365 Agents SDK and the enterprise-grade agent service integrations with Microsoft Foundry (Azure AI Foundry is renamed to Microsoft Foundry). Microsoft Agent Framework is built with interoperability at its core, which means it has built-in support for open standards such as the Model Context Protocol (MCP) for data and tool access and Agent-to-Agent (A2A) for inter-agent communication.\\nFigure 1: Agent Framework (Source: Microsoft)\\nMicrosoft Agent Framework supports Agent and Workflow orchestration. This enables LLM-driven reasoning and decision-making as well as business-logic driven deterministic agentic workflows. As a developer, you can choose what makes more sense for your use case. Agents and workflows are two primary capability categories that this framework offers.\\nAgents use LLMs as their brains, tools for accessing external APIs, and to perform actions. Because of their probabilistic nature, agents are best suited to scenarios where the input task is unstructured and cannot be easily defined in advance. Microsoft Agent Framework supports different types of agents for different use cases. The Azure AI Foundry Agents are used to create agents that use the Foundry Agent service. In addition, it supports Anthropic agents, Azure OpenAI, and OpenAI chat and response agents.\\nHere is a quick example of an Azure AI Foundry agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient(async_credential=credential).create_agent( name=\\u0026#34;HelperAgent\\u0026#34;, instructions=\\u0026#34;You are a helpful assistant.\\u0026#34; ) as agent, ): result = await agent.run(\\u0026#34;Hello!\\u0026#34;) print(result.text) asyncio.run(main()) Workflows are graph structures that connect multiple agents to perform complex, multi-step tasks. A workflow is well-suited to a predefined sequence of operations and may include multiple agents, external integrations, and human interactions. By defining the flow of work, a developer can control the execution path, resulting in more deterministic behavior. Microsoft Agent Framework derives its workflow orchestration capabilities from AutoGen and therefore supports sequential, concurrent (parallel), handoff (control transfer), group chat (collaborative conversations), and magentic (manager-coordinated) workflows.\\nHere is a quick example of a concurrent workflow.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 from agent_framework.azure import AzureChatClient from agent_framework import ChatMessage, WorkflowCompletedEvent from agent_framework import ConcurrentBuilder chat_client = AzureChatClient(credential=AzureCliCredential()) researcher = chat_client.create_agent( instructions=( \\u0026#34;You\\u0026#39;re an expert market and product researcher. Given a prompt, provide concise, factual insights,\\u0026#34; \\u0026#34; opportunities, and risks.\\u0026#34; ), name=\\u0026#34;researcher\\u0026#34;, ) marketer = chat_client.create_agent( instructions=( \\u0026#34;You\\u0026#39;re a creative marketing strategist. Craft compelling value propositions and target messaging\\u0026#34; \\u0026#34; aligned to the prompt.\\u0026#34; ), name=\\u0026#34;marketer\\u0026#34;, ) legal = chat_client.create_agent( instructions=( \\u0026#34;You\\u0026#39;re a cautious legal/compliance reviewer. Highlight constraints, disclaimers, and policy concerns\\u0026#34; \\u0026#34; based on the prompt.\\u0026#34; ), name=\\u0026#34;legal\\u0026#34;, ) workflow = ConcurrentBuilder().participants([researcher, marketer, legal]).build() completion: WorkflowCompletedEvent | None = None async for event in workflow.run_stream(\\u0026#34;We are launching a new budget-friendly electric bike for urban commuters.\\u0026#34;): if isinstance(event, WorkflowCompletedEvent): completion = event if completion: print(\\u0026#34;===== Final Aggregated Conversation (messages) =====\\u0026#34;) messages: list[ChatMessage] | Any = completion.data for i, msg in enumerate(messages, start=1): name = msg.author_name if msg.author_name else \\u0026#34;user\\u0026#34; print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\\\n\\\\n{i:02d} [{name}]:\\\\n{msg.text}\\u0026#34;) In this series of articles, we will learn how to create agents and workflows using the Microsoft Agent Framework. We will start by diving deep into Agents, then move on to exploring workflows in depth.\\nℹ️ Last updated: 6th December 2025 \"",
+  "url": "https:\/\/ravichaganti.com\/blog\/introduction-to-microsoft-agent-framework\/",
+  "datePublished": "2025-10-02T00:00:00Z",
+  "dateModified": "2025-10-02T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/maf.png",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/introduction-to-microsoft-agent-framework\/"
+  },
+  
+  "articleSection": "\"Microsoft\"",
+  
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Microsoft",
+      "item": "https:\/\/ravichaganti.com\/categories/microsoft/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Introduction to Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/blog\/introduction-to-microsoft-agent-framework\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

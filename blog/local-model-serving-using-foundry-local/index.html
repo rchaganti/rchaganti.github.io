@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Local model serving - Using Foundry Local">
   <meta property="og:description" content="In this series of articles on local model serving, we learned about using Ollama, Docker Model Runner, and LMStudio. At Build 2025, Microsoft announced Foundry Local. This is specifically designed for running AI models on resource-constrained devices, making it ideal for local AI inference on edge devices. Foundry Local features model management and deployment via a command-line interface, and offers an OpenAI API-compatible RESTful API. It also supports Python, C#, Rust, and JavaScript SDKs for local AI model management.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/local-model-serving-using-foundry-local/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/localllm.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Local model serving - Using Foundry Local">
+
+  
+  
+    <meta property="article:published_time" content="2025-07-17T00:00:00Z">
+    <meta property="article:modified_time" content="2025-07-17T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="inferencing">
+    
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,100 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Local model serving - Using Foundry Local",
+  "description": "In this series of articles on local model serving, we learned about using Ollama, Docker Model Runner, and LMStudio. At Build 2025, Microsoft announced Foundry Local. This is specifically designed for …",
+  "articleBody": "\"In this series of articles on local model serving, we learned about using Ollama, Docker Model Runner, and LMStudio. At Build 2025, Microsoft announced Foundry Local. This is specifically designed for running AI models on resource-constrained devices, making it ideal for local AI inference on edge devices. Foundry Local features model management and deployment via a command-line interface, and offers an OpenAI API-compatible RESTful API. It also supports Python, C#, Rust, and JavaScript SDKs for local AI model management.\\nFoundry Local Architecture Before we delve into the details of using Foundry Local for AI inference, let\\u0026rsquo;s understand its architecture and components.\\nThe model management component in this architecture is responsible for managing the model lifecycle, compiling models, and maintaining the model cache. The model lifecycle includes downloading, loading, running, unloading, and deleting models from the local cache.\\nThe ONNX runtime is the key component of this architecture. ONNX is a cross-platform ML model accelerator that supports models from PyTorch, JAX, and other frameworks. This runtime is responsible for executing the models and supports multiple hardware providers and device types.\\nThe Foundry Local service is the OpenAI-compatible REST API interface for working with the inference engine. This REST API endpoint can be used with any programming language to interact with the inference endpoint. This service also provides the REST interface for model management.\\nWith this brief overview of the Foundry Local architecture, let us now dive into the how!\\nBasics Foundry Local service needs to be installed on the local Windows or macOS system. On Windows, you can use winget to install Foundry Local.\\n1 winget install Microsoft.FoundryLocal Once the service is installed, you can use the foundry service status command to check its status.\\n1 2 3 4 PS C:\\\\\\u0026gt; foundry service status 🟢 Model management service is running on http://127.0.0.1:11223/openai/status EP autoregistration status: Successfully downloaded and registered the following EPs: OpenVINOExecutionProvider. Valid EPs: CPUExecutionProvider, WebGpuExecutionProvider, OpenVINOExecutionProvider Foundry Local chooses a random port every time the service restarts. To avoid that, you can use the following command to configure a fixed port number.\\n1 2 3 4 5 PS C:\\\\\\u0026gt; foundry service set --port 22334 Saving new settings Restarting service... 🔴 Service is stopped. 🟢 Service is Started on http://127.0.0.1:22334/, PID 14444! foundry cache location command returns the model cache directory path.\\n1 2 PS C:\\\\\\u0026gt; foundry cache location 💾 Cache directory path: C:\\\\Users\\\\ravik\\\\.foundry\\\\cache\\\\models If you want to move the model cache to a different path, you can use the foundry service set --cachedir command and supply the new directory path as the argument.\\nTo view the existing service configuration, run the foundry service set --show command.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 PS C:\\\\\\u0026gt; foundry service set --show No settings changed { \\u0026#34;defaultLogLevel\\u0026#34;: 2, \\u0026#34;serviceSettings\\u0026#34;: { \\u0026#34;host\\u0026#34;: \\u0026#34;127.0.0.1\\u0026#34;, \\u0026#34;port\\u0026#34;: 22334, \\u0026#34;cacheDirectoryPath\\u0026#34;: \\u0026#34;C:\\\\\\\\Users\\\\\\\\ravik\\\\\\\\.foundry\\\\\\\\cache\\\\\\\\models\\u0026#34;, \\u0026#34;schema\\u0026#34;: \\u0026#34;http\\u0026#34;, \\u0026#34;pipeName\\u0026#34;: \\u0026#34;inference_agent\\u0026#34;, \\u0026#34;defaultSecondsForModelTTL\\u0026#34;: 600, \\u0026#34;initialConnectionTimeoutInSeconds\\u0026#34;: 6 } } To list all models available to run locally, use foundry model list command. This command lists all models available in the Foundry catalog\\nThe foundry model run command runs a model for inference. This command starts an interactive session. If the model is not present in the local model cache, it gets downloaded. If you want to download the model but not run it immediately, you can use foundry model download command.\\n1 2 3 4 5 6 7 8 9 10 PS C:\\\\\\u0026gt; foundry model run phi-3.5-mini Model Phi-3.5-mini-instruct-openvino-gpu:1 was found in the local cache. Interactive Chat. Enter /? or /help for help. Press Ctrl+C to cancel generation. Type /exit to leave the chat. Interactive mode, please enter your prompt \\u0026gt; In one line, What is Azure? 🧠 Thinking... 🤖 Azure is Microsoft\\u0026#39;fertilized cloud computing platform offering a range of cloud services, including storage, databases, AI, and virtual machines. The foundry model load command loads the model from the cache for inference.\\n1 2 3 PS C:\\\\\\u0026gt; foundry model load qwen2.5-0.5b 🕓 Loading model... 🟢 Model qwen2.5-0.5b loaded successfully By default, a model loaded this way lives for only 600 seconds. To change that, you can specify the --ttl optional parameter. You can retrieve a list of all models using the foundry service ps command.\\n1 2 3 4 PS C:\\\\\\u0026gt; foundry service ps Models running in service: Alias Model ID 🟢 qwen2.5-0.5b qwen2.5-0.5b-instruct-openvino-gpu:2 Inference API The real goal of local AI inference is to develop and use AI applications. We need to use the inference API for this. Loading a model to the foundry service enables the inference interface to the model.\\nLet us first list the loaded models using the REST API.\\n1 2 PS C:\\\\\\u0026gt; (curl http://127.0.0.1:22334/v1/models).content {\\u0026#34;data\\u0026#34;:[{\\u0026#34;vision\\u0026#34;:false,\\u0026#34;toolCalling\\u0026#34;:false,\\u0026#34;maxInputTokens\\u0026#34;:114688,\\u0026#34;maxOutputTokens\\u0026#34;:16384,\\u0026#34;id\\u0026#34;:\\u0026#34;Phi-3.5-mini-instruct-openvino-gpu:1\\u0026#34;,\\u0026#34;owned_by\\u0026#34;:\\u0026#34;Microsoft\\u0026#34;,\\u0026#34;permission\\u0026#34;:[],\\u0026#34;created\\u0026#34;:1763477048,\\u0026#34;CreatedTime\\u0026#34;:\\u0026#34;2025-11-18T14:44:08+00:00\\u0026#34;,\\u0026#34;IsDelta\\u0026#34;:false,\\u0026#34;Successful\\u0026#34;:true,\\u0026#34;HttpStatusCode\\u0026#34;:0,\\u0026#34;object\\u0026#34;:\\u0026#34;model\\u0026#34;},{\\u0026#34;vision\\u0026#34;:false,\\u0026#34;toolCalling\\u0026#34;:false,\\u0026#34;maxInputTokens\\u0026#34;:28672,\\u0026#34;maxOutputTokens\\u0026#34;:4096,\\u0026#34;id\\u0026#34;:\\u0026#34;qwen2.5-0.5b-instruct-openvino-gpu:2\\u0026#34;,\\u0026#34;owned_by\\u0026#34;:\\u0026#34;Microsoft\\u0026#34;,\\u0026#34;permission\\u0026#34;:[],\\u0026#34;created\\u0026#34;:1763466301,\\u0026#34;CreatedTime\\u0026#34;:\\u0026#34;2025-11-18T11:45:01+00:00\\u0026#34;,\\u0026#34;IsDelta\\u0026#34;:false,\\u0026#34;Successful\\u0026#34;:true,\\u0026#34;HttpStatusCode\\u0026#34;:0,\\u0026#34;object\\u0026#34;:\\u0026#34;model\\u0026#34;}],\\u0026#34;IsDelta\\u0026#34;:false,\\u0026#34;Successful\\u0026#34;:true,\\u0026#34;HttpStatusCode\\u0026#34;:0,\\u0026#34;object\\u0026#34;:\\u0026#34;list\\u0026#34;} The /v1/chat/completions endpoint can be used to create a chat completion.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 PS C:\\\\\\u0026gt; $body = @\\u0026#34; \\u0026gt;\\u0026gt; { \\u0026gt;\\u0026gt; \\u0026#34;model\\u0026#34;:\\u0026#34;Phi-3.5-mini-instruct-openvino-gpu:1\\u0026#34;, \\u0026gt;\\u0026gt; \\u0026#34;messages\\u0026#34;:[ \\u0026gt;\\u0026gt; { \\u0026gt;\\u0026gt; \\u0026#34;role\\u0026#34;:\\u0026#34;user\\u0026#34;, \\u0026gt;\\u0026gt; \\u0026#34;content\\u0026#34;:\\u0026#34;In one line, what is Azure?\\u0026#34; \\u0026gt;\\u0026gt; } \\u0026gt;\\u0026gt; ] \\u0026gt;\\u0026gt; } \\u0026gt;\\u0026gt; \\u0026#34;@ PS C:\\\\\\u0026gt; ((Invoke-WebRequest -Uri http://127.0.0.1:22334/v1/chat/completions -Method Post -ContentType \\u0026#34;application/json\\u0026#34; -Body $body).content | ConvertFrom-Json).Choices[0].delta.content Azure is Microsoft\\u0026#39;fertility cloud computing service offering infrastructure, platforms, and services as a whole. We have got the inference working with the local model. This is a simple PowerShell command to invoke the chat completion API. You can, of course, use any OpenAI-compatible SDK in your favorite language to perform the same inference action.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 import openai from foundry_local import FoundryLocalManager alias = \\u0026#34;Phi-3.5-mini\\u0026#34; manager = FoundryLocalManager(alias) client = openai.OpenAI( base_url=manager.endpoint, api_key=manager.api_key ) response = client.chat.completions.create( model=manager.get_model_info(alias).id, messages=[{\\u0026#34;role\\u0026#34;: \\u0026#34;user\\u0026#34;, \\u0026#34;content\\u0026#34;: \\u0026#34;In one line, what is Azure?\\u0026#34;}] ) print(response.choices[0].message.content) This is a quick overview of how Foundry Local can help with local AI inference on resource-constrained devices. In the later parts of this series, we will learn more about using Foundry Local models for different use cases.\\nℹ️ Last updated: 18th November 2025 \"",
+  "url": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-foundry-local\/",
+  "datePublished": "2025-07-17T00:00:00Z",
+  "dateModified": "2025-07-17T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/localllm.png",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-foundry-local\/"
+  },
+  
+  "articleSection": "\"inferencing\"",
+  
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "inferencing",
+      "item": "https:\/\/ravichaganti.com\/categories/inferencing/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Local model serving - Using Foundry Local",
+      "item": "https:\/\/ravichaganti.com\/blog\/local-model-serving-using-foundry-local\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

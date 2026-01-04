@@ -31,6 +31,11 @@ One of the goals of Infrastructure as Code (IaC) practice is to create reusable 
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Bicep Language - Beyond Basics - Parameters">
   <meta property="og:description" content="
   
@@ -41,8 +46,22 @@ Parameters
 One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure. To make this happen, you need to parameterize your infrastructure configuration definitions. In this case, your Bicep files.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/bicep-basics-beyond-basics-parameters/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bicep Language - Beyond Basics - Parameters">
+
+  
+  
+    <meta property="article:published_time" content="2021-04-11T00:00:00Z">
+    <meta property="article:modified_time" content="2021-04-11T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure">
+    <meta property="article:tag" content="Azure"><meta property="article:tag" content="Bicep">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -74,6 +93,102 @@ One of the goals of Infrastructure as Code (IaC) practice is to create reusable 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bicep Language - Beyond Basics - Parameters",
+  "description": " In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, resource keyword along with resource declaration and resource properties …",
+  "articleBody": "\" In the previous part, you learned how you can get started with Bicep language to write your first Bicep file. As you learned, resource keyword along with resource declaration and resource properties are the minimum required in a Bicep file. In today\\u0026rsquo;s article, you will see what is beyond those basics.\\nParameters One of the goals of Infrastructure as Code (IaC) practice is to create reusable and repeatable automation for deploying your infrastructure. To make this happen, you need to parameterize your infrastructure configuration definitions. In this case, your Bicep files.\\nBicep language supports parameter declarations that get compiled into ARM template parameters.\\nAt a minimum, this is how you specify a parameter declaration.\\n1 param \\u0026lt;parameter-identifier\\u0026gt; \\u0026lt;parameter-type\\u0026gt; The param keyword is what gets used to declare parameters in Bicep. The parameter-identifier is what gets referenced when we need the value assigned to the parameter within any resource properties. The parameter-type can be any of the supported data types in Bicep. Bicep has support for several data types like every other programming language. This includes simple types such as int, number, string, bool, null, error, and any and complex types such as arrays and objects. You will learn about some of these types are you build more complex Bicep programs.\\nSo, in its simplest form, parameter specification in a Bicep file will look like the below example.\\n1 param myFirstParameter string You can assign default values to parameters. For example,\\n1 2 param myFirstParameter string = \\u0026#39;Azure Bicep\\u0026#39; param isPrivate bool = false You can also assign value from an expression as a default value as well.\\n1 param myFirstParameter string = resourceGroup().location In Bicep, you can add parameter metadata and constraints using decorators. The general syntax for using decorated parameter declaration is as shown below.\\n1 2 @expression param \\u0026lt;parameter-identifier\\u0026gt; \\u0026lt;parameter-type\\u0026gt; Description Decorator The @description decorator is used to specify parameter description.\\n1 2 @description(\\u0026#39;This parameter is used to specify the location of the resource. Default value is WestUS\\u0026#39;) param location string = \\u0026#39;WestUS\\u0026#39; Value Decorator The @minValue and @maxValue decorators are used to define the lower and upper bound values for an integer parameter.\\n1 2 3 @minValue(1) @maxValue(10) param numVMs int = 2 Allowed Values Decorator Similar to JSON ARM templates, Bicep language too supports constraining parameter values to a known set. This is done using @allowed parameter decorator.\\n1 2 3 4 5 6 @allowed([ \\u0026#39;WestUS\\u0026#39; \\u0026#39;WestUS2\\u0026#39; \\u0026#39;EastUS\\u0026#39; ]) param location string = \\u0026#39;WestUS\\u0026#39; @allowed decorator expects an array of values. This validation is case-sensitive. So, if you specify WestUs2 instead of WestUS2, Bicep build will fail.\\n1 2 PS C:\\\\sandbox\\u0026gt; bicep build .\\\\main.bicep C:\\\\sandbox\\\\main.bicep(20,25) : Error BCP027: The parameter expects a default value of type \\u0026#34;\\u0026#39;EastUS\\u0026#39; | \\u0026#39;WestUS\\u0026#39; | \\u0026#39;WestUS2\\u0026#39;\\u0026#34; but provided value is of type \\u0026#34;\\u0026#39;WestUs2\\u0026#39;\\u0026#34;. Length Decorator Using the @minLength and @maxLength decorator, you can constrain the length of string and array data type parameter values.\\n1 2 3 4 5 6 7 @minLength(3) @maxLength(24) param storageAccountName string @minLength(4) @maxLength(6) param vmNames string[] Secure Decorator The @secure decorator specifies that the parameter is a secure string or secure object. When a parameter is marked as secure, its value does not get stored in the deployment history.\\n1 2 @secure() param administratorPasswrod string Metadata Decorator The @metadata decorator can be used to specify any other custom properties that describe the parameter or its significance.\\n1 2 3 @metadata({ addedOn: \\u0026#39;2021-04-11\\u0026#39; }) You can combine multiple decorators for any given parameter in the Bicep file. Here is an example with declaration with parameter decorators.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 @description(\\u0026#39;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.\\u0026#39;) @metadata({ }) @minLength(3) @maxLength(24) param storageAccountName string @description(\\u0026#39;Specifies the storage account tier. Default value is Hot.\\u0026#39;) @allowed([ \\u0026#39;Hot\\u0026#39; \\u0026#39;Cool\\u0026#39; ]) param accessTier string = \\u0026#39;Hot\\u0026#39; @description(\\u0026#39;Specifies the location of the new storage account. Default location is WestUS2.\\u0026#39;) @allowed([ \\u0026#39;WestUS\\u0026#39; \\u0026#39;WestUS2\\u0026#39; \\u0026#39;EastUS\\u0026#39; ]) param location string = \\u0026#39;WestUS2\\u0026#39; resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-06-01\\u0026#39; = { name: storageAccountName location: location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: accessTier } } Here is how the generated template looks once you compile this using bicep build command.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 { \\u0026#34;$schema\\u0026#34;: \\u0026#34;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\\u0026#34;, \\u0026#34;contentVersion\\u0026#34;: \\u0026#34;1.0.0.0\\u0026#34;, \\u0026#34;parameters\\u0026#34;: { \\u0026#34;storageAccountName\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;maxLength\\u0026#34;: 24, \\u0026#34;minLength\\u0026#34;: 3, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;addedOn\\u0026#34;: \\u0026#34;2021-04-11\\u0026#34;, \\u0026#34;description\\u0026#34;: \\u0026#34;Specifies the name of the storage account. Length must be between 3 and 24 characters and all characters in lower-case.\\u0026#34; } }, \\u0026#34;accessTier\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;Hot\\u0026#34;, \\u0026#34;allowedValues\\u0026#34;: [ \\u0026#34;Hot\\u0026#34;, \\u0026#34;Cold\\u0026#34;, \\u0026#34;Archive\\u0026#34; ], \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;Specifies the storage account tier. Default value is Hot.\\u0026#34; } }, \\u0026#34;location\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;WestUS2\\u0026#34;, \\u0026#34;allowedValues\\u0026#34;: [ \\u0026#34;WestUS\\u0026#34;, \\u0026#34;WestUS2\\u0026#34;, \\u0026#34;EastUS\\u0026#34; ], \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;Specifies the location of the new storage account. Default location is WestUS2.\\u0026#34; } } }, \\u0026#34;functions\\u0026#34;: [], \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2019-06-01\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;storageAccountName\\u0026#39;)]\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;location\\u0026#39;)]\\u0026#34;, \\u0026#34;sku\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;Standard_LRS\\u0026#34; }, \\u0026#34;kind\\u0026#34;: \\u0026#34;StorageV2\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Hot\\u0026#34; } } ], \\u0026#34;metadata\\u0026#34;: { \\u0026#34;_generator\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;bicep\\u0026#34;, \\u0026#34;version\\u0026#34;: \\u0026#34;0.3.126.58533\\u0026#34;, \\u0026#34;templateHash\\u0026#34;: \\u0026#34;10010485068534492010\\u0026#34; } } } Notice in the storageAccountName parameter definition how the contents of metadata decorator get rolled into parameter\\u0026rsquo;s metadata attribute in the JSON template.\\nAlright. This is all about using parameters in Bicep. You will gain some more knowledge beyond basics in the next post. Stay tuned.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/",
+  "datePublished": "2021-04-11T00:00:00Z",
+  "dateModified": "2021-04-11T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/"
+  },
+  
+  "articleSection": "\"Azure\"",
+  
+  
+  "keywords": "[\"Azure\",\"Bicep\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure",
+      "item": "https:\/\/ravichaganti.com\/categories/azure/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Bicep Language - Beyond Basics - Parameters",
+      "item": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-parameters\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

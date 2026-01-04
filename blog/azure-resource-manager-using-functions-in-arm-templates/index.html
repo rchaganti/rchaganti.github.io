@@ -29,6 +29,11 @@ Expressions in ARM template language are a way to reduce complexity in the templ
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Azure Resource Manager - Using functions in ARM templates">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ Expressions in ARM template language are a way to reduce complexity in the templ
 Expressions in ARM template language are a way to reduce complexity in the templates. Using parameters and variables in ARM templates always requires the use of expressions. Parameter and variable values are combined with standard (built-in) template functions (STF) to create complex expressions to implement the business requirements and implement known configurations. Updated ARM template syntax introduced the ability to implement user-defined functions for complicated expressions and use repeatedly in your templates. In this part, you will learn more about standard template functions and learn how to implement user-defined functions.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Azure Resource Manager - Using functions in ARM templates">
+
+  
+  
+    <meta property="article:published_time" content="2020-07-31T00:00:00Z">
+    <meta property="article:modified_time" content="2020-07-31T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure Resource Manager">
+    <meta property="article:tag" content="Azure Resource Manager"><meta property="article:tag" content="Azure"><meta property="article:tag" content="ARM Template">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ Expressions in ARM template language are a way to reduce complexity in the templ
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Azure Resource Manager - Using functions in ARM templates",
+  "description": " Expressions in ARM template language are a way to reduce complexity in the templates. Using parameters and variables in ARM templates always requires the use of expressions. Parameter and variable …",
+  "articleBody": "\" Expressions in ARM template language are a way to reduce complexity in the templates. Using parameters and variables in ARM templates always requires the use of expressions. Parameter and variable values are combined with standard (built-in) template functions (STF) to create complex expressions to implement the business requirements and implement known configurations. Updated ARM template syntax introduced the ability to implement user-defined functions for complicated expressions and use repeatedly in your templates. In this part, you will learn more about standard template functions and learn how to implement user-defined functions.\\nStandard template functions There are different categories of standard template functions. To work with arrays, array functions can be used. For example, contains() function can be used to check whether an array / object / string contains a value / key / substring. This function returns true if the item is found an false otherwise. Here is an example.\\nIn this example, the parameter locations has a default value so you do not have to pass any parameter values while evaluating this template using the method you used in the last part. Within the outputs element, there are two output values defined within which the contains() function is used. One function checks for a value that exists on the parameter value (therefore returns true) and the second one checks for a value that does not exist in the parameter value and therefore returns false.\\nIn the last part, you tried a few examples of STF already. At a high level, you can classify the STF into two categories \\u0026ndash; compile-time and run-time. The examples that we have seen so far are compile-time functions. The compile-time functions evaluate before the deployment begins. The run-time functions evaluate once the deployment begins. One example of a run-time function is the listKeys() function. Using this template function, here is how you retrieve the storage account key for a given storage account.\\n1 2 3 4 5 6 7 8 9 10 11 [ listKeys( resourceId( \\u0026#39;Microsoft.Storage/storageAccounts\\u0026#39;, concat( \\u0026#39;sacct\\u0026#39;, \\u0026#39;-\\u0026#39;, uniqueString( resourceGroup().id ) ) ), \\u0026#39;2019-06-01\\u0026#39; ).keys[0].value ] In the above example, two arguments are passed to the listKeys() function. First one is the resourceId() function to retrieve the unique ID of the storage account that you provisioned. Second parameter is the API version used to deploy the resource. The final part of the expression .keys[0].value is the array reference to retrieve the value of primary storage key.\\nHere is another example of a run-time function. This is called reference(). This function returns the runtime state of a resource.\\n1 2 3 4 5 6 7 8 [ reference( concat(\\u0026#39;Microsoft.Storage/storageAccounts/\\u0026#39;, concat( \\u0026#39;sacct\\u0026#39;, \\u0026#39;-\\u0026#39;, uniqueString(resourceGroup().id) ), \\u0026#39;2019-06-01\\u0026#39; ) ).primaryEndpoints.blob ] Similar to the expression that used listKeys() function, this one too uses a prefix string, a unique string generated using the resource group ID, and the API version string to retrieve the storage blob URI. This blob URI is retrieved using .primaryEndpoints.blob.\\nIn the above example, concat('sacct', '-', uniqueString(resourceGroup().id)) sub-expression is used to generate a unique name for the storage account. What if you want to use a similar expression for multiple resource names in the ARM template to ensure that your ARM template uses more known configuration? One way to do that is to repeat the expression multiple times with different prefixes as needed. The second and a better way is to create and use an user-defined functions (UDF) where you get the ability to parameterize expressions and reuse the same in your ARM templates like you use built-in functions.\\nUser-defined functions With user-defined functions (UDF), you can create your own functions by combining multiple standard template functions into a complicated expression. The following syntax describes how the user-defined functions can be added to ARM templates.\\nA UDF must be a part of a namespace to avoid name conflicts with STF. All your expressions get added to the members object. You need to give your custom function a unique name within the namespace and add parameters and output as needed. Here is a quick example that wraps the above expression into a custom function.\\nIn the above example, one parameters \\u0026ndash; prefix \\u0026ndash; allows you to use the expression with varying input. The output value within the UDF is set to the transformed expression that will use the parameter and return a unique resource name. How do you use this UDF in your template? Simple, like any other built-in function in an expression.\\n1 2 3 4 5 6 7 \\u0026#34;variables\\u0026#34;: { \\u0026#34;virtualNetworkAddressPrefix\\u0026#34; : \\u0026#34;10.0.0.0/16\\u0026#34;, \\u0026#34;virtualNetworkName\\u0026#34; : \\u0026#34;[armin30.uniqueResourceName(\\u0026#39;vnet\\u0026#39;)]\\u0026#34;, \\u0026#34;virtualNetworkSubnetName\\u0026#34; : \\u0026#34;[armin30.uniqueResourceName(\\u0026#39;subnet\\u0026#39;)]\\u0026#34;, \\u0026#34;storageAccountName\\u0026#34; : \\u0026#34;[armin30.uniqueResourceName(\\u0026#39;sacct\\u0026#39;)]\\u0026#34;, \\u0026#34;virtualNetworkSubnetAddressPrefix\\u0026#34; : \\u0026#34;10.0.1.0/24\\u0026#34; } A UDF is accessed using the namespace.functionName notation with a list of comma-separated parameter values. This example assign output value from armin30.uniqueResourceName() function to variables. You can use the UDF directly in resource properties as well.\\nLimitations of UDF There are few limitations when using user-defined functions.\\nYou cannot access parameters and variables defined in the ARM template\\u0026rsquo;s parameters and variables elements. You can only access parameters defined within the user-defined function and these UDF parameters cannot have any default values. There is no nested UDF support. The expressions that use reference and list* methods cannot be used within UDF. Finally, here is the updated template for the scenario you are working on.\\nYou can deploy this template by clicking on the deploy to Azure button.\\nOnce the deployment is complete, you can see the deployed resources in the portal or in the console if you used Azure CLI. Note the random strings with the prefixes that you specified as input to the armin30.uniqueResourceName UDF.\\nSummary With the help of parameters, variables, expressions, and user-defined functions you get the ability to simplify the ARM template authoring process and make the templates more readable. There are many standard template functions that help you simplify the ARM template resource definitions. When you have to repeat and reuse some of the complicated expressions in an ARM template, you can wrap the expression as a user-defined function and use the UDF in the resource definition. In the next part of the series, you will learn how to use secrets in an ARM template.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-functions-in-arm-templates\/",
+  "datePublished": "2020-07-31T00:00:00Z",
+  "dateModified": "2020-07-31T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-functions-in-arm-templates\/"
+  },
+  
+  "articleSection": "\"Azure Resource Manager\"",
+  
+  
+  "keywords": "[\"Azure Resource Manager\",\"Azure\",\"ARM Template\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure Resource Manager",
+      "item": "https:\/\/ravichaganti.com\/categories/azure-resource-manager/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Azure Resource Manager - Using functions in ARM templates",
+      "item": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-functions-in-arm-templates\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

@@ -26,13 +26,32 @@ In a previous example on retrieving weather at a given location, we examined how
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Parallel tool calling in Azure OpenAI">
   <meta property="og:description" content="We have learned to perform single- and multi-tool calling with the Azure OpenAI API for chat completions. This part of the series on Azure OpenAI will describe the parallel tool calling feature and how to implement it. Parallel tool calling allows you to perform multiple calls together. This enables parallel execution, result retrieval, and fewer calls to the LLM. Parallelizing tool calls improves overall performance.
 In a previous example on retrieving weather at a given location, we examined how to iterate over the LLM response for tool calls and append it to the conversation history before making the next LLM API call.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Parallel tool calling in Azure OpenAI">
+
+  
+  
+    <meta property="article:published_time" content="2024-08-20T00:00:00Z">
+    <meta property="article:modified_time" content="2024-08-20T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="azure">
+    <meta property="article:tag" content="azure"><meta property="article:tag" content="openai"><meta property="article:tag" content="python">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -59,6 +78,102 @@ In a previous example on retrieving weather at a given location, we examined how
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Parallel tool calling in Azure OpenAI",
+  "description": "We have learned to perform single- and multi-tool calling with the Azure OpenAI API for chat completions. This part of the series on Azure OpenAI will describe the parallel tool calling feature and …",
+  "articleBody": "\"We have learned to perform single- and multi-tool calling with the Azure OpenAI API for chat completions. This part of the series on Azure OpenAI will describe the parallel tool calling feature and how to implement it. Parallel tool calling allows you to perform multiple calls together. This enables parallel execution, result retrieval, and fewer calls to the LLM. Parallelizing tool calls improves overall performance.\\nIn a previous example on retrieving weather at a given location, we examined how to iterate over the LLM response for tool calls and append it to the conversation history before making the next LLM API call.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 for tool_call in response_message.tool_calls: if tool_call.function.name == \\u0026#34;get_weather\\u0026#34;: function_args = json.loads(tool_call.function.arguments) weather_response = get_weather( city_name=function_args.get(\\u0026#34;city_name\\u0026#34;) ) conversation_history.append({ \\u0026#34;role\\u0026#34;: \\u0026#34;tool\\u0026#34;, \\u0026#34;tool_call_id\\u0026#34;: tool_call.id, \\u0026#34;name\\u0026#34;: \\u0026#34;get_weather\\u0026#34;, \\u0026#34;content\\u0026#34;: weather_response, }) final_response = client.chat.completions.create( model=AZURE_OPENAI_DEPLOYMENT_NAME, messages=conversation_history, tools = tools, ) return final_response.choices[0].message.content In this method, we request the final response from LLM, causing it to use the response from the tool immediately. If we change the prompt from \\u0026ldquo;What\\u0026rsquo;s the weather like in Bengaluru?\\u0026rdquo; to \\u0026ldquo;What\\u0026rsquo;s the weather like in Bengaluru, London, and Austin?\\u0026rdquo;, the above logic will run in a sequence and result in three LLM API calls. We can make a trivial change to this function and reduce the number of LLM API calls.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 for tool_call in response_message.tool_calls: if tool_call.function.name == \\u0026#34;get_weather\\u0026#34;: function_args = json.loads(tool_call.function.arguments) weather_response = get_weather( city_name=function_args.get(\\u0026#34;city_name\\u0026#34;) ) conversation_history.append({ \\u0026#34;role\\u0026#34;: \\u0026#34;tool\\u0026#34;, \\u0026#34;tool_call_id\\u0026#34;: tool_call.id, \\u0026#34;name\\u0026#34;: \\u0026#34;get_weather\\u0026#34;, \\u0026#34;content\\u0026#34;: weather_response, }) final_response = client.chat.completions.create( model=AZURE_OPENAI_DEPLOYMENT_NAME, messages=conversation_history, tools = tools, ) return final_response.choices[0].message.content As you see above, we moved the final response block out of the for loop. This sends one consolidated API call to the LLM with all three responses retrieved from the get_weather tool.\\n1 2 3 4 5 6 $ python 08_parallel_function_calling.py The current weather conditions are as follows: - **Bengaluru**: 26.6°C - **London**: 4.2°C - **Austin**: 16.9°C This is a short post for today. We will continue to learn about Azure OpenAI in this series of articles.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/parallel-tool-calling-azure-openai\/",
+  "datePublished": "2024-08-20T00:00:00Z",
+  "dateModified": "2024-08-20T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/parallel-tool-calling-azure-openai\/"
+  },
+  
+  "articleSection": "\"azure\"",
+  
+  
+  "keywords": "[\"azure\",\"openai\",\"python\"]",
+  
+  
+  "timeRequired": "PT2M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "azure",
+      "item": "https:\/\/ravichaganti.com\/categories/azure/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Parallel tool calling in Azure OpenAI",
+      "item": "https:\/\/ravichaganti.com\/blog\/parallel-tool-calling-azure-openai\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

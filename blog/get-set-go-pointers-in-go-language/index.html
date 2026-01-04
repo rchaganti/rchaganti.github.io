@@ -29,6 +29,11 @@ In the previous part of this series, you learned about slices in Go language. Sl
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Get set Go - Pointers in Go language">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ In the previous part of this series, you learned about slices in Go language. Sl
 In the previous part of this series, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the end of the article on slices, you learned that slices are essentially references to an underlying array and any changes made to the slice will reflect in the underlying array as well. In this article, you shall learn about another reference type called pointers in Go language.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/get-set-go-pointers-in-go-language/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Get set Go - Pointers in Go language">
+
+  
+  
+    <meta property="article:published_time" content="2020-09-29T00:00:00Z">
+    <meta property="article:modified_time" content="2020-09-29T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Golang">
+    <meta property="article:tag" content="Golang"><meta property="article:tag" content="Go">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ In the previous part of this series, you learned about slices in Go language. Sl
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Get set Go - Pointers in Go language",
+  "description": " In the previous part of this series, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the …",
+  "articleBody": "\" In the previous part of this series, you learned about slices in Go language. Slices, unlike arrays, allow flexibility and certainly are the most used compared to arrays in Go language. Towards the end of the article on slices, you learned that slices are essentially references to an underlying array and any changes made to the slice will reflect in the underlying array as well. In this article, you shall learn about another reference type called pointers in Go language.\\nPointers Pointers in Go, like other languages, hold the memory address of a value. First, an example.\\n1 2 3 4 5 6 7 8 9 10 11 12 package main import \\u0026#34;fmt\\u0026#34; func main() { a := 10 b := \\u0026amp;a fmt.Println(\\u0026#34;value of a is\\u0026#34;, a) fmt.Println(\\u0026#34;value of b is\\u0026#34;, b) fmt.Println(\\u0026#34;value at b is\\u0026#34;, *b) } The first variable declaration and initialization in the above example is already known. It is a simple integer. The line where variable b is declared is special. On the right-hand side, using \\u0026amp; prefix tells Go that you want to store the memory location of the value represented by variable a. \\u0026amp; is called the addressOf operator. So, variable b gets the memory address of variable a. In the last line, the asterisk (*) dereferences the value at variable b and therefore it is called the dereferencing operator.\\nThis should be clear if you run this example.\\n1 2 3 4 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\pointers.go value of a is 10 value of b is 0xc000012090 value at b is 10 The second output shows the value stored in variable b which is the memory address of variable a. And, the last line in the output shows the value at the memory address represented by variable b which is the value of variable a \\u0026ndash; 10.\\nSince variable b is the address of value represented variable a, you cannot assign another integer value to b directly. Instead, you dereference and then assign a value which changes the value of variable a.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 package main import \\u0026#34;fmt\\u0026#34; func main() { a := 10 b := \\u0026amp;a fmt.Println(\\u0026#34;value of a is\\u0026#34;, a) fmt.Println(\\u0026#34;value of b is\\u0026#34;, b) fmt.Println(\\u0026#34;value at b is\\u0026#34;, *b) *b = 20 fmt.Println(\\u0026#34;value of b is\\u0026#34;, b) fmt.Println(\\u0026#34;value of a is\\u0026#34;, a) } If you run this above example, you will see output similar to what is shown below.\\n1 2 3 4 5 6 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\pointers.go value of a is 10 value of b is 0xc000012090 value at b is 10 value of b is 0xc000012090 value of a is 20 If you observe the output, the memory address stored in variable b itself does not change but the value assigned to variable gets updated to 20. This is good but are there other methods we can declare pointers in Go language?\\nThe regular variable declaration syntax works for variables as well.\\nvar b *int = \\u0026amp;a\\nThe above method is just an expanded form of what you learned in the first example. In this expanded form, there is explicit declaration of pointer type which is *int in this case or you can call it an integer pointer. You can skip the initialization part and just declare an integer pointer. In such as case the zero value of a pointer will be set to nil and you cannot dereference until you assign a value.\\nUsing new function When you use the built-in new function to declare and initialize a variable, you get a pointer to its memory address. Take a look at the below example.\\n1 2 3 4 5 6 7 package main func main() { a := new(int) println(a) println(*a) } When you run this, the first println will print the memory address and when you dereference it\\u0026rsquo;s value, you will see a zero value.\\nThis is just an introduction to pointers in Go language and you will learn more about the use cases of pointers when we discuss functions and other advanced concepts. Stay tuned.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/get-set-go-pointers-in-go-language\/",
+  "datePublished": "2020-09-29T00:00:00Z",
+  "dateModified": "2020-09-29T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/get-set-go-pointers-in-go-language\/"
+  },
+  
+  "articleSection": "\"Golang\"",
+  
+  
+  "keywords": "[\"Golang\",\"Go\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Golang",
+      "item": "https:\/\/ravichaganti.com\/categories/golang/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Get set Go - Pointers in Go language",
+      "item": "https:\/\/ravichaganti.com\/blog\/get-set-go-pointers-in-go-language\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

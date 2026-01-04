@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Changes in Autogen release 0.5.1">
   <meta property="og:description" content="Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When working directly with model clients, you can set to a Pydantic model. Here is an example from the release notes.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/changes-in-autogen-release-0_5_1/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&amp;h=400&amp;fit=crop">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Changes in Autogen release 0.5.1">
+
+  
+  
+    <meta property="article:published_time" content="2025-04-06T00:00:00Z">
+    <meta property="article:modified_time" content="2025-04-06T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="autogen">
+    <meta property="article:tag" content="azure"><meta property="article:tag" content="openai"><meta property="article:tag" content="python">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Changes in Autogen release 0.5.1",
+  "description": "Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft\/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking …",
+  "articleBody": "\"Microsoft released [version 0.5.1 of the AutoGen](Release python-v0.5.1 · microsoft/autogen) stable build last week, and I quickly reviewed the release notes to verify if there were any breaking changes to what I had been writing so far using AutoGen. There is code refactoring to change the structure of base types. This release provides enhanced support for structured output. When working directly with model clients, you can set to a Pydantic model. Here is an example from the release notes.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 import asyncio from typing import Literal from autogen_core import CancellationToken from autogen_ext.models.openai import OpenAIChatCompletionClient from pydantic import BaseModel # Define the structured output format. class AgentResponse(BaseModel): thoughts: str response: Literal[\\u0026#34;happy\\u0026#34;, \\u0026#34;sad\\u0026#34;, \\u0026#34;neutral\\u0026#34;] model_client = OpenAIChatCompletionClient(model=\\u0026#34;gpt-4o-mini\\u0026#34;) # Generate a response using the tool. response = await model_client.create( messages=[ SystemMessage(content=\\u0026#34;Analyze input text sentiment using the tool provided.\\u0026#34;), UserMessage(content=\\u0026#34;I am happy.\\u0026#34;, source=\\u0026#34;user\\u0026#34;), ], json_ouput=AgentResponse, ) print(response.content) # Should be a structured output. # {\\u0026#34;thoughts\\u0026#34;: \\u0026#34;The user is happy.\\u0026#34;, \\u0026#34;response\\u0026#34;: \\u0026#34;happy\\u0026#34;} If you are using AssistantAgent, you can use the output_content_type to a Pydantic model that describes the output format. The agent will automatically reflect on the tool call result and generate a StructuredMessage with the output content type.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 import asyncio from typing import Literal from autogen_agentchat.agents import AssistantAgent from autogen_agentchat.messages import TextMessage from autogen_agentchat.ui import Console from autogen_core import CancellationToken from autogen_core.tools import FunctionTool from autogen_ext.models.openai import OpenAIChatCompletionClient from pydantic import BaseModel # Define the structured output format. class AgentResponse(BaseModel): thoughts: str response: Literal[\\u0026#34;happy\\u0026#34;, \\u0026#34;sad\\u0026#34;, \\u0026#34;neutral\\u0026#34;] # Define the function to be called as a tool. def sentiment_analysis(text: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Given a text, return the sentiment.\\u0026#34;\\u0026#34;\\u0026#34; return \\u0026#34;happy\\u0026#34; if \\u0026#34;happy\\u0026#34; in text else \\u0026#34;sad\\u0026#34; if \\u0026#34;sad\\u0026#34; in text else \\u0026#34;neutral\\u0026#34; # Create a FunctionTool instance with `strict=True`, # which is required for structured output mode. tool = FunctionTool(sentiment_analysis, description=\\u0026#34;Sentiment Analysis\\u0026#34;, strict=True) # Create an OpenAIChatCompletionClient instance that supports structured output. model_client = OpenAIChatCompletionClient( model=\\u0026#34;gpt-4o-mini\\u0026#34;, ) # Create an AssistantAgent instance that uses the tool and model client. agent = AssistantAgent( name=\\u0026#34;assistant\\u0026#34;, model_client=model_client, tools=[tool], system_message=\\u0026#34;Use the tool to analyze sentiment.\\u0026#34;, output_content_type=AgentResponse, ) stream = agent.on_messages_stream([TextMessage(content=\\u0026#34;I am happy today!\\u0026#34;, source=\\u0026#34;user\\u0026#34;)], CancellationToken()) await Console(stream) This release also added support for Azure AI Search as a tool, along with enhancements to SelectorGroupChat and code executors.\\nWhile I was testing the older examples I had built for this series, I encountered a deprecation warning.\\n1 2 .venv\\\\Lib\\\\site-packages\\\\autogen_ext\\\\models\\\\openai\\\\_openai_client.py:379: UserWarning: Missing required field \\u0026#39;structured_output\\u0026#39; in ModelInfo. This field will be required in a future version of AutoGen. validate_model_info(self._model_info) I dug a little deeper and understood that the ModelInfo object with the following structure is necessary in the future.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 model_info = ModelInfo( vision=False, structured_output=False, function_calling=False, streaming=False, json_output=False, family=\\u0026#34;gpt-4o\\u0026#34;, ) aopenai_client = AzureOpenAIChatCompletionClient( model=os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;), api_key=os.getenv(\\u0026#34;AZURE_OPENAI_API_KEY\\u0026#34;), api_version=os.getenv(\\u0026#34;AZURE_OPENAI_API_VERSION\\u0026#34;), endpoint=os.getenv(\\u0026#34;AZURE_OPENAI_ENDPOINT\\u0026#34;), model_info=model_info, ) If you are using agents or need tool calling, you must set the function_calling to True.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/",
+  "datePublished": "2025-04-06T00:00:00Z",
+  "dateModified": "2025-04-06T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/images.unsplash.com\/photo-1667372393119-3d4c48d07fc9?w=800\u0026h=400\u0026fit=crop",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/"
+  },
+  
+  "articleSection": "\"autogen\"",
+  
+  
+  "keywords": "[\"azure\",\"openai\",\"python\"]",
+  
+  
+  "timeRequired": "PT3M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "autogen",
+      "item": "https:\/\/ravichaganti.com\/categories/autogen/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Changes in Autogen release 0.5.1",
+      "item": "https:\/\/ravichaganti.com\/blog\/changes-in-autogen-release-0_5_1\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

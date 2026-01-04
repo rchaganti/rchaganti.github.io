@@ -31,6 +31,11 @@ Syntax for adding an output element to Bicep is:">
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Bicep Language - Beyond Basics - Output">
   <meta property="og:description" content="
   
@@ -41,8 +46,22 @@ Output
 Syntax for adding an output element to Bicep is:">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/bicep-basics-beyond-basics-output/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bicep Language - Beyond Basics - Output">
+
+  
+  
+    <meta property="article:published_time" content="2021-04-15T00:00:00Z">
+    <meta property="article:modified_time" content="2021-04-15T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure">
+    <meta property="article:tag" content="Azure"><meta property="article:tag" content="Bicep">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -74,6 +93,102 @@ Syntax for adding an output element to Bicep is:">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bicep Language - Beyond Basics - Output",
+  "description": " You use outputs in ARM JSON templates to return value(s) from the deployment. Returning output from a template is not mandatory, but it is useful in scenarios such as deploying templates through a …",
+  "articleBody": "\" You use outputs in ARM JSON templates to return value(s) from the deployment. Returning output from a template is not mandatory, but it is useful in scenarios such as deploying templates through a CI/CD pipeline or creating templates as reusable modules. To support this, Bicep language has an outputs element.\\nOutput Syntax for adding an output element to Bicep is:\\n1 output \\u0026lt;output-identifier\\u0026gt; \\u0026lt;output-type\\u0026gt; = \\u0026lt;literal\\u0026gt; or \\u0026lt;expression\\u0026gt; You can add any number of outputs in a Bicep file. The output-identifier, along with the literal value or the value from the expression, will be returned after a successful deployment. As you will learn in the next part of this series, Bicep modules make use of outputs from a template deployment. The type of data that you return from output can be an integer, a string, an array, an object, or a boolean value.\\nHere is a simple example that returns the storage account Id once the template deployment is complete.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = { name: \\u0026#39;stg${uniqueString(resourceGroup().id)}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } } output sid string = sa.id You can use the resource accessor to assign the value of storage account resource Id to the output. In this example, sa is the resource instance name within the deployment. So, sa.id will retrieve the resource Id of the storage account.\\nYou can deploy this template using az deployment group create --template-file=C:\\\\sandbox\\\\bicep\\\\main.bicep --resource-group bicep. The output from this command will include an outputs object.\\n1 2 3 4 5 6 \\u0026#34;outputs\\u0026#34;: { \\u0026#34;sid\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;String\\u0026#34;, \\u0026#34;value\\u0026#34;: \\u0026#34;/subscriptions/5073fd4c-3a1b-4559-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/stg6axmw2qxc2xnq\\u0026#34; } } Output Iterations Similar to resources and resource properties, you can use iterations with output as well. There are three types of iterations that you learned about in the previous part of this series. The syntax for using any of those three methods is similar for outputs as well.\\n1 2 3 output \\u0026lt;output-identifier\\u0026gt; \\u0026lt;output-type\\u0026gt; = [for index in range(\\u0026lt;start\\u0026gt;, \\u0026lt;stop\\u0026gt;): \\u0026lt;output-properties\\u0026gt; ] In the last part of this series, you learned how to use loop index based iteration. The same example can be extended to add output of all storage account resource Ids. Here is how you do that.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 param saCount int = 3 resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for index in range(0, saCount): { name: \\u0026#39;${index}stg${uniqueString(resourceGroup().id)}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } }] output saId array = [for i in range(0, saCount): resourceId(\\u0026#39;Microsoft.Storage/storageAccounts\\u0026#39;, \\u0026#39;${i}stg${uniqueString(resourceGroup().id)}\\u0026#39;)] In the ARM template deployment output, you should see:\\n1 2 3 4 5 6 7 8 9 10 \\u0026#34;outputs\\u0026#34;: { \\u0026#34;saId\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;Array\\u0026#34;, \\u0026#34;value\\u0026#34;: [ \\u0026#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/0stg6axmw2qxc2xnq\\u0026#34;, \\u0026#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/1stg6axmw2qxc2xnq\\u0026#34;, \\u0026#34;/subscriptions/5073fd4c-8371-21e034f70820/resourceGroups/bicep/providers/Microsoft.Storage/storageAccounts/2stg6axmw2qxc2xnq\\u0026#34; ] } } Within the output array, if you want to return multiple properties, you can simply specify that using a property name.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 var sAccounts = [ { name: \\u0026#39;sqllondon\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } { name: \\u0026#39;sqlchennai\\u0026#39; accessTier: \\u0026#39;Hot\\u0026#39; } { name: \\u0026#39;archiveseattle\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } ] resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for (sItem, sIndex) in sAccounts: { name: \\u0026#39;stg${sItem.name}${sIndex}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: sItem.accessTier } }] output storageDetail array = [for (sItem, sIndex) in sAccounts: { id: reference(\\u0026#39;stg${sItem.name}${sIndex}\\u0026#39;, \\u0026#39;2019-04-01\\u0026#39;, \\u0026#39;Full\\u0026#39;).resourceId accessTier: reference(\\u0026#39;stg${sItem.name}${sIndex}\\u0026#39;).accessTier }] This deployment will return the output similar to:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 \\u0026#34;outputs\\u0026#34;: { \\u0026#34;storageDetail\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;Array\\u0026#34;, \\u0026#34;value\\u0026#34;: [ { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Cool\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts/stgsqllondon0\\u0026#34; }, { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Hot\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts/stgsqlchennai1\\u0026#34; }, { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Cool\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts/stgarchiveseattle2\\u0026#34; } ] } Alright. This is it for today. In the next part of this series, you will learn about authoring reusable modules in Bicep. Stay tuned!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-output\/",
+  "datePublished": "2021-04-15T00:00:00Z",
+  "dateModified": "2021-04-15T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-output\/"
+  },
+  
+  "articleSection": "\"Azure\"",
+  
+  
+  "keywords": "[\"Azure\",\"Bicep\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure",
+      "item": "https:\/\/ravichaganti.com\/categories/azure/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Bicep Language - Beyond Basics - Output",
+      "item": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-output\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

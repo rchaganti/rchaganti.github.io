@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="WMI Query Language (WQL) – Data Queries: Associators Of">
   <meta property="og:description" content="As we saw in the previous post, Select queries can be used to retrieve instances of WMI class. But select queries are not the only way to query for instances. We can also use Associators Of keyword to the same. However, there is a difference. Select queries always return a collection of instances of a WMI class where as “Associators Of” returns a collection of WMI objects that belong to different WMI classes or associated WMI classes. Before we dig too much in to this, let us first understand what are associated WMI classes.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/wmi-query-language-wql-data-queries-associators-of/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="WMI Query Language (WQL) – Data Queries: Associators Of">
+
+  
+  
+    <meta property="article:published_time" content="2010-09-13T00:00:00Z">
+    <meta property="article:modified_time" content="2010-09-13T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="WQL"><meta property="article:tag" content="WMI">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "WMI Query Language (WQL) – Data Queries: Associators Of",
+  "description": "As we saw in the previous post, Select queries can be used to retrieve instances of WMI class. But select queries are not the only way to query for instances. We can also use Associators Of keyword to …",
+  "articleBody": "\"As we saw in the previous post, Select queries can be used to retrieve instances of WMI class. But select queries are not the only way to query for instances. We can also use Associators Of keyword to the same. However, there is a difference. Select queries always return a collection of instances of a WMI class where as “Associators Of” returns a collection of WMI objects that belong to different WMI classes or associated WMI classes. Before we dig too much in to this, let us first understand what are associated WMI classes.\\nTake an example of a network adapter.WMI has several classes that represent network adapter information. Let us look at Win32_NetworkAdapter. This WMI class is associated with Win32_NetworkAdapterConfiguration, Win32_NetworkProtocol, and Win32_SystemDriver.\\nIf you look at the above output (from CIM Studio’s association tab for a selected class), you will see that Win32_NetworkAdapterconfiguration is associated to Win32_NetworkAdapter through an association class named Win32_NetworkAdapterSetting. And, the other two classes — Win32_NetworkProtocol \\u0026amp; Win32_SystemDriver — are associated through an association class named Win32_ProtocolBinding. Make a note of the terminology I used here: associated Class \\u0026amp; association class. We will re-visit this later in this post.\\nSo, the basic syntax of this “Associators Of” keyword is:\\nASSOCIATORS OF {ObjectPath}\\nNote that the braces are part of the syntax. Any valid object path can be used for ObjectPath. Let us look at an example to understand this.\\n1 Get-WmiObject -Query \\u0026#34;Associators Of {Win32_NetworkAdapter.DeviceID=12}\\u0026#34; The above snippet shows the basic usage of Associators Of. Make a note of the syntax inside curly braces. This query — when executed — gets all the instances of all associated classes (see above screenshot). So, this can take a while and the output can be overwhelming. Remember, this query without DeviceID=12 will not return anything. We have to specify a qualifier to get the associated instances. This qualifier can be any property from the source WMI class.\\nThe output of above query can be overwhelming as the number of associated classes is very large and each associated class may have more than one instance. You can use WHERE clause to filter this out. However, the usage of WHERE clause is a bit different from how you do that with SELECT queries. There are predefined keywords that you can use with WHERE clause. They are:\\nASSOCIATORS OF {ObjectPath} WHERE AssocClass = AssocClassName ClassDefsOnly RequiredAssocQualifier = QualifierName RequiredQualifier = QualifierName ResultClass = ClassName ResultRole = PropertyName Role = PropertyName\\nNote: You cannot use logical operators such as AND, OR, and NOT within the WHERE clause while using Associators Of keyword. You can use more than one subclause by just separating them by a space.\\nLet us see the examples for some of these now.\\nClassDefsOnly\\nLet us first see a way to list only the associated class names as shown in the screenshot above. You can use the subclause ClassDefsOnly for this purpose.\\n1 Get-WMIObject -Query \\u0026#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ClassDefsOnly\\u0026#34; This will list all the associated class names and methods \\u0026amp; properties associated with each of those classes.\\nAssocClass\\nIf you want to retrieve the instance of associated class though a single association class:\\n1 Get-WmiObject -Query \\u0026#34;Associators of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_ProtocolBinding\\u0026#34; This will result in the driver \\u0026amp; protocol information bound to network adapter with device ID 12.\\nResultClass\\nThis subclause indicates that you want to retrieve the end points associated only with the specified ResultClass. For example,\\n1 Get-WMIObject -Query \\u0026#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration\\u0026#34; Why the heck do you need associators of?\\nTechnically, you don’t need to use this keyword. You can script or parse away to glory to get the same results as what “Associators Of “keyword can do for you. Take an example of Win32_NetworkAdapter class itself. Win32_NetworkAdapter stores the physical adapter details and Win32_NetworkAdapterConfiguration stores the software (IP) configuration pertaining to each adapter instance. These two classes are associated using the Win32_NetworkAdapterSetting association class. To get the IP configuration information without using “Associators of” keyword is not a straight forward task. In layman terms, this is because there is no common key between WIn32_NetworkAdapter and Win32_NetworkAdapterConfiguration. You may think that you can use Win32_NetworkAdapterSetting class to retrieve the information. However, when you run\\n1 Get-WMIObject -Class Win32_NetworkAdapaterSetting you will see lot of information related to all network adapters in the system but there is no easy way to filter out that for a specific device. Now, if you use “Associators Of” keyword, you can get the IP information by running\\n1 Get-WMIObject -Query \\u0026#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE ResultClass=Win32_NetworkAdapterConfiguration\\u0026#34; Or\\n1 Get-WMIObject -Query \\u0026#34;Associators Of {Win32_NetworkAdapter.DeviceID=12} WHERE AssocClass=Win32_NetworkAdapterSetting\\u0026#34; You may now ask me why not just run “gwmi Win32_NetworkAdapaterConfiguration -Filter ‘Index=12′”. Yes, you can. This is probably the simplest way to get IP information without what is shown above. The examples above are intended only to show the usage of “Associators Of” keyword.\\nOn the same lines, let us look at another example. For a moment think that Get-Service cmdlet never existed. Now, if you want to get the dependent services of any specific service without using “associators Of”, you would do that by parsing Win32_DependentService instances. However, using the keyword discussed today, you can the do same by\\n1 Get-WMIObject -Query \\u0026#34;Associators of {Win32_Service.Name=\\u0026#39;Winmgmt\\u0026#39;} Where ResultRole=Dependent\\u0026#34; To get a list of services that must be started before starting a specific service,\\n1 Get-WMIObject -Query \\u0026#34;Associators of {Win32_Service.Name=\\u0026#39;Winmgmt\\u0026#39;} Where ResultRole=Antecedent\\u0026#34; To get a list of both dependent and required services\\n1 Get-WMIObject -Query \\u0026#34;Associators of {Win32_Service.Name=\\u0026#39;Winmgmt\\u0026#39;} Where AssocClass=Win32_DependentService\\u0026#34; I shall conclude today’s post here and discuss “References Of” in the next post. I intentionally left a few Sub clauses for you to figure out yourself.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-associators-of\/",
+  "datePublished": "2010-09-13T00:00:00Z",
+  "dateModified": "2010-09-13T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-associators-of\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"WQL\",\"WMI\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "WMI Query Language (WQL) – Data Queries: Associators Of",
+      "item": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-associators-of\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

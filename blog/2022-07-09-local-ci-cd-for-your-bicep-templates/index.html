@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Local CI/CD for your Bicep templates">
   <meta property="og:description" content="One of the very important aspects of Infrastructure as Code (IaC) is automation. And, it is not just about the configuration tasks that we must automate but it is also the entire validation and deployment / delivery workflow itself. We call this a continuous integration (CI) and continuous delivery / deployment (CD) pipeline. The core idea of a CI/CD pipeline is to accelerate testing and uncover any bugs and fix those bugs before the code reaches production. There are many ways and tools to implement a CI/CD pipeline. We can use GitHub actions or Jenkins or AppVeyor to name just a few. But, as a starting point, I prefer building a local CI/CD pipeline using git hooks. In this article, I will show you how I built a simple test and deploy pipeline for my Azure Bicep experiments.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/2022-07-09-local-ci-cd-for-your-bicep-templates/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Local CI/CD for your Bicep templates">
+
+  
+  
+    <meta property="article:published_time" content="2022-07-09T00:00:00Z">
+    <meta property="article:modified_time" content="2022-07-09T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="devops">
+    <meta property="article:tag" content="devops"><meta property="article:tag" content="azure"><meta property="article:tag" content="bicep">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Local CI\/CD for your Bicep templates",
+  "description": "One of the very important aspects of Infrastructure as Code (IaC) is automation. And, it is not just about the configuration tasks that we must automate but it is also the entire validation and …",
+  "articleBody": "\"One of the very important aspects of Infrastructure as Code (IaC) is automation. And, it is not just about the configuration tasks that we must automate but it is also the entire validation and deployment / delivery workflow itself. We call this a continuous integration (CI) and continuous delivery / deployment (CD) pipeline. The core idea of a CI/CD pipeline is to accelerate testing and uncover any bugs and fix those bugs before the code reaches production. There are many ways and tools to implement a CI/CD pipeline. We can use GitHub actions or Jenkins or AppVeyor to name just a few. But, as a starting point, I prefer building a local CI/CD pipeline using git hooks. In this article, I will show you how I built a simple test and deploy pipeline for my Azure Bicep experiments.\\nGit hooks is not a new concept. These hooks are simply scripts that execute before or after Git events. These Git events include commit, push, pull, and so on. Every Git repository contains a hooks folder under .git folder at the root of the repository. There are bunch of sample scripts already there for us as a reference. We can use that as a starting point or create something of our from scratch.\\nYou can clone the repo https://github.com/rchaganti/bicepcicd to understand how I built this local CI/CD pipeline. The rest of the article explains the same.\\nFirst, you need a Git repository. You can download and install Git from https://git-scm.com. Once you have the Git binaries installed, you can run the following commands to create a local repository.\\n1 2 3 mkdir c:\\\\temp\\\\myBicepProject cd C:\\\\temp\\\\myBicepProject git init . Once a repository is created, you will see a hidden .git folder and a folder called hooks within that. To initiate a script after a commit is complete, we need to place a post-commit script in the hooks folder. Here is what we will use as a post commit script.\\n1 2 3 4 #!/bin/bash message=$(git log -1 --format=%s) exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\u0026#34;$PWD/.git/hooks/post-commit.ps1\\u0026#34; -CommitMessage \\u0026#34;\\\\\\u0026#39;$message\\\\\\u0026#39;\\u0026#34; This is a simple shell script and calls a PowerShell script that does the real magic. We can save this as post-commit (no extension) within the hooks folder. We will now look at the post-commit.ps1 script.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 [CmdletBinding()] param ( [Parameter()] [String] $CommitMessage ) $action = [regex]::Matches($CommitMessage, \\u0026#39;(?\\u0026lt;=\\\\[)[^]]+(?=\\\\])\\u0026#39;).Value $buildPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent function buildBicep { [CmdletBinding()] param ( [Parameter(Mandatory)] [String] $BuildPath ) Write-Host -ForegroundColor Green \\u0026#34;[Build] Building Bicep template\\u0026#34; bicep build \\u0026#34;${buildPath}\\\\main.bicep\\u0026#34; if ($LASTEXITCODE -ne 0) { return $false } return $true } if ($action.Count -ge 1) { switch ($action) { \\u0026#34;Build\\u0026#34; { $buildStatus = buildBicep -BuildPath $buildPath if (!$buildStatus) { Write-Error \\u0026#34;Failed to build the Bicep template\\u0026#34; exit 1 } break } \\u0026#34;Deploy\\u0026#34; { $buildStatus = buildBicep -BuildPath $buildPath if (!$buildStatus) { Write-Error \\u0026#34;Failed to build the Bicep template\\u0026#34; exit 1 } Write-Host \\u0026#34;[Deploy] Deploying Bicep template\\u0026#34; -ForegroundColor Green $resourceGroup = $action[1] if (!$resourceGroup) { Write-Error \\u0026#34;No resource group specified\\u0026#34; exit 1 } Write-Host \\u0026#34;Starting Bicep template deployment\\u0026#34; -ForegroundColor Green az deployment group create --resource-group $resourceGroup --template-file \\u0026#34;${buildPath}\\\\main.bicep\\u0026#34; if ($LASTEXITCODE -ne 0) { Write-Error \\u0026#34;Failed to deploy the Bicep template\\u0026#34; } break } default { Write-Error \\u0026#34;Invalid action specified\\u0026#34; } } } else { Write-Host \\u0026#34;No action specified\\u0026#34; -ForegroundColor Red } The above PowerShell script takes one argument \\u0026ndash; CommitMessage. Whatever commit message we specify along with the git commit -m command gets passed as an argument to this PowerShell script. For the purpose of providing a choice of task to execute, we can use a fixed format for the commit message.\\n1 [Action] [Resource-Group] Commit Message The first part within the [] describes an action. We can set it to Build or Deploy.\\nIf the action is set to Deploy, the second part within the [] provides the resource group to which the deployment will be performed. The rest of the commit message can be ignored. So, the post-commit.ps1 script uses the action to identify what needs to be executed. In case of Bicep, the build step includes linting as well as build. Therefore, we can combine that into a validation or linting step and perform deployment only if the linting completes successfully.\\nThis script assumes that you have Bicep and Azure CLI installed and you have already completed Azure device login on the system where this git hook runs.\\nWe need to save this PowerShell script in the same folder as the post-commit shell script. Now, we can get to the real work. We need a Bicep template and a bicepconfig.json to enforce linting rules. For the purpose of this simple experiment, we will create a template to provision a storage account.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 param resLocation string = resourceGroup().location resource stg \\u0026#39;Microsoft.Storage/storageAccounts@2021-02-01\\u0026#39; = { name: \\u0026#39;bicepstg003\\u0026#39; location: resLocation kind: \\u0026#39;StorageV2\\u0026#39; sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } properties: { accessTier: \\u0026#39;Cool\\u0026#39; } } This template adheres to all the following linter rules and therefor we should not see any errors during the linting / build process.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 { \\u0026#34;analyzers\\u0026#34;: { \\u0026#34;core\\u0026#34;: { \\u0026#34;enabled\\u0026#34;: true, \\u0026#34;verbose\\u0026#34;: false, \\u0026#34;rules\\u0026#34;: { \\u0026#34;no-loc-expr-outside-params\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;no-hardcoded-location\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;no-unused-params\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;no-unused-vars\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;prefer-unquoted-property-names\\u0026#34;:{ \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;explicit-values-for-loc-params\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;prefer-interpolation\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;simplify-interpolation\\u0026#34;: { \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; }, \\u0026#34;secure-parameter-default\\u0026#34;:{ \\u0026#34;level\\u0026#34;: \\u0026#34;error\\u0026#34; } } } } } Once you have all these files created, it is time to perform our first commit.\\nThis is a simple technique. You can extend this further to publish Bicep templates as template specs or to a module registry.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/2022-07-09-local-ci-cd-for-your-bicep-templates\/",
+  "datePublished": "2022-07-09T00:00:00Z",
+  "dateModified": "2022-07-09T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/2022-07-09-local-ci-cd-for-your-bicep-templates\/"
+  },
+  
+  "articleSection": "\"devops\"",
+  
+  
+  "keywords": "[\"devops\",\"azure\",\"bicep\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "devops",
+      "item": "https:\/\/ravichaganti.com\/categories/devops/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Local CI\/CD for your Bicep templates",
+      "item": "https:\/\/ravichaganti.com\/blog\/2022-07-09-local-ci-cd-for-your-bicep-templates\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

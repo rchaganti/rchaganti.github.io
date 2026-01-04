@@ -26,13 +26,32 @@ WQL data queries are the most simplest form of querying for WMI data. Data queri
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="WMI Query Language (WQL) – Data Queries: SELECT, FROM, and WHERE">
   <meta property="og:description" content="In this part of the series on WQL, we will look at what are data queries and how some of the WQL keywords &amp; operators can be used to retrieve information from WMI repository. Also, as mentioned earlier, there are many other tools that consume WQL queries to retrieve information from WMI. However, in this series, I shall use only PowerShell to demonstrate WQL.
 WQL data queries are the most simplest form of querying for WMI data. Data queries are used to retrieve class instances and data associations. For example,">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/wmi-query-language-wql-data-queries-select-from-and-where/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="WMI Query Language (WQL) – Data Queries: SELECT, FROM, and WHERE">
+
+  
+  
+    <meta property="article:published_time" content="2010-08-03T00:00:00Z">
+    <meta property="article:modified_time" content="2010-08-03T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="WQL"><meta property="article:tag" content="WMI">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -59,6 +78,102 @@ WQL data queries are the most simplest form of querying for WMI data. Data queri
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "WMI Query Language (WQL) – Data Queries: SELECT, FROM, and WHERE",
+  "description": "In this part of the series on WQL, we will look at what are data queries and how some of the WQL keywords \u0026amp; operators can be used to retrieve information from WMI repository. Also, as mentioned …",
+  "articleBody": "\"In this part of the series on WQL, we will look at what are data queries and how some of the WQL keywords \\u0026amp; operators can be used to retrieve information from WMI repository. Also, as mentioned earlier, there are many other tools that consume WQL queries to retrieve information from WMI. However, in this series, I shall use only PowerShell to demonstrate WQL.\\nWQL data queries are the most simplest form of querying for WMI data. Data queries are used to retrieve class instances and data associations. For example,\\n1 Get-WmiObject -Query \\u0026#34;Select * FROM Win32_Process WHERE HandleCount\\u0026gt;=5500\\u0026#34; gives us a list of all processes with a handle count above 5500.\\nNote You can use -filter parameter to Get-WMIObject instead of -Query. Whatever you pass as a value to -filter will be used within the WHERE clause of a WQL statement. For example, the above PowerShell example can be re-written as\\n1 Get-WmiObject -Class Win32_Process -Filter \\u0026#34;HandleCount\\u0026gt;=5500\\u0026#34; So, here is the difference between using -Query or -Filter. You can pass any valid WQL statement as a value to -Query parameter. However, whatever value you pass as a value to -filter will always be used within the WHERE clause. So, the value to -filter must be a valid WHERE clause value with proper use of WQL operators. For example, using a PowerShell comparison operator such as -eq is not valid within -Filter.\\nLet us use this example and discuss a few keywords.\\nSELECT In the above WQL query, we used SELECT statement. This statement returns instances of the specified class and any of its subclasses. As a general practice, many people retrieve WMI data by specifying SELECT * FROM . By using *, we retrieve all possible properties of a given WMI class. This type of query can take a while to execute and consume more bandwidth to retrieve the result set. One method to reduce the bandwidth required to retrieve the result set is to replace * with selected set of property names.\\n1 Get-WmiObject -Query \\u0026#34;SELECT Name FROM Win32_Process WHERE HandleCount\\u0026gt;=5500\\u0026#34; OR\\n1 Get-WmiObject -class Win32_Process -Filter \\u0026#34;HandleCount\\u0026gt;=5500\\u0026#34; -Property Name FROM FROM statement is used to specify the class from which we need to create the instances. Remember that you can perform data queries only from one class at a time. For example, the following query will produce an invalid query error:\\n1 Get-WmiObject -Query \\u0026#34;Select * from win32_Service, Win32_Process\\u0026#34; WHERE As you may be familiar by now, WHERE keyword is used to narrow the scope of retrieved data based on a filter. This keyword can be used in all of the three query types. In general, WHERE clause when used with SELECT statement can take one of the following forms:\\nSELECT * FROM class WHERE property operator constant SELECT * FROM class WHERE constant operator property\\nIn the above two forms, property denotes a valid property of a WMI instance, operator is any valid WQL operator and constant must be of the correct type for the property. We have already seen an example of the first form of using WHERE. Here is an example for the second form. The following query retrieve all services in stopped state.\\n1 Get-WmiObject -Query \\u0026#34;SELECT Name FROM Win32_Service WHERE \\u0026#39;Stopped\\u0026#39;=State\\u0026#34; Multiple groups of properties, operators, and constants can be combined in a WHERE clause using logical operators such as AND, OR, and NOT. Here are a few examples to demonstrate these.\\n1 Get-WMIObject -Query \\u0026#34;Select * from Win32_Service Where State=\\u0026#39;Running\\u0026#39; AND StartMode=\\u0026#39;Manual\\u0026#39;\\u0026#34; 1 Get-WMIObject -Query \\u0026#34;SELECT * FROM Win32_LogicalDisk WHERE Name = \\u0026#39;C:\\u0026#39; OR Name = \\u0026#39;D:\\u0026#39;\\u0026#34; 1 Get-WMIObject -Query \\u0026#34;SELECT * FROM win32_Service WHERE NOT (State=\\u0026#39;Stopped\\u0026#39;)\\u0026#34; The above three examples show using AND, OR, and NOT logical operators with WHERE clause to perform multiple filters. In the third example, we can replace NOT with other WQL operators. For example, the same query can be performed in the following ways:\\n1 2 Get-WMIObject -Query \\u0026#34;SELECT * FROM win32_Service WHERE State\\u0026lt;\\u0026gt;\\u0026#39;Stopped\\u0026#39;\\u0026#34; Get-WMIObject -Query \\u0026#34;SELECT * FROM win32_Service WHERE State!=\\u0026#39;Stopped\\u0026#39;\\u0026#34; You can also use IS, IS NOT operators within WHERE clause. However, the query will be valid only if the constant is NULL. For example,\\n1 Get-WMIObject -query \\u0026#34;SELECT * FROM Win32_LogicalDisk WHERE FileSystem IS NULL\\u0026#34; is valid and will return the disk drive information with no file system information. However, the following example,\\n1 Get-WMIObject -query \\u0026#34;SELECT * FROM Win32_LogicalDisk WHERE DriveType IS 5\\u0026#34; will result in an invalid query error.\\nThere are many other keywords such as REFERENCES OF, ASSOCIATORS OF within the context of data queries. To keep these posts short, I will end today’s post here and discuss a few more keywords in the next post. As usual, please leave your feedback here on what can be improved and what else you want to see.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-select-from-and-where\/",
+  "datePublished": "2010-08-03T00:00:00Z",
+  "dateModified": "2010-08-03T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-select-from-and-where\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"WQL\",\"WMI\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "WMI Query Language (WQL) – Data Queries: SELECT, FROM, and WHERE",
+      "item": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql-data-queries-select-from-and-where\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

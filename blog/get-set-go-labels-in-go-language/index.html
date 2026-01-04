@@ -29,6 +29,11 @@ In the two previous parts of the series, you learned how to use if, switch, and 
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Get set Go - Labels in Go language">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ In the two previous parts of the series, you learned how to use if, switch, and 
 In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control flow. What you have seen in the examples with these statements was an unlabeled way to break or continue the iteration. Go language supports labels that let you transfer control to the place in the (same function) code where the label is defined. There are different ways to use labeled statements.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/get-set-go-labels-in-go-language/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Get set Go - Labels in Go language">
+
+  
+  
+    <meta property="article:published_time" content="2020-10-09T00:00:00Z">
+    <meta property="article:modified_time" content="2020-10-09T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Golang">
+    <meta property="article:tag" content="Golang"><meta property="article:tag" content="Go">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ In the two previous parts of the series, you learned how to use if, switch, and 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Get set Go - Labels in Go language",
+  "description": " In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control …",
+  "articleBody": "\" In the two previous parts of the series, you learned how to use if, switch, and for loop in Go language. You also learned about using break and continue statements in Go language to alter the control flow. What you have seen in the examples with these statements was an unlabeled way to break or continue the iteration. Go language supports labels that let you transfer control to the place in the (same function) code where the label is defined. There are different ways to use labeled statements.\\nGoto Similar to break and continue, the [goto](https://golang.org/ref/spec#Goto_statements) statement in Go language transfers the control to the place in the code where a specific label is defined within the same function. Here is an example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 package main import \\u0026#34;fmt\\u0026#34; func main() { num := 1 jumpTo: for num \\u0026lt;= 10 { if num%2 == 0 { num++ goto jumpTo } fmt.Printf(\\u0026#34;\\\\n num has value set to %d\\u0026#34;, num) num++ } fmt.Printf(\\u0026#34;\\\\nFinal value of num is %d\\u0026#34;, num) } The above example\\u0026rsquo;s purpose is to print all odd numbers between 1 and 10. In this, the goto statement is used to jump to the start of the loop again. Note the way the label \\u0026ndash; jumpTo \\u0026ndash; is defined. The general syntax for defining a label in a Go program is identifier: and then with the goto statement, you just use the identifier \\u0026ndash; goto jumpTo.\\nHere is the output from this program.\\n1 2 3 4 5 6 7 8 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go num has value set to 1 num has value set to 3 num has value set to 5 num has value set to 7 num has value set to 9 Final value of num is 11 The scope of a label is the function where it is defined. With the goto statement, it does not matter where the label is defined within the function. For example, the following program works as well. Of course, without printing all the odd number values.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 package main import \\u0026#34;fmt\\u0026#34; func main() { num := 1 for num \\u0026lt;= 10 { if num%2 == 0 { num++ goto jumpTo } fmt.Printf(\\u0026#34;\\\\n num has value set to %d\\u0026#34;, num) num++ } jumpTo: fmt.Printf(\\u0026#34;\\\\nFinal value of num is %d\\u0026#34;, num) } This produces output as shown below.\\n1 2 3 4 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go num has value set to 1 Final value of num is 3 Function scope of a label also means that you cannot have the same label identifier declared multiple times even within different code blocks within the same function. Also, using goto has a couple of caveats.\\nSince goto can be used to jump forward in the program flow, you cannot jump over a variable declaration. You cannot jump into a new code block. Continue and Break with labels If you look at the continue and break statement syntax from the Go language specification, you will notice that these statements have an optional label.\\n1 2 BreakStmt = \\u0026#34;break\\u0026#34; [ Label ] . ContinueStmt = \\u0026#34;continue\\u0026#34; [ Label ] . Break statement works only within a for loop, switch or select statement while continue works only in a loop. You have already seen examples of break and continue within a for loop. Similar to the goto statement, you just need to suffix the label identifier to continue and break statements.\\nContinue statement without a label, it skips the current iteration of the innermost loop. First, take a look at this example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 package main import \\u0026#34;fmt\\u0026#34; func main() { s1 := []int{1, 2, 5, 6, 9, 10} for i := 0; i \\u0026lt; 3; i++ { fmt.Printf(\\u0026#34;\\\\n\\\\ni is %d\\u0026#34;, i) for _, j := range s1 { if j%2 == 0 { continue } fmt.Printf(\\u0026#34;\\\\nj is %d\\u0026#34;, j) } } } This is straightforward. Within the inner loop, if you encounter an even number, you simply go to the next iteration using continue. Here is the output from this program.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go i is 0 j is 1 j is 5 j is 9 i is 1 j is 1 j is 5 j is 9 i is 2 j is 1 j is 5 j is 9 Now, imagine based on the condition being checked in the inner loop, you may want to simply start again from the outer loop. You can achieve this with a simple change of adding the label to the continue statement.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 package main import \\u0026#34;fmt\\u0026#34; func main() { s1 := []int{1, 2, 5, 6, 9, 10} jumpTo: for i := 0; i \\u0026lt; 3; i++ { fmt.Printf(\\u0026#34;\\\\n\\\\ni is %d\\u0026#34;, i) for _, j := range s1 { if j%2 == 0 { continue jumpTo } fmt.Printf(\\u0026#34;\\\\nj is %d\\u0026#34;, j) } } } The only change here is that a label \\u0026ndash; called jumpTo \\u0026ndash; is added right before the outer for loop. And, the same identifier is added to continue statement inside the innermost loop. You can clearly see the difference in the control flow when you run this program. Here is what you will see.\\n1 2 3 4 5 6 7 8 9 10 11 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go i is 0 j is 1 i is 1 j is 1 i is 2 j is 1 Since the innermost loop reinitializes every time it is reached during execution, you will never go beyond the second element in the slice. The labeled continue becomes very useful in case of nested loops where exiting the current scope based on a condition is needed.\\nSimilarly, labels can be used with break statement as well. For this, just replace continue with break in the above example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 package main import \\u0026#34;fmt\\u0026#34; func main() { s1 := []int{1, 2, 5, 6, 9, 10} jumpTo: for i := 0; i \\u0026lt; 3; i++ { fmt.Printf(\\u0026#34;\\\\n\\\\ni is %d\\u0026#34;, i) for _, j := range s1 { if j%2 == 0 { break jumpTo } fmt.Printf(\\u0026#34;\\\\nj is %d\\u0026#34;, j) } } } The following snippet shows the output both with and without the label to illustrate the difference.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go //without break label i is 0 j is 1 i is 1 j is 1 i is 2 j is 1 PS C:\\\\GitHub\\\\GetSetGo\\u0026gt; go run .\\\\for.go //with break label i is 0 j is 1 This is it about using labeled statements in Go. When you write some \\u0026ldquo;real\\u0026rdquo; Go code other than these trivial examples, you will understand the advantages of these labeled statements in control flow. In this next part, you will learn about functions in Go.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/get-set-go-labels-in-go-language\/",
+  "datePublished": "2020-10-09T00:00:00Z",
+  "dateModified": "2020-10-09T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/get-set-go-labels-in-go-language\/"
+  },
+  
+  "articleSection": "\"Golang\"",
+  
+  
+  "keywords": "[\"Golang\",\"Go\"]",
+  
+  
+  "timeRequired": "PT6M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Golang",
+      "item": "https:\/\/ravichaganti.com\/categories/golang/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Get set Go - Labels in Go language",
+      "item": "https:\/\/ravichaganti.com\/blog\/get-set-go-labels-in-go-language\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

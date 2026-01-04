@@ -31,6 +31,11 @@ In the last part, we completed creation of storage account required for backing 
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Building Azure Resource Manager Templates – Using Variables">
   <meta property="og:description" content="If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.
 
@@ -41,8 +46,22 @@ In the last part, we completed creation of storage account required for backing 
 In the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity. A virtual network and any subnets required must exist before the creation of virtual machines. So, in today’s article, we will see how we can use variables in the ARM template language while incrementally building an ARM template for our scenario and add virtual network. Towards the end, we will review some best practices guidance with regards to using parameters and variables in developing ARM templates.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-variables/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Building Azure Resource Manager Templates – Using Variables">
+
+  
+  
+    <meta property="article:published_time" content="2015-11-15T00:00:00Z">
+    <meta property="article:modified_time" content="2015-11-15T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure Resource Manager">
+    <meta property="article:tag" content="Azure Resource Manager"><meta property="article:tag" content="Azure"><meta property="article:tag" content="ARM Templates">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -74,6 +93,102 @@ In the last part, we completed creation of storage account required for backing 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Building Azure Resource Manager Templates – Using Variables",
+  "description": "If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.\nIn the last part, we …",
+  "articleBody": "\"If you have been following this series on ARM templates, in the last part, we started with a sample scenario that we are using to build an ARM template. Here it is again.\\nIn the last part, we completed creation of storage account required for backing the OS and data disks for virtual machines in the deployment. The next step in our scenario is to create the virtual network for the VM connectivity. A virtual network and any subnets required must exist before the creation of virtual machines. So, in today’s article, we will see how we can use variables in the ARM template language while incrementally building an ARM template for our scenario and add virtual network. Towards the end, we will review some best practices guidance with regards to using parameters and variables in developing ARM templates.\\nWorking with Variables Variables in ARM template language can be used to simplify the template. For example, in our template, we will be using the subnet name at multiple places. There is no point repeating the same string everywhere for this. This may also lead to human errors such as unintentional misspelling of the subnet name. This type of errors will result in failure during the deployment. Instead, we can assign subnet name as a value to a variable and refer that variable within the template as needed. Also, variables in ARM template language will let us expand or construct other variable values. We will see examples of this in the template.\\nHere is the generic syntax for variables in ARM template language.\\n1 2 3 4 5 6 \\u0026#34;variables\\u0026#34;: { \\u0026#34;\\u0026lt;variable-name\\u0026gt;\\u0026#34;: \\u0026#34;\\u0026lt;variable-value\\u0026gt;\\u0026#34;, \\u0026#34;\\u0026lt;variable-name\\u0026gt;\\u0026#34;: { \\u0026lt;variable-complex-type-value\\u0026gt; } } In general, variables is a JSON object which contains pairs of variable names and values. The variable value can be a complex type such as another JSON object. We will see these as examples as we add the variables needed to complete virtual network configuration.\\n1 2 3 4 5 6 7 \\u0026#34;variables\\u0026#34;: { \\u0026#34;vNetPrefix\\u0026#34;: \\u0026#34;10.0.0.0/16\\u0026#34;, \\u0026#34;vNetSubnet1Name\\u0026#34;: \\u0026#34;[concat(resourceGroup().Location, \\u0026#39;-\\u0026#39;, parameters(\\u0026#39;vNetName\\u0026#39;), \\u0026#39;-\\u0026#39;, \\u0026#39;Subnet\\u0026#39;)]\\u0026#34;, \\u0026#34;vNetSubnet1Prefix\\u0026#34;: \\u0026#34;10.0.0.0/24\\u0026#34;, \\u0026#34;vNetSubnet1ID\\u0026#34;: \\u0026#34;[concat(resourceId(\\u0026#39;Microsoft.Network/virtualNetworks\\u0026#39;,parameters(\\u0026#39;vNetName\\u0026#39;)),\\u0026#39;/subnets/\\u0026#39;,variables(\\u0026#39;vNetSubnet1Name\\u0026#39;))]\\u0026#34;, \\u0026#34;dnsServerPrivateIp\\u0026#34;: \\u0026#34;10.0.0.8\\u0026#34; } For the virtual network required for our scenario, we defined a variable called vNetPrefix and set a value “10.0.0.0/16”. This is the overall virtual network address scope. Within this vNet, we intend to create one subnet with address prefix “10.0.0.0/24” and this is represented using the variable _vNetSubnet1Prefix. _I have added another variable named dnsServerPrivateIp to reserve an IP address for the AD domain controller VM. This is because we don’t want a DHCP assigned IP for the AD DC.\\nYou will also see that we are using another function within this variables element called concat().\\n1 \\u0026#34;vNetSubnet1Name\\u0026#34;: \\u0026#34;[concat(resourceGroup().Location, \\u0026#39;-\\u0026#39;, parameters(\\u0026#39;vNetName\\u0026#39;), \\u0026#39;-\\u0026#39;, \\u0026#39;Subnet\\u0026#39;)]\\u0026#34; This function can take ‘n’ strings and concatenate them together. In the example above, we are retrieving the resource group location and then concatenate that with ‘-‘ and the value of the vNetName parameter. This variable value is then used to derive the value of the variable vNetSubnet1ID.\\n1 \\u0026#34;vNetSubnet1ID\\u0026#34;: \\u0026#34;[concat(resourceId(\\u0026#39;Microsoft.Network/virtualNetworks\\u0026#39;,parameters(\\u0026#39;vNetName\\u0026#39;)),\\u0026#39;/subnets/\\u0026#39;,variables(\\u0026#39;vNetSubnet1Name\\u0026#39;))]\\u0026#34; As I’d mentioned earlier, variables values can be generated dynamically based on other values. If you observe the above code snippet, we are constructing the vNetSubnet1ID by retrieving the resource ID for the virtual network that we are creating. The resourceId() function returns the unique identifier of a resource and it won’t be available until the vNet is created. This shows us that the values of variables can be derived from other related configuration settings. We have used the concat() function again here to concatenate the resource Id value of the vNet with ‘/subnets/’ and the value of the vNetSubnet1Name variable that we derived in last step. Similar to parameters() function, the variables() function gives us the value of the variable name specified.\\n1 \\u0026#34;[variables(\\u0026#39;vNetSubnet1Name\\u0026#39;)]\\u0026#34; The variables() function can be used with the variables element as well as the resource definitions and outputs element. Like any other expression in template language, anytime you want to use this function, it must be enclosed in square brackets ([]).\\nWe will see more about creating variables with complex value types in a later part but fundamentals that you learned here are applicable even to complex types. Now that we have the variables needed for the vNet creation, let us go ahead and add the virtual network resource definition to our template.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 { \\u0026#34;$schema\\u0026#34;: \\u0026#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\\u0026#34;, \\u0026#34;contentVersion\\u0026#34;: \\u0026#34;1.0.0.0\\u0026#34;, \\u0026#34;parameters\\u0026#34;: { \\u0026#34;storageAccountName\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;MyARMDemo\\u0026#34;, \\u0026#34;minLength\\u0026#34;: 3, \\u0026#34;maxLength\\u0026#34;: 24, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;Unique name for the storage account.\\u0026#34; } }, \\u0026#34;storageAccountType\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;Standard_LRS\\u0026#34;, \\u0026#34;allowedValues\\u0026#34;: [ \\u0026#34;Standard_LRS\\u0026#34;, \\u0026#34;Standard_GRS\\u0026#34;, \\u0026#34;Standard_ZRS\\u0026#34;, \\u0026#34;Premium_LRS\\u0026#34;, \\u0026#34;Standard_RAGRS\\u0026#34; ], \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;Account type based on the storage redundancy requirements.\\u0026#34; } }, \\u0026#34;vNetName\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;myARMDemo\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;Unique name of the virtual network for this deployment\\u0026#34; } } }, \\u0026#34;variables\\u0026#34;: { \\u0026#34;vNetPrefix\\u0026#34;: \\u0026#34;10.0.0.0/16\\u0026#34;, \\u0026#34;vNetSubnet1Name\\u0026#34;: \\u0026#34;[concat(resourceGroup().Location, \\u0026#39;-\\u0026#39;, parameters(\\u0026#39;vNetName\\u0026#39;), \\u0026#39;-\\u0026#39;, \\u0026#39;Subnet\\u0026#39;)]\\u0026#34;, \\u0026#34;vNetSubnet1Prefix\\u0026#34;: \\u0026#34;10.0.0.0/24\\u0026#34;, \\u0026#34;vNetSubnet1ID\\u0026#34;: \\u0026#34;[concat(resourceId(\\u0026#39;Microsoft.Network/virtualNetworks\\u0026#39;,parameters(\\u0026#39;vNetName\\u0026#39;)),\\u0026#39;/subnets/\\u0026#39;,variables(\\u0026#39;vNetSubnet1Name\\u0026#39;))]\\u0026#34;, \\u0026#34;dnsServerPrivateIp\\u0026#34;: \\u0026#34;10.0.0.8\\u0026#34; }, \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;name\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;storageAccountName\\u0026#39;)]\\u0026#34;, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[ResourceGroup().Location]\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2015-05-01-preview\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;accountType\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;storageAccountType\\u0026#39;)]\\u0026#34; } }, { \\u0026#34;name\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;vNetName\\u0026#39;)]\\u0026#34;, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Network/virtualNetworks\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[ResourceGroup().Location]\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2015-05-01-preview\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;addressSpace\\u0026#34;: { \\u0026#34;addressPrefixes\\u0026#34;: [ \\u0026#34;[variables(\\u0026#39;vNetPrefix\\u0026#39;)]\\u0026#34; ] }, \\u0026#34;subnets\\u0026#34;: [ { \\u0026#34;name\\u0026#34;: \\u0026#34;[variables(\\u0026#39;vNetSubnet1Name\\u0026#39;)]\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;addressPrefix\\u0026#34;: \\u0026#34;[variables(\\u0026#39;vNetSubnet1Prefix\\u0026#39;)]\\u0026#34; } } ] } } ] } I added a vNetName parameter to the parameters element so that user deploying this template can provide that as input. We can go ahead and test if this is template is valid or not.\\n1 Test-AzureRmResourceGroupDeployment -ResourceGroupName myARMDemo -TemplateFile .\\\\arm-series_Storage-VirtualNet.json -storageAccountName myARMDemo -storageAccountType Standard_LRS -vNetName myARMDemo -Verbose Once the validation is complete, we can go ahead and deploy the same to ensure it is deploy-able. To test this immediately, click on the deploy to Azure button below.\\nFree-form vs Known Configuration We have so far looked at parameters, variables, and used them in the template that we are building. Parameters give us the flexibility to gather input from user deploying the template. We can completely parameterize the template and let the user provide every value needed for the deployment as an input parameter. This is called free-form configuration. However, using free-form configuration is not always scalable. The number of parameters that a user need to input might be overwhelming. Also, you don’t want your end user deploying this template to mess-up with the vNet and subnet address prefixes. This can have negative effects on the overall IaaS deployment. You might always want to prefix the subnet name with the resource group name to ensure there is uniformity across the resource names that you use. Some of this cannot be controlled unless you use known configurations. Known configurations help standardize resource configurations. Use variables in the template for resource settings that require no user input or you need control over. By using variables, you can simply change the value of the variable if at all you need to modify the template instead of trying to find where all the value is used.\\nWe will review more such best practices guidance and see using known configurations throughout this series. This is it for today. Stay tuned for more!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-variables\/",
+  "datePublished": "2015-11-15T00:00:00Z",
+  "dateModified": "2015-11-15T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-variables\/"
+  },
+  
+  "articleSection": "\"Azure Resource Manager\"",
+  
+  
+  "keywords": "[\"Azure Resource Manager\",\"Azure\",\"ARM Templates\"]",
+  
+  
+  "timeRequired": "PT6M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure Resource Manager",
+      "item": "https:\/\/ravichaganti.com\/categories/azure-resource-manager/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Building Azure Resource Manager Templates – Using Variables",
+      "item": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-variables\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

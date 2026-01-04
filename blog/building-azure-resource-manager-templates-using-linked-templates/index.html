@@ -26,13 +26,32 @@ For linking different external templates within the main template, we need to de
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Building Azure Resource Manager Templates – Using Linked Templates">
   <meta property="og:description" content="One of the ARM template authoring best practices is to decompose the JSON template, if applicable, into multiple target-specific templates. Think of this as creating re-usable code. You can leverage the re-usable parts of your code within multiple aspects of your application or the deployment.
 For linking different external templates within the main template, we need to define the Microsoft.Resources/deployments resource instance. Before we proceed let us look at the scenario for which we are building an ARM template.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/building-azure-resource-manager-templates-using-linked-templates/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Building Azure Resource Manager Templates – Using Linked Templates">
+
+  
+  
+    <meta property="article:published_time" content="2015-12-14T00:00:00Z">
+    <meta property="article:modified_time" content="2015-12-14T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure Resource Manager">
+    <meta property="article:tag" content="Azure Resource Manager"><meta property="article:tag" content="Azure"><meta property="article:tag" content="ARM Templates">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -59,6 +78,102 @@ For linking different external templates within the main template, we need to de
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Building Azure Resource Manager Templates – Using Linked Templates",
+  "description": "One of the ARM template authoring best practices is to decompose the JSON template, if applicable, into multiple target-specific templates. Think of this as creating re-usable code. You can leverage …",
+  "articleBody": "\"One of the ARM template authoring best practices is to decompose the JSON template, if applicable, into multiple target-specific templates. Think of this as creating re-usable code. You can leverage the re-usable parts of your code within multiple aspects of your application or the deployment.\\nFor linking different external templates within the main template, we need to define the Microsoft.Resources/deployments resource instance. Before we proceed let us look at the scenario for which we are building an ARM template.\\nSo far in this series, we have looked at building an ARM template that deploys the following components of this scenario:\\nA storage account A virtual network A public IP address A load balancer Virtual network interfaces for the DC and other VMs based on the environment type. Finally, a VM with DNS and Directory Services running in it. By default, the Azure based IaaS deployments use the Azure DNS. If you have deployed the template that we built in the previous part of this series, you will notice that the virtual network us configured to use Azure DNS.\\nSince we deployed a VM that runs our own DNS and directory services, we now want to use the custom DNS in the Azure deployment so that other VMs in the deployment can join the domain that we created using the PowerShell DSC configuration.\\nFor this, we will use an external template and call it inside our main template. What we essentially need to do here is to update the existing virtual network to use the custom DNS. Here is how it looks.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 { \\u0026#34;$schema\\u0026#34;: \\u0026#34;https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\\u0026#34;, \\u0026#34;contentVersion\\u0026#34;: \\u0026#34;1.0.0.0\\u0026#34;, \\u0026#34;parameters\\u0026#34;: { \\u0026#34;virtualNetworkName\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;The name of the Virtual Network to Create\\u0026#34; } }, \\u0026#34;virtualNetworkAddressRange\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;The address range of the new VNET in CIDR format\\u0026#34; }, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;10.0.0.0/16\\u0026#34; }, \\u0026#34;subnetName\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;The name of the subnet created in the new VNET\\u0026#34; } }, \\u0026#34;subnetRange\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;string\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;The address range of the subnet created in the new VNET\\u0026#34; }, \\u0026#34;defaultValue\\u0026#34;: \\u0026#34;10.0.0.0/24\\u0026#34; }, \\u0026#34;DNSServerAddress\\u0026#34;: { \\u0026#34;type\\u0026#34;: \\u0026#34;array\\u0026#34;, \\u0026#34;metadata\\u0026#34;: { \\u0026#34;description\\u0026#34;: \\u0026#34;The DNS address(es) of the DNS Server(s) used by the VNET\\u0026#34; } } }, \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2015-05-01-preview\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;virtualNetworkName\\u0026#39;)]\\u0026#34;, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Network/virtualNetworks\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[resourceGroup().location]\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;addressSpace\\u0026#34;: { \\u0026#34;addressPrefixes\\u0026#34;: [ \\u0026#34;[parameters(\\u0026#39;virtualNetworkAddressRange\\u0026#39;)]\\u0026#34; ] }, \\u0026#34;dhcpOptions\\u0026#34;: { \\u0026#34;dnsServers\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;DNSServerAddress\\u0026#39;)]\\u0026#34; }, \\u0026#34;subnets\\u0026#34;: [ { \\u0026#34;name\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;subnetName\\u0026#39;)]\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;addressPrefix\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;subnetRange\\u0026#39;)]\\u0026#34; } } ] } } ] } The above template is just another ARM JSON template. It has the same syntax. We have defined parameters that are needed for updating the virtual network to use the custom DNS that we just configured. let us save this as vnet-with-dns-server.json and store it at a location that is accessible to the ARM deployment engine. I chose to store it in a public Github repository.\\nNow, we need to link this template to the main ARM template that we have been authoring. Here is how it is done in the main template.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 { \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2015-01-01\\u0026#34;, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Resources/deployments\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;updatevnetdns\\u0026#34;, \\u0026#34;dependsOn\\u0026#34;: [ \\u0026#34;[concat(\\u0026#39;Microsoft.Compute/virtualMachines/\\u0026#39;, parameters(\\u0026#39;dcVMName\\u0026#39;),\\u0026#39;/extensions/createadforest\\u0026#39;)]\\u0026#34; ], \\u0026#34;properties\\u0026#34;: { \\u0026#34;mode\\u0026#34;: \\u0026#34;Incremental\\u0026#34;, \\u0026#34;templateLink\\u0026#34;: { \\u0026#34;uri\\u0026#34;: \\u0026#34;[concat(parameters(\\u0026#39;assetLocation\\u0026#39;),\\u0026#39;/vnet-with-dns-server.json\\u0026#39;)]\\u0026#34;, \\u0026#34;contentVersion\\u0026#34;: \\u0026#34;1.0.0.0\\u0026#34; }, \\u0026#34;parameters\\u0026#34;: { \\u0026#34;virtualNetworkName\\u0026#34;: { \\u0026#34;value\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;vNetName\\u0026#39;)]\\u0026#34; }, \\u0026#34;virtualNetworkAddressRange\\u0026#34;: { \\u0026#34;value\\u0026#34;: \\u0026#34;[variables(\\u0026#39;vNetPrefix\\u0026#39;)]\\u0026#34; }, \\u0026#34;subnetName\\u0026#34;: { \\u0026#34;value\\u0026#34;: \\u0026#34;[variables(\\u0026#39;vNetSubnet1Name\\u0026#39;)]\\u0026#34; }, \\u0026#34;subnetRange\\u0026#34;: { \\u0026#34;value\\u0026#34;: \\u0026#34;[variables(\\u0026#39;vNetSubnet1Prefix\\u0026#39;)]\\u0026#34; }, \\u0026#34;DNSServerAddress\\u0026#34;: { \\u0026#34;value\\u0026#34;: [ \\u0026#34;[variables(\\u0026#39;dnsServerPrivateIp\\u0026#39;)]\\u0026#34; ] } } } } Within this resource instance, we defined a dependency (line number 6) on the PowerShell DSC extension that creates the AD forest. We don’t want the linked template to execute until the DNS service is created in the DC VM. Line number 11 defines the link our external template that will configure the custom DNS settings. _vnet-with-dns-server.json _has a few parameters defined for collecting required custom DNS configuration.\\nWithin the main template, we need to pass the parameter values to the external template. This is done using the parameters element within the Microsoft.Resources/deployments resource instance. For the parameter values, we use either what is already gathered from the user using the main template or what is defined in the variables element of the main template. This is how state can be shared between multiple templates. If we need to return some data from the linked template to the main template, we can do so using the outputs element within the linked template. In our scenario, we don’t need any information from the linked template and therefore we will not use the outputs element.\\nAlso, notice line number 9. The mode property within the properties element is set to incremental. This is needed because we already have some of the components within the template deployed. By setting the deployment mode to incremental, we tell the deployment engine to add the new resources or update existing resource configuration within the resource group without deleting any existing resources in the group. In our example, we are updating the configuration of an existing virtual network to use the custom DNS. so, the incremental deployment mode is necessary here.\\nOnce you deploy this updated template, you will see that the virtual network within the resource group gets set to use the custom DNS deployed using the PowerShell DSC extension.\\nIn the next part of this series, we will look at adding more virtual machines to the deployment based on the environmentType selected within the template parameters. By the end of next part, we will completely functional ARM template that deploys our scenario end to end.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-linked-templates\/",
+  "datePublished": "2015-12-14T00:00:00Z",
+  "dateModified": "2015-12-14T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-linked-templates\/"
+  },
+  
+  "articleSection": "\"Azure Resource Manager\"",
+  
+  
+  "keywords": "[\"Azure Resource Manager\",\"Azure\",\"ARM Templates\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure Resource Manager",
+      "item": "https:\/\/ravichaganti.com\/categories/azure-resource-manager/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Building Azure Resource Manager Templates – Using Linked Templates",
+      "item": "https:\/\/ravichaganti.com\/blog\/building-azure-resource-manager-templates-using-linked-templates\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

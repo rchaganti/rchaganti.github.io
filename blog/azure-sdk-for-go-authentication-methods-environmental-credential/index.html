@@ -42,6 +42,11 @@ This credential type supports multiple types of authentication in the following 
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Azure SDK for Go - Authentication methods - Environmental credential">
   <meta property="og:description" content="In the last part of this series, you learned how to use different credential types in a local development environment. Another method you can use within local development and in a hosted/deployed service is providing credentials through environment variables. This is done using the NewEnvironmentCredential() method in the azidentity package.
 
@@ -63,8 +68,22 @@ if err != nil {
 This credential type supports multiple types of authentication in the following order.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Azure SDK for Go - Authentication methods - Environmental credential">
+
+  
+  
+    <meta property="article:published_time" content="2023-07-18T00:00:00Z">
+    <meta property="article:modified_time" content="2023-07-18T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="azure">
+    <meta property="article:tag" content="azure"><meta property="article:tag" content="go">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -107,6 +126,102 @@ This credential type supports multiple types of authentication in the following 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Azure SDK for Go - Authentication methods - Environmental credential",
+  "description": "In the last part of this series, you learned how to use different credential types in a local development environment. Another method you can use within local development and in a hosted\/deployed …",
+  "articleBody": "\"In the last part of this series, you learned how to use different credential types in a local development environment. Another method you can use within local development and in a hosted/deployed service is providing credentials through environment variables. This is done using the NewEnvironmentCredential() method in the azidentity package.\\n1 2 3 4 5 // github.com/rchaganti/azure-go/02-auth101/envCredential.go cred, err := azidentity.NewEnvironmentCredential(nil) if err != nil { log.Fatal(err) } This credential type supports multiple types of authentication in the following order.\\nService principal with client secret In this method, you can export the tenant ID, client ID, and client secret of an Azure AD application as environment variables. These variable values get retrieved using NewEnvironmentCredential(), and the client will be authenticated using these values.\\nTo use this method, you need an Azure AD application with a client secret, a necessary role assignment for the user, and admin consent should be granted.\\nOnce you complete the appropriate Azure AD application registration and configuration, you can set the environment variables for this authentication method.\\n1 2 3 $ export AZURE_TENANT_ID=\\u0026#39;tenant-id\\u0026#39; $ export AZURE_CLIENT_ID=\\u0026#39;client-id\\u0026#39; $ export AZURE_CLIENT_SECRET=\\u0026#39;client-secret\\u0026#39; You will receive an appropriate error message if these values are invalid. You will receive the following error if the application does not have the right permissions or role assignment.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 $ go run envCredential.go EnvironmentCredential will authenticate with ClientSecretCredential ClientSecretCredential.GetToken() acquired a token for scope \\u0026#34;https://management.core.windows.net//.default\\u0026#34;\\\\n 2023/07/18 04:43:16 GET https://management.azure.com/subscriptions/5073ff70820/resourcegroups -------------------------------------------------------------------------------- RESPONSE 403: 403 Forbidden ERROR CODE: AuthorizationFailed -------------------------------------------------------------------------------- { \\u0026#34;error\\u0026#34;: { \\u0026#34;code\\u0026#34;: \\u0026#34;AuthorizationFailed\\u0026#34;, \\u0026#34;message\\u0026#34;: \\u0026#34;The client \\u0026#39;8887f900\\u0026#39; with object id \\u0026#39;8887f900\\u0026#39; does not have authorization to perform action \\u0026#39;Microsoft.Resources/subscriptions/resourcegroups/read\\u0026#39; over scope \\u0026#39;/subscriptions/5073ff70820\\u0026#39; or the scope is invalid. If access was recently granted, please refresh your credentials.\\u0026#34; } } -------------------------------------------------------------------------------- exit status 1 Service principal with a certificate To use a client certificate instead of a client secret, you can use the AZURE_CLIENT_CERTIFICATE_PATH environment variable. If you set both the client secret and certificate variables, the client secret gets precedence.\\n1 2 3 $ export AZURE_TENANT_ID=\\u0026#39;tenant-id\\u0026#39; $ export AZURE_CLIENT_ID=\\u0026#39;client-id\\u0026#39; $ export AZURE_CLIENT_CERTIFICATE_PATH=\\u0026#39;path-to-client-certificate\\u0026#39; The prerequisites for using this method are the same as the earlier one. Instead of creating a client secret, you must create a client certificate. If the certificate you created requires a password, you can specify that using the optionalAZURE_CLIENT_CERTIFICATE_PASSWORD variable.\\nWith username and password This method is not recommended, but if you prefer username and password-based authentication, you can set the AZURE_CLIENT_ID, AZURE_USERNAME, and AZURE_PASSWORD environment variables.\\n1 2 3 $ export AZURE_CLIENT_ID=\\u0026#39;client-id\\u0026#39; $ export AZURE_USERNAME=\\u0026#39;user@domain\\u0026#39; $ export AZURE_PASSWORD=\\u0026#39;P@ssw0rd\\u0026#39; To specify a tenant to authenticate, use the optional AZURE_TENANT_ID environment variable. The authentication methods you saw in the previous article support optional options parameter to customize the behavior. With these options, you can specify additional tenants allowed for multitenant authentication. When using environment credentials, this can be specified using an optional environment variable called AZURE_ADDITIONALLY_ALLOWED_TENANTS. You can specify a comma-separated list of tenant IDs as a value. If you specify \\u0026lsquo;*\\u0026rsquo; as the value of this variable, you enable requesting tokens from any tenant.\\nIf all three methods are set as environment variables, the client secret takes precedence over the others. The Go code for using any of these methods is the same as shown at the beginning of this article. The environment credential method can be used in development and production (hosted/deployed) service scenarios.\\nIn the next part of this series, you will learn how to use managed identity credentials within your Go code.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-environmental-credential\/",
+  "datePublished": "2023-07-18T00:00:00Z",
+  "dateModified": "2023-07-18T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-environmental-credential\/"
+  },
+  
+  "articleSection": "\"azure\"",
+  
+  
+  "keywords": "[\"azure\",\"go\"]",
+  
+  
+  "timeRequired": "PT3M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "azure",
+      "item": "https:\/\/ravichaganti.com\/categories/azure/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Azure SDK for Go - Authentication methods - Environmental credential",
+      "item": "https:\/\/ravichaganti.com\/blog\/azure-sdk-for-go-authentication-methods-environmental-credential\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

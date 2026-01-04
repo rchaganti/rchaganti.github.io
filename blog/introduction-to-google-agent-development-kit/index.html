@@ -33,6 +33,11 @@ Bo Yang, tech lead of the ADK project, wrote about how ADK was born and describe
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Introduction to Google Agent Development Kit">
   <meta property="og:description" content="Every other week, we see a new framework claiming to simplify AI agent development. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).
 
@@ -45,8 +50,22 @@ Bo Yang, tech lead of the ADK project, wrote about how ADK was born and describe
 Bo Yang, tech lead of the ADK project, wrote about how ADK was born and described how 100 lines of code became the most sought-after agent development framework. It is fascinating to read how ADK evolved into what it is today.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/introduction-to-google-agent-development-kit/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/adk.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Introduction to Google Agent Development Kit">
+
+  
+  
+    <meta property="article:published_time" content="2025-12-01T00:00:00Z">
+    <meta property="article:modified_time" content="2025-12-01T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Google">
+    
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -80,6 +99,100 @@ Bo Yang, tech lead of the ADK project, wrote about how ADK was born and describe
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Introduction to Google Agent Development Kit",
+  "description": "Every other week, we see a new framework claiming to simplify AI agent development. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing …",
+  "articleBody": "\"Every other week, we see a new framework claiming to simplify AI agent development. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).\\nBo Yang, tech lead of the ADK project, wrote about how ADK was born and described how 100 lines of code became the most sought-after agent development framework. It is fascinating to read how ADK evolved into what it is today.\\nSo, what is ADK? What makes it special when there are a million other frameworks out there? In this series of posts, we will explore answers to these questions.\\nIntroduction Google ADK provides an open foundation for simplifying agent and agentic workflow development. With ADK, you can use not just Google\\u0026rsquo;s Gemini models but models from any provider, making model agnostic. The agents and workflows developed using ADK are deployment-agnostic and can run on your local machine, in Google Cloud, or in your own data center. True to its developers\\u0026rsquo; intentions, ADK supports interoperability with agents built in other frameworks via the Agent-to-Agent (A2A) protocol. In my work with various agent development frameworks, I found ADK to be very easy to get started with while providing powerful constructs for building enterprise-ready agents and agentic workflows. With ADK, you can create agents in Python, Go, and Java programming languages. All examples in this series of articles on ADK will be written in Python.\\nLet us explore further using code.\\nTo get started with creating agents, all you need is the google-adk package.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 C:\\\\\\u0026gt; pip install google-adk C:\\\\\\u0026gt; adk --help Usage: adk [OPTIONS] COMMAND [ARGS]... Agent Development Kit CLI tools. Options: --version Show the version and exit. --help Show this message and exit. Commands: api_server Starts a FastAPI server for agents. conformance Conformance testing tools for ADK. create Creates a new app in the current folder with prepopulated agent template. deploy Deploys agent to hosted environments. eval Evaluates an agent given the eval sets. eval_set Manage Eval Sets. run Runs an interactive CLI for a certain agent. web Starts a FastAPI server with Web UI for agents. The adk command-line provides the necessary capabilities to create, run, deploy, and evaluate agents. Using the adk web command, you can converse with the agents and debug their execution. Let us start with creating an agent using the adk create command. When you run this command, you will be prompted for a model to use, a backend for the agent deployment and services, and an API key if you have chosen the Google Gemini model.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 C:\\\\\\u0026gt; adk create code_agent Choose a model for the root agent: 1. gemini-2.5-flash 2. Other models (fill later) Choose model (1, 2): 1 1. Google AI 2. Vertex AI Choose a backend (1, 2): 1 Don\\u0026#39;t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey Enter Google API key: YOUR_API_KEY Agent created in C:\\\\GitHub\\\\google-adk-101\\\\code_agent: - .env - __init__.py - agent.py As seen in the output, this command generates the necessary scaffolding. The .env file contains environment variables, including GOOGLE_API_KEY for Google Gemini models. The __init__.py file serves as the agent entry point and imports the agent defined in agent.py. The agent.py contains the agent definition. Let us explore this further.\\n1 2 3 4 5 6 7 8 from google.adk.agents.llm_agent import Agent root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;root_agent\\u0026#39;, description=\\u0026#39;A helpful assistant for user questions.\\u0026#39;, instruction=\\u0026#39;Answer user questions to the best of your knowledge\\u0026#39;, ) Google ADK supports multiple agent types. The one we created is an LlmAgent. This category of agents uses an LLM as the core reasoning engine and is non-deterministic. In the preceding code, you can replace Agent with LlmAgent as both refer to the LLM Agent implementation. We will look at other types of agents later in this series.\\nIn the agent definition above, the model identifies the LLM agent to use for reasoning, and the instruction specifies the agent\\u0026rsquo;s behavior. This scaffold is sufficient to try running this agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 C:\\\\\\u0026gt; adk run .\\\\code_agent\\\\ .... [user]: Hello, how can you help? [root_agent]: Hello! I\\u0026#39;m here to help answer your questions and provide information to the best of my knowledge. Here are some examples of what I can do: * **Answer questions on a wide range of topics:** History, science, technology, culture, current events, and more. * **Explain concepts:** Describe how things work, define terms, or break down complex ideas. * **Provide summaries:** Give you a concise overview of a topic or document. * **Help with creative tasks:** Brainstorm ideas, write short pieces of text, or suggest options. * **Give recommendations:** Suggest books, movies, places, or tools based on your interests. Just tell me what you need, and I\\u0026#39;ll do my best to assist you! To open the dev-ui web interface, run the adk web command.\\nThe web interface provided by ADK is a great resource for debugging agent conversations and interactions with other agents and tools.\\nADK provides a few built-in tools that we can use with our agents. The following example shows the built-in google-search tool for grounding LLMs with Google search results.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 from google.adk.agents.llm_agent import Agent from google.adk.tools import google_search root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;weather_agent\\u0026#39;, description=\\u0026#39;Weather agent that can get weather information for any location.\\u0026#39;, instruction=\\u0026#39;You are a weather agent that can get weather information for any location. \\\\ Respond in the following format: {\\u0026#34;location\\u0026#34;: \\u0026#34;city\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;temperature\\u0026#34;,\\u0026#34;condition\\u0026#34;: \\u0026#34;condition\\u0026#34;}\\u0026#39;, tools=[ google_search, ], ) When you run this agent using adk run, you will be presented with a conversational prompt.\\n1 2 3 4 5 C:\\\\\\u0026gt; adk run .\\\\weather_agent\\\\ .... Running agent weather_agent, type exit to exit. [user]: What is the weather in Bangalore like? [weather_agent]: {\\u0026#34;location\\u0026#34;: \\u0026#34;Bangalore\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;19 °C\\u0026#34;,\\u0026#34;condition\\u0026#34;: \\u0026#34;Partly cloudy\\u0026#34;} You can also supply Python functions as tools.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 from google.adk.agents.llm_agent import Agent import os from typing import Annotated from pydantic import Field def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;weather_agent\\u0026#39;, description=\\u0026#39;Weather agent that can get weather information for any location.\\u0026#39;, instruction=\\u0026#39;You are a weather agent that can get weather information for any location. \\\\ Respond in the following format: {\\u0026#34;location\\u0026#34;: \\u0026#34;city\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;temperature\\u0026#34;}\\u0026#39;, tools=[ get_weather ], ) The get_weather function uses the OpenWeatherMap API to retrieve weather data for any location.\\n1 2 3 4 5 C:\\\\\\u0026gt; adk run .\\\\code_agent\\\\ ... Running agent weather_agent, type exit to exit. [user]: What is the weather in Bangalore like? [weather_agent]: {\\u0026#34;location\\u0026#34;: \\u0026#34;Bangalore\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;18.66°C\\u0026#34;} Google ADK also supports the Model Context Protocol and can use other agents as tools. We will learn more about this later.\\nDeclarative Configuration What we have seen so far is an imperative-based approach to implementing agents in ADK. We can also do the same declaratively using a YAML configuration. Let us look at this method.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 C:\\\\\\u0026gt; adk create weather_agent --type=config Choose a model for the root agent: 1. gemini-2.5-flash 2. Other models (fill later) Choose model (1, 2): 1 1. Google AI 2. Vertex AI Choose a backend (1, 2): 1 Don\\u0026#39;t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey Enter Google API key: YOUR_GOOGLE_API_KEY Agent created in C:\\\\GitHub\\\\google-adk-101\\\\weather_agent: - .env - __init__.py - root_agent.yaml For creating a YAML-based agent configuration, you need to specify the --type=config optional parameter to the adk create command. This command generates root_agent.yaml instead of agent.py. If you intend to write declarative agents like this, ensure that you have root_agent.yaml always in the agent folder.\\n1 2 3 4 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash You can add tools to this configuration.\\n1 2 3 4 5 6 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash tools: - name: google_search This is how built-in tools can be specified. But what about functional tools, such as the get_weather tool we saw earlier? To use function tools within declarative configuration, we need to place them in a Python module and place that module under the agent package. For example, the get_weather function above can be added to the tools.py module.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 import os from typing import Annotated from pydantic import Field def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; The folder structure of the agent folder will be as follows:\\n1 2 3 4 5 6 7 8 C:\\\\\\u0026gt; tree /F /A .\\\\weather_agent\\\\ Folder PATH listing Volume serial number is 987A-295A C:\\\\WEATHER_AGENT .env root_agent.yaml tools.py __init__.py To reference the tool in the YAML configuration, we must provide the fully qualified path to the function.\\n1 2 3 4 5 6 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash tools: - name: weather_agent.tools.get_weather With the basics out of the way, let\\u0026rsquo;s dive deep into developing agents and agentic workflows with Google ADK.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/",
+  "datePublished": "2025-12-01T00:00:00Z",
+  "dateModified": "2025-12-01T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/adk.png",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/"
+  },
+  
+  "articleSection": "\"Google\"",
+  
+  
+  
+  "timeRequired": "PT8M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Google",
+      "item": "https:\/\/ravichaganti.com\/categories/google/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Introduction to Google Agent Development Kit",
+      "item": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Attaching scripts or tasks to Windows event log entries using PowerShell and WMI">
   <meta property="og:description" content="During a few load test iterations on a SharePoint farm, I started seeing some SQL exceptions in the application log of SharePoint servers. If you are familiar with SharePoint platform, you may have seen these events such as event ID 3355. This event complains that the SharePoint server cannot connect to SQL server. This need not really mean that the DB server is offline. So, to find out the real reason behind these event logs, I needed to start some trace activities whenever event ID 3355 gets logged.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/attaching-scripts-or-tasks-to-windows-event-log-entries-using-powershell-and-wmi/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Attaching scripts or tasks to Windows event log entries using PowerShell and WMI">
+
+  
+  
+    <meta property="article:published_time" content="2011-06-24T00:00:00Z">
+    <meta property="article:modified_time" content="2011-06-24T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="WQL"><meta property="article:tag" content="WMI">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Attaching scripts or tasks to Windows event log entries using PowerShell and WMI",
+  "description": "During a few load test iterations on a SharePoint farm, I started seeing some SQL exceptions in the application log of SharePoint servers. If you are familiar with SharePoint platform, you may have …",
+  "articleBody": "\"During a few load test iterations on a SharePoint farm, I started seeing some SQL exceptions in the application log of SharePoint servers. If you are familiar with SharePoint platform, you may have seen these events such as event ID 3355. This event complains that the SharePoint server cannot connect to SQL server. This need not really mean that the DB server is offline. So, to find out the real reason behind these event logs, I needed to start some trace activities whenever event ID 3355 gets logged.\\nInitially, I was looking for eventtriggers.exe which is meant for attaching a script or task to an event log. However, I could neither find this on Windows Server 2008 R2 nor an external download. So, I wanted to look at other options I had. I found that there are multiple ways to achieve this.\\nAttach to script or task to the event in Windows Event Viewer You can find this option in event viewer. This link is available in the actions pane of event viewer upon selecting an event.\\nHowever, this method is available only if the event log entry you are interested exists in the log. Which meant that, this wizard cannot be used to specify the event ID I wanted to monitor without actually pre-selecting the event entry. In my case, I cleared the even log after some tests and did not have the entry for ID 3355 in the application log. So, this method was not an option for me to attach a script to this specific event ID. By the way, this method create a scheduled task. This will appear under Event Viewer tasks in Task Scheduler.\\nUpdate: We can use Task Scheduler to create an event trigger. If you go to task scheduler and click on ‘Create Task’, you can select an event as the trigger and specify an event ID there. Take a look at the image below:\\nI did not use this technique. Instead, chose to use PowerShell to do this for me.\\nCreate a WMI event subscription using Register-WMIEvent or Management Event Watcher .NET class in PowerShell The System.Management.ManagementEventWatcher .NET class can be used to create an event watcher. This takes a WMI query and starts listening for any specified events. For example,\\n1 2 3 4 5 6 $watcher = new-object system.management.ManagementEventWatcher $watcher.query = \\u0026#34;Select * From __InstanceCreationEvent Where TargetInstance ISA \\u0026#39;Win32_NTLogEvent\\u0026#39; AND TargetInstance.LogFile=\\u0026#39;Application\\u0026#39; AND targetInstance.EventCode=3355\\u0026#34; $watcher.WaitForNextEvent() Or, Register-WMIEvent — available in PowerShell v2 — can do the same job.\\n1 2 3 4 5 $query = \\u0026#34;Select * From __InstanceCreationEvent Where TargetInstance ISA \\u0026#39;Win32_NTLogEvent\\u0026#39; AND TargetInstance.LogFile=\\u0026#39;Application\\u0026#39; AND TargetInstance.EventCode=3355\\u0026#34; Register-WmiEvent -Query $query -Action { Write-Host \\u0026#34;Event Arrived or something useful here\\u0026#34; } The WMI query here simple. We just want to monitor Application log for any event with event code 3355. Both the above methods have a drawback. They are only temporary event consumers. A temporary event consumer exists only as long as the host is alive. The moment we close the PowerShell host, we lose these event subscriptions. However, I did not know when this even will happen again. So, I need the WMI event subscription to survive system reboots.\\nCreate a permanent WMI event consumer in PowerShell So, the best choice for me here was to create a permanent event consumer that can survive system reboots as well. I can create a WMI permanent consumer of command-line type in PowerShell.\\nNote You need to have the knowledge of WMI Query language to create WMI event consumers (permanent or temporary) in PowerShell. If you are new to WMI or WMI query language, refer to my eGuide on ‘WMI Query Language via PowerShell‘ available at http://139.59.40.198/blog/?page_id=2134\\nAs I explained in the last chapter of my WQL eguide, creating a WMI event consumer in PowerShell requires lot of typing. So, I chose a shortcut and used the PowerEvents module. This module provides an easy way to create WMI event consumers using cmdlets. So, as a solution to my event log monitoring problem, I used the following 4 lines of PowerShell code.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 Import-Module PowerEvents #Create a WMI Query for the event log entry $query = \\u0026#34;SELECT * FROM __InstanceCreationEvent WHERE TargetInstance ISA \\u0026#39;Win32_NTLogEvent\\u0026#39; AND TargetInstance.LogFile=\\u0026#39;Application\\u0026#39; AND TargetInstance.EventCode=3355\\u0026#34; #Create an event filter $filter = New-WmiEventFilter -Name \\u0026#34;Event Filter for Event ID 3355\\u0026#34; -Query $query #Create an event consumer $consumer = New-WmiEventConsumer -Verbose -Name \\u0026#34;Event Consumer for Event ID 3355\\u0026#34; -ConsumerType CommandLine ` -CommandLineTemplate \\u0026#34;cmd.exe /c `\\u0026#34;C:\\\\debug\\\\event.cmd`\\u0026#34;\\u0026#34; #Bind the filter and consumer together New-WmiFilterToConsumerBinding -Filter $filter -Consumer $consumer -Verbose The above code is really self-explanatory. Whenever there is an event ID with a code 3355, this permanent WMI event consumer will trigger C:\\\\debug\\\\event.cmd which in turn starts a trace or some kind of logging.\\nThis is it for today. Hope this is helpful.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/attaching-scripts-or-tasks-to-windows-event-log-entries-using-powershell-and-wmi\/",
+  "datePublished": "2011-06-24T00:00:00Z",
+  "dateModified": "2011-06-24T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/attaching-scripts-or-tasks-to-windows-event-log-entries-using-powershell-and-wmi\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"WQL\",\"WMI\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Attaching scripts or tasks to Windows event log entries using PowerShell and WMI",
+      "item": "https:\/\/ravichaganti.com\/blog\/attaching-scripts-or-tasks-to-windows-event-log-entries-using-powershell-and-wmi\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

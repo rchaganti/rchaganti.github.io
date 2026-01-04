@@ -29,6 +29,11 @@ In this series so far, you have seen how to get started with ARM templates, para
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Azure Resource Manager - Using secrets in ARM templates">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ In this series so far, you have seen how to get started with ARM templates, para
 In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Azure Resource Manager - Using secrets in ARM templates">
+
+  
+  
+    <meta property="article:published_time" content="2020-08-07T00:00:00Z">
+    <meta property="article:modified_time" content="2020-08-07T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure Resource Manager">
+    <meta property="article:tag" content="Azure Resource Manager"><meta property="article:tag" content="Azure"><meta property="article:tag" content="ARM Template"><meta property="article:tag" content="Key Vault">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ In this series so far, you have seen how to get started with ARM templates, para
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Azure Resource Manager - Using secrets in ARM templates",
+  "description": " In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is …",
+  "articleBody": "\" In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.\\nAzure Key Vault Azure Key Vault is a service that provides a centralized secret store. You can use the Key Vault for cryptographic keys, API keys, passwords, connection strings, and certificates. For the cryptographic keys, you can use a Hardware Security Module (HSM) as well. Once a key vault is provisioned, you can add your secrets and retrieve them in an ARM template for use with other resource types such as virtual machines.\\nCreating a key vault To create a key vault, you need few mandatory input parameters such as tenantId, objectId of the user or service principal or the security group in Azure Active Directory (AAD), key and secret permissions. The specified tenant will be used for authenticating requests to the key vault and the object Id of the AAD user will be used to provide the necessary permissions to interact with the Key Vault.\\nHere is a simple starter template that you can use.\\nIn this starter template, you see that the value of tenantId defaults to the value of the tenantId property from the subscription() standard template function. The value to the objectId property is coming from a template parameter. You can retrieve the object ID of an AAD user using az ad user show command.\\n1 az ad user show --id Ravikanth@azure.com --query objectId You can deploy the template above to create a Key Vault by clicking the Deploy To Azure button below.\\nIf you prefer the Azure CLI, you can run the following commands to deploy this template.\\nIn the template above, as part of the access policies [line 22], for the key, secrets, and certificates permissions, you have used all as the value. As it literally means, this permission level provides full permission set to the service principal specified using objectId property. This is not recommended in a production Key Vault. You must also secure the key vault and restrict access to only what is needed. The allowed values for the key and secret permissions are listed in the resource provider reference.\\nTo this end, the template above can be modified to add a few more parameters to specify permission values.\\nIn this updated template, three additional parameters are added to gather key, secret, and certificate permissions. While these parameters have default values, you can provide an updated set of permissions as an array during deployment. If you notice, there are additional resource properties as well added to the Key Vault resource definition.\\nenabledForDeployment specifies whether Azure virtual machines can retrieve certificates from the key vault.\\nenabledForTemplateDeployment specifies whether Azure Resource Manager is allowed to retrieve secrets from the vault or not.\\nFor the architecture you are building, both properties must be set to true.\\nYou can deploy this template by clicking the Deploy to Azure button below.\\nNow, with this updated template, you have a functional key vault that can store secrets used by other resource configurations. So, how do you use ARM templates to store secrets in a key vault?\\nAdding secrets to the vault Once you have a key vault provisioned, you can add the Microsoft.KeyVault/vaults/secrets resource to the template to add secrets to the vault. The following resource definition will do that job.\\n1 2 3 4 5 6 7 8 9 10 { \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.KeyVault/vaults/secrets\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[concat(variables(\\u0026#39;keyVaultName\\u0026#39;), \\u0026#39;/\\u0026#39;, parameters(\\u0026#39;secretName\\u0026#39;))]\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2018-02-14\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[resourceGroup().location]\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;value\\u0026#34;: \\u0026#34;[parameters(\\u0026#39;secretValue\\u0026#39;)]\\u0026#34;, \\u0026#34;contentType\\u0026#34; : \\u0026#34;string\\u0026#34; } } In this resource definition, the resource type is Microsoft.KeyVault/vaults/secrets. The secretName you want to use will be used as the resource name, and the value will be set in the resource properties.\\nHere is the full template to provision a key vault and add a secret to it.\\nThis updated template added two additional parameters: secretName and secretValue. secretValue is a secure string. Try deploying the template using the deploy to Azure button below.\\nRetrieve vault secret Finally, when you need to use the secret as another resource property value, you can do so using a property definition, as shown below.\\n1 2 3 4 5 6 7 8 \\u0026#34;adminPassword\\u0026#34;: { \\u0026#34;reference\\u0026#34;: { \\u0026#34;keyVault\\u0026#34;: { \\u0026#34;id\\u0026#34;: \\u0026#34;/subscriptions/\\u0026lt;SubscriptionID\\u0026gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/\\u0026lt;KeyVaultName\\u0026gt;\\u0026#34; }, \\u0026#34;secretName\\u0026#34;: \\u0026#34;vmAdminPassword\\u0026#34; } } You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.\\nSummary In this part, you learned how to create an Azure Key Vault, add secrets to the vault, and retrieve the secrets. This knowledge will come handy when you attempt creating virtual machines that require a predefined administrator password. In the next part, you will learn about resource dependencies in ARM templates.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/",
+  "datePublished": "2020-08-07T00:00:00Z",
+  "dateModified": "2020-08-07T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/"
+  },
+  
+  "articleSection": "\"Azure Resource Manager\"",
+  
+  
+  "keywords": "[\"Azure Resource Manager\",\"Azure\",\"ARM Template\",\"Key Vault\"]",
+  
+  
+  "timeRequired": "PT5M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure Resource Manager",
+      "item": "https:\/\/ravichaganti.com\/categories/azure-resource-manager/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Azure Resource Manager - Using secrets in ARM templates",
+      "item": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

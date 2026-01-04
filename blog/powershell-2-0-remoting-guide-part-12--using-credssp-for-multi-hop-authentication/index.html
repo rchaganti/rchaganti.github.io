@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication">
   <meta property="og:description" content="In this part of the remoting series, we look at how CredSSP can be used for multi-hop authentication in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or PowerShell remoting, per se. Credential Security Service Provider (CredSSP) is a new security service provider that enables an application to delegate the user’s credentials from the client to the target server. Multi-hop support in Windows Remote Management uses CredSSP for authentication. Since PowerShell 2.0 remoting is built on top of WinRM, we can use CredSSP to perform multi-hop authentication.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication">
+
+  
+  
+    <meta property="article:published_time" content="2010-02-18T00:00:00Z">
+    <meta property="article:modified_time" content="2010-02-18T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="Remoting">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication",
+  "description": "In this part of the remoting series, we look at how CredSSP can be used for multi-hop authentication in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or …",
+  "articleBody": "\"In this part of the remoting series, we look at how CredSSP can be used for multi-hop authentication in PowerShell remoting. CredSSP and multi-hop support are not features of PowerShell 2.0 or PowerShell remoting, per se. Credential Security Service Provider (CredSSP) is a new security service provider that enables an application to delegate the user’s credentials from the client to the target server. Multi-hop support in Windows Remote Management uses CredSSP for authentication. Since PowerShell 2.0 remoting is built on top of WinRM, we can use CredSSP to perform multi-hop authentication.\\nSo, what is multi-hop authentication?\\nWell, let us look at an example to understand what is multi-hop authentication. Imagine a group of computers as shown here and you establish a remoting session from computer A (client) to computer B (server) and then from computer B, you try to create a file in a file share on computer C.\\nNow, within the remoting session to computer B, we want to execute a command — as below — to create test.txt on computer C.\\n1 Invoke-Command -ComputerName Test-PC.SP2010lab.com -credential SP2010LAB\\\\Administrator -ScriptBlock {[System.IO.File]::Create(\\\\\\\\FileServer\\\\Share\\\\Test.txt)} This command results in an “Access Denied” error as shown above. This command fails since the remote session tries to access the file share using the machine credentilas instead of the credentials used to invoke the remote session. We could have successfully created the text file if there was a way to pass or delegate credentials from the client so that we can authenticate to the file share. This is what is called multi-hop authentication and PowerShell remoting enables this using CredSSP.\\nHow do we delegate credentials?\\nThe cmdlets to create a remoting session — Invoke-Command, Enter-PSSession and New-PSSession — have a parameter to specify the authentication method as CredSSP. However, before we use this parameter, we need to enable credSSP on the computers participating in multi-hop authentication. Also, when enabling CredSSP, we need to specify the role — client or server — of a computer. A client is the computer from which the remoting session is initiated and server is the computer from which the multi-hop authentication is triggered. So, from the above example, we need to enable CredSSP authentication on computer A and computer B.\\nPowerShell 2.0 has Enable-WSManCredSSP, Disable-WSManCredSSP and Get-WSMANCredSSP cmdlets to manage CredSSP authentication\\nLet us now look at how we enable WSManCredSSP and specify client / server roles. First, let us enable CredSSP on computer A.\\nNote: You need to run these cmdlets in an elevated prompt.\\n1 Enable-WSManCredSSP -Role Client -DelegateComputer \\u0026#34;*.SP2010lab.com\\u0026#34; As shown here, you can use Enable-WSManCredSSP cmdlet to enable CredSSP authentication and specify the computer role as client. When the computer role is defined as a client, you can also specify the DelegateComputer parameter to specify the server or servers that receive the delegated credentials from the client. The delegateComputer accepts wildcards as shown above. You can also specify “*” to specify all computers in the network.\\nWhen Enable-WSManCredSSP cmdlet is used to enable CredSSP on the client by specifying client in the role parameter. The cmdlet then performs the following:\\nThe WS-Management setting \\u0026lt;localhost|computername\\u0026gt;\\\\Client\\\\Auth\\\\CredSSP is set to true. Sets the Windows CredSSP policy AllowFreshCredentials to WSMan/Delegate on the client. Now, we will enable CredSSP on computer B and deginate that as server.\\n1 Enable-WSManCredSSP -Role Server The above cmdlet enables CredSSP on computer B and sets the WS-Management setting \\u0026lt;localhost|computername\\u0026gt;\\\\Service\\\\Auth\\\\CredSSP is to true. Now, we can use Invoke-Command to run the script block as shown at the beginning of this post. However, we will specify the authentication method as CredSSP and pass the credentials.\\n1 Invoke-Command -ComputerName test-pc.SP2010lab.com -Credential SP2010Lab\\\\Administrator -Authentication CredSSP -ScriptBlock {[System.IO.File]::Create(\\\\\\\\FileServer\\\\Share\\\\Test.txt)} As you see here, we see the output from Create() method which shows the details of the newly created file.\\nCaution: CredSSP authentication delegates the user’s credentials from the local computer to a remote computer. This practice increases the security risk of the remote operation. If the remote computer is compromised, when credentials are passed to it, the credentials can be used to control the network session.\\nYou can use Disable-WSManCredSSP to disable CredSSP authentication on a client or a server computer.\\n1 2 Disable-WSManCredSSP -Role Client Disable-WSManCredSSP -Role Server You can use Get-WSManCredSSP cmdlet to verify if a computer has CredSSP enabled and also the role (client/server).\\nThis is it for now. We will look at few more aspects of PowerShell remoting in the next part of this series. Stay tuned..!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication\/",
+  "datePublished": "2010-02-18T00:00:00Z",
+  "dateModified": "2010-02-18T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"Remoting\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication",
+      "item": "https:\/\/ravichaganti.com\/blog\/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

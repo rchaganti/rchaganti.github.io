@@ -29,6 +29,11 @@ When working ARM templates, you may have come across a situation where you want 
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Bicep Language - Beyond Basics - Iterations">
   <meta property="og:description" content="
   
@@ -37,8 +42,22 @@ When working ARM templates, you may have come across a situation where you want 
 When working ARM templates, you may have come across a situation where you want to provision multiple instances of a resource with similar configuration. For example, multiple storage accounts or virtual machines or multiple data disks attached to a virtual machine. In the JSON template language, the copy element is used for this purpose. Bicep language has a few different ways you can achieve this at different levels like resources, resource properties, and outputs. Variable iterations are not available yet and mostly coming as a part of 0.4 release which is due by May 25th 2021.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/bicep-basics-beyond-basics-iterations/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bicep Language - Beyond Basics - Iterations">
+
+  
+  
+    <meta property="article:published_time" content="2021-04-14T00:00:00Z">
+    <meta property="article:modified_time" content="2021-04-14T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Azure">
+    <meta property="article:tag" content="Azure"><meta property="article:tag" content="Bicep">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -68,6 +87,102 @@ When working ARM templates, you may have come across a situation where you want 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bicep Language - Beyond Basics - Iterations",
+  "description": " When working ARM templates, you may have come across a situation where you want to provision multiple instances of a resource with similar configuration. For example, multiple storage accounts or …",
+  "articleBody": "\" When working ARM templates, you may have come across a situation where you want to provision multiple instances of a resource with similar configuration. For example, multiple storage accounts or virtual machines or multiple data disks attached to a virtual machine. In the JSON template language, the copy element is used for this purpose. Bicep language has a few different ways you can achieve this at different levels like resources, resource properties, and outputs. Variable iterations are not available yet and mostly coming as a part of 0.4 release which is due by May 25th 2021.\\nIn this part of the series of articles on Bicep language, you will learn about using iterations in your Bicep files. There are three ways to implement iterations in Bicep.\\nUsing a loop index Using an iteration or loop index is the simplest way to create multiple instances of a resource or iterating resource properties. A loop index syntax in Bicep is similar to what you may have seen in other languages.\\n1 2 3 [for \\u0026lt;index\\u0026gt; in range(\\u0026lt;start\\u0026gt;, \\u0026lt;stop\\u0026gt;): { \\u0026lt;resource-instance\\u0026gt; or \\u0026lt;resource-properties\\u0026gt; }] As you will see next, all you need to do is just assign this either to a resource declaration or resource property.\\nResource iteration Here is the general syntax of implementing a index based iteration in Bicep for resources.\\n1 2 3 resource \\u0026lt;resource-symbolic-name\\u0026gt; \\u0026#39;\\u0026lt;resource-type\\u0026gt;@\\u0026lt;api-version\\u0026gt;\\u0026#39; = [for \\u0026lt;index\\u0026gt; in range(\\u0026lt;start\\u0026gt;, \\u0026lt;stop\\u0026gt;): { \\u0026lt;resource-instance\\u0026gt; }] This should not be difficult to understand since you already know how to declare a resource instance. To add an iteration, all you need to do is add the iterator. In this case a loop index. The range() function here helps in creating a collection of integers from start integer to stop integer. Stop index is excluded. Here is a simple example around creating multiple storage accounts using loop index.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 param saCount int = 2 resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for index in range(0, saCount): { name: \\u0026#39;${index}stg${uniqueString(resourceGroup().id)}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } }] In the previous article on expressions in Bicep language, you learned how to use interpolation. The same technique can be used here to access the value stored in index \\u0026ndash; ${index}.\\nThis is how the resource declaration gets tranpiled into ARM JSON.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;copy\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;sa\\u0026#34;, \\u0026#34;count\\u0026#34;: \\u0026#34;[length(range(0, parameters(\\u0026#39;saCount\\u0026#39;)))]\\u0026#34; }, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2019-04-01\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[format(\\u0026#39;{0}stg{1}\\u0026#39;, range(0, parameters(\\u0026#39;saCount\\u0026#39;))[copyIndex()], uniqueString(resourceGroup().id))]\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[resourceGroup().location]\\u0026#34;, \\u0026#34;sku\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;Standard_LRS\\u0026#34; }, \\u0026#34;kind\\u0026#34;: \\u0026#34;StorageV2\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Hot\\u0026#34; } } ] Resource property iteration The general syntax for using loop indexes for resource properties is similar to that of resources.\\n1 2 3 \\u0026lt;property-name\\u0026gt;: [for \\u0026lt;index\\u0026gt; in range(\\u0026lt;start\\u0026gt;, \\u0026lt;stop\\u0026gt;): { \\u0026lt;resource-properties\\u0026gt; }] Here is a quick example of iterating on resource properties. This example demonstrates creating multiple subnets in a Azure Virtual Network.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 var numSubnets = 3 var subnetPrefix = [ \\u0026#39;10.10.12.0/24\\u0026#39; \\u0026#39;10.10.13.0/24\\u0026#39; ] resource vnet \\u0026#39;Microsoft.Network/virtualNetworks@2018-11-01\\u0026#39; = { name: \\u0026#39;vnet\\u0026#39; location: resourceGroup().location properties: { addressSpace: { addressPrefixes: [ \\u0026#39;10.10.10.0/16\\u0026#39; ] } subnets: [for sIndex in range(0, numSubnets): { name: \\u0026#39;subnet${sIndex}\\u0026#39; properties: { addressPrefix: subnetPrefix[sIndex] } }] } } The way this example is built is very similar to how you create multiple storage account instances. For the number of subnets, the numSubnets variable is used and the subnetPrefix array has the prefixes used for each subnet. Using array indexer, you can retrieve the prefix from the subnetPrefix array.\\nThose of you with a sharp eye must have noticed that the numSubnets is set to 3 but there are only two elements in the subnetPrefix array. For Bicep, this does not matter. You must make sure that these values are consistent.\\nIterating over a collection The second method of creating resource or resource property iterations is to iterate over a collection. Here is the general syntax for this.\\n1 2 3 [for \\u0026lt;item\\u0026gt; in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-instance\\u0026gt; or \\u0026lt;resource-properties\\u0026gt; }] Once again, this syntax can be used with either resource declaration or resource properties.\\nResource Iteration The general syntax for iterating over a collection to create multiple resource instances is:\\n1 2 3 resource \\u0026lt;resource-symbolic-name\\u0026gt; \\u0026#39;\\u0026lt;resource-type\\u0026gt;@\\u0026lt;api-version\\u0026gt;\\u0026#39; = [for \\u0026lt;item\\u0026gt; in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-instance\\u0026gt; }] Here is a full example of creating multiple storage accounts using this method.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 var saNames = [ \\u0026#39;sqllondon\\u0026#39; \\u0026#39;sqlchennai\\u0026#39; \\u0026#39;archiveseattle\\u0026#39; ] resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for sName in saNames: { name: concat(sName, uniqueString(resourceGroup().id)) location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } }] In this example, the variable saNames contains a list of storage account names. The iteration in this example loops over the elements in saNames array and uses these values as a part of the storage account name. Here is how the resource declaration gets compiled into ARM JSON representation.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;copy\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;sa\\u0026#34;, \\u0026#34;count\\u0026#34;: \\u0026#34;[length(variables(\\u0026#39;saNames\\u0026#39;))]\\u0026#34; }, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2019-04-01\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[concat(variables(\\u0026#39;saNames\\u0026#39;)[copyIndex()], uniqueString(resourceGroup().id))]\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[resourceGroup().location]\\u0026#34;, \\u0026#34;sku\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;Standard_LRS\\u0026#34; }, \\u0026#34;kind\\u0026#34;: \\u0026#34;StorageV2\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Hot\\u0026#34; } } ] Resource property iteration Here is the general syntax for using collection iteration with resource properties.\\n1 2 3 \\u0026lt;property-name\\u0026gt;: [for \\u0026lt;item\\u0026gt; in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-properties\\u0026gt; }] The previous example around the storage account creation can be modified to add iteration for the accessTier property.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 var sAccounts = [ { name: \\u0026#39;sqllondon\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } { name: \\u0026#39;sqlchennai\\u0026#39; accessTier: \\u0026#39;Hot\\u0026#39; } { name: \\u0026#39;archiveseattle\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } ] resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for sAcct in sAccounts: { name: concat(sAcct.name, uniqueString(resourceGroup().id)) location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: sAcct.accessTier } }] In this example, the sAccounts variable is a collection of objects. Each object in this collection has two properties \\u0026ndash; name and accessTier. We use the same collection for both storage account instance and the accessTier resource property. Within the iteration, you can access the properties using an accessor. sAcct represents the item from sAccounts collection in the current iteration and sAcct.name and sAcct.accessTier represent the name and accessTier values associated with the current item in the collection.\\nIterating over elements in an array The final method to use loops in Bicep files is to iterate over elements in an array. In the first method, you looked using the index value from the iteration. In the second method where we used an array of storage account names, we used the element value within each iteration. In this third method, you can access both index and element value. The general syntax for this type of iteration is:\\n1 2 3 [for (\\u0026lt;item\\u0026gt;, \\u0026lt;index\\u0026gt;) in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-instance\\u0026gt; or \\u0026lt;resource-properties\\u0026gt; }] Resource Iteration The syntax for resource iteration using this third method is:\\n1 2 3 resource \\u0026lt;resource-symbolic-name\\u0026gt; \\u0026#39;\\u0026lt;resource-type\\u0026gt;@\\u0026lt;api-version\\u0026gt;\\u0026#39; = [for (\\u0026lt;item\\u0026gt;, \\u0026lt;index\\u0026gt;) in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-instance\\u0026gt; }] Using this method, you can simplify the above example where you created multiple storage accounts and configured a different access tier for each account.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 var sAccounts = [ { name: \\u0026#39;sqllondon\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } { name: \\u0026#39;sqlchennai\\u0026#39; accessTier: \\u0026#39;Hot\\u0026#39; } { name: \\u0026#39;archiveseattle\\u0026#39; accessTier: \\u0026#39;Cool\\u0026#39; } ] resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for (sItem, sIndex) in sAccounts: { name: \\u0026#39;stg${sItem.name}${sIndex}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: sItem.accessTier } }] In this method of iteration, sItem represents the element at the current index and sIndex is the integer representing the current iteration. You can build this and see how it gets transpiled to ARM JSON representation.\\nResource property Iteration The syntax for resource property iteration in this method is:\\n1 2 3 \\u0026lt;property-name\\u0026gt;: [for (\\u0026lt;item\\u0026gt;, \\u0026lt;index\\u0026gt;) in \\u0026lt;collection\\u0026gt;: { \\u0026lt;resource-properties\\u0026gt; }] Here is an example of using this method to create multiple subnets in a Azure virtual network.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 var subnetPrefix = [ \\u0026#39;10.10.12.0/24\\u0026#39; \\u0026#39;10.10.13.0/24\\u0026#39; ] resource vnet \\u0026#39;Microsoft.Network/virtualNetworks@2018-11-01\\u0026#39; = { name: \\u0026#39;vnet\\u0026#39; location: resourceGroup().location properties: { addressSpace: { addressPrefixes: [ \\u0026#39;10.10.10.0/16\\u0026#39; ] } subnets: [for (sItem, sIndex) in subnetPrefix: { name: \\u0026#39;subnet${sIndex}\\u0026#39; properties: { addressPrefix: sItem } }] } } When you choose one of these methods depends on what type of configuration you want to perform. As you start building more complex Bicep files, you will start identifying places to use one of the three methods that you just learned.\\nSerial deployment of resources By default, creating multiple resource instances happens in parallel. However, you can configure to do this serially as well. This is where you use the the @batchSize decorator in a resource declaration. This decorator takes an integer as input which represent the number of parallel deployments to perform. Here is a quick example:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 param saCount int = 20 @batchSize(3) resource sa \\u0026#39;Microsoft.Storage/storageAccounts@2019-04-01\\u0026#39; = [for index in range(0, saCount): { name: \\u0026#39;${index}stg${uniqueString(resourceGroup().id)}\\u0026#39; location: resourceGroup().location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } }] When you add a batchSize decorator, the resulting ARM representation sets the mode property of the copy element to serial.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 \\u0026#34;resources\\u0026#34;: [ { \\u0026#34;copy\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;sa\\u0026#34;, \\u0026#34;count\\u0026#34;: \\u0026#34;[length(range(0, parameters(\\u0026#39;saCount\\u0026#39;)))]\\u0026#34;, \\u0026#34;mode\\u0026#34;: \\u0026#34;serial\\u0026#34;, \\u0026#34;batchSize\\u0026#34;: 3 }, \\u0026#34;type\\u0026#34;: \\u0026#34;Microsoft.Storage/storageAccounts\\u0026#34;, \\u0026#34;apiVersion\\u0026#34;: \\u0026#34;2019-04-01\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;[format(\\u0026#39;{0}stg{1}\\u0026#39;, range(0, parameters(\\u0026#39;saCount\\u0026#39;))[copyIndex()], uniqueString(resourceGroup().id))]\\u0026#34;, \\u0026#34;location\\u0026#34;: \\u0026#34;[resourceGroup().location]\\u0026#34;, \\u0026#34;sku\\u0026#34;: { \\u0026#34;name\\u0026#34;: \\u0026#34;Standard_LRS\\u0026#34; }, \\u0026#34;kind\\u0026#34;: \\u0026#34;StorageV2\\u0026#34;, \\u0026#34;properties\\u0026#34;: { \\u0026#34;accessTier\\u0026#34;: \\u0026#34;Hot\\u0026#34; } } ] So far you have learned about using iteration for resource creation and resource properties. This is it for today. In the next part of this series, you will learn about outputs in Bicep files and how iterations can be used with outputs. Stay tuned.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-iterations\/",
+  "datePublished": "2021-04-14T00:00:00Z",
+  "dateModified": "2021-04-14T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-iterations\/"
+  },
+  
+  "articleSection": "\"Azure\"",
+  
+  
+  "keywords": "[\"Azure\",\"Bicep\"]",
+  
+  
+  "timeRequired": "PT9M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Azure",
+      "item": "https:\/\/ravichaganti.com\/categories/azure/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Bicep Language - Beyond Basics - Iterations",
+      "item": "https:\/\/ravichaganti.com\/blog\/bicep-basics-beyond-basics-iterations\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

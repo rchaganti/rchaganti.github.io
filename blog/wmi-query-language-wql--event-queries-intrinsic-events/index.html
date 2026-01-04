@@ -25,12 +25,31 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="WMI Query Language (WQL) – Event Queries: Intrinsic Events">
   <meta property="og:description" content="Intrinsic events are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI creates intrinsic events for objects stored in the WMI repository. A provider generates intrinsic events for dynamic classes, but WMI can create an instance for a dynamic class if no provider is available. WMI uses polling to detect the changes.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/wmi-query-language-wql--event-queries-intrinsic-events/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="WMI Query Language (WQL) – Event Queries: Intrinsic Events">
+
+  
+  
+    <meta property="article:published_time" content="2010-12-22T00:00:00Z">
+    <meta property="article:modified_time" content="2010-12-22T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="PowerShell">
+    <meta property="article:tag" content="PowerShell"><meta property="article:tag" content="WQL"><meta property="article:tag" content="WMI">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -56,6 +75,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "WMI Query Language (WQL) – Event Queries: Intrinsic Events",
+  "description": "Intrinsic events are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI …",
+  "articleBody": "\"Intrinsic events are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI creates intrinsic events for objects stored in the WMI repository. A provider generates intrinsic events for dynamic classes, but WMI can create an instance for a dynamic class if no provider is available. WMI uses polling to detect the changes.\\nThere are many system classes that WMI uses to report intrinsic events. However, the ones that are most interesting and useful are __InstanceCreationEvent, __InstanceModificationEvent, and __InstanceDeletionEvent. Hence, monitoring resources on a system involves monitoring of these system classes. These classes are derived from the __InstanceOperationEvent class which is derived from the __Event system class under root\\\\Default namespace. The following capture of WMI CIM Studio shows this hierarchy.\\nThe WQL syntax for WMI intrinsic event queries is:\\n1 SELECT \\\\* FROM __InstanceXEvent WITHIN PollingInterval WHERE TargetInstance ISA WMIClassName AND TargetInstance.WMIClassPropertyName = Value This is something similar to what we saw in the earlier post about WQL syntax for event queries. The __InstanceXEvent can be any of the system classes such as __InstanceCreationEvent, __InstanceModificationEvent, __InstanceDeletionEvent, and __InstanceOperationEvent. Now, when do we use each of these event classes?\\n__InstanceCreationEvent is used when we want to receive a notification upon creation of an instance. For example, we can use this event class when you want to receive an event notification every time a new process gets created. This can be done by,\\n1 2 3 4 #Query for new process events $query = \\u0026#34;Select * from __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA \\u0026#39;Win32_Process\\u0026#39;\\u0026#34; #Register WMI event Register-WmiEvent -Query $query -Action { Write-Host \\u0026#34;New Process Created. Do something useful here\\u0026#34; } __InstanceDeletionEvent is used when we want to receive a notification upon deletion of an instance. For example, we can use this class when we want to receive an event notification every time a process is terminated. For example,\\n1 2 3 4 #Query for new process events $query = \\u0026#34;Select * from __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA \\u0026#39;Win32_Process\\u0026#39;\\u0026#34; #Register WMI event Register-WmiEvent -Query $query -Action { Write-Host \\u0026#34;A Process terminated. Do something useful here\\u0026#34; } __InstanceModificationEvent is used when we want to monitor changes to an existing instance or a resource. For example, we can use this class when we want to receive an event notification when a the processor utilization on a system goes beyond a specified usage threshold. For example,\\n1 2 3 4 #Query for new process events $query = \\u0026#34;Select * from __InstanceModificationEvent WITHIN 5 WHERE TargetInstance ISA \\u0026#39;Win32_Processor\\u0026#39; AND TargetInstance.LoadPercentage \\u0026gt; 80\\u0026#34; #Register WMI event Register-WmiEvent -Query $query -Action { Write-Host \\u0026#34;Processor utilization is more than 80%. Do something useful here\\u0026#34; } All of the examples above just displayed a message when the event notification was received. Instead, we can do something useful within the script block. For example, in the __InstanceCreationEvent example, we are just displaying that a new process was created but not the process name that just got created. So, how do we access that information in the script block and tell a user the name of the process that was created?\\nSimple, PowerShell creates an automatic variable called $event and stores the last event received in that variable. And, this automatic variable can be accessed in the -Action scriptblock you specify during a WMI event registration. Let us see an example.\\nIf you see in the above example, I made an event registration for process creation events and in the -Action script block, assigned the $event variable to a variable in the global scope ($myEvent). This is essential because we cannot access the $event variable outside the -Action script block. Once the registration was done, I opened a notepad. This will fire the __InstanceCreationEvent and $myEvent should have the details around the event. So, I tried looking at all the members of this event. After exploring that a bit, I figured out that $myEvent.SourceEventArgs.NewEvent.TargetInstance.Name has the name of the new process which is notepad.exe. This is precisely what you see in the last line there.\\n$Event.SourceEventArgs.NewEvent.TargetInstance will have the instance of the newly created process. I will leave it to you to explore more.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql--event-queries-intrinsic-events\/",
+  "datePublished": "2010-12-22T00:00:00Z",
+  "dateModified": "2010-12-22T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql--event-queries-intrinsic-events\/"
+  },
+  
+  "articleSection": "\"PowerShell\"",
+  
+  
+  "keywords": "[\"PowerShell\",\"WQL\",\"WMI\"]",
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "PowerShell",
+      "item": "https:\/\/ravichaganti.com\/categories/powershell/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "WMI Query Language (WQL) – Event Queries: Intrinsic Events",
+      "item": "https:\/\/ravichaganti.com\/blog\/wmi-query-language-wql--event-queries-intrinsic-events\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">

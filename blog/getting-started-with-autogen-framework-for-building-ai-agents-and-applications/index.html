@@ -37,6 +37,11 @@
   <meta name="author" content="Ravikanth Chaganti">
 
   
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
   <meta property="og:title" content="Getting started with AutoGen framework for building AI agents and applications">
   <meta property="og:description" content="I have been closely following developments in the Agentic AI space. AutoGen from Microsoft Research is emerging as a powerful yet easy-to-use framework for building AI agents and applications. With their re-architected release (0.4.0), they have re-imagined building advanced AI applications. This release introduces an asynchronous, event-driven architecture.
 
@@ -53,8 +58,22 @@
  ">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/getting-started-with-autogen-framework-for-building-ai-agents-and-applications/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/default-post.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Getting started with AutoGen framework for building AI agents and applications">
+
+  
+  
+    <meta property="article:published_time" content="2025-01-30T00:00:00Z">
+    <meta property="article:modified_time" content="2025-01-30T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="autogen">
+    <meta property="article:tag" content="azure"><meta property="article:tag" content="openai"><meta property="article:tag" content="python">
+  
 
   
   <meta name="twitter:card" content="summary_large_image">
@@ -92,6 +111,102 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Getting started with AutoGen framework for building AI agents and applications",
+  "description": "I have been closely following developments in the Agentic AI space. AutoGen from Microsoft Research is emerging as a powerful yet easy-to-use framework for building AI agents and applications. With …",
+  "articleBody": "\"I have been closely following developments in the Agentic AI space. AutoGen from Microsoft Research is emerging as a powerful yet easy-to-use framework for building AI agents and applications. With their re-architected release (0.4.0), they have re-imagined building advanced AI applications. This release introduces an asynchronous, event-driven architecture.\\nThis release features a layered architecture with all foundational building blocks for an event-driven system as the core package. The AgentChat layer builds upon the core layer, providing a task-driven API for group chat and code execution, as well as pre-built agents. The extensions layer provides implementations for core interfaces and third-party integrations. This is where all the model clients are implemented. The AutoGen Studio is a low-code interface that enables the rapid prototyping of AI agents, and AutoGen Bench provides developers with tools to benchmark agents\\u0026rsquo; performance across different tasks and environments.\\nThe Magnetic-One application is a reference implementation that utilizes the AutoGen features, enabling users to perform open-ended web and file-based tasks across various domains.\\nIf you want to start with AutoGen, this is the right time. In this article, I will walk through the basics of using AutoGen. We will go from using a simple model client to creating a simple agent. In the later parts of this series, we will look at creating a team of agents. As we do that, we will learn the concepts surrounding AutoGen.\\nInstalling AutoGen As with any Python package, creating a virtual environment before installing any packages is always a good practice.\\n1 2 3 4 5 $ mkdir -p autogen-101 \\u0026amp;\\u0026amp; cd autogen-101 $ python -m venv .venv $ source .venv\\\\bin\\\\activate $ pip install -U \\u0026#34;autogen-agentchat\\u0026#34; $ pip install \\u0026#34;autogen-ext[openai,azure]\\u0026#34; We can start with the autogen-agentchat library for simple AI agents and applications. The autogen-core library will be required for advanced scenarios.\\nUsing model clients I chose Azure OpenAI to explore how to use model clients in AutoGen. AutoGen supports different models as extensions. With Azure OpenAI, you can use either key-based authentication or AAD token-based authentication. For the key-based authentication, we will use the following environment variables.\\nAZURE_OPENAI_API_KEY: API key to authenticate with the Azure OpenAI service. AZURE_OPENAI_ENDPOINT: API endpoint associated with the Azure OpenAI service. AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: Deployment name given while deploying the model. AZURE_OPENAI_API_VERSION: API version of the Azure OpenAI service To make it easy to retrieve these variable values in the script, we can use the load_dotenv() function.\\n1 2 3 4 5 from dotenv import load_dotenv import os import asyncio load_dotenv() For the Azure OpenAI model client, we must import the AzureOpenAIChatCompletionClient from the autogen_ext.models.openai package. To create a conversation with the model, we need to send the prompt as a UserMessage, which is available in the autogen_core.models package.\\n1 2 from autogen_ext.models.openai import AzureOpenAIChatCompletionClient from autogen_core.models import UserMessage, AssistantMessage, SystemMessage Let us combine this functionality to retrieve a response to a user prompt from the model.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 async def main(): aopenai_client = AzureOpenAIChatCompletionClient( model=os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;), api_key=os.getenv(\\u0026#34;AZURE_OPENAI_API_KEY\\u0026#34;), api_version=os.getenv(\\u0026#34;AZURE_OPENAI_API_VERSION\\u0026#34;), endpoint=os.getenv(\\u0026#34;AZURE_OPENAI_ENDPOINT\\u0026#34;), ) result = await aopenai_client.create([ UserMessage( content=\\u0026#34;What is AutoGen framework from Microsoft Research?\\u0026#34;, source=\\u0026#34;user\\u0026#34;, ), ]) print(result.content) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) Running this program should produce output similar to the following.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 $ python 01-model-client.py AutoGen is an advanced framework developed by Microsoft Research that facilitates the creation of complex agent-based workflows centered around Large Language Models (LLMs). Released as an open-source Python library, AutoGen provides developers with tools to streamline communication and collaboration between LLM-powered agents while enabling dynamic automation and interaction with external APIs or services. ### Key Features of AutoGen: 1. **Agent Collaboration and Communication**: AutoGen allows for the orchestration of intelligent agents (e.g., user agents or assistant agents) that can dynamically interact through dialogues and tasks. These agents are designed to perform complex reasoning, problem-solving, and coordination. 2. **Extensibility and Customization**: AutoGen provides a simple yet powerful interface where developers can define custom agents with specific behaviors, abilities, and APIs. This makes it highly adaptable for diverse use cases. 3. **Streamlined Workflow Automation**: Using AutoGen, developers can build sophisticated workflows where multiple agents collaborate to achieve tasks like information retrieval, code generation, decision-making, content creation, and more. 4. **Ease of Use**: While enabling complex logic and inter-agent collaboration, AutoGen emphasizes simplicity, reducing the time and effort required for developers to design, implement, and manage multi-agent systems. 5. **Hybrid Intelligence**: The framework bridges LLMs and external tools, allowing agents to integrate well with domain-specific APIs, databases, and other services for enhanced operational capabilities. ### Example Use Cases: - **Code Development**: Agents can collaborate to design, write, debug, and review code based on user requirements. - **Business Process Automation**: AutoGen can automate workflows in customer support, data analysis, and report generation by leveraging human-like decision-making agents. - **Creative Content Generation**: Agents can coordinate for tasks requiring writing stories, generating marketing material, or brainstorming ideas collaboratively. ### Components of AutoGen: - **UserAgent**: Simulates a user interacting with the system. - **AssistantAgent**: Represents an LLM-powered agent that actively solves problems or performs delegated tasks. - **Custom Agents**: Developers can design unique agents tailored to specific roles or actions, integrating APIs, static data, or dynamic processes. - **Robust Communication Framework**: Facilitates seamless back-and-forth interaction between agents, with dialogue and task-driven workflows. ### Availability: Microsoft Research released AutoGen on GitHub as an open-source project. Developers can freely access the library, explore examples, and adapt its features to their needs. ### Significance: AutoGen highlights the growing trend of transitioning from single-agent LLM applications to multi-agent systems capable of collaborative intelligence. Such frameworks push the boundaries of what LLMs can achieve, offering opportunities for groundbreaking innovation in AI-driven automation and human-computer interaction. You can find the library and documentation for AutoGen [here on GitHub](https://github.com/microsoft/autogen). You can change the model client and experiment with different hosted or local models.\\nUpdate: The 0.4.8 release of AutoGen natively supports Ollama-hosted local models. Here is a quick example of using the Ollama model client. You need to install the autogen-ext[ollama] package.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 from dotenv import load_dotenv import os import asyncio from autogen_ext.models.ollama import OllamaChatCompletionClient from autogen_core.models import UserMessage load_dotenv() async def main(): ollama_client = OllamaChatCompletionClient( model=\\u0026#34;llama3.2:3b\\u0026#34; ) result = await ollama_client.create([ UserMessage( content=\\u0026#34;What is AutoGen framework from Microsoft Research?\\u0026#34;, source=\\u0026#34;user\\u0026#34;, ), ]) print(result.content) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The response may take a few seconds to minutes depending on the system configuration where you run the models locally and the model size.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 $ python .\\\\01-model-client-ollama.py AutoGen is a tool developed by Microsoft Research that enables the automatic generation of test cases for software applications. It is designed to help improve the quality and coverage of unit tests, integration tests, and UI tests. AutoGen uses a combination of machine learning algorithms and natural language processing (NLP) techniques to analyze source code, identify relevant features, and generate test cases that cover those features. The goal is to reduce the manual effort required to write test cases, making it easier for developers to ensure their application\\u0026#39;s functionality is thoroughly tested. Here are some key features of AutoGen: 1. **Source code analysis**: AutoGen analyzes source code to identify relevant functions, methods, and classes. 2. **Feature extraction**: It extracts relevant features from the analyzed source code, such as input parameters, return types, and data structures. 3. **Test case generation**: Based on the extracted features, AutoGen generates test cases that cover those features. 4. **Test case optimization**: It optimizes generated test cases to minimize duplication and ensure maximum coverage. AutoGen can be used in various testing scenarios, including: 1. Unit testing: Generating test cases for individual functions or methods. 2. Integration testing: Testing interactions between components or modules. 3. UI testing: Creating test cases for user interface elements and behaviors. By leveraging machine learning and NLP techniques, AutoGen aims to make the testing process more efficient and effective, allowing developers to focus on other aspects of software development. Would you like to know more about how AutoGen works or its applications in specific industries? As you see, the local model hallucinated about what AutoGen is! :)\\nCreate an agent The AgentChat package provides a set of pre-built agents. These include an AssistantAgent, UserProxyAgent, and CodeExecutionAgent, among others. In this article, we will examine the use of the AssistantAgent. Let\\u0026rsquo;s dive into the example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 from autogen_agentchat.agents import AssistantAgent from autogen_agentchat.ui import Console from autogen_ext.models.openai import AzureOpenAIChatCompletionClient import asyncio from dotenv import load_dotenv import os import json import requests from datetime import datetime from typing import Any load_dotenv() api_key = os.getenv(\\u0026#34;AZURE_OPENAI_API_KEY\\u0026#34;) model = os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) endpoint = os.getenv(\\u0026#34;AZURE_OPENAI_ENDPOINT\\u0026#34;) api_version = os.getenv(\\u0026#34;AZURE_OPENAI_API_VERSION\\u0026#34;) aoi_client = AzureOpenAIChatCompletionClient( model=model, api_key=api_key, endpoint=endpoint, api_version=api_version, ) def get_weather(city: str, date: datetime = None) -\\u0026gt; dict[str, Any]: \\u0026#34;\\u0026#34;\\u0026#34; Get the weather at a given location on a given date or current weather. Args: city: The city name, e.g. Bengaluru. date: Date on which the weather at the given location should be determined. This defaults to the current weather when a date is not specified. Returns: JSON string with the city name, date, and temperature. \\u0026#34;\\u0026#34;\\u0026#34; api_key = os.getenv(\\u0026#34;VISUAL_CROSSING_API_KEY\\u0026#34;) if date is None: date = datetime.now().strftime(\\u0026#34;%Y-%m-%d\\u0026#34;) request_url = f\\u0026#34;https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{city}/{date}?unitGroup=metric\\u0026amp;key={api_key}\\u0026amp;contentType=json\\u0026#34; response = requests.get(request_url) if response.status_code != 200: return json.dumps({ \\u0026#34;error\\u0026#34;: \\u0026#34;Invalid city name or date\\u0026#34; }) else: respJson = response.json() return json.dumps({ \\u0026#34;city\\u0026#34;: city, \\u0026#34;date\\u0026#34;: date, \\u0026#34;temperature\\u0026#34;: respJson[\\u0026#34;days\\u0026#34;][0][\\u0026#34;temp\\u0026#34;] }) agent = AssistantAgent( name=\\u0026#34;weather_agent\\u0026#34;, model_client=aoi_client, tools=[get_weather], system_message=\\u0026#34;You are a helpful assistant.\\u0026#34;, reflect_on_tool_use=True, model_client_stream=True, ) async def main() -\\u0026gt; None: await Console( agent.on_messages_stream( task=\\u0026#34;What is the weather in London?\\u0026#34; ) ) asyncio.run(main()) The get_weather tool is the same function I used earlier when writing about Azure OpenAI API. It uses VisualCrossing weather API. If you do not have an API key for this service, replace the function body with a dummy return statement.\\n1 2 3 4 5 6 7 8 9 10 11 \\u0026#34;\\u0026#34;\\u0026#34; Get the weather at a given location on a given date or current weather. Args: city: The city name, e.g. Bengaluru. date: Date on which the weather at the given location should be determined. This defaults to the current weather when a date is not specified. Returns: JSON string with the city name, date, and temperature. \\u0026#34;\\u0026#34;\\u0026#34; return f\\u0026#34;The weather in {city} on {date} is 30 degrees celsius and rainy.\\u0026#34; The agent.run_stream() method is a convenient wrapper around the on_messages_stream() method and\\nUnlike the function or tool calling when using the OpenAI API directly, the AutoGen agent framework and the agents provide the ability to invoke the tools automatically based on the LLM response. We supply a list of tools available using the tools field.\\n1 2 3 4 5 6 7 8 9 $ python 02-assistant-agent.py ---------- user ---------- What is the weather in London? ---------- weather_agent ---------- [FunctionCall(id=\\u0026#39;call_Z4evOdxIYSuCsMyXEJXXyToR\\u0026#39;, arguments=\\u0026#39;{\\u0026#34;city\\u0026#34;:\\u0026#34;London\\u0026#34;}\\u0026#39;, name=\\u0026#39;get_weather\\u0026#39;)] ---------- weather_agent ---------- [FunctionExecutionResult(content=\\u0026#39;{\\u0026#34;city\\u0026#34;: \\u0026#34;London\\u0026#34;, \\u0026#34;date\\u0026#34;: \\u0026#34;2025-03-23\\u0026#34;, \\u0026#34;temperature\\u0026#34;: 11.0}\\u0026#39;, name=\\u0026#39;get_weather\\u0026#39;, call_id=\\u0026#39;call_Z4evOdxIYSuCsMyXEJXXyToR\\u0026#39;, is_error=False)] ---------- weather_agent ---------- The current temperature in London is 11°C. Let me know if you\\u0026#39;d like more details about the weather! The reflect_on_tool_use indicates if the agent should make another model inference using the tool call result. If you set this to False, you will not see the last response.\\n1 2 3 4 5 6 7 8 9 $ python 02-assistant-agent.py ---------- user ---------- What is the weather in London? ---------- weather_agent ---------- [FunctionCall(id=\\u0026#39;call_1DXbEuxDnHKHKj6d6DhWmueo\\u0026#39;, arguments=\\u0026#39;{\\u0026#34;city\\u0026#34;:\\u0026#34;London\\u0026#34;}\\u0026#39;, name=\\u0026#39;get_weather\\u0026#39;)] ---------- weather_agent ---------- [FunctionExecutionResult(content=\\u0026#39;{\\u0026#34;city\\u0026#34;: \\u0026#34;London\\u0026#34;, \\u0026#34;date\\u0026#34;: \\u0026#34;2025-03-23\\u0026#34;, \\u0026#34;temperature\\u0026#34;: 11.0}\\u0026#39;, name=\\u0026#39;get_weather\\u0026#39;, call_id=\\u0026#39;call_1DXbEuxDnHKHKj6d6DhWmueo\\u0026#39;, is_error=False)] ---------- weather_agent ---------- {\\u0026#34;city\\u0026#34;: \\u0026#34;London\\u0026#34;, \\u0026#34;date\\u0026#34;: \\u0026#34;2025-03-23\\u0026#34;, \\u0026#34;temperature\\u0026#34;: 11.0} Setting model_client_stream to True or False influences if the result from the tool calling and the model should be streamed or not. We can use any of the four methods \\u0026ndash; agent.on_messages(), agent.on_messages_stream(), agent.run(), and agent.run_stream() \\u0026ndash; to supply the input prompt to the model.\\nAlso, unlike the direct API calling, you don\\u0026rsquo;t have to pass the conversation history as a part of the prompt. The AutoGen agents are stateful and maintain the state of the conversation in memory.\\nAs you can see, AutoGen framework makes it significantly simple to implement agentic applications. In the later parts of this series, we shall look at some advanced concepts and features of AutoGen.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/getting-started-with-autogen-framework-for-building-ai-agents-and-applications\/",
+  "datePublished": "2025-01-30T00:00:00Z",
+  "dateModified": "2025-01-30T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/default-post.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/getting-started-with-autogen-framework-for-building-ai-agents-and-applications\/"
+  },
+  
+  "articleSection": "\"autogen\"",
+  
+  
+  "keywords": "[\"azure\",\"openai\",\"python\"]",
+  
+  
+  "timeRequired": "PT11M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "autogen",
+      "item": "https:\/\/ravichaganti.com\/categories/autogen/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Getting started with AutoGen framework for building AI agents and applications",
+      "item": "https:\/\/ravichaganti.com\/blog\/getting-started-with-autogen-framework-for-building-ai-agents-and-applications\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
