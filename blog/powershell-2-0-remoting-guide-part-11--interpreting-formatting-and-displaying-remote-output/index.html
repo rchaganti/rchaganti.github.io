@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output | Ravikanth Chaganti</title>
+
+  
+  <meta name="description" content="In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  <meta property="og:title" content="PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output">
+  <meta property="og:description" content="In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output">
+  <meta name="twitter:description" content="In this part of the remoting series, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (part4, part 5 and part 6) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-11--interpreting-formatting-and-displaying-remote-output/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
+
+        </div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/powershell/" class="hover:text-primary dark:hover:text-blue-400">PowerShell</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2010-02-15">February 15, 2010</time>
+        </div>
+
+        
+        
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>5 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/powershell/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              PowerShell
+            </a>
+          
+            <a href="/categories/remoting/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Remoting
+            </a>
+          
+        
+        
+          
+            <a href="/series/powershell-remoting/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: PowerShell Remoting
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/default-post.svg" alt="PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output" class="w-full h-auto">
+      </div>
+
+      
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: PowerShell Remoting
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 12-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-1-the-basics/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 1 – The basics
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 22, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-2--overview-of-remoting-cmdlets/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 2 – Overview of remoting cmdlets
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 27, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-3--enable-remoting/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 3 – Enable remoting
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 31, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                4
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-4--execute-commands-or-scripts-on-a-remote-computer-using-invoke-command/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 4 – Execute commands or scripts on a remote computer using Invoke-Command
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 1, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                5
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-5-interactive-remoting-sessions/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 5 – interactive remoting sessions
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 2, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                6
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-6-implicit-remoting-sessions/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 6 – implicit remoting sessions
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 3, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                7
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-7--saving-remote-session-to-disk/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 7 – saving remote session to disk
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 4, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                8
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-8--remoting-scenarios-and-troubleshooting/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 8 – remoting scenarios and troubleshooting
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 7, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                9
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-9--session-configurations-and-creating-custom-configurations/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 9 – Session configurations and creating custom configurations
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 9, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                10
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-10--restricting-available-commands-using-custom-session-configuration/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 10 – Restricting available commands using custom session configuration
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 11, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                11
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    PowerShell 2.0 remoting guide: Part 11 – Interpreting, formatting and displaying remote output
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 15, 2010</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                12
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 18, 2010</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              
+            
+          
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-10--restricting-available-commands-using-custom-session-configuration/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">PowerShell 2.0 remoting guide: Part 10 – Restricting available commands using custom session configuration</span>
+            </a>
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>In this part of the <a href="http://139.59.40.198/blog/?cat=240">remoting series</a>, we look at remoting output. This includes how the output is transferred from remote computer to local, how it is displayed and how we can format this output based on a need. We already discussed various methods to execute commands (<a href="http://139.59.40.198/blog/?p=1108">part4</a>, <a href="http://139.59.40.198/blog/?p=1140">part 5</a> and <a href="http://139.59.40.198/blog/?p=1151">part 6</a>) on a remote computer. In this post, for the sake of our discussion of remoting output, I will use only Invoke-Command method to execute remote commands. However, I will point out the differences as required.</p>
+<blockquote>
+<p>Note: Most of this does not apply within an interactive remoting session</p>
+</blockquote>
+<p>The concepts of remoting output are explained in a TechNet article at <a href="http://technet.microsoft.com/en-us/library/dd347582.aspx">http://technet.microsoft.com/en-us/library/dd347582.aspx</a>. I am going to put some story around this to help you understand the concepts well.</p>
+<p>First, let us start with an obvious difference in the output received from a remote session. If you use Invoke-Command to run Get-PSDrive, you see something like this.</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>You can see an additional column in the output that shows the remote computer name with PSComputerName as the column name. This won’t be displayed if you run the same cmdlet on local computer. So, if you don’t want to display this information in the remote output you can use the -HideComputerName parameter.</p>
+<p>It is also possible that some cmdlets may not display PSComputerName property. For example, Get-Date. In such a scenario you can add PSComputerName to the output of Get-Date as shown here</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
+</span></span></code></pre></td></tr></table>
+</div>
+</div><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-2.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p><strong>How remote command output is sent over to local computer?</strong></p>
+<p>The objects that Windows PowerShell cmdlets return cannot be transmitted over the network. So, the live objects are “serialized”. In other words, the live objects are converted into XML representations of the object and its properties. Then, the XML-based serialized object is transmitted across the network to the local session where it gets deserialized in to .NET object. This is how an <a href="http://msdn.microsoft.com/en-us/library/ms973893.aspx">MSDN </a>article defines serialization in .NET framework.</p>
+<blockquote>
+<p>Why would you want to use serialization? The two most important reasons are to persist the state of an object to a storage medium so an exact copy can be recreated at a later stage, and to send the object by value from one application domain to another. For example, serialization is used to save session state in ASP.NET and to copy objects to the clipboard in Windows Forms. It is <strong>also used by remoting</strong> to pass objects by value from one application domain to another.</p>
+</blockquote>
+<p><strong>So, what does this mean to us in PowerShell remoting?</strong></p>
+<p>As it is defined above, the live objects are converted in to XML based representation. So, once deserialized in the local session, they don’t expose any methods that actually belong to the object. Let us see an example to understand this. First, let us look at Get-Process output in a local session and see what all methods we see.</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-3.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-3.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>Here, you can see a list of methods you can use against a process object. Now, let us take a look at how this looks when we execute the same command in a remote session.</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-4.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-4.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>If you observe in the above screenshot, TypeName represents a deserialized object and there are no methods that you can use against a process object. A deserialized object represents a snapshot of get-process at the time of command execution in the remote session. This also means that you can’t execute methods such as Kill() against a deserialized process object. Also, no methods to modify the property set will work in the local session.</p>
+<p>Windows PowerShell blog has a nice post on <a href="http://blogs.msdn.com/powershell/archive/2010/01/07/how-objects-are-sent-to-and-from-remote-sessions.aspx">how objects are to and from a remote session</a>. I recommend that you read this post for more information.</p>
+<p><strong>What about output formatting?</strong></p>
+<p>Most deserialized objects are automatically formatted for display by entries in the Types.ps1xml or Format.ps1xml files. However, the local computer might not have formatting files for all of the deserialized objects that were generated on a remote computer. When objects are not formatted, all of the properties of each object appear in the console in a streaming list. To get formatting data from another computer, use the Get-FormatData and Export-FormatData cmdlets. Again, let us take an example to understand this.</p>
+<p>Take an example of a SharePoint 2010 farm and you want to access /run SharePoint 2010 cmdlets from a Windows 7 machine using Invoke-Command. First, if we run Get-SPSite on SharePoint 2010 web frontend, you will see</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-5.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-5.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>Now, if we try to run the same in a remote session using Invoke-Command, you will see</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-6.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-6.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>As you see in the above screenshot, the output from a remote session is quite different from the one you saw in a local session. This is because we don’t have the formatting data available on the Windows 7 computer.</p>
+<p><strong>So, how do we get the formatting data to local computer?</strong></p>
+<p>We can use Get-FormatData, Export-FormatData and Update-FormatData cmdlets to get the formatting data from a remote computer to local session. To do this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
+</span></span><span class="line"><span class="cl">Invoke-Command -session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
+</span></span><span class="line"><span class="cl">Invoke-Command -Session $s -ScriptBlock {Get-FormatData -TypeName *SharePoint*} | Export-FormatData -Path C:\scripts\SharePoint.Format.ps1xml
+</span></span><span class="line"><span class="cl">Update-FormatData -PrependPath C:\scripts\SharePoint.Format.ps1xml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-7.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/remoting11-7.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
+<p>Now, with the formatting information in the local session, you can see that Get-SPSite output is formatted similar to the one we saw when we ran the cmdlet in a local session. However, make a note that this applies only to the current session. If you close and re-open the PowerShell console, the formatting data will be lost. You can add the Update-FormatData cmdlet to your PowerShell profile to make the format data across all PowerShell sessions.</p>
+<p>This is it. We are just a few more posts away from completing this PowerShell remoting series. Do let me know your feedback and let me know if you want to see something more around remoting.</p>
+
+    </div>
+
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/powershell/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #PowerShell
+            </a>
+          
+            <a href="/tags/remoting/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #Remoting
+            </a>
+          
+        </div>
+      </div>
+    
+
+    
+    
+
+
+
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
+  
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+      
+    
+      
+    
+
+    
+    
+      
+        
+        
+      
+      
+        
+        
+      
+    
+  
+
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-10--restricting-available-commands-using-custom-session-configuration/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in PowerShell Remoting: PowerShell 2.0 remoting guide: Part 10 – Restricting available commands using custom session configuration">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in PowerShell Remoting</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                PowerShell 2.0 remoting guide: Part 10 – Restricting available commands using custom session configuration
+              </h3>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
+
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/powershell-2-0-remoting-guide-part-12--using-credssp-for-multi-hop-authentication/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in PowerShell Remoting: PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in PowerShell Remoting</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                PowerShell 2.0 remoting guide: Part 12 – Using CredSSP for multi-hop authentication
+              </h3>
+              
+            </div>
+
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
+      
+    </div>
+  </div>
+</nav>
+
+
+    
+    
+
+    
+    
+
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
+</html>

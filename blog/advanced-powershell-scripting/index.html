@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=50086&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>Advanced PowerShell Scripting Techniques | Ravikanth Chaganti</title>
+
+  
+  <meta name="description" content="Introduction
+Building on the basics from the previous article, let&rsquo;s explore advanced PowerShell scripting techniques that will make you more productive.
+Advanced Functions
+Parameter Validation
+Use parameter attributes for robust input validation:
+
+
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+
+
+function New-User {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$UserName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern(&#39;^[\w-\.]&#43;@([\w-]&#43;\.)&#43;[\w-]{2,4}$&#39;)]
+        [string]$Email,
+
+        [ValidateRange(18, 100)]
+        [int]$Age = 18
+    )
+
+    # Function logic here
+    Write-Verbose &#34;Creating user: $UserName&#34;
+}
+
+
+Pipeline Support
+Make your functions work with the pipeline:">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  <meta property="og:title" content="Advanced PowerShell Scripting Techniques">
+  <meta property="og:description" content="Introduction
+Building on the basics from the previous article, let&rsquo;s explore advanced PowerShell scripting techniques that will make you more productive.
+Advanced Functions
+Parameter Validation
+Use parameter attributes for robust input validation:
+
+
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+
+
+function New-User {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$UserName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern(&#39;^[\w-\.]&#43;@([\w-]&#43;\.)&#43;[\w-]{2,4}$&#39;)]
+        [string]$Email,
+
+        [ValidateRange(18, 100)]
+        [int]$Age = 18
+    )
+
+    # Function logic here
+    Write-Verbose &#34;Creating user: $UserName&#34;
+}
+
+
+Pipeline Support
+Make your functions work with the pipeline:">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="http://localhost:50086/blog/advanced-powershell-scripting/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&amp;h=400&amp;fit=crop">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Advanced PowerShell Scripting Techniques">
+  <meta name="twitter:description" content="Introduction
+Building on the basics from the previous article, let&rsquo;s explore advanced PowerShell scripting techniques that will make you more productive.
+Advanced Functions
+Parameter Validation
+Use parameter attributes for robust input validation:
+
+
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+
+
+function New-User {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$UserName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern(&#39;^[\w-\.]&#43;@([\w-]&#43;\.)&#43;[\w-]{2,4}$&#39;)]
+        [string]$Email,
+
+        [ValidateRange(18, 100)]
+        [int]$Age = 18
+    )
+
+    # Function logic here
+    Write-Verbose &#34;Creating user: $UserName&#34;
+}
+
+
+Pipeline Support
+Make your functions work with the pipeline:">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&amp;h=400&amp;fit=crop">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="http://localhost:50086/blog/advanced-powershell-scripting/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="http://localhost:50086/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50">
+  <header class="sticky top-0 z-50 bg-white shadow-md">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="http://localhost:50086/" class="flex items-center gap-3 text-gray-900 hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          <span class="text-xl font-bold">Ravi Chaganti</span>
+        </a>
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 hover:text-primary font-medium transition-colors no-underline">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 hover:text-primary font-medium transition-colors no-underline">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 hover:text-primary font-medium transition-colors no-underline">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 hover:text-primary font-medium transition-colors no-underline">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 hover:text-primary font-medium transition-colors no-underline">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/ravikanthchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://youtube.com/@ravikanthchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="YouTube">
+  <svg class="w-5 h-5 text-gray-700 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+  </svg>
+</a>
+
+
+        </div>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600">
+          <li><a href="http://localhost:50086/" class="hover:text-primary">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/powershell/" class="hover:text-primary">PowerShell</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2024-12-25">December 25, 2024</time>
+        </div>
+
+        
+        
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>3 min read</span>
+          </div>
+        
+
+        
+        
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <span>Ravikanth Chaganti</span>
+          </div>
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/powershell/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors no-underline">
+              PowerShell
+            </a>
+          
+            <a href="/categories/automation/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors no-underline">
+              Automation
+            </a>
+          
+        
+        
+          
+            <a href="/series/powershell-fundamentals/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 text-secondary rounded-full hover:bg-secondary/20 transition-colors no-underline">
+              📚 Series: PowerShell Fundamentals
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+          <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&amp;h=400&amp;fit=crop" alt="Advanced PowerShell Scripting Techniques" class="w-full h-auto">
+        
+      </div>
+
+      
+      
+        <div class="text-xl text-gray-700 italic border-l-4 border-primary pl-6 py-2 mb-8 bg-gray-50 rounded-r">
+          Take your PowerShell skills to the next level with advanced scripting patterns
+        </div>
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 rounded-lg shadow-md p-4 mb-6 border border-secondary/20">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base hover:text-secondary transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: PowerShell Fundamentals
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 mt-2 mb-2 collapsed" id="series-description">
+        Part of a 2-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="http://localhost:50086/blog/powershell-automation-basics/" class="text-gray-700 hover:text-secondary transition-colors no-underline hover:underline">
+                    PowerShell Automation Basics
+                  </a>
+                
+                <p class="text-xs text-gray-500 mt-1">Dec 20, 2024</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary">
+                    Advanced PowerShell Scripting Techniques
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 mt-1">Dec 25, 2024</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="http://localhost:50086/blog/powershell-automation-basics/" class="flex items-center text-sm text-gray-700 hover:text-secondary transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">PowerShell Automation Basics</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+  
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6 border border-gray-200">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base hover:text-primary transition-colors"
+        aria-expanded="false"
+        aria-controls="toc-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+          </svg>
+          Table of Contents
+        </span>
+        <svg
+          id="toc-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#advanced-functions">Advanced Functions</a>
+      <ul>
+        <li><a href="#parameter-validation">Parameter Validation</a></li>
+        <li><a href="#pipeline-support">Pipeline Support</a></li>
+      </ul>
+    </li>
+    <li><a href="#error-handling-patterns">Error Handling Patterns</a>
+      <ul>
+        <li><a href="#try-catch-finally">Try-Catch-Finally</a></li>
+      </ul>
+    </li>
+    <li><a href="#working-with-apis">Working with APIs</a>
+      <ul>
+        <li><a href="#rest-api-calls">REST API Calls</a></li>
+      </ul>
+    </li>
+    <li><a href="#performance-optimization">Performance Optimization</a>
+      <ul>
+        <li><a href="#using-arraylist-instead-of-array">Using ArrayList Instead of Array</a></li>
+        <li><a href="#parallel-processing">Parallel Processing</a></li>
+      </ul>
+    </li>
+    <li><a href="#module-development">Module Development</a>
+      <ul>
+        <li><a href="#creating-a-module">Creating a Module</a></li>
+        <li><a href="#module-manifest">Module Manifest</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+      </nav>
+    </div>
+
+    <style>
+      #toc-content ul {
+        list-style: none;
+        padding-left: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content > nav > ul {
+        padding-left: 0;
+      }
+      #toc-content li {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content a {
+        color: #374151;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      #toc-content a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+      }
+    </style>
+  
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <h2 id="introduction">Introduction</h2>
+<p>Building on the basics from the previous article, let&rsquo;s explore advanced PowerShell scripting techniques that will make you more productive.</p>
+<h2 id="advanced-functions">Advanced Functions</h2>
+<h3 id="parameter-validation">Parameter Validation</h3>
+<p>Use parameter attributes for robust input validation:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">New-User</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">CmdletBinding</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">Parameter</span><span class="p">(</span><span class="na">Mandatory</span> <span class="p">=</span> <span class="vm">$true</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">ValidateNotNullOrEmpty</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">string</span><span class="p">]</span><span class="nv">$UserName</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">Parameter</span><span class="p">(</span><span class="na">Mandatory</span> <span class="p">=</span> <span class="vm">$true</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">ValidatePattern</span><span class="p">(</span><span class="s1">&#39;^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$&#39;</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">string</span><span class="p">]</span><span class="nv">$Email</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">ValidateRange</span><span class="p">(</span><span class="mf">18</span><span class="p">,</span> <span class="mf">100</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">int</span><span class="p">]</span><span class="nv">$Age</span> <span class="p">=</span> <span class="mf">18</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c"># Function logic here</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Verbose</span> <span class="s2">&#34;Creating user: </span><span class="nv">$UserName</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="pipeline-support">Pipeline Support</h3>
+<p>Make your functions work with the pipeline:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">Convert-ToUpperCase</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">CmdletBinding</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="nb">Parameter</span><span class="p">(</span><span class="na">ValueFromPipeline</span> <span class="p">=</span> <span class="vm">$true</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">string</span><span class="p">]</span><span class="nv">$InputString</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">process</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">$InputString</span><span class="p">.</span><span class="py">ToUpper</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Usage</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;hello&#34;</span><span class="p">,</span> <span class="s2">&#34;world&#34;</span> <span class="p">|</span> <span class="nb">Convert-ToUpperCase</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="error-handling-patterns">Error Handling Patterns</h2>
+<h3 id="try-catch-finally">Try-Catch-Finally</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">Get-RemoteData</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">([</span><span class="no">string</span><span class="p">]</span><span class="nv">$ComputerName</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">$session</span> <span class="p">=</span> <span class="nb">New-PSSession</span> <span class="n">-ComputerName</span> <span class="nv">$ComputerName</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">$data</span> <span class="p">=</span> <span class="nb">Invoke-Command</span> <span class="n">-Session</span> <span class="nv">$session</span> <span class="n">-ScriptBlock</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">Get-Service</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nv">$data</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">[</span><span class="no">System.Management.Automation.Remoting.PSRemotingTransportException</span><span class="p">]</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Write-Error</span> <span class="s2">&#34;Cannot connect to </span><span class="nv">$ComputerName</span><span class="s2">. Check if WinRM is enabled.&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Write-Error</span> <span class="s2">&#34;An unexpected error occurred: </span><span class="nv">$_</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">finally</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nv">$session</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">Remove-PSSession</span> <span class="n">-Session</span> <span class="nv">$session</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="working-with-apis">Working with APIs</h2>
+<h3 id="rest-api-calls">REST API Calls</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">Get-GitHubUser</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">string</span><span class="p">]</span><span class="nv">$Username</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nv">$uri</span> <span class="p">=</span> <span class="s2">&#34;https://api.github.com/users/</span><span class="nv">$Username</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nv">$headers</span> <span class="p">=</span> <span class="vm">@</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;User-Agent&#34;</span> <span class="p">=</span> <span class="s2">&#34;PowerShell-Script&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;Accept&#34;</span> <span class="p">=</span> <span class="s2">&#34;application/vnd.github.v3+json&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">$response</span> <span class="p">=</span> <span class="nb">Invoke-RestMethod</span> <span class="n">-Uri</span> <span class="nv">$uri</span> <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="n">-Method</span> <span class="n">Get</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nv">$response</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Write-Error</span> <span class="s2">&#34;Failed to get user: </span><span class="nv">$_</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Usage</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$user</span> <span class="p">=</span> <span class="nb">Get-GitHubUser</span> <span class="n">-Username</span> <span class="s2">&#34;powershell&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Write-Output</span> <span class="s2">&#34;Name: </span><span class="p">$(</span><span class="nv">$user</span><span class="p">.</span><span class="n">name</span><span class="p">)</span><span class="s2">, Followers: </span><span class="p">$(</span><span class="nv">$user</span><span class="p">.</span><span class="n">followers</span><span class="p">)</span><span class="s2">&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="performance-optimization">Performance Optimization</h2>
+<h3 id="using-arraylist-instead-of-array">Using ArrayList Instead of Array</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Slow - Array resizing</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$array</span> <span class="p">=</span> <span class="vm">@</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$array</span> <span class="p">+=</span> <span class="nv">$_</span>  <span class="c"># Creates new array each time</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Fast - ArrayList</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$arrayList</span> <span class="p">=</span> <span class="p">[</span><span class="no">System.Collections.ArrayList</span><span class="p">]::</span><span class="n">new</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="no">void</span><span class="p">]</span><span class="nv">$arrayList</span><span class="p">.</span><span class="py">Add</span><span class="p">(</span><span class="nv">$_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Even better - Generic List</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$list</span> <span class="p">=</span> <span class="p">[</span><span class="no">System.Collections.Generic.List[int]</span><span class="p">]::</span><span class="n">new</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="mf">1</span><span class="p">.</span><span class="mf">.1000</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$list</span><span class="p">.</span><span class="py">Add</span><span class="p">(</span><span class="nv">$_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="parallel-processing">Parallel Processing</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># PowerShell 7+ ForEach-Object -Parallel</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$computers</span> <span class="p">=</span> <span class="mf">1</span><span class="p">.</span><span class="mf">.10</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="p">{</span> <span class="s2">&#34;SERVER</span><span class="nv">$_</span><span class="s2">&#34;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">$computers</span> <span class="p">|</span> <span class="nb">ForEach-Object</span> <span class="n">-Parallel</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Test-Connection</span> <span class="n">-ComputerName</span> <span class="nv">$_</span> <span class="n">-Count</span> <span class="mf">1</span> <span class="n">-Quiet</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">-ThrottleLimit</span> <span class="mf">5</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="module-development">Module Development</h2>
+<h3 id="creating-a-module">Creating a Module</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># MyModule.psm1</span>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">Get-MyData</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">CmdletBinding</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Hello from my module!&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">Set-MyData</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nb">CmdletBinding</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">param</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="no">string</span><span class="p">]</span><span class="nv">$Data</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nb">Write-Verbose</span> <span class="s2">&#34;Setting data: </span><span class="nv">$Data</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Export only specific functions</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Export-ModuleMember</span> <span class="n">-Function</span> <span class="nb">Get-MyData</span><span class="p">,</span> <span class="nb">Set-MyData</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="module-manifest">Module Manifest</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Create manifest</span>
+</span></span><span class="line"><span class="cl"><span class="nb">New-ModuleManifest</span> <span class="n">-Path</span> <span class="s2">&#34;.\MyModule.psd1&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">    <span class="n">-Author</span> <span class="s2">&#34;Ravikanth Chaganti&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">    <span class="n">-Description</span> <span class="s2">&#34;My custom PowerShell module&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">    <span class="n">-ModuleVersion</span> <span class="s2">&#34;1.0.0&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">    <span class="n">-PowerShellVersion</span> <span class="s2">&#34;7.0&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">    <span class="n">-FunctionsToExport</span> <span class="vm">@</span><span class="p">(</span><span class="s1">&#39;Get-MyData&#39;</span><span class="p">,</span> <span class="s1">&#39;Set-MyData&#39;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="conclusion">Conclusion</h2>
+<p>These advanced techniques will help you write more robust, efficient, and maintainable PowerShell scripts. Practice these patterns and incorporate them into your daily automation tasks.</p>
+<p>In the next article, we&rsquo;ll explore PowerShell Desired State Configuration (DSC).</p>
+
+    </div>
+
+    
+    
+
+    
+    
+
+<div class="mt-12 pt-8 border-t border-gray-200">
+  <h3 class="text-lg font-bold mb-4 text-center">Share this article</h3>
+  <div class="flex justify-center items-center space-x-4">
+    
+    <a
+      href="https://twitter.com/intent/tweet?url=http%3A%2F%2Flocalhost%3A50086%2Fblog%2Fadvanced-powershell-scripting%2F&text=Advanced&#43;PowerShell&#43;Scripting&#43;Techniques"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-colors no-underline"
+      aria-label="Share on Twitter"
+      title="Share on Twitter"
+    >
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+      </svg>
+    </a>
+
+    
+    <a
+      href="https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A50086%2Fblog%2Fadvanced-powershell-scripting%2F"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-colors no-underline"
+      aria-label="Share on LinkedIn"
+      title="Share on LinkedIn"
+    >
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+      </svg>
+    </a>
+
+    
+    <a
+      href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A50086%2Fblog%2Fadvanced-powershell-scripting%2F"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-colors no-underline"
+      aria-label="Share on Facebook"
+      title="Share on Facebook"
+    >
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    </a>
+
+    
+    <a
+      href="mailto:?subject=Advanced&#43;PowerShell&#43;Scripting&#43;Techniques&body=http%3A%2F%2Flocalhost%3A50086%2Fblog%2Fadvanced-powershell-scripting%2F"
+      class="w-12 h-12 rounded-full bg-gray-600 hover:bg-gray-700 text-white flex items-center justify-center transition-colors no-underline"
+      aria-label="Share via Email"
+      title="Share via Email"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+      </svg>
+    </a>
+
+    
+    <button
+      onclick="copyToClipboard('http:\/\/localhost:50086\/blog\/advanced-powershell-scripting\/')"
+      class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 text-white flex items-center justify-center transition-colors"
+      aria-label="Copy link"
+      title="Copy link"
+      id="copy-link-btn"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    const btn = document.getElementById('copy-link-btn');
+    const originalHTML = btn.innerHTML;
+
+    
+    btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+
+    
+    setTimeout(function() {
+      btn.innerHTML = originalHTML;
+    }, 2000);
+  });
+}
+</script>
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 text-gray-300 mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <div>
+        <h3 class="text-white font-bold text-lg mb-4">Ravikanth Chaganti</h3>
+        <p class="text-sm">Technology blog, books, and presentations</p>
+      </div>
+
+      
+      <div>
+        <h3 class="text-white font-bold text-lg mb-4">Quick Links</h3>
+        <ul class="space-y-2">
+          
+            <li>
+              <a href="/blog/" class="text-sm hover:text-white transition-colors no-underline">
+                Blog
+              </a>
+            </li>
+          
+            <li>
+              <a href="/books/" class="text-sm hover:text-white transition-colors no-underline">
+                Books
+              </a>
+            </li>
+          
+            <li>
+              <a href="/slides/" class="text-sm hover:text-white transition-colors no-underline">
+                Slides
+              </a>
+            </li>
+          
+            <li>
+              <a href="/videos/" class="text-sm hover:text-white transition-colors no-underline">
+                Videos
+              </a>
+            </li>
+          
+            <li>
+              <a href="/about/" class="text-sm hover:text-white transition-colors no-underline">
+                About
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+
+      
+      <div>
+        <h3 class="text-white font-bold text-lg mb-4">Connect</h3>
+        <div class="flex space-x-4">
+          
+            <a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" aria-label="Twitter">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+            </a>
+          
+          
+            <a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" aria-label="GitHub">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+            </a>
+          
+          
+            <a href="https://linkedin.com/in/ravikanthchaganti" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" aria-label="LinkedIn">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+          
+          
+            <a href="https://youtube.com/@ravikanthchaganti" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" aria-label="YouTube">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
+      <p>&copy; 2025 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+</body>
+</html>

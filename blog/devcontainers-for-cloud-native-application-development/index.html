@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>Devcontainers for cloud-native application development | Ravikanth Chaganti</title>
+
+  
+  <meta name="description" content="Containers changed the way we develop, package, and distribute applications. This helped teams accelerate development and ensure their code worked consistently across different environments and infrastructures. To a large extent, this enabled write once and run anywhere. Docker made this easy by providing tools to create, manage, and package application code and dependencies as images. We could run a container instance from that image wherever a container runtime exists. Standardizing image and runtime formats helped ensure we could take an image and run it anywhere and not worry about the underlying infrastructure. This also led to the proliferation of microservices-based application architectures, where an application comprises several services running within containers to deliver the expected functionality. Most cloud-native and modern application architectures use microservices to implement the necessary functionality. When developing an application with multiple microservice dependencies, a developer must ensure the development environment is suitably set up to handle all required dependencies.">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  <meta property="og:title" content="Devcontainers for cloud-native application development">
+  <meta property="og:description" content="Containers changed the way we develop, package, and distribute applications. This helped teams accelerate development and ensure their code worked consistently across different environments and infrastructures. To a large extent, this enabled write once and run anywhere. Docker made this easy by providing tools to create, manage, and package application code and dependencies as images. We could run a container instance from that image wherever a container runtime exists. Standardizing image and runtime formats helped ensure we could take an image and run it anywhere and not worry about the underlying infrastructure. This also led to the proliferation of microservices-based application architectures, where an application comprises several services running within containers to deliver the expected functionality. Most cloud-native and modern application architectures use microservices to implement the necessary functionality. When developing an application with multiple microservice dependencies, a developer must ensure the development environment is suitably set up to handle all required dependencies.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/devcontainers-for-cloud-native-application-development/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/devcontainer.png">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Devcontainers for cloud-native application development">
+  <meta name="twitter:description" content="Containers changed the way we develop, package, and distribute applications. This helped teams accelerate development and ensure their code worked consistently across different environments and infrastructures. To a large extent, this enabled write once and run anywhere. Docker made this easy by providing tools to create, manage, and package application code and dependencies as images. We could run a container instance from that image wherever a container runtime exists. Standardizing image and runtime formats helped ensure we could take an image and run it anywhere and not worry about the underlying infrastructure. This also led to the proliferation of microservices-based application architectures, where an application comprises several services running within containers to deliver the expected functionality. Most cloud-native and modern application architectures use microservices to implement the necessary functionality. When developing an application with multiple microservice dependencies, a developer must ensure the development environment is suitably set up to handle all required dependencies.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/devcontainer.png">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/devcontainers-for-cloud-native-application-development/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
+
+        </div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2024-02-03">February 3, 2024</time>
+        </div>
+
+        
+        
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>8 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+        
+          
+            <a href="/series/containers/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Containers
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/devcontainer.png" alt="Devcontainers for cloud-native application development" class="w-full h-auto">
+      </div>
+
+      
+      
+        <div class="text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-6 py-2 mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
+          Development containers are a great way to develop modern applications. Cloud-native applications usually implement more than one service to provide the application functionality. Using dev containers for microservices-based application development requires more than one container. This is where using Docker Compose with dev containers is useful. This article explores creating a multi-container development environment using VS Code dev containers and Docker Compose.
+        </div>
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Containers
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 5-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/containers-what-are-they-why-do-you-need-one-part-1/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Containers – What are they? Why do you need one? – Part 1
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 20, 2015</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/containers-what-are-they-and-their-history-part-2/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Containers – What are they? And, their history! – Part 2
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 6, 2015</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-11-02-understanding-and-using-azure-container-instances-service-the-basics/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Understanding and using Azure Container Instances service - The Basics
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 2, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                4
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Understanding and using Azure Container Instances service - Multi-container Applications using Bicep
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 3, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                5
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Devcontainers for cloud-native application development
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 3, 2024</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Understanding and using Azure Container Instances service - Multi-container Applications using Bicep</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>Containers changed the way we develop, package, and distribute applications. This helped teams accelerate development and ensure their code worked consistently across different environments and infrastructures. To a large extent, this enabled write once and run anywhere. Docker made this easy by providing tools to create, manage, and package application code and dependencies as images. We could run a container instance from that image wherever a container runtime exists. Standardizing image and runtime formats helped ensure we could take an image and run it anywhere and not worry about the underlying infrastructure. This also led to the proliferation of microservices-based application architectures, where an application comprises several services running within containers to deliver the expected functionality. Most cloud-native and modern application architectures use microservices to implement the necessary functionality. When developing an application with multiple microservice dependencies, a developer must ensure the development environment is suitably set up to handle all required dependencies.</p>
+<p>Visual Studio Code and many other IDEs offer a way to use containers as <a href="https://code.visualstudio.com/docs/devcontainers/containers">local development environments</a>. This ensures that the application code and code dependencies are handled consistently across development, testing, and production environments. Using dev containers for a single container application or service is straightforward.</p>
+<blockquote>
+<p>This article uses Docker desktop and Windows Subsystem for Linux 2 to run containers on a Windows PC. Other container engines, such as Podman, can also be used.</p>
+</blockquote>
+<p>We need to install the VS Code dev containers extension to get started. Once the extension is installed, we can open the code repository and create a dev container configuration file. We can follow the options within the command palette (F1 or CTRL+SHIFT+P) or write a configuration file. VS Code offers intelligence when authoring a dev container configuration file.</p>
+<p>Start by creating a devcontainer folder at the root of the code repository.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ mkdir .devcontainer
+</span></span><span class="line"><span class="cl">$ touch .devcontainer/devcontainer.json
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The dev container configuration files use <a href="https://containers.dev/implementors/json_reference/#general-properties">JSON format</a>. We can specify how the container should be created in different ways. You can either use an image or create an image from a Dockerfile. In this example, we will use an image from the Microsoft container registry.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="s2">&#34;mcr.microsoft.com/vscode/devcontainers/base:jammy&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&#34;customizations&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nt">&#34;vscode&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nt">&#34;settings&#34;</span><span class="p">:</span> <span class="p">{},</span>
+</span></span><span class="line"><span class="cl">			<span class="nt">&#34;extensions&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">				<span class="s2">&#34;golang.go&#34;</span>
+</span></span><span class="line"><span class="cl">			<span class="p">]</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&#34;features&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nt">&#34;ghcr.io/devcontainers/features/go:1&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            		<span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;latest&#34;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&#34;remoteUser&#34;</span><span class="p">:</span> <span class="s2">&#34;vscode&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>customizations</code> section of the configuration file specifies properties specific to VS Code, such as extensions. In this example, the Go language VS Code extension is specified. The <code>features</code> section specifies the additional features that should be installed in the container. This example specifies the Go language binaries to be installed. We can open this code repository in a dev container by selecting the &ldquo;<em>Dev containers: Reopen in container</em>&rdquo; option from the command palette.</p>
+<p><img src="/images/devcontainer-vscode.png" alt="VS Code Dev Containers command palette"></p>
+<p>This will trigger pulling the container image from the registry and creating a container.</p>
+<p><img src="/images/devcontainer-vscode1.png" alt="VS Code Dev Containers creation"></p>
+<p>Once the container is created, we can use the development environment as if it is local.</p>
+<p><img src="/images/devcontainer-vscode2.png" alt="Running Dev Container"></p>
+<p>When the application development is complete, we can use a CI/CD pipeline to build the application into whatever the delivery target is &ndash; a binary or a container image &ndash; and distribute it.</p>
+<p>As mentioned, using dev containers for single-container application development is straightforward. However, the modern applications are not that simple. Cloud-native applications comprise many microservices, and developing such an application requires ensuring the dependent services are also available within the development environment. Fortunately, VS Code dev containers support using Docker Compose for multi-container development environments.</p>
+<h2 id="multi-container-development-environment">Multi-container development environment</h2>
+<p>To understand how to create a multi-container development environment, let&rsquo;s first create the necessary folder structure and placeholder files.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ mkdir .devcontainer
+</span></span><span class="line"><span class="cl">$ mkdir .devcontainer/go
+</span></span><span class="line"><span class="cl">$ mkdir .devcontainer/go/devcontainer.json
+</span></span><span class="line"><span class="cl">$ mkdir .devcontainer/mysql
+</span></span><span class="line"><span class="cl">$ touch .devcontainer/mysql/decontainer.json
+</span></span><span class="line"><span class="cl">$ mkdir src
+</span></span><span class="line"><span class="cl">$ touch src/main.go
+</span></span><span class="line"><span class="cl">$ touch docker-compose.yml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As the above commands suggest, we will create a web application using the Go language and mySQL DB stack for this example. Let us start by authoring the docker compose file first.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">mcr.microsoft.com/devcontainers/base:jammy    </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">app  </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">.:/workspace:cached    </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">sleep infinity</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">servicenet</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">links</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;db:database&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">db</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">mysql:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">db    </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;13306:3306&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">app_data:/var/lib/mysql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span>--<span class="l">default-authentication-plugin=mysql_native_password</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_ROOT_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l">vscode</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_USER</span><span class="p">:</span><span class="w"> </span><span class="l">vscode</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">MYSQL_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l">vscode</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">servicenet</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">app_data</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">servicenet</span><span class="p">:</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>In this compose file, we have two services. The first one is a Go application. It uses the same image as the earlier single container example. Using the <code>links</code> element, we specify a dependency on the second container, the MySQL database. Both these containers connect to the same network called <code>servicenet</code>. The db container is configured to provision a volume (<code>app_data</code>) for the database backend. Using the environment element, we specify the password for the MySQL root account and create a second account used for connecting to the database from the Go application.</p>
+<blockquote>
+<p><code>--default-authentication-plugin=mysql_native_password</code> is not recommended in the production environment.</p>
+</blockquote>
+<p>We now need to create the dev container configuration for both containers. Let us start with the Go container.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;app&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;dockerComposeFile&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;../../docker-compose.yml&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;features&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;ghcr.io/devcontainers/features/go:1&#34;</span><span class="p">:</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;service&#34;</span><span class="p">:</span> <span class="s2">&#34;app&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;shutdownAction&#34;</span><span class="p">:</span> <span class="s2">&#34;stopCompose&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;workspaceFolder&#34;</span><span class="p">:</span> <span class="s2">&#34;/workspace/src&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;remoteUser&#34;</span><span class="p">:</span> <span class="s2">&#34;vscode&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;customizations&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;vscode&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;extensions&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;golang.go&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;ms-vscode.Go&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This is similar to the earlier single-container application example. Instead of using an image from the container registry, we use the docker compose file. Also, notice the <code>workspaceFolder</code> element. This maps the source code folder to the container once it runs. This is important because you need the app container as your development environment; all your source code files must be available.</p>
+<p>The second container we need is a MySQL database container for the application.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;db&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;dockerComposeFile&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;../../docker-compose.yml&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;service&#34;</span><span class="p">:</span> <span class="s2">&#34;mysql&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;shutdownAction&#34;</span><span class="p">:</span> <span class="s2">&#34;none&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;workspaceFolder&#34;</span><span class="p">:</span> <span class="s2">&#34;/workspace/cached&#34;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This is much simpler. Once again, we reference the docker compose file within the repository. Once these files are in place, we can look at the sample Go application code that interacts with the MySQL database.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nx">main</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kn">import</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="s">&#34;database/sql&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="s">&#34;fmt&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="s">&#34;log/slog&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="s">&#34;os&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="s">&#34;text/tabwriter&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">_</span><span class="w"> </span><span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nx">dsn</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s:%s@tcp(%s:%d)/%s&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;web&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;pass&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;db&#34;</span><span class="p">,</span><span class="w"> </span><span class="mi">3306</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;cnapp&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">type</span><span class="w"> </span><span class="nx">task</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">ID</span><span class="w">     </span><span class="kt">int</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">Title</span><span class="w">  </span><span class="kt">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">Status</span><span class="w"> </span><span class="kt">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">func</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">slog</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;Connecting to database&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;connection string&#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">dsn</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nf">openDB</span><span class="p">(</span><span class="nx">dsn</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">slog</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Error connecting to database: &#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">defer</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">tasks</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">[]</span><span class="nx">task</span><span class="p">{}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">stmt</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s">`SELECT id, title, status FROM tasks`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">rows</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="nx">stmt</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">slog</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Error querying database: &#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">defer</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nf">Next</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">t</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">task</span><span class="p">{}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nf">Scan</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">t</span><span class="p">.</span><span class="nx">ID</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="nx">t</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="nx">t</span><span class="p">.</span><span class="nx">Status</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">			</span><span class="nx">slog</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Error scanning row: &#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">tasks</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">append</span><span class="p">(</span><span class="nx">tasks</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">rows</span><span class="p">.</span><span class="nf">Err</span><span class="p">();</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">slog</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Error iterating rows: &#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">w</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">tabwriter</span><span class="p">.</span><span class="nf">NewWriter</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39; &#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">tabwriter</span><span class="p">.</span><span class="nx">AlignRight</span><span class="p">|</span><span class="nx">tabwriter</span><span class="p">.</span><span class="nx">Debug</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;\nID\tTitle\tStatus&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">for</span><span class="w"> </span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">range</span><span class="w"> </span><span class="nx">tasks</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;%d\t%s\t%s\n&#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">.</span><span class="nx">ID</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span><span class="w"> </span><span class="nx">t</span><span class="p">.</span><span class="nx">Status</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">w</span><span class="p">.</span><span class="nf">Flush</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">func</span><span class="w"> </span><span class="nf">openDB</span><span class="p">(</span><span class="nx">dsn</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span><span class="w"> </span><span class="kt">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">dsn</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">db</span><span class="p">.</span><span class="nf">Ping</span><span class="p">();</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="k">return</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="k">return</span><span class="w"> </span><span class="nx">db</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The above example is only for demonstration purposes. In a real production environment, we would use an external configuration map to supply the database configuration to the application. In this Go application, we connect to the <code>cnapp</code> database and retrieve records from a table called <code>tasks</code>. Once the records are retrieved, we print the same using a tab writer.</p>
+<p>To test this, you can use the &ldquo;<em>Dev containers: Reopen in container</em>&rdquo; option within the command palette to start the application stack. Once the remote VS Code instance is open, you can verify the Docker stack in the Docker Desktop application.</p>
+<p><img src="/images/docker-stack.png" alt=""></p>
+<p>As we see here, both containers are in a running state. Also, within the VS Code instance, you can see that we are already connected to the Go application container. We can attach to the mysql container using the &ldquo;<em>Dev Containers: Attach to running container&hellip;</em>&rdquo; option in the command palette. This connects to the MySQL container as the root user. Once connected, we can create a database and table within the database and add sample records. The following SQL commands can be used for that.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">cnapp</span><span class="w"> </span><span class="nb">CHARACTER</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">utf8mb4</span><span class="w"> </span><span class="k">COLLATE</span><span class="w"> </span><span class="n">utf8mb4_unicode_ci</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">USE</span><span class="w"> </span><span class="n">cnapp</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;Grocery shopping&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;pending&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;Read book 1&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;complete&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;Car service&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;complete&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;Email to manager&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s1">&#39;pending&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="s1">&#39;web&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="p">,</span><span class="w"> </span><span class="k">INSERT</span><span class="p">,</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">,</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">cnapp</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;web&#39;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="s1">&#39;web&#39;</span><span class="w"> </span><span class="n">IDENTIFIED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s1">&#39;pass&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Once the database is prepared, we can run the Go application within the app container.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ /workspace/src $ go run main.go 
+</span></span><span class="line"><span class="cl">2024/02/03 14:56:19 INFO Connecting to database <span class="s2">&#34;connection string&#34;</span><span class="o">=</span>web:pass@tcp<span class="o">(</span>db:3306<span class="o">)</span>/cnapp
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> ID<span class="p">|</span>            Title<span class="p">|</span>Status
+</span></span><span class="line"><span class="cl">  1<span class="p">|</span> Grocery shopping<span class="p">|</span>pending
+</span></span><span class="line"><span class="cl">  2<span class="p">|</span>      Read book 1<span class="p">|</span><span class="nb">complete</span>
+</span></span><span class="line"><span class="cl">  3<span class="p">|</span>      Car service<span class="p">|</span><span class="nb">complete</span>
+</span></span><span class="line"><span class="cl">  4<span class="p">|</span> Email to manager<span class="p">|</span>pending
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Using the knowledge we gained experimenting with this stack, we can easily add more services to the same docker compose specification.</p>
+
+    </div>
+
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/cloud-native/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #cloud-native
+            </a>
+          
+            <a href="/tags/containers/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #containers
+            </a>
+          
+            <a href="/tags/docker/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #docker
+            </a>
+          
+            <a href="/tags/docker-compose/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #docker-compose
+            </a>
+          
+        </div>
+      </div>
+    
+
+    
+    
+
+
+
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
+  
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+      
+    
+
+    
+    
+      
+        
+        
+      
+      
+    
+  
+
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/2022-11-03-understanding-and-using-azure-container-instances-service-multi-container-apps-using-bicep/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Containers: Understanding and using Azure Container Instances service - Multi-container Applications using Bicep">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Containers</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Understanding and using Azure Container Instances service - Multi-container Applications using Bicep
+              </h3>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
+
+    
+    <div class="flex">
+      
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</nav>
+
+
+    
+    
+
+    
+    
+
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
+</html>

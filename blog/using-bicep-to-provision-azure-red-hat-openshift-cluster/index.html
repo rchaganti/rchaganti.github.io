@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>Using Bicep to provision Azure Red Hat OpenShift cluster | Ravikanth Chaganti</title>
+
+  
+  <meta name="description" content="Azure Red Hat OpenShift (ARO) service provides fully managed and highly available OpenShift clusters on Azure jointly operated by Microsoft and Red Hat. There are different ways to provision an ARO cluster.
+
+Azure Portal
+Azure CLI or Azure PowerShell
+Azure Resource Manager (ARM) / Bicep templates
+Red Hat Advanced Cluster Management (RHACM)
+
+This article will explore using Bicep language to provision an ARO cluster.
+
+Examples in this article use Azure CLI for interacting with Azure resources and deployments.">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  <meta property="og:title" content="Using Bicep to provision Azure Red Hat OpenShift cluster">
+  <meta property="og:description" content="Azure Red Hat OpenShift (ARO) service provides fully managed and highly available OpenShift clusters on Azure jointly operated by Microsoft and Red Hat. There are different ways to provision an ARO cluster.
+
+Azure Portal
+Azure CLI or Azure PowerShell
+Azure Resource Manager (ARM) / Bicep templates
+Red Hat Advanced Cluster Management (RHACM)
+
+This article will explore using Bicep language to provision an ARO cluster.
+
+Examples in this article use Azure CLI for interacting with Azure resources and deployments.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/using-bicep-to-provision-azure-red-hat-openshift-cluster/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/aro.png">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Using Bicep to provision Azure Red Hat OpenShift cluster">
+  <meta name="twitter:description" content="Azure Red Hat OpenShift (ARO) service provides fully managed and highly available OpenShift clusters on Azure jointly operated by Microsoft and Red Hat. There are different ways to provision an ARO cluster.
+
+Azure Portal
+Azure CLI or Azure PowerShell
+Azure Resource Manager (ARM) / Bicep templates
+Red Hat Advanced Cluster Management (RHACM)
+
+This article will explore using Bicep language to provision an ARO cluster.
+
+Examples in this article use Azure CLI for interacting with Azure resources and deployments.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/aro.png">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/using-bicep-to-provision-azure-red-hat-openshift-cluster/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
+
+        </div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2023-12-01">December 1, 2023</time>
+        </div>
+
+        
+        
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>8 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+        
+          
+            <a href="/series/azure-bicep/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Azure Bicep
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/aro.png" alt="Using Bicep to provision Azure Red Hat OpenShift cluster" class="w-full h-auto">
+      </div>
+
+      
+      
+        <div class="text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-6 py-2 mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
+          Bicep simplifies provisioning Azure Red Hat OpenShift clusters. This article explains how!
+        </div>
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Azure Bicep
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 22-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/speaking-at-global-azure-bootcamp-india-2021/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Speaking at Global Azure Bootcamp India 2021
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 22, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/retrieve-and-save-project-bicep-examples-from-github/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Retrieve and save Project Bicep examples from GitHub
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 25, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/introduction-to-azure-bicep/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Introduction to Azure Bicep
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 5, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                4
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/getting-started-with-azure-bicep/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Getting Started With Azure Bicep
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 6, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                5
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-parameters/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Parameters
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 11, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                6
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-variables/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Variables
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 12, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                7
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-expressions/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Expressions
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 13, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                8
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-iterations/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Iterations
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 14, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                9
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-output/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Output
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 15, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                10
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-basics-beyond-basics-modules/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Language - Beyond Basics - Modules
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 16, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                11
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/slides-and-demo-scripts-introduction-to-azure-bicep-gab-2021/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Slides and Demo Scripts: Global Azure Bootcamp 2021 - Azure Bicep
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 16, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                12
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-visualizer/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Visualizer
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">May 15, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                13
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-container-image/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep Container Image
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">May 20, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                14
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-v0-4-and-linter/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Bicep v0.4 and the linter
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jun 2, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                15
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/book-announcing-azure-bicep-zero-to-hero/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    [Book] - Annoucing Azure Bicep - Zero to Hero
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jun 6, 2021</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                16
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/bicep-feature-in-vscode-devcontainer/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Bicep as a feature in VS Code development containers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 20, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                17
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/working-with-azure-bicep-public-modules-registry/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Working with Azure Bicep Public modules registry
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Apr 19, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                18
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-07-09-azure-bicep-zero-to-hero-s-complete/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    [Book] Azure Bicep - Zero to Hero is complete
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 9, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                19
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-07-09-local-ci-cd-for-your-bicep-templates/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Local CI/CD for your Bicep templates
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 9, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                20
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-11-26-fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Fully automated Kubernetes cluster deployment on Azure in under 8 minutes
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 26, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                21
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Fully Automated Kubernetes Cluster Deployment on Azure in Under 8 Minutes
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 26, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                22
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Using Bicep to provision Azure Red Hat OpenShift cluster
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Dec 1, 2023</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Fully Automated Kubernetes Cluster Deployment on Azure in Under 8 Minutes</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>Azure Red Hat OpenShift (ARO) service provides fully managed and highly available OpenShift clusters on Azure jointly operated by Microsoft and Red Hat. There are different ways to provision an ARO cluster.</p>
+<ul>
+<li>Azure Portal</li>
+<li>Azure CLI or Azure PowerShell</li>
+<li>Azure Resource Manager (ARM) / Bicep templates</li>
+<li>Red Hat Advanced Cluster Management (RHACM)</li>
+</ul>
+<p>This article will explore using Bicep language to provision an ARO cluster.</p>
+<blockquote>
+<p>Examples in this article use Azure CLI for interacting with Azure resources and deployments.</p>
+</blockquote>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before we look at the Bicep template, we need a few prerequisites to be in place. First and foremost, we need an Azure subscription. The subscription must also register the necessary resource providers for the ARO cluster deployment.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.RedHatOpenShift&#39;</span> --wait
+</span></span><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.Compute&#39;</span> --wait
+</span></span><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.Storage&#39;</span> --wait
+</span></span><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.Authorization&#39;</span> --wait
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">ARO_RP_SP_OBJECT_ID</span><span class="o">=</span><span class="k">$(</span>az ad sp list --display-name <span class="s2">&#34;Azure Red Hat OpenShift RP&#34;</span> --query <span class="o">[</span>0<span class="o">]</span>.id -o tsv<span class="k">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We need to create a resource group where the ARO cluster will reside.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">RESOURCEGROUP</span><span class="o">=</span>aro
+</span></span><span class="line"><span class="cl"><span class="nv">LOCATION</span><span class="o">=</span>eastus
+</span></span><span class="line"><span class="cl">az group create --name <span class="nv">$RESOURCEGROUP</span> --location <span class="nv">$LOCATION</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The user account must have at least contributor and user access administrator permissions to provision an ARO cluster. We shall create a service principal, which will be assigned the necessary roles at the subscription scope later using the Bicep template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">SUBSCRIPTION_ID</span><span class="o">=</span>73f21a5e-7cd2-49f8-b314-6b95b971e7c2
+</span></span><span class="line"><span class="cl"><span class="nv">SP_RESULT</span><span class="o">=</span><span class="k">$(</span>az ad sp create-for-rbac --name <span class="s2">&#34;sp-</span><span class="nv">$RESOURCEGROUP</span><span class="s2">-</span><span class="si">${</span><span class="nv">RANDOM</span><span class="si">}</span><span class="s2">&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SP_CLIENT_ID</span><span class="o">=</span><span class="k">$(</span>jq -r <span class="s1">&#39;.appId&#39;</span> <span class="o">&lt;&lt;&lt;</span><span class="s2">&#34;</span><span class="nv">$SP_RESULT</span><span class="s2">&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SP_CLIENT_SECRET</span><span class="o">=</span><span class="k">$(</span>jq -r <span class="s1">&#39;.password&#39;</span> <span class="o">&lt;&lt;&lt;</span><span class="s2">&#34;</span><span class="nv">$SP_RESULT</span><span class="s2">&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SP_OBJECT_ID</span><span class="o">=</span><span class="k">$(</span>az ad sp show --id <span class="nv">$SP_CLIENT_ID</span> <span class="p">|</span> jq -r <span class="s1">&#39;.id&#39;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">az role assignment create --role <span class="s1">&#39;User Access Administrator&#39;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --scope /subscriptions/<span class="nv">$SUBSCRIPTION_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --assignee-object-id <span class="nv">$SP_OBJECT_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --assignee-principal-type <span class="s1">&#39;ServicePrincipal&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">az role assignment create --role <span class="s1">&#39;Contributor&#39;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --scope /subscriptions/<span class="nv">$SUBSCRIPTION_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --assignee-object-id <span class="nv">$SP_OBJECT_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                          --assignee-principal-type <span class="s1">&#39;ServicePrincipal&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The above commands create a service principal and then set the necessary environment variables for the values we are interested in. We also perform the role assignments to ensure the service principal has the necessary permissions.</p>
+<p>We need a Red Hat pull secret to enable Operator Hub within the ARO cluster. The content of this pull secret must be available as pull-secret.txt at the same location as the Bicep template.</p>
+<h2 id="aro-bicep-template">ARO Bicep template</h2>
+<p>Once the prerequisite configuration is complete, we can start working on the Bicep template. Let us start with a set of parameter definitions.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Location&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">resourceGroup</span><span class="p">().</span><span class="nv">location</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Domain Prefix&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">domain</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Name of ARO vNet&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">clusterVnetName</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;aro-vnet&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;ARO vNet Address Space&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">clusterVnetCidr</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;10.100.0.0/15&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Worker node subnet address space&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerSubnetCidr</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;10.100.70.0/23&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Controlplane node subnet address space&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">cpSubnetCidr</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;10.100.76.0/24&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Controlplane Node VM Type&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">cpVmSize</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Standard_D8s_v3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Worker Node VM Type&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerVmSize</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Standard_D4s_v3&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Worker Node Disk Size in GB&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">minValue</span><span class="p">(</span><span class="nv">128</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerVmDiskSize</span><span class="w"> </span><span class="nv">int</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nv">128</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Number of Worker Nodes&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">minValue</span><span class="p">(</span><span class="nv">3</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerCount</span><span class="w"> </span><span class="nv">int</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nv">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Cidr for Pods&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">podCidr</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;10.128.0.0/14&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Cidr of service&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">serviceCidr</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;172.30.0.0/16&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Unique name for the cluster&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">clusterName</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Tags for resources&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">tags</span><span class="w"> </span><span class="nv">object</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">env</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Dev&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">dept</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Ops&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Api Server Visibility&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">allowed</span><span class="p">([</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Private&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">apiServerVisibility</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Ingress Visibility&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">allowed</span><span class="p">([</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Private&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">ingressVisibility</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Application ID of an Entra client application&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">aadClientId</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Object ID of an Entra client application&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">aadObjectId</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;The secret of an Entra client application&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">secure</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">aadClientSecret</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;The ObjectID of the Resource Provider Service Principal&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">rpObjectId</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Specify if FIPS validated crypto modules are used&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">allowed</span><span class="p">([</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Enabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">fips</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Specify if controlplane VMs are encrypted at host&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">allowed</span><span class="p">([</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Enabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">cpEncryptionAtHost</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">description</span><span class="p">(</span><span class="s">&#39;Specify if worker VMs are encrypted at host&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">@</span><span class="nf">allowed</span><span class="p">([</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Enabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerEncryptionAtHost</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The parameters in this template help us customize the ARO cluster deployment. There are customizations such as FIPS and encryption at the host disabled by default. The API server and ingress visibility are configured to be public. This template creates three control plane nodes and three worker nodes by default. We cannot change the number of control plane nodes, but the worker count can be customized using the <code>workerCount</code> parameter.</p>
+<p>Before provisioning any resource dependencies, we need to set up a few variables.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">contributorRoleDefinitionId</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">resourceId</span><span class="p">(</span><span class="s">&#39;Microsoft.Authorization/roleDefinitions&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;b24988ac-6180-42a0-ab88-20f7382dd24c&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">resourceGroupId</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">subscriptionResourceId</span><span class="p">(</span><span class="s">&#39;</span><span class="si">${</span><span class="nf">subscription</span><span class="p">().</span><span class="nv">subscriptionId</span><span class="si">}</span><span class="s">&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;Microsoft.Resources/resourceGroups&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;aro-</span><span class="si">${</span><span class="nv">domain</span><span class="si">}</span><span class="s">-</span><span class="si">${</span><span class="nv">location</span><span class="si">}</span><span class="s">&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">cpSubnetId</span><span class="p">=</span><span class="nf">resourceId</span><span class="p">(</span><span class="s">&#39;Microsoft.Network/virtualNetworks/subnets&#39;</span><span class="p">,</span><span class="w"> </span><span class="nv">clusterVnetName</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;controlplane&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">workerSubnetId</span><span class="p">=</span><span class="nf">resourceId</span><span class="p">(</span><span class="s">&#39;Microsoft.Network/virtualNetworks/subnets&#39;</span><span class="p">,</span><span class="w"> </span><span class="nv">clusterVnetName</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;worker&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">pullSecret</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">loadTextContent</span><span class="p">(</span><span class="s">&#39;pull-secret.txt&#39;</span><span class="p">,</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>The first variable &ndash; <code>contributorRoleDefinitionId</code> &ndash; is used to retrieve the resource ID of the Contributor role definition. We need this later when we assign permissions on the virtual network resource. The remaining variables defined using the built-in <code>subscriptionResourceId</code> and resourceId functions are used later in the resource definitions.</p>
+<p>To provision an ARO cluster, we need a virtual network with two subnets &ndash; <em>controlplane</em> and <em>worker</em>. We create this by provisioning a virtual network resource.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">clusterVnetName_resource</span><span class="w"> </span><span class="s">&#39;Microsoft.Network/virtualNetworks@2020-05-01&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterVnetName</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">location</span><span class="p">:</span><span class="w"> </span><span class="nv">location</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">tags</span><span class="p">:</span><span class="w"> </span><span class="nv">tags</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">addressSpace</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">addressPrefixes</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">clusterVnetCidr</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">subnets</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;controlplane&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nv">addressPrefix</span><span class="p">:</span><span class="w"> </span><span class="nv">cpSubnetCidr</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nv">serviceEndpoints</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nv">service</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Microsoft.ContainerRegistry&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nv">privateLinkServiceNetworkPolicies</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;worker&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nv">addressPrefix</span><span class="p">:</span><span class="w"> </span><span class="nv">workerSubnetCidr</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nv">serviceEndpoints</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nv">service</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Microsoft.ContainerRegistry&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">            
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>This definition creates a virtual network resource with subnets for the control plane and worker nodes. Next, we must use the <em>roleAssignments</em> extension resource to assign contributor access to the service principal and OpenShift Resource Provider on the virtual network resource.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">clusterVnetName_aadObjectId</span><span class="w"> </span><span class="s">&#39;Microsoft.Authorization/roleAssignments@2020-10-01-preview&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nf">guid</span><span class="p">(</span><span class="nv">aadObjectId</span><span class="p">,</span><span class="w"> </span><span class="nv">clusterVnetName_resource</span><span class="p">.</span><span class="nv">id</span><span class="p">,</span><span class="w"> </span><span class="nv">contributorRoleDefinitionId</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">scope</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterVnetName_resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">roleDefinitionId</span><span class="p">:</span><span class="w"> </span><span class="nv">contributorRoleDefinitionId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalId</span><span class="p">:</span><span class="w"> </span><span class="nv">aadObjectId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalType</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ServicePrincipal&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">clusterVnetName_rpObjectId</span><span class="w"> </span><span class="s">&#39;Microsoft.Authorization/roleAssignments@2020-10-01-preview&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nf">guid</span><span class="p">(</span><span class="nv">rpObjectId</span><span class="p">,</span><span class="w"> </span><span class="nv">clusterVnetName_resource</span><span class="p">.</span><span class="nv">id</span><span class="p">,</span><span class="w"> </span><span class="nv">contributorRoleDefinitionId</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">scope</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterVnetName_resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">roleDefinitionId</span><span class="p">:</span><span class="w"> </span><span class="nv">contributorRoleDefinitionId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalId</span><span class="p">:</span><span class="w"> </span><span class="nv">rpObjectId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalType</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ServicePrincipal&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>With this, we are all set to create an ARO cluster. The following definition helps us with that.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="w"> </span><span class="s">&#39;Microsoft.RedHatOpenShift/OpenShiftClusters@2023-09-04&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">location</span><span class="p">:</span><span class="w"> </span><span class="nv">location</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">tags</span><span class="p">:</span><span class="w"> </span><span class="nv">tags</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">clusterProfile</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">domain</span><span class="p">:</span><span class="w"> </span><span class="nv">domain</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">resourceGroupId</span><span class="p">:</span><span class="w"> </span><span class="nv">resourceGroupId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">pullSecret</span><span class="p">:</span><span class="w"> </span><span class="nv">pullSecret</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">fipsValidatedModules</span><span class="p">:</span><span class="w"> </span><span class="nv">fips</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">networkProfile</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">podCidr</span><span class="p">:</span><span class="w"> </span><span class="nv">podCidr</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">serviceCidr</span><span class="p">:</span><span class="w"> </span><span class="nv">serviceCidr</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">servicePrincipalProfile</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">clientId</span><span class="p">:</span><span class="w"> </span><span class="nv">aadClientId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">clientSecret</span><span class="p">:</span><span class="w"> </span><span class="nv">aadClientSecret</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">masterProfile</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">vmSize</span><span class="p">:</span><span class="w"> </span><span class="nv">cpVmSize</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">subnetId</span><span class="p">:</span><span class="w"> </span><span class="nv">cpSubnetId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">encryptionAtHost</span><span class="p">:</span><span class="w"> </span><span class="nv">cpEncryptionAtHost</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">workerProfiles</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;worker&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">vmSize</span><span class="p">:</span><span class="w"> </span><span class="nv">workerVmSize</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">diskSizeGB</span><span class="p">:</span><span class="w"> </span><span class="nv">workerVmDiskSize</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">subnetId</span><span class="p">:</span><span class="w"> </span><span class="nv">workerSubnetId</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">count</span><span class="p">:</span><span class="w"> </span><span class="nv">workerCount</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">encryptionAtHost</span><span class="p">:</span><span class="w"> </span><span class="nv">workerEncryptionAtHost</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">apiserverProfile</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nv">visibility</span><span class="p">:</span><span class="w"> </span><span class="nv">apiServerVisibility</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">ingressProfiles</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;default&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nv">visibility</span><span class="p">:</span><span class="w"> </span><span class="nv">ingressVisibility</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">dependsOn</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">clusterVnetName_resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>This is straightforward. The ARO resource requires us to specify the <code>clusterProfile</code>, <code>networkProfile</code>, <code>servicePrincipalProfile</code>, <code>masterProfile</code>, <code>workerProfiles</code>, <code>apiserverProfile</code>, and <code>ingressProfiles</code>. Once this ARO cluster is provisioned, we can retrieve the console and API server URLs using the outputs.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bicep" data-lang="bicep"><span class="line"><span class="cl"><span class="kd">output</span><span class="w"> </span><span class="nv">aroCluster</span><span class="w"> </span><span class="nv">object</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterName</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterApiServerUrl</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">apiserverProfile</span><span class="p">.</span><span class="nv">url</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterConsoleUrl</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">provisioningState</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&#39;Succeeded&#39;</span><span class="w"> </span><span class="p">?</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">consoleProfile</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>This template is ready to be deployed. We can use the <code>az deployment group create</code> command to deploy the template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">DOMAIN</span><span class="o">=</span>hub
+</span></span><span class="line"><span class="cl"><span class="nv">ARO_CLUSTER_NAME</span><span class="o">=</span>hub
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">az deployment group create --name aroDeployment <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --resource-group <span class="nv">$RESOURCEGROUP</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --template-file main.bicep <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">location</span><span class="o">=</span><span class="nv">$LOCATION</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">domain</span><span class="o">=</span><span class="nv">$DOMAIN</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">clusterName</span><span class="o">=</span><span class="nv">$ARO_CLUSTER_NAME</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadClientId</span><span class="o">=</span><span class="nv">$SP_CLIENT_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadObjectId</span><span class="o">=</span><span class="nv">$SP_OBJECT_ID</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadClientSecret</span><span class="o">=</span><span class="nv">$SP_CLIENT_SECRET</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">rpObjectId</span><span class="o">=</span><span class="nv">$ARO_RP_SP_OBJECT_ID</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The resource group we provisioned gets used as the base resource group. This base resource group houses the virtual network and the ARO cluster. The ARO resource provider creates another resource group called the infrastructure resource group. In the Bicep template, this infrastructure group is identified using the <code>resourceGroupId</code> variable. This infrastructure group can only be managed by the resource provider. The ARO RP provisions a Network Security Group (NSG) within this resource group. We cannot add or remove any inbound or outbound security rules to/from this NSG. This is because all service principals except the one used to create the cluster are denied any API access to this resource group.</p>
+<p><img src="/images/aro-nsg-deny.png" alt=""></p>
+<blockquote>
+<p>Bringing your own NSG is available as a preview feature; we will look at it later.</p>
+</blockquote>
+<p>Similarly, this infrastructure resource group will also contain all virtual machines required for the control plane and worker nodes.</p>
+<p>Once the template deployment is complete, we can see the console and API URLs in the deployment output or within the Azure portal.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;outputs&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;aroCluster&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Object&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;clusterApiServerUrl&#34;</span><span class="p">:</span> <span class="s2">&#34;https://api.hub.eastus.aroapp.io:6443/&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;clusterConsoleUrl&#34;</span><span class="p">:</span> <span class="s2">&#34;https://console-openshift-console.apps.hub.eastus.aroapp.io/&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;clusterName&#34;</span><span class="p">:</span> <span class="s2">&#34;hub&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/images/aro-connect.png" alt=""></p>
+<p>ARO does not yet support shutting down a cluster. Therefore, we must monitor the usage of the cluster and take the necessary actions, such as deleting the cluster or shutting down virtual machines, as needed.</p>
+
+    </div>
+
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/cloud-native/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #cloud-native
+            </a>
+          
+            <a href="/tags/learning/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #learning
+            </a>
+          
+            <a href="/tags/red-hat/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #red hat
+            </a>
+          
+            <a href="/tags/azure/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #azure
+            </a>
+          
+        </div>
+      </div>
+    
+
+    
+    
+
+
+
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
+  
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+      
+    
+
+    
+    
+      
+        
+        
+      
+      
+    
+  
+
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Azure Bicep: Fully Automated Kubernetes Cluster Deployment on Azure in Under 8 Minutes">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Azure Bicep</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Fully Automated Kubernetes Cluster Deployment on Azure in Under 8 Minutes
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Kubeadm is the go to tool for Kubernetes administrators. Understand how to use this tool combined with Bicep to provision a virtualized K8s cluster.</p>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
+
+    
+    <div class="flex">
+      
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</nav>
+
+
+    
+    
+
+    
+    
+
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
+</html>

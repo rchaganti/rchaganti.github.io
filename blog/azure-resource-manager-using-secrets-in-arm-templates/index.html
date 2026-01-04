@@ -1,226 +1,759 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Language" content="en">
-    <script src="https://ravichaganti.com/js/view.js"></script>
-    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
-    <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input.">
-    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Azure Resource Manager - Using secrets in ARM templates"/>
-<meta name="twitter:description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input."/>
-
-    <meta property="og:title" content="Azure Resource Manager - Using secrets in ARM templates" />
-<meta property="og:description" content="In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/" />
-<meta property="article:published_time" content="2020-08-07T00:00:00+00:00" />
-<meta property="article:modified_time" content="2020-08-07T00:00:00+00:00" />
-
-
-
-    
-      <base href="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
-    
-    <title>
-  Azure Resource Manager - Using secrets in ARM templates · Ravikanth Chaganti
-</title>
-
-    
-      <link rel="canonical" href="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
-    
-
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
-
-    
-      
-      
-      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
-    
-
-    
-
-    
-      
-        
-        
-        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
-      
-    
-
-    
-
-    
-
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
-
-    <meta name="generator" content="Hugo 0.73.0" />
-  </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
+  <title>Azure Resource Manager - Using secrets in ARM templates | Ravikanth Chaganti</title>
+
   
-    
+  <meta name="description" content="
   
-  
-    <body onload="getViews( &#34;https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/&#34; )" class="colorscheme-auto">
-  
-    <main class="wrapper">
-      <nav class="navigation">
-  <section class="container">
-    <a class="navigation-title" href="https://ravichaganti.com/">
-      Ravikanth Chaganti
-    </a>
-    
-    <input type="checkbox" id="menu-toggle" />
-    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
-    <ul class="navigation-list">
-      
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
-          </li>
-        
-      
-      
-    </ul>
-    
-  </section>
-</nav>
 
 
-      <div class="content">
-        
-  <section class="container post">
-    <article>
-      <header>
-        <div class="post-title">
-          <h1 class="title">Azure Resource Manager - Using secrets in ARM templates</h1>
-        </div>
-        <div class="post-meta">
-          <div class="date">
-            <span class="posted-on">
-              <i class="fas fa-calendar"></i>
-              <time datetime='2020-08-07T00:00:00Z'>
-                August 7, 2020
-              </time>
-            </span>
-            <span class="reading-time">
-              <i class="fas fa-clock"></i>
-              5-minute read
-            </span>
+In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  <meta property="og:title" content="Azure Resource Manager - Using secrets in ARM templates">
+  <meta property="og:description" content="
+  
+
+
+In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Azure Resource Manager - Using secrets in ARM templates">
+  <meta name="twitter:description" content="
+  
+
+
+In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
           </div>
-          <div class="categories">
-  <i class="fas fa-folder"></i>
-    <a href="https://ravichaganti.com/categories/azure-resource-manager/">Azure Resource Manager</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/azure/">Azure</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/arm-template/">ARM Template</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/key-vault/">Key Vault</a></div>
+        </a>
+      </div>
 
-          <div class="tags">
-  <i class="fas fa-tag"></i>
-    <a href="https://ravichaganti.com/tags/azure-resource-manager/">Azure Resource Manager</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/azure/">Azure</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/arm-template/">ARM Template</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/key-vault/">Key Vault</a></div>
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
 
         </div>
-      </header>
-      <hr>
-      <div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/azure-resource-manager/" class="hover:text-primary dark:hover:text-blue-400">Azure Resource Manager</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2020-08-07">August 7, 2020</time>
+        </div>
+
         
         
-          <nav id="TableOfContents">
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>5 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/azure-resource-manager/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Azure Resource Manager
+            </a>
+          
+            <a href="/categories/azure/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Azure
+            </a>
+          
+            <a href="/categories/arm-template/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              ARM Template
+            </a>
+          
+            <a href="/categories/key-vault/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Key Vault
+            </a>
+          
+        
+        
+          
+            <a href="/series/azure-resource-manager-in-30-days/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Azure Resource Manager In 30 Days
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/default-post.svg" alt="Azure Resource Manager - Using secrets in ARM templates" class="w-full h-auto">
+      </div>
+
+      
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Azure Resource Manager In 30 Days
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 7-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-introduction/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - Introduction
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 16, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - Tools for ARM template design, authoring, and deployment
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 17, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-arm-template-basics/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - ARM template basics
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 23, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                4
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - Adding parameters to ARM templates
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 24, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                5
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - Using expressions and variables in ARM templates
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 30, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                6
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Azure Resource Manager - Using functions in ARM templates
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jul 31, 2020</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                7
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Azure Resource Manager - Using secrets in ARM templates
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Aug 7, 2020</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Azure Resource Manager - Using functions in ARM templates</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+  
+    <div class="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-gray-200 dark:border-dark-border">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-primary dark:hover:text-blue-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="toc-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+          </svg>
+          Table of Contents
+        </span>
+        <svg
+          id="toc-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
+        <nav id="TableOfContents">
   <ul>
     <li><a href="#azure-key-vault">Azure Key Vault</a>
       <ul>
         <li><a href="#creating-a-key-vault">Creating a key vault</a></li>
-        <li><a href="#adding-secrets-to-vault">Adding secrets to vault</a></li>
+        <li><a href="#adding-secrets-to-the-vault">Adding secrets to the vault</a></li>
         <li><a href="#retrieve-vault-secret">Retrieve vault secret</a></li>
       </ul>
     </li>
     <li><a href="#summary">Summary</a></li>
   </ul>
 </nav>
-          <hr>
-        
-        
-    <figure >
-        
-            <img src="https://ravichaganti.com/images/armin30/templatearchitecture.png" width="760" />
-        
-        
-    </figure>
+      </nav>
+    </div>
+
+    <style>
+      #toc-content ul {
+        list-style: none;
+        padding-left: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content > nav > ul {
+        padding-left: 0;
+      }
+      #toc-content li {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content a {
+        color: #374151;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      #toc-content a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+      }
+       
+      .dark #toc-content a {
+        color: #cbd5e1;
+      }
+      .dark #toc-content a:hover {
+        color: #60a5fa;
+      }
+    </style>
+  
+
+
+
     
-<p>In this series so far, you have seen how you can get started with ARM templates, parameterize the templates by adding parameters, and then optimize those templates using variables, expressions, and user-defined functions. It is now time to move forward into more advanced topics and start building the template for the remaining components in the architecture shown above. In the architecture shown above, you will be implementing an ARM template that will provision virtual machines for which the administrator and domain-join credentials will have to provided as input. Also, the configuration scripts used for guest OS configuration may have to access an internal storage account blob which will require the storage connection strings and access keys. Storing these secrets in plain-text is not recommended at all. Also, as an architect, you may want to standardize on the passwords used for local administrator accounts and do not want to share the domain-join credentials with any user while provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will see how to handle secrets such as passwords, access keys, certificates, and so on in an ARM template.</p>
+    <div class="prose prose-lg max-w-none mb-12">
+      <div style="max-width: 760; margin: 1.5rem auto; text-align: center;">
+  <img src="/images/armin30/templatearchitecture.png" alt="" class="" style="max-width: 100%; height: auto; border-radius: 0.5rem;">
+</div>
+
+<p>In this series so far, you have seen how to get started with ARM templates, parameterize them by adding parameters, and optimize them using variables, expressions, and user-defined functions. It is now time to move on to more advanced topics and begin building the template for the remaining components of the architecture shown above. In the architecture shown above, you will implement an ARM template that provisions virtual machines, requiring the administrator and domain-join credentials as inputs. Also, the configuration scripts used to configure the guest OS may need to access an internal storage account blob, which requires the storage connection strings and access keys. Storing these secrets in plain text is not recommended. Also, as an architect, you may want to standardize on passwords for local administrator accounts and avoid sharing domain-join credentials with any user when provisioning an ARM template. This needs a more centralized credential and secret store. Azure Vault provides this capability. Today, you will learn how to handle secrets such as passwords, access keys, certificates, and more in an ARM template.</p>
 <h2 id="azure-key-vault">Azure Key Vault</h2>
 <p><a href="https://azure.microsoft.com/en-us/services/key-vault/">Azure Key Vault</a> is a service that provides a centralized secret store. You can use the Key Vault for cryptographic keys, API keys, passwords, connection strings, and certificates. For the cryptographic keys, you can use a Hardware Security Module (HSM) as well. Once a key vault is provisioned, you can add your secrets and retrieve them in an ARM template for use with other resource types such as virtual machines.</p>
 <h3 id="creating-a-key-vault">Creating a key vault</h3>
 <p>To create a key vault, you need few mandatory input parameters such as <code>tenantId</code>, <code>objectId</code> of the user or service principal or the security group in Azure Active Directory (AAD), key and secret permissions. The specified tenant will be used for authenticating requests to the key vault and the object Id of the AAD user will be used to provide the necessary permissions to interact with the Key Vault.</p>
 <p>Here is a simple starter template that you can use.</p>
-<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azrm.json"></script>
+<div class="gist-embed" style="margin: 1.5rem 0;">
+  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+</div>
 
 <p>In this starter template, you see that the value of <code>tenantId</code> defaults to the value of the <code>tenantId</code> property from the <code>subscription()</code> standard template function. The value to the <code>objectId</code> property is coming from a template parameter. You can retrieve the object ID of an AAD user using <code>az ad user show</code> command.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">az ad user show --id Ravikanth@azure.com --query objectId
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">az ad user show --id Ravikanth@azure.com --query objectId
+</span></span></code></pre></td></tr></table>
 </div>
-</div><p>You can deploy the above template to create a Key Vault by clicking on the Deploy To Azure button below.</p>
+</div><p>You can deploy the template above to create a Key Vault by clicking the Deploy To Azure button below.</p>
+<div style="margin: 1.5rem 0;">
+  <a href="https://gist.githubusercontent.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2/raw/a5b15709b6803abaf3d4eca4308052eb37c31fbd/azKVbeginner.azrm.json" target="_blank" rel="noopener noreferrer">
+    <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure" style="height: 32px; border: none;">
+  </a>
+</div>
 
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fa5b15709b6803abaf3d4eca4308052eb37c31fbd%2fazKVbeginner.azrm.json" target="_blank">
-        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
-    </a>
-    <br />
+<p>If you prefer the Azure CLI, you can run the following commands to deploy this template.</p>
+<div class="gist-embed" style="margin: 1.5rem 0;">
+  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+</div>
 
-<p>If you prefer Azure CLI, you can use the following commands to perform this template deployment.</p>
-<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginner.azcli"></script>
+<p>In the template above, as part of the access policies [line 22], for the key, secrets, and <code>certificates</code> permissions, you have used <code>all</code> as the value. As it literally means, this permission level provides full permission set to the service principal specified using <code>objectId</code> property. This is not recommended in a production Key Vault. You must also secure the key vault and restrict access to only what is needed. The allowed values for the key and secret permissions are listed in the <a href="https://docs.microsoft.com/en-us/azure/templates/microsoft.keyvault/2015-06-01/vaults">resource provider reference</a>.</p>
+<p>To this end, the template above can be modified to add a few more parameters to specify permission values.</p>
+<div class="gist-embed" style="margin: 1.5rem 0;">
+  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+</div>
 
-<p>In the above template, as a part of the access policies [line 22], for <code>key</code>,  <code>secrets</code>, <code>certificates</code> permissions, you have used <code>all</code> as the value. As it literally means, this permission level provides full permission set to the service principal specified using <code>objectId</code> property. This is not recommended in a production Key Vault. You must secure the key vault as well and restrict access to what is really needed. The allowed values for the key and secret permissions can be seen in the <a href="https://docs.microsoft.com/en-us/azure/templates/microsoft.keyvault/2015-06-01/vaults">resource provider reference</a>.</p>
-<p>To this extent, the above template can be modified to add a few more parameters to enable permission value specification.</p>
-<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerParameterized.azrm.json"></script>
-
-<p>In this updated template, three additional parameters are added to gather key, secret, and certificate permissions. While there are default values for these parameters, you can provide updated set of permissions as an array during deployment time. If you notice, there are additional resource properties as well added to the Key Vault resource definition.</p>
-<p><strong>enabledForDeployment</strong> spcifies whether Azure virtual machines can retrieve the certificates from the key vault or not.</p>
+<p>In this updated template, three additional parameters are added to gather key, secret, and certificate permissions. While these parameters have default values, you can provide an updated set of permissions as an array during deployment. If you notice, there are additional resource properties as well added to the Key Vault resource definition.</p>
+<p><strong>enabledForDeployment</strong> specifies whether Azure virtual machines can retrieve certificates from the key vault.</p>
 <p><strong>enabledForTemplateDeployment</strong> specifies whether Azure Resource Manager is allowed to retrieve secrets from the vault or not.</p>
-<p>For the architecture that you are building, both these properties need to be set to <code>true</code>.</p>
-<p>You can try deploying this template by clicking on the Deploy to Azure button below.</p>
+<p>For the architecture you are building, both properties must be set to <code>true</code>.</p>
+<p>You can deploy this template by clicking the Deploy to Azure button below.</p>
+<div style="margin: 1.5rem 0;">
+  <a href="https://gist.githubusercontent.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2/raw/4a5cb89ed7d2b3a5c08230450a38799e1f6d6f0e/azKVbeginnerParameterized.azrm.json" target="_blank" rel="noopener noreferrer">
+    <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure" style="height: 32px; border: none;">
+  </a>
+</div>
 
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2f4a5cb89ed7d2b3a5c08230450a38799e1f6d6f0e%2fazKVbeginnerParameterized.azrm.json" target="_blank">
-        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
-    </a>
-    <br />
-
-<p>Now, with this updated template you have a functional key vault that can be used to store secrets needed for other resource configurations. So, how do you use ARM templates to store secrets in a key vault?</p>
-<h3 id="adding-secrets-to-vault">Adding secrets to vault</h3>
+<p>Now, with this updated template, you have a functional key vault that can store secrets used by other resource configurations. So, how do you use ARM templates to store secrets in a key vault?</p>
+<h3 id="adding-secrets-to-the-vault">Adding secrets to the vault</h3>
 <p>Once you have a key vault provisioned, you can add the <code>Microsoft.KeyVault/vaults/secrets</code> resource to the template to add secrets to the vault. The following resource definition will do that job.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -232,34 +765,36 @@
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">{
-	&#34;type&#34;: &#34;Microsoft.KeyVault/vaults/secrets&#34;,
-	&#34;name&#34;: &#34;[concat(variables(&#39;keyVaultName&#39;), &#39;/&#39;, parameters(&#39;secretName&#39;))]&#34;,
-	&#34;apiVersion&#34;: &#34;2018-02-14&#34;,
-	&#34;location&#34;: &#34;[resourceGroup().location]&#34;,
-	&#34;properties&#34;: {
-		&#34;value&#34;: &#34;[parameters(&#39;secretValue&#39;)]&#34;,
-		&#34;contentType&#34; : &#34;string&#34;
-	}
-}
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Microsoft.KeyVault/vaults/secrets&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(variables(&#39;keyVaultName&#39;), &#39;/&#39;, parameters(&#39;secretName&#39;))]&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s2">&#34;apiVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-02-14&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="s2">&#34;[resourceGroup().location]&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="s2">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;[parameters(&#39;secretValue&#39;)]&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="s2">&#34;contentType&#34;</span> <span class="p">:</span> <span class="s2">&#34;string&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
-</div><p>In this resource definition, the type of the resource is <code>Microsoft.KeyVault/vaults/secrets</code>. The <code>secretName</code> that you want to use will be provided as the name of the resource and the value will be set in the resource properties.</p>
-<p>Here is the full template that can be used to provision a key vault and then add a secret to it.</p>
-<script type="application/javascript" src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js?file=azKVbeginnerStoreSecret.azrm.json"></script>
+</div><p>In this resource definition, the resource type is <code>Microsoft.KeyVault/vaults/secrets</code>. The <code>secretName</code> you want to use will be used as the resource name, and the value will be set in the resource properties.</p>
+<p>Here is the full template to provision a key vault and add a secret to it.</p>
+<div class="gist-embed" style="margin: 1.5rem 0;">
+  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+</div>
 
-<p>This updated template added two more parameters &ndash; <code>secretName</code> and <code>secretValue</code>. <code>secretValue</code> is a secure string. Try deploying the template using the deploy to Azure button below.</p>
-
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3a%2f%2fgist.githubusercontent.com%2frchaganti%2fd7e35878c6687da07ae5fa5dfb7d54c2%2fraw%2fb605dc41251aea40dae877f352a0b35998944076%2fazKVbeginnerStoreSecret.azrm.json" target="_blank">
-        <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true" alt="">
-    </a>
-    <br />
+<p>This updated template added two additional parameters: <code>secretName</code> and <code>secretValue</code>. <code>secretValue</code> is a secure string. Try deploying the template using the deploy to Azure button below.</p>
+<div style="margin: 1.5rem 0;">
+  <a href="https://gist.githubusercontent.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2/raw/b605dc41251aea40dae877f352a0b35998944076/azKVbeginnerStoreSecret.azrm.json" target="_blank" rel="noopener noreferrer">
+    <img src="https://aka.ms/deploytoazurebutton" alt="Deploy to Azure" style="height: 32px; border: none;">
+  </a>
+</div>
 
 <h3 id="retrieve-vault-secret">Retrieve vault secret</h3>
-<p>Finally, when you have to use the secret as another resource property value, you can do that using a property definition as shown below.</p>
+<p>Finally, when you need to use the secret as another resource property value, you can do so using a property definition, as shown below.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -269,165 +804,209 @@
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">&#34;adminPassword&#34;: {
-    &#34;reference&#34;: {
-        &#34;keyVault&#34;: {
-        &#34;id&#34;: &#34;/subscriptions/&lt;SubscriptionID&gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/&lt;KeyVaultName&gt;&#34;
-        },
-        &#34;secretName&#34;: &#34;vmAdminPassword&#34;
-    }
-}
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;adminPassword&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;reference&#34;: {
+</span></span><span class="line"><span class="cl">        &#34;keyVault&#34;: {
+</span></span><span class="line"><span class="cl">        &#34;id&#34;: &#34;/subscriptions/&lt;SubscriptionID&gt;/resourceGroups/mykeyvaultdeploymentrg/providers/Microsoft.KeyVault/vaults/&lt;KeyVaultName&gt;&#34;
+</span></span><span class="line"><span class="cl">        },
+</span></span><span class="line"><span class="cl">        &#34;secretName&#34;: &#34;vmAdminPassword&#34;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You will learn more about this pattern in the later articles of this series when you attempt creating virtual machines using ARM template.</p>
 <h2 id="summary">Summary</h2>
 <p>In this part, you learned how to create an Azure Key Vault, add secrets to the vault, and retrieve the secrets. This knowledge will come handy when you attempt creating virtual machines that require a predefined administrator password. In the next part, you will learn about resource dependencies in ARM templates.</p>
 
-        
+    </div>
 
-<style>
-#share-buttons {display: inline-block; vertical-align: middle; }
-#share-buttons:after {content: ""; display: block; clear: both;}
-#share-buttons > div {
-position: relative;
-text-align: left; 
-height: 36px; 
-width: 32px; 
-float: left; 
-text-align: center;
-}
-#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
-#share-buttons > div:hover {cursor: pointer;}
-#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
-#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
-#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
-#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
-#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
-#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
-#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
-#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
-#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
-#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
-#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
-#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
-#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
-</style>
-
-<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/azure-resource-manager-using-secrets-in-arm-templates\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
-</div>
-        <script src="https://giscus.app/client.js"
-        data-repo="rchaganti/rchaganti.github.io"
-        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-        data-category="Announcements"
-        data-category-id="DIC_kwDOEIN4I84CS4rW"
-        data-mapping="pathname"
-        data-strict="1"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/azure-resource-manager/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #Azure Resource Manager
+            </a>
+          
+            <a href="/tags/azure/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #Azure
+            </a>
+          
+            <a href="/tags/arm-template/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #ARM Template
+            </a>
+          
+            <a href="/tags/key-vault/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #Key Vault
+            </a>
+          
+        </div>
       </div>
+    
+
+    
+    
 
 
-      <footer>
-        
 
-<section class="see-also">
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
   
     
     
     
-      <h3>See also in Azure Resource Manager In 30 Days</h3>
-      <nav>
-        <ul>
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        
+      
+    
+
+    
+    
+      
         
         
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-policy-guest-configuration-assignments/">Azure Policy Guest Configuration - Assignments</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-policy-guest-configuration-introduction/">Azure Policy Guest Configuration - Introduction</a>
-            </li>
-          
-        
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/">Azure Resource Manager - Using functions in ARM templates</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/">Azure Resource Manager - Using expressions and variables in ARM templates</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/">Azure Resource Manager - Adding parameters to ARM templates</a>
-            </li>
-          
-        
-        </ul>
-      </nav>
+      
+      
     
   
-</section>
 
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Azure Resource Manager In 30 Days: Azure Resource Manager - Using functions in ARM templates">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
 
-        
-        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-      </footer>
-    </article>
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Azure Resource Manager In 30 Days</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Azure Resource Manager - Using functions in ARM templates
+              </h3>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
 
     
-  </section>
-
-      </div>
-      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+    <div class="flex">
       
-  <footer class="footer">
-    <section class="container">
-      
-        <p>All Rights Reserved.</p>
-      
-      
-        ©
         
-          2019 -
-        
-        2025
-         Ravikanth Chaganti 
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
       
-      
-         · 
-        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
-      
-      
-    </section>
-  </footer>
+    </div>
+  </div>
+</nav>
 
-    </main>
 
-        
     
     
 
-  </body>
+    
+    
 
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
 </html>

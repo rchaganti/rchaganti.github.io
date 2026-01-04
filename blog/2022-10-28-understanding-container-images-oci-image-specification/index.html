@@ -1,230 +1,586 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Language" content="en">
-    <script src="https://ravichaganti.com/js/view.js"></script>
-    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
-    <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries.">
-    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Understanding container images - OCI image specification"/>
-<meta name="twitter:description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries."/>
-
-    <meta property="og:title" content="Understanding container images - OCI image specification" />
-<meta property="og:description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/" />
-<meta property="article:published_time" content="2022-10-28T00:00:00+00:00" />
-<meta property="article:modified_time" content="2022-10-28T00:00:00+00:00" />
-
-
-
-    
-      <base href="https://ravichaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/">
-    
-    <title>
-  Understanding container images - OCI image specification · Ravikanth Chaganti
-</title>
-
-    
-      <link rel="canonical" href="https://ravichaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/">
-    
-
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
-
-    
-      
-      
-      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
-    
-
-    
-
-    
-      
-        
-        
-        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
-      
-    
-
-    
-
-    
-
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
-
-    <meta name="generator" content="Hugo 0.73.0" />
-  </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  
-    
-  
-  
-    <body onload="getViews( &#34;https://ravichaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/&#34; )" class="colorscheme-auto">
-  
-    <main class="wrapper">
-      <nav class="navigation">
-  <section class="container">
-    <a class="navigation-title" href="https://ravichaganti.com/">
-      Ravikanth Chaganti
-    </a>
-    
-    <input type="checkbox" id="menu-toggle" />
-    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
-    <ul class="navigation-list">
-      
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
-          </li>
-        
-      
-      
-    </ul>
-    
-  </section>
-</nav>
+  <title>Understanding container images - OCI image specification | Ravikanth Chaganti</title>
 
+  
+  <meta name="description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries. Whatever container engine you use &ndash; Docker or Podman &ndash; you can simply pull the image [built using any tool] from the registry and use it. How is this interoperability made possible? The answer is the work Open Container Initiative (OCI) is doing.">
+  <meta name="author" content="Ravikanth Chaganti">
 
-      <div class="content">
-        
-  <section class="container post">
-    <article>
-      <header>
-        <div class="post-title">
-          <h1 class="title">Understanding container images - OCI image specification</h1>
-        </div>
-        <div class="post-meta">
-          <div class="date">
-            <span class="posted-on">
-              <i class="fas fa-calendar"></i>
-              <time datetime='2022-10-28T00:00:00Z'>
-                October 28, 2022
-              </time>
-            </span>
-            <span class="reading-time">
-              <i class="fas fa-clock"></i>
-              8-minute read
-            </span>
+  
+  <meta property="og:title" content="Understanding container images - OCI image specification">
+  <meta property="og:description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries. Whatever container engine you use &ndash; Docker or Podman &ndash; you can simply pull the image [built using any tool] from the registry and use it. How is this interoperability made possible? The answer is the work Open Container Initiative (OCI) is doing.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Understanding container images - OCI image specification">
+  <meta name="twitter:description" content="In the previous article, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries. Whatever container engine you use &ndash; Docker or Podman &ndash; you can simply pull the image [built using any tool] from the registry and use it. How is this interoperability made possible? The answer is the work Open Container Initiative (OCI) is doing.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/2022-10-28-understanding-container-images-oci-image-specification/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
           </div>
-          <div class="categories">
-  <i class="fas fa-folder"></i>
-    <a href="https://ravichaganti.com/categories/oci/">oci</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/containers/">containers</a></div>
+        </a>
+      </div>
 
-          <div class="tags">
-  <i class="fas fa-tag"></i>
-    <a href="https://ravichaganti.com/tags/oci/">oci</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/containers/">containers</a></div>
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
 
         </div>
-      </header>
-      <hr>
-      <div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/oci/" class="hover:text-primary dark:hover:text-blue-400">oci</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2022-10-28">October 28, 2022</time>
+        </div>
+
         
         
-        <p>In the <a href="https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/">previous article</a>, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries. Whatever container engine you use &ndash; Docker or Podman &ndash; you can simply pull the image [built using any tool] from the registry and use it. How is this interoperability made possible? The answer is the work <a href="https://opencontainers.org/">Open Container Initiative</a> (OCI) is doing.</p>
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>8 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/oci/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              oci
+            </a>
+          
+            <a href="/categories/containers/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              containers
+            </a>
+          
+        
+        
+          
+            <a href="/series/container-images/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Container images
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/default-post.svg" alt="Understanding container images - OCI image specification" class="w-full h-auto">
+      </div>
+
+      
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Container images
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 3-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Understanding container images - The fundamentals
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 18, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Understanding container images - OCI image specification
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 28, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/2022-10-29-publish-container-images-to-azure-container-registry/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Publish container images to Azure Container Registry
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 29, 2022</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+              
+            
+          
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Understanding container images - The fundamentals</span>
+            </a>
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/2022-10-29-publish-container-images-to-azure-container-registry/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Publish container images to Azure Container Registry</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>In the <a href="https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/">previous article</a>, we looked at how OverlayFS is used to work with container images. We learned how the image layers are associated with each other and how the copy-on-write layer gets created when a containers gets created from an image. Container registries such as Docker Hub and Quay offer container images for several popular applications and you can publish your images as well. There are different tools available to build and push images to container registries. Whatever container engine you use &ndash; Docker or Podman &ndash; you can simply pull the image [built using any tool] from the registry and use it. How is this interoperability made possible? The answer is the work <a href="https://opencontainers.org/">Open Container Initiative</a> (OCI) is doing.</p>
 <p>Around 2015, containerization started becoming mainstream, a few companies started creating competing tools. <a href="https://www.redhat.com/en/topics/containers/what-is-rkt">Rkt</a> was one such implementation. Folks at CoreOS created Application Container Image (ACI) format and Application Container Execution (ACE) specifications and started implementing tools. At the same time, Docker was already successful in bringing containers to the masses. So, industry saw an opportunity to eliminate fragmentation in the container ecosystem and worked with Docker, CoreOS, and other companies to create Open Container Initiative (OCI) to develop standards around container formats, runtimes, and registries. Most or all container engines and tools implement OCI specifications.</p>
 <p>In today&rsquo;s article, we will review <a href="https://github.com/opencontainers/image-spec">OCI image specification</a> and explore the how images are packaged.</p>
 <h3 id="image-specification">Image Specification</h3>
 <p>The OCI image specification contains an image index, image manifest, a set of file system layers, and a configuration. While it sounds like a lot, it is actually quite simple.</p>
-<p>
-<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
-<div class="box" style="max-width:450px">
-  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-    <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/oci1.png" />
-    </div>
-    <a href="https://ravichaganti.com/images/oci1.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
+<p><figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
+  <a href="/images/oci1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/oci1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
   
-
-
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   
-
-
-<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-</p>
+  
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lightbox = GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        moreLength: 0
+      });
+    });
+  </script></p>
 <p>The above figure represents the association among different parts of the OCI image specification. This starts with an optional image index.</p>
 <h4 id="image-index">Image index</h4>
 <p>This, literally, an index of manifests that point to images for different platforms / architectures.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -236,17 +592,17 @@
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;schemaVersion&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-  <span class="nt">&#34;manifests&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.manifest.v1+json&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">657</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;schemaVersion&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;manifests&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.manifest.v1+json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">657</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>As you see in this example, the image index within an OCI image points to an array of image manifests. You will see multiple manifests if the image is a multi-architecture image. The <a href="https://github.com/opencontainers/image-spec/blob/main/media-types.md"><code>mediaType</code> property</a> within image index will always be set to <code>application/vnd.oci.image.index.v1+json</code>. For each manifest representing a container image, the <code>mediaType</code> will be set to <code>application/vnd.oci.image.manifest.v1+json</code>.</p>
 <blockquote>
@@ -257,7 +613,7 @@
 <p>The image manifest contains references to the image configuration JSON and a set of file system layers used to create the image. The contents of an image manifest are specific to a platform and OS version.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -284,37 +640,37 @@
 </span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;schemaVersion&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.config.v1+json&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">1268</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;layers&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">2916043</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">114</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">145</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;schemaVersion&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.config.v1+json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">1268</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;layers&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">2916043</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">114</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;mediaType&#34;</span><span class="p">:</span> <span class="s2">&#34;application/vnd.oci.image.layer.v1.tar+gzip&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">145</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The config element refers to the JSON representation of image metadata, execution parameters for creating a container, and filesystem layers (tar balls) to use when creating the container. As you see, the <code>mediaType</code> will be set to <code>application/vnd.oci.image.config.v1+json</code>.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -367,63 +723,63 @@
 </span><span class="lnt">51
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.948125525Z&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;architecture&#34;</span><span class="p">:</span> <span class="s2">&#34;amd64&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;Env&#34;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="s2">&#34;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#34;</span>
-    <span class="p">],</span>
-    <span class="nt">&#34;Cmd&#34;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="s2">&#34;/bin/sh&#34;</span>
-    <span class="p">],</span>
-    <span class="nt">&#34;Labels&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;maintainer&#34;</span><span class="p">:</span> <span class="s2">&#34;ravikanth@ravichaganti.com&#34;</span>
-    <span class="p">}</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;rootfs&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;layers&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;diff_ids&#34;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span><span class="p">,</span>
-      <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span><span class="p">,</span>
-      <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
-    <span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;history&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-08-09T17:19:53.274069586Z&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;/bin/sh -c #(nop) ADD file:2a949686d9886ac7c10582a6c29116fd29d3077d02755e87e111870d63607725 in / &#34;</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-08-09T17:19:53.47374331Z&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;/bin/sh -c #(nop)  CMD [\&#34;/bin/sh\&#34;]&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;empty_layer&#34;</span><span class="p">:</span> <span class="kc">true</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.841023842Z&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;LABEL maintainer=ravikanth@ravichaganti.com&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;empty_layer&#34;</span><span class="p">:</span> <span class="kc">true</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.841023842Z&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;RUN /bin/sh -c touch hello.txt # buildkit&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.948125525Z&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;RUN /bin/sh -c echo \&#34;this is an update to the hello.txt\&#34; &gt;&gt; hello.txt # buildkit&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.948125525Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;architecture&#34;</span><span class="p">:</span> <span class="s2">&#34;amd64&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;Env&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;Cmd&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;/bin/sh&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;Labels&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;maintainer&#34;</span><span class="p">:</span> <span class="s2">&#34;ravikanth@ravichaganti.com&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;rootfs&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;layers&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;diff_ids&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;history&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-08-09T17:19:53.274069586Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;/bin/sh -c #(nop) ADD file:2a949686d9886ac7c10582a6c29116fd29d3077d02755e87e111870d63607725 in / &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-08-09T17:19:53.47374331Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;/bin/sh -c #(nop)  CMD [\&#34;/bin/sh\&#34;]&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;empty_layer&#34;</span><span class="p">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.841023842Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;LABEL maintainer=ravikanth@ravichaganti.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;empty_layer&#34;</span><span class="p">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.841023842Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;RUN /bin/sh -c touch hello.txt # buildkit&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2022-10-16T05:24:35.948125525Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;RUN /bin/sh -c echo \&#34;this is an update to the hello.txt\&#34; &gt;&gt; hello.txt # buildkit&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;comment&#34;</span><span class="p">:</span> <span class="s2">&#34;buildkit.dockerfile.v0&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This example looks a lot similar to what you see when running <code>docker image inspect imageName</code>. The <code>diff_ids</code> represent the digest of the layer&rsquo;s uncompressed tar archive. In fact, these Diff IDs correlate to the RootFS layers you see in the <code>docker image inspect</code> output.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -441,28 +797,28 @@
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-sh" data-lang="sh">
-$ cat blobs/sha256/8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446 <span class="p">|</span> jq .rootfs.diff_ids
-<span class="o">[</span>
-  <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span>,
-  <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span>,
-  <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
-<span class="o">]</span>
-
-$ docker image inspect ravikanth/hello-world:v1 <span class="p">|</span> jq -r <span class="s1">&#39;.[0] | {Data: .RootFS.Layers}&#39;</span>
-<span class="o">{</span>
-  <span class="s2">&#34;Data&#34;</span>: <span class="o">[</span>
-    <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span>,
-    <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span>,
-    <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
-  <span class="o">]</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ cat blobs/sha256/8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446 <span class="p">|</span> jq .rootfs.diff_ids
+</span></span><span class="line"><span class="cl"><span class="o">[</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker image inspect ravikanth/hello-world:v1 <span class="p">|</span> jq -r <span class="s1">&#39;.[0] | {Data: .RootFS.Layers}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;Data&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;sha256:994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;sha256:9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;sha256:2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The image layer digests you see in the above listing are different from what you see in the image manifest layers array. The layer digests in the image manifest indicate the image layers stored on the file system when you extract an image to a local folder. So, how do we extract an image? There are a few tools that can help extracting OCI images to a local folder. Let us take a look at <a href="https://github.com/containers/skopeo">Skopeo</a>.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -479,29 +835,29 @@ $ docker image inspect ravikanth/hello-world:v1 <span class="p">|</span> jq -r <
 </span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ sudo apt install skopeo
-
-$ skopeo copy docker://ravikanth/hello-world:v1 oci:hello_world
-
-$ tree hello-world/
-hello-world/
-├── blobs
-│   └── sha256
-│       ├── 30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c
-│       ├── 3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab
-│       ├── 5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b
-│       ├── 8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446
-│       └── da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759
-├── index.json
-└── oci-layout
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ sudo apt install skopeo
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ skopeo copy docker://ravikanth/hello-world:v1 oci:hello_world
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ tree hello-world/
+</span></span><span class="line"><span class="cl">hello-world/
+</span></span><span class="line"><span class="cl">├── blobs
+</span></span><span class="line"><span class="cl">│   └── sha256
+</span></span><span class="line"><span class="cl">│       ├── 30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c
+</span></span><span class="line"><span class="cl">│       ├── 3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab
+</span></span><span class="line"><span class="cl">│       ├── 5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b
+</span></span><span class="line"><span class="cl">│       ├── 8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446
+</span></span><span class="line"><span class="cl">│       └── da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759
+</span></span><span class="line"><span class="cl">├── index.json
+</span></span><span class="line"><span class="cl">└── oci-layout
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Skopeo is a tool to work with images and image registries. Skopeo can copy images between registries, delete images, extract images, inspect, and sign images. The example above copies an image from Docker Hub to the local file system using the OCI layout.</p>
 <p>The <code>oci-layout</code> file in the above listing is a JSON file that contains the version of the image layout.</p>
 <p>The output of the <code>tree</code> command is similar to what you saw in the image representation at the beginning. If you look at the image manifest JSON above, you will notice that <code>3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab</code>, <code>5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b</code>, and <code>da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759</code> are the compressed image layers on disk.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -509,18 +865,18 @@ hello-world/
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ file hello-world/blobs/sha256/*
-hello-world/blobs/sha256/30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c: JSON data
-hello-world/blobs/sha256/3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab: gzip compressed data, original size modulo 2^32 <span class="m">5826560</span>
-hello-world/blobs/sha256/5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b: gzip compressed data, original size modulo 2^32 <span class="m">2048</span>
-hello-world/blobs/sha256/8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446: JSON data
-hello-world/blobs/sha256/da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759: gzip compressed data, original size modulo 2^32 <span class="m">1536</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ file hello-world/blobs/sha256/*
+</span></span><span class="line"><span class="cl">hello-world/blobs/sha256/30a76a4a2be556c8ff8cff68a3e6a68656a2e2272329b3d4eac5a90072929f7c: JSON data
+</span></span><span class="line"><span class="cl">hello-world/blobs/sha256/3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab: gzip compressed data, original size modulo 2^32 <span class="m">5826560</span>
+</span></span><span class="line"><span class="cl">hello-world/blobs/sha256/5b5387c8849f2140efd643840a2af9829f0616cba8516bc3b01e67529a80406b: gzip compressed data, original size modulo 2^32 <span class="m">2048</span>
+</span></span><span class="line"><span class="cl">hello-world/blobs/sha256/8b895fab1ad99d2ce5a24b59e3029741fa14d80a98e42cbe352ebea2f64b4446: JSON data
+</span></span><span class="line"><span class="cl">hello-world/blobs/sha256/da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090c70e02759: gzip compressed data, original size modulo 2^32 <span class="m">1536</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can, alternatively, extract an image locally available as a regular directory.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -539,30 +895,30 @@ hello-world/blobs/sha256/da30198d6af810de0ead95a824b42b1748f62816bcb0486d9b60090
 </span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ skopeo copy docker-daemon:ravikanth/hello-world:v1 dir:hello_world1
-Getting image <span class="nb">source</span> signatures
-Copying blob 994393dc58e7 <span class="k">done</span>
-Copying blob 9760f635cf77 <span class="k">done</span>
-Copying blob 2d15fd73d3ab <span class="k">done</span>
-Copying config 9b5cea9d1f <span class="k">done</span>
-Writing manifest to image destination
-Storing signatures
-
-$ tree hello_world1
-hello_world1
-├── 2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5
-├── 9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164
-├── 994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7
-├── 9b5cea9d1f27984de5b0c7ad4e113a02b3b1a90191d3e337285fbe7a2c458f0a
-├── manifest.json
-└── version
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ skopeo copy docker-daemon:ravikanth/hello-world:v1 dir:hello_world1
+</span></span><span class="line"><span class="cl">Getting image <span class="nb">source</span> signatures
+</span></span><span class="line"><span class="cl">Copying blob 994393dc58e7 <span class="k">done</span>
+</span></span><span class="line"><span class="cl">Copying blob 9760f635cf77 <span class="k">done</span>
+</span></span><span class="line"><span class="cl">Copying blob 2d15fd73d3ab <span class="k">done</span>
+</span></span><span class="line"><span class="cl">Copying config 9b5cea9d1f <span class="k">done</span>
+</span></span><span class="line"><span class="cl">Writing manifest to image destination
+</span></span><span class="line"><span class="cl">Storing signatures
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ tree hello_world1
+</span></span><span class="line"><span class="cl">hello_world1
+</span></span><span class="line"><span class="cl">├── 2d15fd73d3ab4c53b646668461b9facddd2e7a5ec0007a47cb99e748472a4fb5
+</span></span><span class="line"><span class="cl">├── 9760f635cf77ac2d1a7f69d98d977eabfcf7977e8e4b51b80222481ff0fb2164
+</span></span><span class="line"><span class="cl">├── 994393dc58e7931862558d06e46aa2bb17487044f670f310dffe1d24e4d1eec7
+</span></span><span class="line"><span class="cl">├── 9b5cea9d1f27984de5b0c7ad4e113a02b3b1a90191d3e337285fbe7a2c458f0a
+</span></span><span class="line"><span class="cl">├── manifest.json
+</span></span><span class="line"><span class="cl">└── version
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Since we are reviewing OCI image specification and we shall stick to the OCI layout.</p>
 <p>Within the OCI image layout, the blobs folder contains image manifest, configuration, and the layer tarballs.  We have looked at the manifest and configuration JSON files already. From the blobs folder, you can extract the layers using the <code>tar</code> command.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -587,168 +943,218 @@ hello_world1
 </span><span class="lnt">23
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ mkdir base-layer
-
-$ tar -xvf 3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab --directory base-layer
-
-$ ls -l base-layer/
-total <span class="m">68</span>
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 bin
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 dev
-drwxr-xr-x <span class="m">16</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 etc
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 home
-drwxr-xr-x  <span class="m">7</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 lib
-drwxr-xr-x  <span class="m">5</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 media
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 mnt
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 opt
-dr-xr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 proc
-drwx------  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 root
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 run
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 sbin
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 srv
-drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 sys
-drwxrwxr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 tmp
-drwxr-xr-x  <span class="m">7</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 usr
-drwxr-xr-x <span class="m">12</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 var 
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ mkdir base-layer
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ tar -xvf 3e6080001d7b2e588ba7bd7c83b4fe5cdc389c5619525db7f24656198f7d44ab --directory base-layer
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ ls -l base-layer/
+</span></span><span class="line"><span class="cl">total <span class="m">68</span>
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 bin
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 dev
+</span></span><span class="line"><span class="cl">drwxr-xr-x <span class="m">16</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 etc
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 home
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">7</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 lib
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">5</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 media
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 mnt
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 opt
+</span></span><span class="line"><span class="cl">dr-xr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 proc
+</span></span><span class="line"><span class="cl">drwx------  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 root
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 run
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 sbin
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 srv
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 sys
+</span></span><span class="line"><span class="cl">drwxrwxr-x  <span class="m">2</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 tmp
+</span></span><span class="line"><span class="cl">drwxr-xr-x  <span class="m">7</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 usr
+</span></span><span class="line"><span class="cl">drwxr-xr-x <span class="m">12</span> rchaganti rchaganti <span class="m">4096</span> Aug  <span class="m">9</span> 14:17 var 
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is the base layer of the image containing all operating system files.</p>
 <p>What we have seen so far should give a good idea around what OCI image specification defines  and tools such as Skopeo help us explore this.</p>
 <p>We understand the image specification but how exactly are these images built to comply with this specification? How do we determine how many layers to be created and what gets into each layer? For that, we need to dig into workflows and tools that are used to build container images. We will explore that in the next article.</p>
 
-        
+    </div>
 
-<style>
-#share-buttons {display: inline-block; vertical-align: middle; }
-#share-buttons:after {content: ""; display: block; clear: both;}
-#share-buttons > div {
-position: relative;
-text-align: left; 
-height: 36px; 
-width: 32px; 
-float: left; 
-text-align: center;
-}
-#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
-#share-buttons > div:hover {cursor: pointer;}
-#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
-#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
-#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
-#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
-#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
-#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
-#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
-#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
-#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
-#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
-#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
-#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
-#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
-</style>
-
-<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/2022-10-28-understanding-container-images-oci-image-specification\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/2022-10-28-understanding-container-images-oci-image-specification\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/2022-10-28-understanding-container-images-oci-image-specification\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/2022-10-28-understanding-container-images-oci-image-specification\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
-</div>
-        <script src="https://giscus.app/client.js"
-        data-repo="rchaganti/rchaganti.github.io"
-        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-        data-category="Announcements"
-        data-category-id="DIC_kwDOEIN4I84CS4rW"
-        data-mapping="pathname"
-        data-strict="1"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/oci/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #oci
+            </a>
+          
+            <a href="/tags/containers/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #containers
+            </a>
+          
+        </div>
       </div>
+    
+
+    
+    
 
 
-      <footer>
-        
 
-<section class="see-also">
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
   
     
     
     
-      <h3>See also in container images</h3>
-      <nav>
-        <ul>
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+        
+      
+    
+      
+    
+
+    
+    
+      
         
         
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-11-28-building-container-images-using-no-tools/">Building container images - using no tools</a>
-            </li>
-          
+      
+      
         
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-10-29-publish-container-images-to-azure-container-registry/">Publish container images to Azure Container Registry</a>
-            </li>
-          
         
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/">Understanding container images - The fundamentals</a>
-            </li>
-          
-        
-        </ul>
-      </nav>
+      
     
   
-</section>
 
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/2022-10-18-understanding-container-images-the-fundamentals/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Container images: Understanding container images - The fundamentals">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
 
-        
-        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-      </footer>
-    </article>
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Container images</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Understanding container images - The fundamentals
+              </h3>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
 
     
-  </section>
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/2022-10-29-publish-container-images-to-azure-container-registry/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in Container images: Publish container images to Azure Container Registry">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Container images</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Publish container images to Azure Container Registry
+              </h3>
+              
+            </div>
 
-      </div>
-      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
       
-  <footer class="footer">
-    <section class="container">
-      
-        <p>All Rights Reserved.</p>
-      
-      
-        ©
-        
-          2019 -
-        
-        2025
-         Ravikanth Chaganti 
-      
-      
-         · 
-        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
-      
-      
-    </section>
-  </footer>
+    </div>
+  </div>
+</nav>
 
-    </main>
 
-        
     
     
 
-  </body>
+    
+    
 
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
 </html>

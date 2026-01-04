@@ -1,229 +1,563 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Language" content="en">
-    <script src="https://ravichaganti.com/js/view.js"></script>
-    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
-    <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
-There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments.">
-    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu"/>
-<meta name="twitter:description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
-There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments."/>
-
-    <meta property="og:title" content="Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu" />
-<meta property="og:description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
-There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/" />
-<meta property="article:published_time" content="2022-11-13T00:00:00+00:00" />
-<meta property="article:modified_time" content="2022-11-13T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/2022-11-26-fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/" />
-
-
-
-    
-      <base href="https://ravichaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/">
-    
-    <title>
-  Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu · Ravikanth Chaganti
-</title>
-
-    
-      <link rel="canonical" href="https://ravichaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/">
-    
-
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
-
-    
-      
-      
-      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
-    
-
-    
-
-    
-      
-        
-        
-        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
-      
-    
-
-    
-
-    
-
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
-
-    <meta name="generator" content="Hugo 0.73.0" />
-  </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  
-    
-  
-  
-    <body onload="getViews( &#34;https://ravichaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/&#34; )" class="colorscheme-auto">
-  
-    <main class="wrapper">
-      <nav class="navigation">
-  <section class="container">
-    <a class="navigation-title" href="https://ravichaganti.com/">
-      Ravikanth Chaganti
-    </a>
-    
-    <input type="checkbox" id="menu-toggle" />
-    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
-    <ul class="navigation-list">
-      
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
-          </li>
-        
-      
-      
-    </ul>
-    
-  </section>
-</nav>
+  <title>Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu | Ravikanth Chaganti</title>
 
+  
+  <meta name="description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
+There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments. However, I need a multi-node cluster with additional services for anything more than simple deployment. I use Ubuntu virtual machines and configure a Kubernetes cluster using kubeadm.">
+  <meta name="author" content="Ravikanth Chaganti">
 
-      <div class="content">
-        
-  <section class="container post">
-    <article>
-      <header>
-        <div class="post-title">
-          <h1 class="title">Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu</h1>
-        </div>
-        <div class="post-meta">
-          <div class="date">
-            <span class="posted-on">
-              <i class="fas fa-calendar"></i>
-              <time datetime='2022-11-13T00:00:00Z'>
-                November 13, 2022
-              </time>
-            </span>
-            <span class="reading-time">
-              <i class="fas fa-clock"></i>
-              9-minute read
-            </span>
+  
+  <meta property="og:title" content="Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu">
+  <meta property="og:description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
+There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments. However, I need a multi-node cluster with additional services for anything more than simple deployment. I use Ubuntu virtual machines and configure a Kubernetes cluster using kubeadm.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/">
+  
+  <meta property="og:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu">
+  <meta name="twitter:description" content="This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.
+There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use Docker Desktop or Rancher Desktop or https://podman-desktop.io/ or minikube or microk8s to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments. However, I need a multi-node cluster with additional services for anything more than simple deployment. I use Ubuntu virtual machines and configure a Kubernetes cluster using kubeadm.">
+  <meta name="twitter:image" content="https://ravikanthchaganti.com/images/default-post.svg">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
           </div>
-          <div class="categories">
-  <i class="fas fa-folder"></i>
-    <a href="https://ravichaganti.com/categories/kubernetes/">kubernetes</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/cloudnative/">cloudnative</a></div>
+        </a>
+      </div>
 
-          <div class="tags">
-  <i class="fas fa-tag"></i>
-    <a href="https://ravichaganti.com/tags/kubernetes/">kubernetes</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/cloudnative/">cloudnative</a></div>
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
 
         </div>
-      </header>
-      <hr>
-      <div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/kubernetes/" class="hover:text-primary dark:hover:text-blue-400">kubernetes</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2022-11-13">November 13, 2022</time>
+        </div>
+
         
         
-        <p>This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.</p>
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>9 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/kubernetes/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              kubernetes
+            </a>
+          
+            <a href="/categories/cloudnative/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              cloudnative
+            </a>
+          
+        
+        
+          
+            <a href="/series/kubernetes/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Kubernetes
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="/images/default-post.svg" alt="Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu" class="w-full h-auto">
+      </div>
+
+      
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Kubernetes
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 2-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Installing and Configuring Kubernetes cluster using kubeadm on Ubuntu
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 13, 2022</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Installing and Configuring Kubernetes Cluster using Kubeadm on Ubuntu
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Nov 13, 2022</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+              
+            
+          
+            
+          
+
+          
+          
+            <div></div>
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Installing and Configuring Kubernetes Cluster using Kubeadm on Ubuntu</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>This article is more like a note to myself, but this may help if you are looking at configuring a Kubernetes cluster on Ubuntu.</p>
 <p>There are many ways to install and configure Kubernetes cluster for learning and development purposes. You can use <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> or <a href="https://rancherdesktop.io/">Rancher Desktop</a> or <a href="https://podman-desktop.io/">https://podman-desktop.io/</a> or <a href="https://minikube.sigs.k8s.io/docs/start/">minikube</a> or <a href="https://microk8s.io/">microk8s</a> to create a single node cluster for your development work quickly. I am a big fan of Docker Desktop and use that for any quick experiments. However, I need a multi-node cluster with additional services for anything more than simple deployment. I use Ubuntu virtual machines and configure a Kubernetes cluster using <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">kubeadm</a>.</p>
 <p>In this article, I walk through the steps I followed to set up a virtual Kubernetes cluster.</p>
 <h3 id="virtual-machine-configuration">Virtual machine configuration</h3>
 <p>To ensure I have enough resources in the cluster, I created four Ubuntu 22.04 LTS virtual machines on my Windows 11 system. Each of these VMs is configured with two virtual CPUs and 2GB of virtual memory. It is recommended to configure each virtual machine with a static IP address. I created an external virtual switch to enable Internet connectivity within the Ubuntu guest OS. Of the four virtual machines, I chose to use one as the control plane node and the other three as worker nodes.</p>
 <h3 id="container-runtime">Container runtime</h3>
 <p>Kubernetes uses a Container Runtime Interface (CRI) compliant container runtime to orchestrate containers in Pods.</p>
-<p>
-<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
-<div class="box" style="max-width:450px">
-  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-    <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/kubernetes-container-runtime.png" />
-    </div>
-    <a href="https://ravichaganti.com/images/kubernetes-container-runtime.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
+<p><figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
+  <a href="/images/kubernetes-container-runtime.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/kubernetes-container-runtime.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
   
-
-
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   
-
-
-<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-</p>
+  
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lightbox = GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        moreLength: 0
+      });
+    });
+  </script></p>
 <p>Many runtimes are supported within Kubernetes. The most popular ones include Docker (via <a href="https://github.com/Mirantis/cri-dockerd">cri-dockerd</a>), <a href="https://containerd.io/">containerd</a>, and <a href="https://cri-o.io/">CRI-O</a>. The choice of a runtime depends on several factors, such as performance, isolation needs, and security. For this virtual cluster. I chose <a href="https://containerd.io/">containerd</a> as the runtime for my virtual cluster.</p>
 <h3 id="container-network-interface-cni">Container Network Interface (CNI)</h3>
 <p>Kubernetes requires a CNI-compatible Pod network addon for Pods within the cluster to communicate with each other. You can choose from many <a href="https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy">open-source and commercial CNI plugins</a> to implement the Pod network. Once again, you need to consider factors such as ease of deployment, performance, security, and resource consumption to choose the Pod network addon that is correct for your Kubernetes cluster and the workload you plan to run.</p>
@@ -254,39 +588,39 @@ There are many ways to install and configure Kubernetes cluster for learning and
 <p>On Ubuntu, you can use <code>ufw</code> command to perform this configuration.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">sudo ufw allow proto tcp from any to any port 6443,2379,2380,10250,10257,10259,179
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo ufw allow proto tcp from any to any port 6443,2379,2380,10250,10257,10259,179
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>To see the bridged traffic, you must disable swap and configure IPv4 forwarding and IP tables on each node. Before all this, ensure each node has the latest and greatest packages. You will need<code>curl</code> as well on the node to download certain packages.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates curl
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo apt-get update
+</span></span><span class="line"><span class="cl">sudo apt-get install -y apt-transport-https ca-certificates curl
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You must disable swap on each node that will be a part of the Kubernetes cluster.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">sudo swapoff -a
-sudo sed -i <span class="s1">&#39;/^\/swap\.img/s/^/#/&#39;</span> /etc/fstab
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo swapoff -a
+</span></span><span class="line"><span class="cl">sudo sed -i <span class="s1">&#39;/^\/swap\.img/s/^/#/&#39;</span> /etc/fstab
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You must also check if the swap is listed in the <code>/etc/fstab</code> and either comment or remove the line.</p>
 <p>Next, configure IPv4 forwarding and IP tables on each node.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -307,32 +641,32 @@ sudo sed -i <span class="s1">&#39;/^\/swap\.img/s/^/#/&#39;</span> /etc/fstab
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1">#Enable IP tables bridge traffic on all nodes</span>
-<span class="c1"># https://kubernetes.io/docs/setup/production-environment/container-runtimes/#forwarding-ipv4-and-letting-iptables-see-bridged-traffic</span>
-cat <span class="s">&lt;&lt;EOF | sudo tee /etc/modules-load.d/k8s.conf
-</span><span class="s">overlay
-</span><span class="s">br_netfilter
-</span><span class="s">EOF</span>
-
-sudo modprobe overlay
-sudo modprobe br_netfilter
-
-<span class="c1"># sysctl params required by setup, params persist across reboots</span>
-cat <span class="s">&lt;&lt;EOF | sudo tee /etc/sysctl.d/k8s.conf
-</span><span class="s">net.bridge.bridge-nf-call-iptables  = 1
-</span><span class="s">net.bridge.bridge-nf-call-ip6tables = 1
-</span><span class="s">net.ipv4.ip_forward                 = 1
-</span><span class="s">EOF</span>
-
-<span class="c1"># Apply sysctl params without reboot</span>
-sudo sysctl --system
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1">#Enable IP tables bridge traffic on all nodes</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># https://kubernetes.io/docs/setup/production-environment/container-runtimes/#forwarding-ipv4-and-letting-iptables-see-bridged-traffic</span>
+</span></span><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | sudo tee /etc/modules-load.d/k8s.conf
+</span></span></span><span class="line"><span class="cl"><span class="s">overlay
+</span></span></span><span class="line"><span class="cl"><span class="s">br_netfilter
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo modprobe overlay
+</span></span><span class="line"><span class="cl">sudo modprobe br_netfilter
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># sysctl params required by setup, params persist across reboots</span>
+</span></span><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | sudo tee /etc/sysctl.d/k8s.conf
+</span></span></span><span class="line"><span class="cl"><span class="s">net.bridge.bridge-nf-call-iptables  = 1
+</span></span></span><span class="line"><span class="cl"><span class="s">net.bridge.bridge-nf-call-ip6tables = 1
+</span></span></span><span class="line"><span class="cl"><span class="s">net.ipv4.ip_forward                 = 1
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Apply sysctl params without reboot</span>
+</span></span><span class="line"><span class="cl">sudo sysctl --system
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="installing-containerd">Installing containerd</h4>
 <p>The next set of commands download the latest release of containerd from GitHub and configure it. You need to run this on each node.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -367,46 +701,46 @@ sudo sysctl --system
 </span><span class="lnt">33
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">CONTAINERD_VERSION</span><span class="o">=</span><span class="s2">&#34;1.7.4&#34;</span>
-<span class="nv">RUNC_VERSION</span><span class="o">=</span><span class="s2">&#34;1.1.9&#34;</span>
-<span class="nv">CNI_PLUGINS_VERSION</span><span class="o">=</span><span class="s2">&#34;1.3.0&#34;</span>
-
-<span class="c1"># Install containerd</span>
-curl -Lo /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz <span class="se">\
-</span><span class="se"></span>         https://github.com/containerd/containerd/releases/download/v<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz
-sudo tar Cxzvf /usr/local /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz
-
-<span class="c1"># Install runc</span>
-curl -Lo /tmp/runc.amd64 https://github.com/opencontainers/runc/releases/download/v<span class="si">${</span><span class="nv">RUNC_VERSION</span><span class="si">}</span>/runc.amd64
-sudo install -m <span class="m">755</span> /tmp/runc.amd64 /usr/local/sbin/runc
-
-<span class="c1"># clean up containerd and runc files</span>
-rm -rf /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz /tmp/runc.amd64
-
-<span class="c1"># install containerd config</span>
-sudo mkdir -p /etc/containerd
-containerd config default <span class="p">|</span> sudo tee /etc/containerd/config.toml
-sudo sed -i <span class="s1">&#39;s/SystemdCgroup = false/SystemdCgroup = true/&#39;</span> /etc/containerd/config.toml
-sudo curl -Lo /etc/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/cri/master/contrib/systemd-units/containerd.service  
-sudo systemctl daemon-reload
-sudo systemctl <span class="nb">enable</span> --now containerd
-sudo systemctl status containerd --no-pager
-
-<span class="c1"># Install CNI plugins</span>
-curl -Lo /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz <span class="se">\
-</span><span class="se"></span>         https://github.com/containernetworking/plugins/releases/download/v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>/cni-plugins-linux-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
-sudo mkdir -p /opt/cni/bin
-sudo tar Cxzvf /opt/cni/bin /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
-
-<span class="c1"># clean up CNI plugins</span>
-rm -rf /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">CONTAINERD_VERSION</span><span class="o">=</span><span class="s2">&#34;1.7.4&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">RUNC_VERSION</span><span class="o">=</span><span class="s2">&#34;1.1.9&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">CNI_PLUGINS_VERSION</span><span class="o">=</span><span class="s2">&#34;1.3.0&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Install containerd</span>
+</span></span><span class="line"><span class="cl">curl -Lo /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz <span class="se">\
+</span></span></span><span class="line"><span class="cl">         https://github.com/containerd/containerd/releases/download/v<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz
+</span></span><span class="line"><span class="cl">sudo tar Cxzvf /usr/local /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Install runc</span>
+</span></span><span class="line"><span class="cl">curl -Lo /tmp/runc.amd64 https://github.com/opencontainers/runc/releases/download/v<span class="si">${</span><span class="nv">RUNC_VERSION</span><span class="si">}</span>/runc.amd64
+</span></span><span class="line"><span class="cl">sudo install -m <span class="m">755</span> /tmp/runc.amd64 /usr/local/sbin/runc
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># clean up containerd and runc files</span>
+</span></span><span class="line"><span class="cl">rm -rf /tmp/containerd-<span class="si">${</span><span class="nv">CONTAINERD_VERSION</span><span class="si">}</span>-linux-amd64.tar.gz /tmp/runc.amd64
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># install containerd config</span>
+</span></span><span class="line"><span class="cl">sudo mkdir -p /etc/containerd
+</span></span><span class="line"><span class="cl">containerd config default <span class="p">|</span> sudo tee /etc/containerd/config.toml
+</span></span><span class="line"><span class="cl">sudo sed -i <span class="s1">&#39;s/SystemdCgroup = false/SystemdCgroup = true/&#39;</span> /etc/containerd/config.toml
+</span></span><span class="line"><span class="cl">sudo curl -Lo /etc/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/cri/master/contrib/systemd-units/containerd.service  
+</span></span><span class="line"><span class="cl">sudo systemctl daemon-reload
+</span></span><span class="line"><span class="cl">sudo systemctl <span class="nb">enable</span> --now containerd
+</span></span><span class="line"><span class="cl">sudo systemctl status containerd --no-pager
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Install CNI plugins</span>
+</span></span><span class="line"><span class="cl">curl -Lo /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz <span class="se">\
+</span></span></span><span class="line"><span class="cl">         https://github.com/containernetworking/plugins/releases/download/v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>/cni-plugins-linux-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
+</span></span><span class="line"><span class="cl">sudo mkdir -p /opt/cni/bin
+</span></span><span class="line"><span class="cl">sudo tar Cxzvf /opt/cni/bin /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># clean up CNI plugins</span>
+</span></span><span class="line"><span class="cl">rm -rf /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PLUGINS_VERSION</span><span class="si">}</span>.tgz
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="installing-kubeadm-kubelet-and-kubectl">Installing kubeadm, kubelet, and kubectl</h4>
 <p>These three tools are needed on each node.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -415,21 +749,21 @@ rm -rf /tmp/cni-plugins-amd64-v<span class="si">${</span><span class="nv">CNI_PL
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">sudo curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key <span class="p">|</span> sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-
-<span class="nb">echo</span> <span class="s1">&#39;deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /&#39;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/kubernetes.list
-
-sudo apt-get update
-sudo apt-get install -y kubelet kubeadm kubectl
-sudo apt-mark hold kubelet kubeadm kubectl
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key <span class="p">|</span> sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /&#39;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/kubernetes.list
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo apt-get update
+</span></span><span class="line"><span class="cl">sudo apt-get install -y kubelet kubeadm kubectl
+</span></span><span class="line"><span class="cl">sudo apt-mark hold kubelet kubeadm kubectl
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above commands download and install the three tools that we need on each node. Once installed, we mark the packages as held so that they don&rsquo;t get automatically upgraded or removed.</p>
 <h4 id="initialize-kubernetes-cluster">Initialize Kubernetes cluster</h4>
 <p>Once the prerequisite configuration is complete, you can initialize the Kubernetes cluster using <code>kubeadm init</code> command.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -440,21 +774,21 @@ sudo apt-mark hold kubelet kubeadm kubectl
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">IPADDR</span><span class="o">=</span><span class="k">$(</span>hostname -I<span class="k">)</span>
-<span class="nv">APISERVER</span><span class="o">=</span><span class="k">$(</span>hostname -s<span class="k">)</span>
-<span class="nv">NODENAME</span><span class="o">=</span><span class="k">$(</span>hostname -s<span class="k">)</span>
-<span class="nv">POD_NET</span><span class="o">=</span><span class="s2">&#34;10.244.0.0/16&#34;</span>
-
-sudo kubeadm init --apiserver-advertise-address<span class="o">=</span><span class="nv">$IPADDR</span> <span class="se">\
-</span><span class="se"></span>                  --apiserver-cert-extra-sans<span class="o">=</span><span class="nv">$APISERVER</span> <span class="se">\
-</span><span class="se"></span>                  --pod-network-cidr<span class="o">=</span><span class="nv">$POD_NET</span> <span class="se">\
-</span><span class="se"></span>                  --node-name <span class="nv">$NODENAME</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">IPADDR</span><span class="o">=</span><span class="k">$(</span>hostname -I<span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">APISERVER</span><span class="o">=</span><span class="k">$(</span>hostname -s<span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">NODENAME</span><span class="o">=</span><span class="k">$(</span>hostname -s<span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">POD_NET</span><span class="o">=</span><span class="s2">&#34;10.244.0.0/16&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo kubeadm init --apiserver-advertise-address<span class="o">=</span><span class="nv">$IPADDR</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                  --apiserver-cert-extra-sans<span class="o">=</span><span class="nv">$APISERVER</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                  --pod-network-cidr<span class="o">=</span><span class="nv">$POD_NET</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">                  --node-name <span class="nv">$NODENAME</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This command starts a few preflight checks and the necessary Pods to start the Kubernetes control plane. At the end of successful execution, you will see output similar to what is shown here.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -472,103 +806,103 @@ sudo kubeadm init --apiserver-advertise-address<span class="o">=</span><span cla
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">Your Kubernetes control-plane has initialized successfully!
-
-To start using your cluster, you need to run the following as a regular user:
-
-  mkdir -p <span class="nv">$HOME</span>/.kube
-  sudo cp -i /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
-  sudo chown <span class="k">$(</span>id -u<span class="k">)</span>:<span class="k">$(</span>id -g<span class="k">)</span> <span class="nv">$HOME</span>/.kube/config
-
-You should now deploy a Pod network to the cluster.
-Run <span class="s2">&#34;kubectl apply -f [podnetwork].yaml&#34;</span> with one of the options listed at:
-  /docs/concepts/cluster-administration/addons/
-
-You can now join any number of machines by running the following on each node
-as root:
-
-  kubeadm join &lt;control-plane-host&gt;:&lt;control-plane-port&gt; --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">Your Kubernetes control-plane has initialized successfully!
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">To start using your cluster, you need to run the following as a regular user:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  mkdir -p <span class="nv">$HOME</span>/.kube
+</span></span><span class="line"><span class="cl">  sudo cp -i /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
+</span></span><span class="line"><span class="cl">  sudo chown <span class="k">$(</span>id -u<span class="k">)</span>:<span class="k">$(</span>id -g<span class="k">)</span> <span class="nv">$HOME</span>/.kube/config
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">You should now deploy a Pod network to the cluster.
+</span></span><span class="line"><span class="cl">Run <span class="s2">&#34;kubectl apply -f [podnetwork].yaml&#34;</span> with one of the options listed at:
+</span></span><span class="line"><span class="cl">  /docs/concepts/cluster-administration/addons/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">You can now join any number of machines by running the following on each node
+</span></span><span class="line"><span class="cl">as root:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  kubeadm join &lt;control-plane-host&gt;:&lt;control-plane-port&gt; --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Before proceeding or clearing the screen output, copy the <code>kubeadm join</code> command. You need this to join the worker nodes to the Kubernetes cluster.</p>
 <h4 id="prepare-kube-config">Prepare kube config</h4>
 <p>Before installing the Pod network addon, you need to make sure you prepare the <code>kubectl</code> config file. <code>kubeadm init</code> command provides the necessary commands to do this.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">mkdir -p <span class="nv">$HOME</span>/.kube
-sudo cp -i /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
-sudo chown <span class="k">$(</span>id -u<span class="k">)</span>:<span class="k">$(</span>id -g<span class="k">)</span> <span class="nv">$HOME</span>/.kube/config
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mkdir -p <span class="nv">$HOME</span>/.kube
+</span></span><span class="line"><span class="cl">sudo cp -i /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
+</span></span><span class="line"><span class="cl">sudo chown <span class="k">$(</span>id -u<span class="k">)</span>:<span class="k">$(</span>id -g<span class="k">)</span> <span class="nv">$HOME</span>/.kube/config
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once this is done, verify if the Kubernetes control plane objects can be queried or not.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">kubectl get nodes
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">kubectl get nodes
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This command will show only the control plane node and be shown as <code>NotReady</code>. This is because the Pod network is not ready. You can now install the Pod network addon.</p>
 <h4 id="installing-calico">Installing Calico</h4>
 <p>Installing Calico is just two steps. First, we install the opertor.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">curl -Lo /tmp/tigera-operator.yaml https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/tigera-operator.yaml
-kubectl create -f /tmp/tigera-operator.yaml
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">curl -Lo /tmp/tigera-operator.yaml https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/tigera-operator.yaml
+</span></span><span class="line"><span class="cl">kubectl create -f /tmp/tigera-operator.yaml
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Next, we need to install the custom resources.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">curl -Lo /tmp/custom-resources.yaml https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">curl -Lo /tmp/custom-resources.yaml https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this YAML, you need to modify the the <code>spec.calicoNetwork.ipPools.cidr</code> to match what you specified as the argument to <code>--pod-network-cidr</code>. Once this modification is complete, you can implement the custom resources.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">CIDR</span><span class="o">=</span><span class="s1">&#39;10.244.0.0/16&#39;</span>
-sed -i <span class="s2">&#34;s|192.168.0.0/16|</span><span class="nv">$CIDR</span><span class="s2">|&#34;</span> /tmp/custom-resources.yaml
-kubectl create -f /tmp/custom-resources.yaml
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">CIDR</span><span class="o">=</span><span class="s1">&#39;10.244.0.0/16&#39;</span>
+</span></span><span class="line"><span class="cl">sed -i <span class="s2">&#34;s|192.168.0.0/16|</span><span class="nv">$CIDR</span><span class="s2">|&#34;</span> /tmp/custom-resources.yaml
+</span></span><span class="line"><span class="cl">kubectl create -f /tmp/custom-resources.yaml
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You need to wait for the Calico Pods to transition to Ready state before you can proceed towards joining the worker nodes to the cluster.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ watch kubectl get pods -n calico-system
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ watch kubectl get pods -n calico-system
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once all Calico pods in the calico-system namespace are online and ready, you can check if the control plane node is in ready state or not using <code>kubectl get nodes</code> command.</p>
 <p>Finally, you can move on to joining all worker nodes the cluster. You need to run the command you copied from the <code>kubeadm init</code> command on each worker node.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ kubeadm join IP:6443 --token token <span class="se">\
-</span><span class="se"></span>        --discovery-token-ca-cert-hash <span class="nb">hash</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubeadm join IP:6443 --token token <span class="se">\
+</span></span></span><span class="line"><span class="cl">        --discovery-token-ca-cert-hash <span class="nb">hash</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p><strong>Note</strong>: IP, token, and hash in the command you copied will be different.</p>
@@ -576,7 +910,7 @@ kubectl create -f /tmp/custom-resources.yaml
 <p>The node joining process takes a few minutes. On the control plane node, you can run <code>watch kubectl get nodes</code> command wait until all nodes come online and transition to ready state.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -584,18 +918,18 @@ kubectl create -f /tmp/custom-resources.yaml
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ kubectl get nodes
-NAME       STATUS   ROLES           AGE     VERSION
-cplane01   Ready    control-plane   4h42m   v1.28.1
-node01     Ready    &lt;none&gt;          4h28m   v1.28.1
-node02     Ready    &lt;none&gt;          4h28m   v1.28.1
-node03     Ready    &lt;none&gt;          4h28m   v1.28.1
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl get nodes
+</span></span><span class="line"><span class="cl">NAME       STATUS   ROLES           AGE     VERSION
+</span></span><span class="line"><span class="cl">cplane01   Ready    control-plane   4h42m   v1.28.1
+</span></span><span class="line"><span class="cl">node01     Ready    &lt;none&gt;          4h28m   v1.28.1
+</span></span><span class="line"><span class="cl">node02     Ready    &lt;none&gt;          4h28m   v1.28.1
+</span></span><span class="line"><span class="cl">node03     Ready    &lt;none&gt;          4h28m   v1.28.1
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You should also verify if all control plane pods are online and ready or not.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -619,153 +953,205 @@ node03     Ready    &lt;none&gt;          4h28m   v1.28.1
 </span><span class="lnt">22
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">$ kubectl get pods --all-namespaces
-NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
-calico-apiserver   calico-apiserver-f975659ff-fscmd           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h31m
-calico-apiserver   calico-apiserver-f975659ff-jq9hn           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h31m
-calico-system      calico-kube-controllers-6b57db7fd6-grkdh   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
-calico-system      calico-node-2kfq2                          1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-calico-system      calico-node-6h65z                          1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
-calico-system      calico-node-f4vml                          0/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-calico-system      calico-node-rfpdz                          0/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-calico-system      calico-typha-75884b99f4-dhrmp              1/1     Running   <span class="m">3</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-calico-system      calico-typha-75884b99f4-sss9d              1/1     Running   <span class="m">3</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
-kube-system        coredns-565d847f94-knrf8                   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        coredns-565d847f94-mtxrs                   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        etcd-cplane01                              1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        kube-apiserver-cplane01                    1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        kube-controller-manager-cplane01           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        kube-proxy-9s7c7                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-kube-system        kube-proxy-dq5rc                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-kube-system        kube-proxy-kfs78                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-kube-system        kube-proxy-zl7sb                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
-kube-system        kube-scheduler-cplane01                    1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
-tigera-operator    tigera-operator-6bb5985474-cmnxp           1/1     Running   <span class="m">3</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h35m
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl get pods --all-namespaces
+</span></span><span class="line"><span class="cl">NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
+</span></span><span class="line"><span class="cl">calico-apiserver   calico-apiserver-f975659ff-fscmd           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h31m
+</span></span><span class="line"><span class="cl">calico-apiserver   calico-apiserver-f975659ff-jq9hn           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h31m
+</span></span><span class="line"><span class="cl">calico-system      calico-kube-controllers-6b57db7fd6-grkdh   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
+</span></span><span class="line"><span class="cl">calico-system      calico-node-2kfq2                          1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">calico-system      calico-node-6h65z                          1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
+</span></span><span class="line"><span class="cl">calico-system      calico-node-f4vml                          0/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">calico-system      calico-node-rfpdz                          0/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">calico-system      calico-typha-75884b99f4-dhrmp              1/1     Running   <span class="m">3</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">calico-system      calico-typha-75884b99f4-sss9d              1/1     Running   <span class="m">3</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h33m
+</span></span><span class="line"><span class="cl">kube-system        coredns-565d847f94-knrf8                   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        coredns-565d847f94-mtxrs                   1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        etcd-cplane01                              1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        kube-apiserver-cplane01                    1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        kube-controller-manager-cplane01           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        kube-proxy-9s7c7                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">kube-system        kube-proxy-dq5rc                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">kube-system        kube-proxy-kfs78                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">kube-system        kube-proxy-zl7sb                           1/1     Running   <span class="m">2</span> <span class="o">(</span>3h55m ago<span class="o">)</span>   4h29m
+</span></span><span class="line"><span class="cl">kube-system        kube-scheduler-cplane01                    1/1     Running   <span class="m">2</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h42m
+</span></span><span class="line"><span class="cl">tigera-operator    tigera-operator-6bb5985474-cmnxp           1/1     Running   <span class="m">3</span> <span class="o">(</span>3h56m ago<span class="o">)</span>   4h35m
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is it. You now have a four node Kubernetes cluster that you can use for your learning, development, and even production (if you are brave enough!).</p>
 
-        
+    </div>
 
-<style>
-#share-buttons {display: inline-block; vertical-align: middle; }
-#share-buttons:after {content: ""; display: block; clear: both;}
-#share-buttons > div {
-position: relative;
-text-align: left; 
-height: 36px; 
-width: 32px; 
-float: left; 
-text-align: center;
-}
-#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
-#share-buttons > div:hover {cursor: pointer;}
-#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
-#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
-#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
-#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
-#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
-#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
-#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
-#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
-#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
-#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
-#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
-#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
-#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
-</style>
-
-<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/2022-11-13-installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
-</div>
-        <script src="https://giscus.app/client.js"
-        data-repo="rchaganti/rchaganti.github.io"
-        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-        data-category="Announcements"
-        data-category-id="DIC_kwDOEIN4I84CS4rW"
-        data-mapping="pathname"
-        data-strict="1"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/kubernetes/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #kubernetes
+            </a>
+          
+            <a href="/tags/cloudnative/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #cloudnative
+            </a>
+          
+        </div>
       </div>
+    
+
+    
+    
 
 
-      <footer>
-        
 
-<section class="see-also">
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
   
     
     
     
-      <h3>See also in kubernetes</h3>
-      <nav>
-        <ul>
+
+    
+    
+    
+
+    
+    
+    
+      
+        
+      
+    
+      
+    
+
+    
+    
+      
+      
         
         
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/2022-11-26-fully-automated-kubernetes-cluster-deployment-on-azure-in-under-8-minutes/">Fully automated Kubernetes cluster deployment on Azure in under 8 minutes</a>
-            </li>
-          
-        
-          
-        
-        </ul>
-      </nav>
+      
     
   
-</section>
 
-
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
         
-        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-      </footer>
-    </article>
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
+            </div>
+          </div>
+        </div>
+      
+    </div>
 
     
-  </section>
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/installing-and-configuring-kubernetes-cluster-using-kubeadm-on-ubuntu/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in Kubernetes: Installing and Configuring Kubernetes Cluster using Kubeadm on Ubuntu">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Kubernetes</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Installing and Configuring Kubernetes Cluster using Kubeadm on Ubuntu
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Kubeadm is a handy tool to configure Kubernetes clusters. This article explains how to create a K8s cluster using Ubuntu VMs.</p>
+              
+            </div>
 
-      </div>
-      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </a>
       
-  <footer class="footer">
-    <section class="container">
-      
-        <p>All Rights Reserved.</p>
-      
-      
-        ©
-        
-          2019 -
-        
-        2025
-         Ravikanth Chaganti 
-      
-      
-         · 
-        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
-      
-      
-    </section>
-  </footer>
+    </div>
+  </div>
+</nav>
 
-    </main>
 
-        
     
     
 
-  </body>
+    
+    
 
+    
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
 </html>

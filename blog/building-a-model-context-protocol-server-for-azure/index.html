@@ -1,163 +1,546 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Language" content="en">
-    <script src="https://ravichaganti.com/js/view.js"></script>
-    <link rel="stylesheet" href="https://ravichaganti.com/css/syntax.css">
-    <meta name="author" content="Ravikanth Chaganti">
-    <meta name="description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources.">
-    <meta name="keywords" content="blog,microsoft,mvp,powershell,automation,author, innovator, speaker">
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 
-    <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Building a Model Context Protocol server for Azure"/>
-<meta name="twitter:description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources."/>
-
-    <meta property="og:title" content="Building a Model Context Protocol server for Azure" />
-<meta property="og:description" content="The earlier article in this series introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/" />
-<meta property="article:published_time" content="2025-02-25T00:00:00+00:00" />
-<meta property="article:modified_time" content="2025-02-25T00:00:00+00:00" /><meta property="og:see_also" content="https://ravichaganti.com/blog/anthropic-model-context-protocol/" />
-<meta property="og:see_also" content="https://ravichaganti.com/blog/anthropic-model-context-protocol/" />
-<meta property="og:see_also" content="https://ravichaganti.com/blog/predicted-outputs-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/structured-output-azure-openai/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/" /><meta property="og:see_also" content="https://ravichaganti.com/blog/azure-openai-function-calling/" />
-
-
-
-    
-      <base href="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
-    
-    <title>
-  Building a Model Context Protocol server for Azure · Ravikanth Chaganti
-</title>
-
-    
-      <link rel="canonical" href="https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
-    
-
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather:300,700%7CSource+Code+Pro:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css" integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
-
-    
-      
-      
-      <link rel="stylesheet" href="https://ravichaganti.com/css/coder.min.897f2f761ca1c7df1614de4c088e4ebbb7f5984b520994e5ee0a0fc4ba52f7de.css" integrity="sha256-iX8vdhyhx98WFN5MCI5Ou7f1mEtSCZTl7goPxLpS994=" crossorigin="anonymous" media="screen" />
-    
-
-    
-
-    
-      
-        
-        
-        <link rel="stylesheet" href="https://ravichaganti.com/css/coder-dark.min.e78e80fc3a585a4d1c8fc7f58623b6ff852411e38431a9cd1792877ecaa160f6.css" integrity="sha256-546A/DpYWk0cj8f1hiO2/4UkEeOEManNF5KHfsqhYPY=" crossorigin="anonymous" media="screen" />
-      
-    
-
-    
-
-    
-
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://ravichaganti.com/images/favicon-16x16.png" sizes="16x16">
-
-    <meta name="generator" content="Hugo 0.73.0" />
-  </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  
-    
-  
-  
-    <body onload="getViews( &#34;https://ravichaganti.com/blog/building-a-model-context-protocol-server-for-azure/&#34; )" class="colorscheme-auto">
-  
-    <main class="wrapper">
-      <nav class="navigation">
-  <section class="container">
-    <a class="navigation-title" href="https://ravichaganti.com/">
-      Ravikanth Chaganti
-    </a>
-    
-    <input type="checkbox" id="menu-toggle" />
-    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
-    <ul class="navigation-list">
-      
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/about/">About</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/blog/">Blog</a>
-          </li>
-        
-          <li class="navigation-item">
-            <a class="navigation-link" href="https://ravichaganti.com/books/">Books</a>
-          </li>
-        
-      
-      
-    </ul>
-    
-  </section>
-</nav>
+  <title>Building a Model Context Protocol server for Azure | Ravikanth Chaganti</title>
 
+  
+  <meta name="description" content="The earlier article in this series introduced Anthropic&rsquo;s Model Context Protocol. It presented an example of building a simple MCP server for use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend our knowledge of creating MCP servers to achieve more practical applications. We will build an MCP server to interact with Microsoft Azure resources.
+Anthropic made bootstrap MCP server development easy by providing the create-mcp-server package. To get started, you need to install this locally as a tool.">
+  <meta name="author" content="Ravikanth Chaganti">
 
-      <div class="content">
-        
-  <section class="container post">
-    <article>
-      <header>
-        <div class="post-title">
-          <h1 class="title">Building a Model Context Protocol server for Azure</h1>
-        </div>
-        <div class="post-meta">
-          <div class="date">
-            <span class="posted-on">
-              <i class="fas fa-calendar"></i>
-              <time datetime='2025-02-25T00:00:00Z'>
-                February 25, 2025
-              </time>
-            </span>
-            <span class="reading-time">
-              <i class="fas fa-clock"></i>
-              8-minute read
-            </span>
+  
+  <meta property="og:title" content="Building a Model Context Protocol server for Azure">
+  <meta property="og:description" content="The earlier article in this series introduced Anthropic&rsquo;s Model Context Protocol. It presented an example of building a simple MCP server for use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend our knowledge of creating MCP servers to achieve more practical applications. We will build an MCP server to interact with Microsoft Azure resources.
+Anthropic made bootstrap MCP server development easy by providing the create-mcp-server package. To get started, you need to install this locally as a tool.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravikanthchaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
+  
+  <meta property="og:image" content="https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&amp;h=400&amp;fit=crop">
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Building a Model Context Protocol server for Azure">
+  <meta name="twitter:description" content="The earlier article in this series introduced Anthropic&rsquo;s Model Context Protocol. It presented an example of building a simple MCP server for use with the Claude desktop application. The hello-world example was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend our knowledge of creating MCP servers to achieve more practical applications. We will build an MCP server to interact with Microsoft Azure resources.
+Anthropic made bootstrap MCP server development easy by providing the create-mcp-server package. To get started, you need to install this locally as a tool.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&amp;h=400&amp;fit=crop">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravikanthchaganti.com/blog/building-a-model-context-protocol-server-for-azure/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravikanthchaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravikanthchaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">Cloud Native</span>
+            <span class="text-sm font-semibold">Agentic AI</span>
+            <span class="text-sm font-semibold">Infrastructure</span>
           </div>
-          <div class="categories">
-  <i class="fas fa-folder"></i>
-    <a href="https://ravichaganti.com/categories/mcp/">mcp</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/agents/">agents</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/python/">python</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/categories/azure/">azure</a></div>
+        </a>
+      </div>
 
-          <div class="tags">
-  <i class="fas fa-tag"></i>
-    <a href="https://ravichaganti.com/tags/mcp/">mcp</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/agents/">agents</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/python/">python</a>
-      <span class="separator">•</span>
-    <a href="https://ravichaganti.com/tags/azure/">azure</a></div>
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="/slides/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Slides
+          </a>
+        
+          <a href="/videos/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Videos
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
 
         </div>
-      </header>
-      <hr>
-      <div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden">
+          
+<div class="relative">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="Search articles..."
+    class="w-64 px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results" class="absolute top-full mt-2 w-96 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-96 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  if (searchInput && searchResults) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      
+      const results = headerFuse.search(query);
+
+      
+      if (results.length === 0) {
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No results found</div>';
+        searchResults.classList.remove('hidden');
+        return;
+      }
+
+      searchResults.innerHTML = results.slice(0, 5).map(result => {
+        const item = result.item;
+        const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        return `
+          <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 no-underline">
+            <div class="font-medium text-sm text-gray-900 mb-1">${item.title}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-gray-500">${date}</span>
+              ${item.categories ? item.categories.slice(0, 2).map(cat => `
+                <span class="inline-block px-1.5 py-0.5 text-xs rounded" style="background-color: rgba(30, 64, 175, 0.1); color: #1e40af;">
+                  ${cat}
+                </span>
+              `).join('') : ''}
+            </div>
+            ${item.excerpt ? `<p class="text-xs text-gray-600 line-clamp-2">${item.excerpt}</p>` : ''}
+          </a>
+        `;
+      }).join('');
+
+      searchResults.classList.remove('hidden');
+    });
+
+    
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchResults.classList.add('hidden');
+        searchInput.blur();
+      }
+    });
+  }
+})();
+</script>
+
+        </div>
+      </div>
+
+      
+      <button id="mobile-menu-toggle" class="md:hidden p-2 hover:bg-gray-100 rounded" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Books
+        </a>
+      
+        <a href="/slides/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Slides
+        </a>
+      
+        <a href="/videos/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          Videos
+        </a>
+      
+        <a href="/about/" class="block py-2 text-gray-700 hover:text-primary transition-colors no-underline">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const socialIcons = document.getElementById('social-icons');
+    const searchBox = document.getElementById('search-box');
+    socialIcons?.classList.toggle('hidden');
+    searchBox?.classList.toggle('hidden');
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 py-12">
+  <div class="max-w-4xl mx-auto">
+    
+    <header class="mb-8">
+      
+      <nav class="text-sm mb-4">
+        <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+          <li><a href="https://ravikanthchaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><span class="mx-2">/</span></li>
+          <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+          
+            <li><span class="mx-2">/</span></li>
+            <li><a href="/categories/mcp/" class="hover:text-primary dark:hover:text-blue-400">mcp</a></li>
+          
+        </ol>
+      </nav>
+
+      
+      <div class="flex flex-wrap items-center gap-4 text-gray-600 dark:text-dark-text-secondary mb-6">
+        
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <time datetime="2025-02-25">February 25, 2025</time>
+        </div>
+
         
         
-        <p>The <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">earlier article</a> in this <a href="https://ravichaganti.com/series/mcp/">series</a> introduced the Model Context Protocol by Anthropic. It showed an example of building a simple MCP server that you can use with the Claude desktop application. The <a href="https://github.com/rchaganti/mcp-servers/tree/main/hello-world">hello-world example</a> was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend that knowledge of creating MCP servers to do something more useful. We shall build an MCP server for interacting with Microsoft Azure resources.</p>
-<p>Anthropic made bootstrap MCP server development easy by providing the <code>create-mcp-server</code> package. To get started, you need to install this as a tool locally.</p>
+          <span>•</span>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>8 min read</span>
+          </div>
+        
+
+        
+        
+      </div>
+
+      
+      <div class="flex flex-wrap gap-2 mb-6">
+        
+          
+            <a href="/categories/mcp/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              mcp
+            </a>
+          
+            <a href="/categories/agents/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              agents
+            </a>
+          
+            <a href="/categories/python/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              python
+            </a>
+          
+            <a href="/categories/azure/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              azure
+            </a>
+          
+        
+        
+          
+            <a href="/series/model-context-protocol/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Model Context Protocol
+            </a>
+          
+        
+      </div>
+
+      
+      <div class="mb-8 rounded-lg overflow-hidden shadow-lg">
+        
+        <img src="https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&amp;h=400&amp;fit=crop" alt="Building a Model Context Protocol server for Azure" class="w-full h-auto">
+      </div>
+
+      
+      
+        <div class="text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-6 py-2 mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
+          Extend knowledge of creating MCP servers to achieve more practical applications
+        </div>
+      
+    </header>
+
+    
+    
+
+
+  
+  
+  
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Model Context Protocol
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 2-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravikanthchaganti.com/blog/anthropic-model-context-protocol/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Model Context Protocol by Anthropic for connecting AI models to data
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 1, 2025</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Building a Model Context Protocol server for Azure
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 25, 2025</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="https://ravikanthchaganti.com/blog/anthropic-model-context-protocol/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Model Context Protocol by Anthropic for connecting AI models to data</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
+
+
+
+    
+    
+
+
+
+    
+    <div class="prose prose-lg max-w-none mb-12">
+      <p>The <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">earlier article</a> in this <a href="https://ravichaganti.com/series/mcp/">series</a> introduced Anthropic&rsquo;s Model Context Protocol. It presented an example of building a simple MCP server for use with the Claude desktop application. The <a href="https://github.com/rchaganti/mcp-servers/tree/main/hello-world">hello-world example</a> was a very basic implementation of an MCP server. In today&rsquo;s article, we shall extend our knowledge of creating MCP servers to achieve more practical applications. We will build an MCP server to interact with Microsoft Azure resources.</p>
+<p>Anthropic made bootstrap MCP server development easy by providing the <code>create-mcp-server</code> package. To get started, you need to install this locally as a tool.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -165,18 +548,18 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Using uvx (recommended)</span>
-uvx create-mcp-server
-
-<span class="c1"># Or using pip</span>
-pip install create-mcp-server
-create-mcp-server
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># Using uvx (recommended)</span>
+</span></span><span class="line"><span class="cl">uvx create-mcp-server
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Or using pip</span>
+</span></span><span class="line"><span class="cl">pip install create-mcp-server
+</span></span><span class="line"><span class="cl">create-mcp-server
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>To create a new MCP server, run the <code>uvx create-mcp-server</code> command and follow the prompts on the screen.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -223,57 +606,57 @@ create-mcp-server
 </span><span class="lnt">45
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">PS C:<span class="se">\G</span>itHub&gt; uvx create-mcp-server
-Creating a new MCP server project using uv.                                                                                                                                                                                              
-This will <span class="nb">set</span> up a Python project with MCP dependency.
-
-Let<span class="err">&#39;</span>s begin!
-
-Project name <span class="o">(</span>required<span class="o">)</span>: azure-mcp-server
-Project description <span class="o">[</span>A MCP server project<span class="o">]</span>: An MCP server to interact with Azure resources
-Project version <span class="o">[</span>0.1.0<span class="o">]</span>: 
-Project will be created at: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
-Is this correct? <span class="o">[</span>Y/n<span class="o">]</span>: Y
-Using CPython 3.13.1 interpreter at: C:<span class="se">\P</span>rogram Files<span class="se">\P</span>ython313<span class="se">\p</span>ython.exe
-Creating virtual environment at: .venv
-Resolved <span class="m">21</span> packages in 466ms
-      Built azure-mcp-server @ file:///C:/GitHub/azure-mcp-server
-Prepared <span class="m">2</span> packages in 2.02s
-Installed <span class="m">21</span> packages in 207ms
- + annotated-types<span class="o">==</span>0.7.0
- + <span class="nv">anyio</span><span class="o">==</span>4.8.0
- + azure-mcp-server<span class="o">==</span>0.1.0 <span class="o">(</span>from file:///C:/GitHub/azure-mcp-server<span class="o">)</span>
- + <span class="nv">certifi</span><span class="o">==</span>2025.1.31
- + <span class="nv">click</span><span class="o">==</span>8.1.8
- + <span class="nv">colorama</span><span class="o">==</span>0.4.6
- + <span class="nv">h11</span><span class="o">==</span>0.14.0
- + <span class="nv">httpcore</span><span class="o">==</span>1.0.7
- + <span class="nv">httpx</span><span class="o">==</span>0.28.1
- + httpx-sse<span class="o">==</span>0.4.0
- + <span class="nv">idna</span><span class="o">==</span>3.10
- + <span class="nv">mcp</span><span class="o">==</span>1.3.0
- + <span class="nv">pydantic</span><span class="o">==</span>2.10.6
- + pydantic-core<span class="o">==</span>2.27.2
- + pydantic-settings<span class="o">==</span>2.8.1
- + python-dotenv<span class="o">==</span>1.0.1
- + <span class="nv">sniffio</span><span class="o">==</span>1.3.1
- + sse-starlette<span class="o">==</span>2.2.1
- + <span class="nv">starlette</span><span class="o">==</span>0.46.0
- + typing-extensions<span class="o">==</span>4.12.2
- + <span class="nv">uvicorn</span><span class="o">==</span>0.34.0
-
-Claude.app detected. Would you like to install the server into Claude.app now? <span class="o">[</span>Y/n<span class="o">]</span>: Y
-Settings file location: C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\A</span>ppData<span class="se">\R</span>oaming<span class="se">\C</span>laude<span class="se">\c</span>laude_desktop_config.json
-✅ Created project azure-mcp-server in azure-mcp-server
-ℹ️ To install dependencies run:
-   <span class="nb">cd</span> azure-mcp-server
-   uv sync --dev --all-extras
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\G</span>itHub&gt; uvx create-mcp-server
+</span></span><span class="line"><span class="cl">Creating a new MCP server project using uv.                                                                                                                                                                                              
+</span></span><span class="line"><span class="cl">This will <span class="nb">set</span> up a Python project with MCP dependency.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Let<span class="err">&#39;</span>s begin!
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Project name <span class="o">(</span>required<span class="o">)</span>: azure-mcp-server
+</span></span><span class="line"><span class="cl">Project description <span class="o">[</span>A MCP server project<span class="o">]</span>: An MCP server to interact with Azure resources
+</span></span><span class="line"><span class="cl">Project version <span class="o">[</span>0.1.0<span class="o">]</span>: 
+</span></span><span class="line"><span class="cl">Project will be created at: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
+</span></span><span class="line"><span class="cl">Is this correct? <span class="o">[</span>Y/n<span class="o">]</span>: Y
+</span></span><span class="line"><span class="cl">Using CPython 3.13.1 interpreter at: C:<span class="se">\P</span>rogram Files<span class="se">\P</span>ython313<span class="se">\p</span>ython.exe
+</span></span><span class="line"><span class="cl">Creating virtual environment at: .venv
+</span></span><span class="line"><span class="cl">Resolved <span class="m">21</span> packages in 466ms
+</span></span><span class="line"><span class="cl">      Built azure-mcp-server @ file:///C:/GitHub/azure-mcp-server
+</span></span><span class="line"><span class="cl">Prepared <span class="m">2</span> packages in 2.02s
+</span></span><span class="line"><span class="cl">Installed <span class="m">21</span> packages in 207ms
+</span></span><span class="line"><span class="cl"> + annotated-types<span class="o">==</span>0.7.0
+</span></span><span class="line"><span class="cl"> + <span class="nv">anyio</span><span class="o">==</span>4.8.0
+</span></span><span class="line"><span class="cl"> + azure-mcp-server<span class="o">==</span>0.1.0 <span class="o">(</span>from file:///C:/GitHub/azure-mcp-server<span class="o">)</span>
+</span></span><span class="line"><span class="cl"> + <span class="nv">certifi</span><span class="o">==</span>2025.1.31
+</span></span><span class="line"><span class="cl"> + <span class="nv">click</span><span class="o">==</span>8.1.8
+</span></span><span class="line"><span class="cl"> + <span class="nv">colorama</span><span class="o">==</span>0.4.6
+</span></span><span class="line"><span class="cl"> + <span class="nv">h11</span><span class="o">==</span>0.14.0
+</span></span><span class="line"><span class="cl"> + <span class="nv">httpcore</span><span class="o">==</span>1.0.7
+</span></span><span class="line"><span class="cl"> + <span class="nv">httpx</span><span class="o">==</span>0.28.1
+</span></span><span class="line"><span class="cl"> + httpx-sse<span class="o">==</span>0.4.0
+</span></span><span class="line"><span class="cl"> + <span class="nv">idna</span><span class="o">==</span>3.10
+</span></span><span class="line"><span class="cl"> + <span class="nv">mcp</span><span class="o">==</span>1.3.0
+</span></span><span class="line"><span class="cl"> + <span class="nv">pydantic</span><span class="o">==</span>2.10.6
+</span></span><span class="line"><span class="cl"> + pydantic-core<span class="o">==</span>2.27.2
+</span></span><span class="line"><span class="cl"> + pydantic-settings<span class="o">==</span>2.8.1
+</span></span><span class="line"><span class="cl"> + python-dotenv<span class="o">==</span>1.0.1
+</span></span><span class="line"><span class="cl"> + <span class="nv">sniffio</span><span class="o">==</span>1.3.1
+</span></span><span class="line"><span class="cl"> + sse-starlette<span class="o">==</span>2.2.1
+</span></span><span class="line"><span class="cl"> + <span class="nv">starlette</span><span class="o">==</span>0.46.0
+</span></span><span class="line"><span class="cl"> + typing-extensions<span class="o">==</span>4.12.2
+</span></span><span class="line"><span class="cl"> + <span class="nv">uvicorn</span><span class="o">==</span>0.34.0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Claude.app detected. Would you like to install the server into Claude.app now? <span class="o">[</span>Y/n<span class="o">]</span>: Y
+</span></span><span class="line"><span class="cl">Settings file location: C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\A</span>ppData<span class="se">\R</span>oaming<span class="se">\C</span>laude<span class="se">\c</span>laude_desktop_config.json
+</span></span><span class="line"><span class="cl">✅ Created project azure-mcp-server in azure-mcp-server
+</span></span><span class="line"><span class="cl">ℹ️ To install dependencies run:
+</span></span><span class="line"><span class="cl">   <span class="nb">cd</span> azure-mcp-server
+</span></span><span class="line"><span class="cl">   uv sync --dev --all-extras
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This command sets up all the dependencies needed to build an MCP server. Depending on your choice, it will also add the MCP server to the Claude Desktop configuration. The folder structure will be as follows.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -290,27 +673,27 @@ Settings file location: C:<span class="se">\U</span>sers<span class="se">\r</spa
 </span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">PS C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server&gt; ls
-
-    Directory: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
-d-----        23-02-2025     16:26                .venv
-d-----        23-02-2025     16:26                src
--a----        23-02-2025     19:04             <span class="m">66</span> .gitattributes
--a----        23-02-2025     19:04           <span class="m">3238</span> .gitignore
--a----        23-02-2025     16:26              <span class="m">5</span> .python-version
--a----        23-02-2025     19:04           <span class="m">1088</span> LICENSE
--a----        23-02-2025     17:31            <span class="m">553</span> pyproject.toml
--a----        23-02-2025     19:04            <span class="m">146</span> README.md
--a----        23-02-2025     17:31          <span class="m">46157</span> uv.lock
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server&gt; ls
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    Directory: C:<span class="se">\G</span>itHub<span class="se">\a</span>zure-mcp-server
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Mode                 LastWriteTime         Length Name
+</span></span><span class="line"><span class="cl">----                 -------------         ------ ----
+</span></span><span class="line"><span class="cl">d-----        23-02-2025     16:26                .venv
+</span></span><span class="line"><span class="cl">d-----        23-02-2025     16:26                src
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     19:04             <span class="m">66</span> .gitattributes
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     19:04           <span class="m">3238</span> .gitignore
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     16:26              <span class="m">5</span> .python-version
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     19:04           <span class="m">1088</span> LICENSE
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     17:31            <span class="m">553</span> pyproject.toml
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     19:04            <span class="m">146</span> README.md
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     17:31          <span class="m">46157</span> uv.lock
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>src\azure_mcp_server</code> should contain all the business logic you need to enable Azure resource management integration. By default, it contains a sample MCP Server used to manage notes.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -322,60 +705,60 @@ d-----        23-02-2025     16:26                src
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">PS C:\GitHub\azure-mcp-server\src\azure_mcp_server&gt; ls
-
-    Directory: C:\GitHub\azure-mcp-server\src\azure_mcp_server
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
-d-----        04-03-2025     08:27                __pycache__
--a----        23-02-2025     17:53            228 .env
--a----        04-03-2025     08:27           6561 server.py
--a----        23-02-2025     16:26            220 __init__.py
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">PS C:\GitHub\azure-mcp-server\src\azure_mcp_server&gt; ls
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    Directory: C:\GitHub\azure-mcp-server\src\azure_mcp_server
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Mode                 LastWriteTime         Length Name
+</span></span><span class="line"><span class="cl">----                 -------------         ------ ----
+</span></span><span class="line"><span class="cl">d-----        04-03-2025     08:27                __pycache__
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     17:53            228 .env
+</span></span><span class="line"><span class="cl">-a----        04-03-2025     08:27           6561 server.py
+</span></span><span class="line"><span class="cl">-a----        23-02-2025     16:26            220 __init__.py
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This sample server implementation is a great start to learning how to implement different capabilities of an MCP server. We shall implement the tools&rsquo; capability and, in the future, look at implementing prompts and resources as well.</p>
 <p>You must decide how to authenticate to interact with the Azure resource management API. For the purpose of the demonstration, I have used client secret-based authentication. I documented these <a href="https://ravichaganti.com/blog/azure-sdk-for-go-authentication-methods-environmental-credential/">requirements in an earlier article</a>. The client secret credential is better created by adding the keys and secrets as environment variables. We can use the .env file in the Python project to make this easy. You need to add the following key-value pairs to this file.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-ini" data-lang="ini"><span class="na">AZURE_SUBSCRIPTION_ID</span><span class="o">=</span><span class="s">Sub-ID</span>
-<span class="na">AZURE_TENANT_ID</span><span class="o">=</span><span class="s">Tenant-ID</span>
-<span class="na">AZURE_CLIENT_ID</span><span class="o">=</span><span class="s">Client-ID</span>
-<span class="na">AZURE_CLIENT_SECRET</span><span class="o">=</span><span class="s">Secret</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">AZURE_SUBSCRIPTION_ID</span><span class="o">=</span><span class="s">Sub-ID</span>
+</span></span><span class="line"><span class="cl"><span class="na">AZURE_TENANT_ID</span><span class="o">=</span><span class="s">Tenant-ID</span>
+</span></span><span class="line"><span class="cl"><span class="na">AZURE_CLIENT_ID</span><span class="o">=</span><span class="s">Client-ID</span>
+</span></span><span class="line"><span class="cl"><span class="na">AZURE_CLIENT_SECRET</span><span class="o">=</span><span class="s">Secret</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>A .env file requires the load_dotenv function from the python-dotenv package, so add that as a dependency.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">uv add python-dotenv
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">uv add python-dotenv
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We will also need the Azure resource management packages.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">uv add azure.identity
-uv add azure-mgmt-resource
-uv add azure-mgmt-subscription
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">uv add azure.identity
+</span></span><span class="line"><span class="cl">uv add azure-mgmt-resource
+</span></span><span class="line"><span class="cl">uv add azure-mgmt-subscription
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>With all the package dependencies added to the project, we can move toward adding the necessary tools. This is done in <code>server.py</code>. Before adding the code related to the tools, let us first add the functions needed to talk to the Azure resource management API.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -450,86 +833,86 @@ uv add azure-mgmt-subscription
 </span><span class="lnt">73
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">async</span> <span class="k">def</span> <span class="nf">list_subscriptions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-    <span class="s2">&#34;&#34;&#34;List all subscriptions in the account.
-</span><span class="s2">    
-</span><span class="s2">    Args:
-</span><span class="s2">        None
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
-    <span class="n">subscription_client</span> <span class="o">=</span> <span class="n">SubscriptionClient</span><span class="p">(</span><span class="n">credential</span><span class="p">)</span>
-    <span class="n">subscriptions</span> <span class="o">=</span> <span class="n">subscription_client</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
-
-    <span class="n">subscription_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">subscriptions</span><span class="p">):</span>
-        <span class="n">subscription_info</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">subscription_id</span><span class="p">,</span>
-            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">subscription_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription_info</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">subscription_list</span>
-
-<span class="n">async</span> <span class="k">def</span> <span class="nf">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-    <span class="s2">&#34;&#34;&#34;List all resource groups in the subscription.
-</span><span class="s2">    
-</span><span class="s2">    Args:
-</span><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
-
-    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
-    <span class="n">group_list</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resource_groups</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
-
-    <span class="n">resource_groups</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_list</span><span class="p">):</span>
-        <span class="n">resource</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">resource_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">resource_groups</span>
-
-<span class="n">async</span> <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-    <span class="s2">&#34;&#34;&#34;List all resources in the resource group.
-</span><span class="s2">    
-</span><span class="s2">    Args:
-</span><span class="s2">        resource_group (str): The resource group name.
-</span><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
-
-    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
-    <span class="n">resources</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">list_by_resource_group</span><span class="p">(</span><span class="n">resource_group</span><span class="p">)</span>
-
-    <span class="n">resource_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">resources</span><span class="p">):</span>
-        <span class="n">resource_info</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">resource_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource_info</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">resource_list</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">list_subscriptions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;List all subscriptions in the account.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Args:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        None
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">subscription_client</span> <span class="o">=</span> <span class="n">SubscriptionClient</span><span class="p">(</span><span class="n">credential</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">subscriptions</span> <span class="o">=</span> <span class="n">subscription_client</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">subscription_list</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">subscriptions</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">subscription_info</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">subscription_id</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">subscription</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">subscription_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription_info</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">subscription_list</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;List all resource groups in the subscription.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Args:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">group_list</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resource_groups</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">resource_groups</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">group_list</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">resource</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">resource_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">resource_groups</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;List all resources in the resource group.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Args:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        resource_group (str): The resource group name.
+</span></span></span><span class="line"><span class="cl"><span class="s2">        subscription_id (str): The subscription ID. This is an optional parameter.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span> <span class="o">=</span> <span class="n">EnvironmentCredential</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">subscription_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;subscription_id must be provided or set as an environment variable.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_SUBSCRIPTION_ID&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">resource_client</span> <span class="o">=</span> <span class="n">ResourceManagementClient</span><span class="p">(</span><span class="n">credential</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">resources</span> <span class="o">=</span> <span class="n">resource_client</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">list_by_resource_group</span><span class="p">(</span><span class="n">resource_group</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">resource_list</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">resources</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">resource_info</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;location&#34;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">resource_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource_info</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">resource_list</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>These three functions are a basic implementation for getting a list of subscriptions, all resource groups in a subscription, and all resources within a resource group. You must have the docstring inside each function to describe what the function is about and its arguments, and outputs. The code within these functions is self-explanatory. If you need a quick tour of Azure resource management in Python, look at the <a href="https://learn.microsoft.com/en-us/azure/developer/python/sdk/azure-sdk-overview">Azure Python SDK</a>.</p>
 <p>An MCP server is a JSON RPC server. Every MCP server exposes the list and call tool endpoints. These are defined using the <code>handle_list_tools()</code> and <code>handle_call_tool()</code> functions.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -613,371 +996,310 @@ uv add azure-mgmt-subscription
 </span><span class="lnt">82
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="nd">@server.list_tools</span><span class="p">()</span>
-<span class="n">async</span> <span class="k">def</span> <span class="nf">handle_list_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">]:</span>
-    <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">    List available tools.
-</span><span class="s2">    Each tool specifies its arguments using JSON Schema validation.
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-subscriptions&#34;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all Azure subscriptions for the authenticated user.&#34;</span><span class="p">,</span>
-            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
-                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{},</span>
-                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
-            <span class="p">},</span>
-        <span class="p">),</span>
-        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resource-groups&#34;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resource groups in an Azure subscription.&#34;</span><span class="p">,</span>
-            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
-                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
-                <span class="p">},</span>
-                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
-            <span class="p">},</span>
-        <span class="p">),</span>
-        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resources&#34;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resources in a resource group.&#34;</span><span class="p">,</span>
-            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
-                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
-                    <span class="s2">&#34;resource_group&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">}</span>
-                <span class="p">},</span>
-                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;resource_group&#34;</span><span class="p">],</span>
-            <span class="p">},</span>
-        <span class="p">)</span>                
-    <span class="p">]</span>
-
-<span class="nd">@server.call_tool</span><span class="p">()</span>
-<span class="n">async</span> <span class="k">def</span> <span class="nf">handle_call_tool</span><span class="p">(</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="bp">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">TextContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">ImageContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">EmbeddedResource</span><span class="p">]:</span>
-    <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">    Handle tool execution requests.
-</span><span class="s2">    Tools can modify server state and notify clients of changes.
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-subscriptions&#34;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_subscriptions</span><span class="p">()</span>
-        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Subscriptions:</span><span class="se">\n</span><span class="s2">&#34;</span>
-        
-        <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
-            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;ID: {subscription[&#39;id&#39;]}, Name: {subscription[&#39;name&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
-    
-    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resource-groups&#34;</span><span class="p">:</span>
-        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
-        <span class="n">respText</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;Resource Groups in {subscription_id}:</span><span class="se">\n</span><span class="s2">&#34;</span>
-        
-        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
-            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;Name: {group[&#39;name&#39;]}, Location: {group[&#39;location&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
-    
-    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resources&#34;</span><span class="p">:</span>
-        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-        <span class="n">resource_group</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;resource_group&#34;</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">await</span> <span class="n">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
-        <span class="n">respText</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;Resources in {resource_group} in the {subscription_id}:</span><span class="se">\n</span><span class="s2">&#34;</span>
-
-        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-            <span class="n">respText</span> <span class="o">+=</span> <span class="n">f</span><span class="s2">&#34;Name: {resource[&#39;name&#39;]}, Type: {resource[&#39;type&#39;]}, Location: {resource[&#39;location&#39;]}</span><span class="se">\n</span><span class="s2">&#34;</span>
-    
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Invalid tool name.&#34;</span>
-    
-    <span class="k">return</span> <span class="p">[</span>
-            <span class="n">types</span><span class="o">.</span><span class="n">TextContent</span><span class="p">(</span>
-                <span class="nb">type</span><span class="o">=</span><span class="s2">&#34;text&#34;</span><span class="p">,</span>
-                <span class="n">text</span><span class="o">=</span><span class="n">respText</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@server.list_tools</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">handle_list_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    List available tools.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Each tool specifies its arguments using JSON Schema validation.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-subscriptions&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all Azure subscriptions for the authenticated user.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{},</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resource-groups&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resource groups in an Azure subscription.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">types</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;list-resources&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;List all resources in a resource group.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="s2">&#34;subscription_id&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">                    <span class="s2">&#34;resource_group&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;string&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;required&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;resource_group&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>                
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@server.call_tool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">handle_call_tool</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">TextContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">ImageContent</span> <span class="o">|</span> <span class="n">types</span><span class="o">.</span><span class="n">EmbeddedResource</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Handle tool execution requests.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Tools can modify server state and notify clients of changes.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-subscriptions&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">list_subscriptions</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Subscriptions:</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">respText</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;ID: </span><span class="si">{</span><span class="n">subscription</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, Name: </span><span class="si">{</span><span class="n">subscription</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resource-groups&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">list_resource_groups</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">respText</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Resource Groups in </span><span class="si">{</span><span class="n">subscription_id</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">respText</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;Name: </span><span class="si">{</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, Location: </span><span class="si">{</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&#34;list-resources&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">subscription_id</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;subscription_id&#34;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">resource_group</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;resource_group&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">list_resources</span><span class="p">(</span><span class="n">resource_group</span><span class="p">,</span> <span class="n">subscription_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">respText</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Resources in </span><span class="si">{</span><span class="n">resource_group</span><span class="si">}</span><span class="s2"> in the </span><span class="si">{</span><span class="n">subscription_id</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">respText</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;Name: </span><span class="si">{</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, Type: </span><span class="si">{</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, Location: </span><span class="si">{</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">respText</span> <span class="o">=</span> <span class="s2">&#34;Invalid tool name.&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">            <span class="n">types</span><span class="o">.</span><span class="n">TextContent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">type</span><span class="o">=</span><span class="s2">&#34;text&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">text</span><span class="o">=</span><span class="n">respText</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">]</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>These list and call functions are decorated using the <code>list_tools()</code> and <code>call_tools()</code> decorators respectively. The <code>handle_list_tools()</code>  returns a list of tools where each element is of type <code>types.Tool</code>. The <code>handle_call_tool()</code> returns the output from the tool call as one of the return types specified in the function signature. Depending on the return type, you must construct the value. In this example, all tools call will respond with a dictionary. This response then gets converted to text content and is returned as <code>types.TextContent</code> type. This type requires <code>type</code> and <code>text</code> properties.</p>
 <p>As the <code>create-mcp-server</code> command added the tool to the Claude Desktop application, you must be able to see the tools ready for use.</p>
-<p>
-<link rel="stylesheet" href="https://ravichaganti.com/css/hugo-easy-gallery.css" />
-<div class="box" style="max-width:450px">
-  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-    <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/azure-mcp-01.png" />
-    </div>
-    <a href="https://ravichaganti.com/images/azure-mcp-01.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
+<p><figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
+  <a href="/images/azure-mcp-01.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/azure-mcp-01.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
  
-
-
-
-  
-
-
-<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-<script src="https://ravichaganti.com/js/load-photoswipe.js"></script>
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.css" integrity="sha256-sCl5PUOGMLfFYctzDW3MtRib0ctyUvI9Qsmq2wXOeBY=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/default-skin/default-skin.min.css" integrity="sha256-BFeI1V+Vh1Rk37wswuOYn5lsTcaU96hGaI7OUVCLjPc=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe.min.js" integrity="sha256-UplRCs9v4KXVJvVY+p+RSo5Q4ilAUXh7kpjyIP5odyc=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.1/photoswipe-ui-default.min.js" integrity="sha256-PWHOlUzc96pMc8ThwRIXPn8yH4NOLu42RQ0b9SpnpFk=" crossorigin="anonymous"></script>
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-</p>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+ 
+ 
+ <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+ 
+ 
+ <script>
+   document.addEventListener('DOMContentLoaded', function() {
+     const lightbox = GLightbox({
+       selector: '.glightbox',
+       touchNavigation: true,
+       loop: true,
+       autoplayVideos: true,
+       zoomable: true,
+       draggable: true,
+       closeButton: true,
+       moreLength: 0
+     });
+   });
+ </script></p>
 <p>Once you confirm the available tools, you can try the following prompts.</p>
 <ul>
 <li>List all subscriptions I have access to in my Azure account</li>
 <li>Do I have any resource groups in the east-us region?</li>
 <li>List all virtual machines provisioned in my Research subscription.</li>
 </ul>
-<p>
-
-<div class="box" style="max-width:450px">
-  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-    <div class="img">
-      <img itemprop="thumbnail" src="https://ravichaganti.com/images/azure-mcp-02.png" />
-    </div>
-    <a href="https://ravichaganti.com/images/azure-mcp-02.png" itemprop="contentUrl"></a>
-  </figure>
-</div>
- 
-
-
-</p>
+<p><figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
+  <a href="/images/azure-mcp-02.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/azure-mcp-02.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+ </p>
 <p>When you prompt, Claude will ask permission to use the available tools. If allowed, it can call the tools and get you the response.</p>
 <p>With MCP, the possibilities are endless. I am developing the <a href="https://github.com/rchaganti/azure-mcp-server">Azure MCP server</a> as an open-source project, and I will continue to add more tools, prompts, and resources to it. Do check it out and leave a comment.</p>
 
-        
+    </div>
 
-<style>
-#share-buttons {display: inline-block; vertical-align: middle; }
-#share-buttons:after {content: ""; display: block; clear: both;}
-#share-buttons > div {
-position: relative;
-text-align: left; 
-height: 36px; 
-width: 32px; 
-float: left; 
-text-align: center;
-}
-#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
-#share-buttons > div:hover {cursor: pointer;}
-#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
-#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
-#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
-#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
-#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
-#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
-#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
-#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
-#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
-#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
-#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
-#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
-#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
-</style>
-
-<span style="color: rgb(77, 77, 95);">Share on: </span><div id="share-buttons">
-<div class="facebook" title="Share this on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"/></svg></div>
-<div class="twitter" title="Share this on Twitter" onclick="window.open('https://twitter.com/intent/tweet?text=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"/></svg></div>
-<div class="linkedin" title="Share this on Linkedin" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"/></svg></div>
-<div class="mail" title="Share this through Email" onclick="window.open('mailto:?&body=https:\/\/ravichaganti.com\/blog\/building-a-model-context-protocol-server-for-azure\/');"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg></div>
-</div>
-        <script src="https://giscus.app/client.js"
-        data-repo="rchaganti/rchaganti.github.io"
-        data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-        data-category="Announcements"
-        data-category-id="DIC_kwDOEIN4I84CS4rW"
-        data-mapping="pathname"
-        data-strict="1"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="en"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
+    
+    
+      <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 dark:text-dark-text-secondary mb-3">Tags:</h3>
+        <div class="flex flex-wrap gap-2">
+          
+            <a href="/tags/mcp/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #mcp
+            </a>
+          
+            <a href="/tags/agents/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #agents
+            </a>
+          
+            <a href="/tags/python/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #python
+            </a>
+          
+            <a href="/tags/azure/" class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-dark-bg-tertiary text-gray-700 dark:text-dark-text rounded hover:bg-gray-200 dark:hover:bg-dark-border transition-colors no-underline">
+              #azure
+            </a>
+          
+        </div>
       </div>
+    
+
+    
+    
 
 
-      <footer>
-        
 
-<section class="see-also">
+    
+    
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
   
     
     
     
-      <h3>See also in mcp</h3>
-      <nav>
-        <ul>
+
+    
+    
+    
+
+    
+    
+    
+      
+    
+      
+        
+      
+    
+
+    
+    
+      
         
         
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">Model Context Protocol by Anthropic for connecting AI models to data</a>
-            </li>
-          
-        
-        </ul>
-      </nav>
+      
+      
     
   
-    
-    
-    
-      <h3>See also in agents</h3>
-      <nav>
-        <ul>
-        
-        
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/anthropic-model-context-protocol/">Model Context Protocol by Anthropic for connecting AI models to data</a>
-            </li>
-          
-        
-        </ul>
-      </nav>
-    
+
   
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravikanthchaganti.com/blog/anthropic-model-context-protocol/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Model Context Protocol: Model Context Protocol by Anthropic for connecting AI models to data">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Model Context Protocol</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Model Context Protocol by Anthropic for connecting AI models to data
+              </h3>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
+
+    
+    <div class="flex">
+      
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</nav>
+
+
     
     
+
     
-      <h3>See also in azure</h3>
-      <nav>
-        <ul>
-        
-        
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/predicted-outputs-azure-openai/">Predicted outputs in Azure OpenAI</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/parallel-tool-calling-azure-openai/">Parallel tool calling in Azure OpenAI</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/structured-output-azure-openai/">Structured output in Azure OpenAI</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-openai-function-calling-with-multiple-tools/">Implementing multiple tool/function calling when using Azure OpenAI</a>
-            </li>
-          
-        
-          
-            <li>
-              <a href="https://ravichaganti.com/blog/azure-openai-function-calling/">Implementing tool/function calling when using Azure OpenAI</a>
-            </li>
-          
-        
-        </ul>
-      </nav>
     
+
+    
+    
+  </div>
+
   
-</section>
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
 
 
-        
-        <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-      </footer>
-    </article>
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
 
-    
-  </section>
+  
+  
 
-      </div>
-      <script data-goatcounter="https://ravichaganti.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-      
-  <footer class="footer">
-    <section class="container">
-      
-        <p>All Rights Reserved.</p>
-      
-      
-        ©
-        
-          2019 -
-        
-        2025
-         Ravikanth Chaganti 
-      
-      
-         · 
-        Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a> and hosted using <a href="https://pages.github.com/">GitHub Pages</a>.
-      
-      
-    </section>
-  </footer>
-
-    </main>
-
-        
+  
+  <script>
     
     
+    
+  </script>
 
-  </body>
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
 
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+</body>
 </html>
