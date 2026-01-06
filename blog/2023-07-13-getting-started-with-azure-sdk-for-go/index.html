@@ -1413,6 +1413,73 @@ function copyToClipboard(text) {
 
     
     
+
+<div class="comments-section mt-12 pt-8 border-t border-gray-200 dark:border-dark-border">
+  <h3 class="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-dark-text">Comments</h3>
+
+  <div class="giscus-wrapper">
+    <script src="https://giscus.app/client.js"
+            data-repo="rchaganti/rchaganti.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOEIN4I84CS4rW"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="light"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+    </script>
+  </div>
+
+  
+  <script>
+    
+    function updateGiscusTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const theme = isDark ? 'dark' : 'light';
+
+      const iframe = document.querySelector('iframe.giscus-frame');
+      if (iframe) {
+        iframe.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: theme } } },
+          'https://giscus.app'
+        );
+      }
+    }
+
+    
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.attributeName === 'class') {
+          updateGiscusTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    
+    window.addEventListener('message', function(event) {
+      if (event.origin !== 'https://giscus.app') return;
+      if (!(typeof event.data === 'object' && event.data.giscus)) return;
+
+      
+      if (event.data.giscus.discussion) {
+        updateGiscusTheme();
+      }
+    });
+  </script>
+</div>
+
+
   </div>
 
   
