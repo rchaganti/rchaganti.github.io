@@ -634,9 +634,12 @@ Reusability and repeatability are two basics requirements when you want to imple
   <main class="flex-grow">
     
 <article class="container mx-auto px-4 sm:px-6 md:px-4 py-8 sm:py-10 md:py-12">
-  <div class="max-w-4xl mx-auto">
-    
-    <header class="mb-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-[75%_25%] gap-8">
+      
+      <div class="min-w-0">
+        
+        <header class="mb-8">
       
       <nav class="text-xs sm:text-sm mb-4">
         <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
@@ -649,6 +652,11 @@ Reusability and repeatability are two basics requirements when you want to imple
           
         </ol>
       </nav>
+
+      
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
+        Bicep Language - Beyond Basics - Modules
+      </h1>
 
       
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-sm sm:text-base text-gray-600 dark:text-dark-text-secondary mb-6">
@@ -743,12 +751,6 @@ Reusability and repeatability are two basics requirements when you want to imple
             </a>
           
         
-      </div>
-
-      
-      <div class="mb-6 sm:mb-8 rounded-lg overflow-hidden shadow-lg">
-        
-        <img src="/images/default-post.svg" alt="Bicep Language - Beyond Basics - Modules" class="w-full h-auto max-h-64 sm:max-h-96 md:max-h-none object-cover">
       </div>
 
       
@@ -1984,69 +1986,246 @@ function copyToClipboard(text) {
 <div class="comments-section mt-12 pt-8 border-t border-gray-200 dark:border-dark-border">
   <h3 class="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-dark-text">Comments</h3>
 
-  <div class="giscus-wrapper">
-    <script src="https://giscus.app/client.js"
-            data-repo="rchaganti/rchaganti.github.io"
-            data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-            data-category="Announcements"
-            data-category-id="DIC_kwDOEIN4I84CS4rW"
-            data-mapping="pathname"
-            data-strict="0"
-            data-reactions-enabled="1"
-            data-emit-metadata="0"
-            data-input-position="bottom"
-            data-theme="light"
-            data-lang="en"
-            data-loading="lazy"
-            crossorigin="anonymous"
-            async>
-    </script>
+  
+  <div id="comments-placeholder" class="hidden">
+    <div class="bg-gray-100 dark:bg-dark-bg border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-8 text-center">
+      <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
+        Comments Require Consent
+      </h4>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        The comment system (Giscus) uses GitHub and may set authentication cookies.
+        Enable comments to join the discussion.
+      </p>
+      <button onclick="window.cookieConsent.enableComments()"
+              class="px-6 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+        Enable Comments
+      </button>
+    </div>
   </div>
 
   
+  <div id="giscus-wrapper" class="giscus-wrapper"></div>
+
+  
   <script>
-    
-    function updateGiscusTheme() {
-      const isDark = document.documentElement.classList.contains('dark');
-      const theme = isDark ? 'dark' : 'light';
+    (function() {
+      'use strict';
 
-      const iframe = document.querySelector('iframe.giscus-frame');
-      if (iframe) {
-        iframe.contentWindow.postMessage(
-          { giscus: { setConfig: { theme: theme } } },
-          'https://giscus.app'
-        );
-      }
-    }
-
-    
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.attributeName === 'class') {
-          updateGiscusTheme();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    
-    window.addEventListener('message', function(event) {
-      if (event.origin !== 'https://giscus.app') return;
-      if (!(typeof event.data === 'object' && event.data.giscus)) return;
+      let giscusLoaded = false;
+      let themeObserver = null;
 
       
-      if (event.data.giscus.discussion) {
-        updateGiscusTheme();
+      function loadGiscus() {
+        if (giscusLoaded) return;
+
+        const wrapper = document.getElementById('giscus-wrapper');
+        const placeholder = document.getElementById('comments-placeholder');
+
+        if (!wrapper) return;
+
+        
+        if (placeholder) placeholder.classList.add('hidden');
+        wrapper.classList.remove('hidden');
+
+        
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.setAttribute('data-repo', 'rchaganti\/rchaganti.github.io');
+        script.setAttribute('data-repo-id', 'MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc=');
+        script.setAttribute('data-category', 'Announcements');
+        script.setAttribute('data-category-id', 'DIC_kwDOEIN4I84CS4rW');
+        script.setAttribute('data-mapping', 'pathname');
+        script.setAttribute('data-strict', '0');
+        script.setAttribute('data-reactions-enabled', '1');
+        script.setAttribute('data-emit-metadata', '0');
+        script.setAttribute('data-input-position', 'bottom');
+        script.setAttribute('data-theme', 'light');
+        script.setAttribute('data-lang', 'en');
+        script.setAttribute('data-loading', 'lazy');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+
+        wrapper.appendChild(script);
+        giscusLoaded = true;
+
+        
+        setupThemeObserver();
       }
-    });
+
+      
+      function updateGiscusTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const theme = isDark ? 'dark' : 'light';
+
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            { giscus: { setConfig: { theme: theme } } },
+            'https://giscus.app'
+          );
+        }
+      }
+
+      
+      function setupThemeObserver() {
+        if (themeObserver) return;
+
+        
+        themeObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+              updateGiscusTheme();
+            }
+          });
+        });
+
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['class']
+        });
+
+        
+        window.addEventListener('message', function(event) {
+          if (event.origin !== 'https://giscus.app') return;
+          if (!(typeof event.data === 'object' && event.data.giscus)) return;
+
+          
+          if (event.data.giscus.discussion) {
+            updateGiscusTheme();
+          }
+        });
+      }
+
+      
+      function checkConsentAndLoad() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('comments')) {
+          loadGiscus();
+        } else {
+          
+          const placeholder = document.getElementById('comments-placeholder');
+          if (placeholder) placeholder.classList.remove('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadComments', loadGiscus);
+      window.addEventListener('consentChanged', checkConsentAndLoad);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsentAndLoad);
+      } else {
+        checkConsentAndLoad();
+      }
+    })();
   </script>
 </div>
 
 
+      </div>
+      
+
+      
+      <aside class="hidden lg:block">
+        
+
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+      You May Also Like
+    </h3>
+    <div>
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/book-announcing-azure-bicep-zero-to-hero/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      [Book] - Annoucing Azure Bicep - Zero to Hero
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2021-06-06">
+      Jun 6, 2021
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/bicep-v0-4-and-linter/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Bicep v0.4 and the linter
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2021-06-02">
+      Jun 2, 2021
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/bicep-container-image/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Bicep Container Image
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2021-05-20">
+      May 20, 2021
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/bicep-visualizer/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Bicep Visualizer
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2021-05-15">
+      May 15, 2021
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/bicep-basics-beyond-basics-scoped-deployment/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Bicep Language - Beyond Basics - Scoped Deployment
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2021-04-20">
+      Apr 20, 2021
+    </time>
+  </a>
+</article>
+
+      
+    </div>
+  </div>
+
+
+      </aside>
+    </div>
+    
   </div>
 
   
@@ -2097,6 +2276,9 @@ function copyToClipboard(text) {
   <script src="/js/theme-toggle.js"></script>
 
   
+  <script src="/js/cookie-consent.js"></script>
+
+  
   
 
   
@@ -2106,6 +2288,174 @@ function copyToClipboard(text) {
     src="//gc.zgo.at/count.js">
   </script>
 
+
+
+  
+  
+<div id="cookie-consent-banner"
+     class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 transition-transform duration-300">
+  <div class="container mx-auto px-4 py-2">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+
+      
+      <div class="flex-1">
+        <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+          This site may load third-party content (comments, embeds) that could set cookies.
+          <a href="#"
+             id="cookie-learn-more"
+             class="text-primary hover:underline font-medium ml-1"
+             onclick="document.getElementById('cookie-customize').click(); return false;">
+            Learn more
+          </a>
+        </p>
+      </div>
+
+      
+      <div class="flex flex-row gap-2 w-full sm:w-auto flex-shrink-0">
+        <button id="cookie-reject-all"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Reject
+        </button>
+        <button id="cookie-customize"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Settings
+        </button>
+        <button id="cookie-accept-all"
+                class="px-3 py-1 text-xs font-medium text-white bg-primary hover:bg-blue-700 rounded transition-colors">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="cookie-settings-modal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl my-8">
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 rounded-t-lg">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+          Cookie Preferences
+        </h2>
+        <button id="cookie-modal-close"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                aria-label="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    
+    <div class="px-6 py-4 space-y-4 max-h-[calc(90vh-140px)] overflow-y-auto bg-white dark:bg-gray-800">
+
+      
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        <p>
+          Control what third-party content is loaded. We use privacy-friendly analytics with no cookies.
+        </p>
+      </div>
+
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Essential
+            </h3>
+            <div class="flex items-center justify-center w-10 h-5 bg-primary rounded-full flex-shrink-0">
+              <span class="text-xs font-medium text-white">ON</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Required for the website to function. Cannot be disabled.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Theme preference</li>
+            <li>• Privacy-friendly analytics</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Comments
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-comments"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Giscus comment system (GitHub Discussions).
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Authentication cookies</li>
+            <li>• GitHub privacy policy</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Embedded Content
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-embeds"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Videos, code snippets, presentations.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• YouTube, Gists, SlideShare</li>
+            <li>• May set tracking cookies</li>
+          </ul>
+        </div>
+      </div>
+
+      
+      <div class="bg-blue-50 dark:bg-blue-950 dark:bg-opacity-50 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <div class="text-sm">
+            <p class="font-semibold mb-1 text-blue-800 dark:text-blue-200">Privacy First</p>
+            <p class="text-xs text-gray-700 dark:text-gray-300">
+              No tracking cookies. Third-party content only loads with your consent. Preferences stored locally in your browser.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 rounded-b-lg">
+      <div class="flex justify-end">
+        <button id="cookie-save-preferences"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-700 dark:hover:bg-blue-600 rounded transition-colors shadow-sm">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

@@ -93,7 +93,7 @@ Starting this part of the series for the next few days, you will start learning 
   "@type": "BlogPosting",
   "headline": "Azure Resource Manager - ARM template basics",
   "description": "In the last two parts of the series, you have seen a brief introduction to Azure Resource Manager and the services that complement ARM to extend its functionality or support the services offered by …",
-  "articleBody": "\"In the last two parts of the series, you have seen a brief introduction to Azure Resource Manager and the services that complement ARM to extend its functionality or support the services offered by ARM. You also looked at an overview of ARM templates and the tools available to design, author, and deploy these templates.\\nStarting this part of the series for the next few days, you will start learning about authoring ARM templates right from the basics and to the advanced template syntax and techniques with a goal to build an ARM template that helps provision the following architecture.\\nThis is not a complex architecture but gives you enough scope to implement what you learn through this series of articles. Apart from this architecture, I recommend that you start looking at the quickstart templates repository and read the templates there to understand the syntax and how some of those templates are written and implement best practices. Throughout this series, you will see examples from quickstart templates repository to explain best practices in template authoring.\\nI strongly recommend using VS Code for ARM template authoring and the next section provides a quick overview of this before you dive into ARM template basics.\\nVS Code and ARM tools extension If you have already installed VS Code and the ARM tools extension, you may want to customize the extension settings for improved authoring experience and ease. By default, VS Code editor will auto-detect template files if the JSON or JSONC file contains the appropriate schema and changes the editor language to Azure Resource Manager template. You can see this in the status bar of the VS Code editor.\\nHowever, this method requires that you at least have a value for the $schema element. You can also use file association setting to detect a file in the editor as an ARM template. This can be done by adding the following in the extension settings. With this setting in place, you can even create an empty file with an extension azrm.json and the editor auto-detects and sets the editor language as ARM template.\\nOnce the editor language gets set to Azure Resource Manager Template, you can access over 70 snippets that come with the extension. For example, typing arm in the editor window, brings up the snippets that you can select and insert into the editor.\\nThroughout this series, you will see different features of this VS Code extension. Now, let us get started with the basics of the ARM template language.\\nBasics As you have seen already, an ARM template is JSON file with additional template functions and expressions that the Azure Resource Manager understands. Here is a basic skeleton structure of an ARM template.\\nIn the following sections, you will see quick overview of the elements in an ARM template.\\n$schema This element identifies the version of template language to be used. The value of this element changes based on the type of editor and the scope of the deployment. There are four different scopes at which you can deploy an ARM template.\\nSubscription Scope When you need to deploy resources at the subscription level, for example create resource groups or provision policies and resource-based access controls, you need to use subscription level deployments. For this type of deployments, the value of $schema should be https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\\nManagement Group Scope Management groups in Azure are used to organize subscriptions for better governance. When you need to provision resources such as policies at the management group level, you need to the use the management group level schema. The value of this element for management group level deployments should be https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#.\\nTenant Scope For provisioning resources across multiple Azure AD tenants, you need the tenant scoped deployments. For tenant level deployments the value of $schema element should be set to https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#.\\nResource Group Scope This is the typical type of deployment you will normally come across. When using this deployment scope, you describe resources that need to be deployed within a given resource group in a subscription. The value of $schema for this type of deployments in VS Code should be https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#. For Visual Studio, this value should be https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#.\\nYou will learn more about scoped deployments in a later article in this series.\\nContentVersion This element identifies the version of the template content. This value is required but can be set to anything you want. If you use source control for ARM templates, you can increment the value of this element in your template at every commit. You will learn more about this in a later article discussing CI \\u0026amp; CD of ARM templates.\\nParameters This element accepts a set of parameters that act as input to the ARM template deployment using which you can introduce reusability of ARM templates. If you are familiar with any programming language, similar to a function or a method parameters, ARM template parameters too support different data types, valid values, default values, and different other characteristics such as min and max values (for numeric types), and min and max length (for string types). This is not a mandatory element but highly recommended to parameterize the template.\\nFunctions ARM template syntax support built-in functions and expressions. These functions range from comparison functions to numeric, date, string, and so on. In a later update to the ARM template syntax, support for custom user-defined functions was added. You can now define some complex expressions that you want to use in the template as user-defined functions. This is not a mandatory element.\\nVariables Variables, similar to functions, can help reduce the complexity of expressions in the ARM template. This is not a mandatory element. In an ARM template, variables are predominantly inside expressions. Between parameters and variables, you need to always a strike balance (free-form vs known configuration) to create templates are easy to deploy.\\nResources This element is where you define what Azure resource you need to deploy or update. An ARM template must have at least one resource. The type of valid resources supported in a template depends on the value of $schema element. In the next section, you will see how to author your first ARM template and you will see more about resource specification in an ARM template.\\nOutputs Using this element, you can specify the values returned by the template after the deployment is complete. This element is not mandatory. This can be very useful when using nested templates and you will learn more about it soon in this series.\\nFirst ARM template Alright! After that quick overview of the template elements, this section will get you started with your first ARM template. For this purpose, you will perform a subscription scoped deployment to provision a new resource group. Within VS Code, if you want a quick snippet that supports subscription level deployments, you can type arm!s and press enter. You can now add the following snippet under the resource element.\\nA typical resource specification will be very similar to what is shown above. The following table provides an overview of the resource group object properties that you can use in a template.\\nProperty Name Description Is Mandatory? type This property identifies the type of a resource that you want to provision. For a resource group, this will be Microsoft.Resources/resourceGroups. Yes name Using this property, you can specify a name for the resource being provisioned. Yes apiVersion This property identifies the API version to be used for provisioning the resource. For a resource group resource, this, at present, should be 2020-06-01. Yes location This property specifies where there resource should be created. Some resources may not be supported in all regions or enabled in your subscription. Yes properties Specifies additional properties needed for the resource provisioning. Yes tags Specifies a list of tags (key-value pairs) associated with the resource. No For now, you don\\u0026rsquo;t have to worry about the parameters, variables, functions, and outputs in the template. You can simply leave them blank. With the addition of resource group snippet, here is how your first template should look like.\\nThis is ready for deployment. If you want to use Azure portal for template deployments, the subscription level deployment, at present, is available only in the preview portal. The below deploy to Azure button will take you directly to the preview portal.\\nIf you want to perform this deployment using Azure CLI, you can use the below command to perform this subscription level deployment to create the resource group.\\nIf you have not already done so, you must first authenticate using az login command.\\nIn the above command, do not confuse the --name and --location parameters to what you have in the ARM template. These two parameters indicate the name of the deployment and location where the deployment meta data should be stored. The sub subcommand within az deployment indicates that you are doing a subscription level deployment.\\nSummary In this part of the article, you looked at basics of ARM template syntax, understood different elements in the template and their purpose, saw a quick overview of scoped deployments, and finally performed a subscription level deployment to create a resource group in your subscription and used Azure CLI for this purpose. In this next part of this series, you will learn how to create reusable ARM templates by adding parameters.\\n\"",
+  "articleBody": "\"In the last two parts of the series, you have seen a brief introduction to Azure Resource Manager and the services that complement ARM to extend its functionality or support the services offered by ARM. You also looked at an overview of ARM templates and the tools available to design, author, and deploy these templates.\\nStarting this part of the series for the next few days, you will start learning about authoring ARM templates right from the basics and to the advanced template syntax and techniques with a goal to build an ARM template that helps provision the following architecture.\\nThis is not a complex architecture but gives you enough scope to implement what you learn through this series of articles. Apart from this architecture, I recommend that you start looking at the quickstart templates repository and read the templates there to understand the syntax and how some of those templates are written and implement best practices. Throughout this series, you will see examples from quickstart templates repository to explain best practices in template authoring.\\nI strongly recommend using VS Code for ARM template authoring and the next section provides a quick overview of this before you dive into ARM template basics.\\nVS Code and ARM tools extension If you have already installed VS Code and the ARM tools extension, you may want to customize the extension settings for improved authoring experience and ease. By default, VS Code editor will auto-detect template files if the JSON or JSONC file contains the appropriate schema and changes the editor language to Azure Resource Manager template. You can see this in the status bar of the VS Code editor.\\nHowever, this method requires that you at least have a value for the $schema element. You can also use file association setting to detect a file in the editor as an ARM template. This can be done by adding the following in the extension settings. With this setting in place, you can even create an empty file with an extension azrm.json and the editor auto-detects and sets the editor language as ARM template.\\nGitHub Gist This code snippet requires your consent to load content from GitHub, which may set cookies. Enable GitHub Gist rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2 Once the editor language gets set to Azure Resource Manager Template, you can access over 70 snippets that come with the extension. For example, typing arm in the editor window, brings up the snippets that you can select and insert into the editor.\\nThroughout this series, you will see different features of this VS Code extension. Now, let us get started with the basics of the ARM template language.\\nBasics As you have seen already, an ARM template is JSON file with additional template functions and expressions that the Azure Resource Manager understands. Here is a basic skeleton structure of an ARM template.\\nGitHub Gist This code snippet requires your consent to load content from GitHub, which may set cookies. Enable GitHub Gist rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2 In the following sections, you will see quick overview of the elements in an ARM template.\\n$schema This element identifies the version of template language to be used. The value of this element changes based on the type of editor and the scope of the deployment. There are four different scopes at which you can deploy an ARM template.\\nSubscription Scope When you need to deploy resources at the subscription level, for example create resource groups or provision policies and resource-based access controls, you need to use subscription level deployments. For this type of deployments, the value of $schema should be https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\\nManagement Group Scope Management groups in Azure are used to organize subscriptions for better governance. When you need to provision resources such as policies at the management group level, you need to the use the management group level schema. The value of this element for management group level deployments should be https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#.\\nTenant Scope For provisioning resources across multiple Azure AD tenants, you need the tenant scoped deployments. For tenant level deployments the value of $schema element should be set to https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#.\\nResource Group Scope This is the typical type of deployment you will normally come across. When using this deployment scope, you describe resources that need to be deployed within a given resource group in a subscription. The value of $schema for this type of deployments in VS Code should be https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#. For Visual Studio, this value should be https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#.\\nYou will learn more about scoped deployments in a later article in this series.\\nContentVersion This element identifies the version of the template content. This value is required but can be set to anything you want. If you use source control for ARM templates, you can increment the value of this element in your template at every commit. You will learn more about this in a later article discussing CI \\u0026amp; CD of ARM templates.\\nParameters This element accepts a set of parameters that act as input to the ARM template deployment using which you can introduce reusability of ARM templates. If you are familiar with any programming language, similar to a function or a method parameters, ARM template parameters too support different data types, valid values, default values, and different other characteristics such as min and max values (for numeric types), and min and max length (for string types). This is not a mandatory element but highly recommended to parameterize the template.\\nFunctions ARM template syntax support built-in functions and expressions. These functions range from comparison functions to numeric, date, string, and so on. In a later update to the ARM template syntax, support for custom user-defined functions was added. You can now define some complex expressions that you want to use in the template as user-defined functions. This is not a mandatory element.\\nVariables Variables, similar to functions, can help reduce the complexity of expressions in the ARM template. This is not a mandatory element. In an ARM template, variables are predominantly inside expressions. Between parameters and variables, you need to always a strike balance (free-form vs known configuration) to create templates are easy to deploy.\\nResources This element is where you define what Azure resource you need to deploy or update. An ARM template must have at least one resource. The type of valid resources supported in a template depends on the value of $schema element. In the next section, you will see how to author your first ARM template and you will see more about resource specification in an ARM template.\\nOutputs Using this element, you can specify the values returned by the template after the deployment is complete. This element is not mandatory. This can be very useful when using nested templates and you will learn more about it soon in this series.\\nFirst ARM template Alright! After that quick overview of the template elements, this section will get you started with your first ARM template. For this purpose, you will perform a subscription scoped deployment to provision a new resource group. Within VS Code, if you want a quick snippet that supports subscription level deployments, you can type arm!s and press enter. You can now add the following snippet under the resource element.\\nGitHub Gist This code snippet requires your consent to load content from GitHub, which may set cookies. Enable GitHub Gist rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2 A typical resource specification will be very similar to what is shown above. The following table provides an overview of the resource group object properties that you can use in a template.\\nProperty Name Description Is Mandatory? type This property identifies the type of a resource that you want to provision. For a resource group, this will be Microsoft.Resources/resourceGroups. Yes name Using this property, you can specify a name for the resource being provisioned. Yes apiVersion This property identifies the API version to be used for provisioning the resource. For a resource group resource, this, at present, should be 2020-06-01. Yes location This property specifies where there resource should be created. Some resources may not be supported in all regions or enabled in your subscription. Yes properties Specifies additional properties needed for the resource provisioning. Yes tags Specifies a list of tags (key-value pairs) associated with the resource. No For now, you don\\u0026rsquo;t have to worry about the parameters, variables, functions, and outputs in the template. You can simply leave them blank. With the addition of resource group snippet, here is how your first template should look like.\\nGitHub Gist This code snippet requires your consent to load content from GitHub, which may set cookies. Enable GitHub Gist rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2 This is ready for deployment. If you want to use Azure portal for template deployments, the subscription level deployment, at present, is available only in the preview portal. The below deploy to Azure button will take you directly to the preview portal.\\nIf you want to perform this deployment using Azure CLI, you can use the below command to perform this subscription level deployment to create the resource group.\\nIf you have not already done so, you must first authenticate using az login command.\\nGitHub Gist This code snippet requires your consent to load content from GitHub, which may set cookies. Enable GitHub Gist rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2 In the above command, do not confuse the --name and --location parameters to what you have in the ARM template. These two parameters indicate the name of the deployment and location where the deployment meta data should be stored. The sub subcommand within az deployment indicates that you are doing a subscription level deployment.\\nSummary In this part of the article, you looked at basics of ARM template syntax, understood different elements in the template and their purpose, saw a quick overview of scoped deployments, and finally performed a subscription level deployment to create a resource group in your subscription and used Azure CLI for this purpose. In this next part of this series, you will learn how to create reusable ARM templates by adding parameters.\\n\"",
   "url": "https:\/\/ravichaganti.com\/blog\/azure-resource-manager-arm-template-basics\/",
   "datePublished": "2020-07-23T00:00:00Z",
   "dateModified": "2020-07-23T00:00:00Z",
@@ -625,9 +625,12 @@ Starting this part of the series for the next few days, you will start learning 
   <main class="flex-grow">
     
 <article class="container mx-auto px-4 sm:px-6 md:px-4 py-8 sm:py-10 md:py-12">
-  <div class="max-w-4xl mx-auto">
-    
-    <header class="mb-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-[75%_25%] gap-8">
+      
+      <div class="min-w-0">
+        
+        <header class="mb-8">
       
       <nav class="text-xs sm:text-sm mb-4">
         <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
@@ -640,6 +643,11 @@ Starting this part of the series for the next few days, you will start learning 
           
         </ol>
       </nav>
+
+      
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
+        Azure Resource Manager - ARM template basics
+      </h1>
 
       
       <div class="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-sm sm:text-base text-gray-600 dark:text-dark-text-secondary mb-6">
@@ -738,12 +746,6 @@ Starting this part of the series for the next few days, you will start learning 
             </a>
           
         
-      </div>
-
-      
-      <div class="mb-6 sm:mb-8 rounded-lg overflow-hidden shadow-lg">
-        
-        <img src="/images/default-post.svg" alt="Azure Resource Manager - ARM template basics" class="w-full h-auto max-h-64 sm:max-h-96 md:max-h-none object-cover">
       </div>
 
       
@@ -1044,7 +1046,76 @@ Starting this part of the series for the next few days, you will start learning 
 
 <p>However, this method requires that you at least have a value for the $schema element. You can also use file association setting to detect a file in the editor as an ARM template. This can be done by adding the following in the extension settings. With this setting in place, you can even create an empty file with an extension azrm.json and the editor auto-detects and sets the editor language as ARM template.</p>
 <div class="gist-embed" style="margin: 1.5rem 0;">
-  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+  
+  <div id="59884056128ba8e535e986dbfe388abf-placeholder" class="gist-placeholder hidden">
+    <div style="background: linear-gradient(135deg, #24292e 0%, #2f363d 100%); border: 1px solid #444d56; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      
+      <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+
+      <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+        GitHub Gist
+      </h4>
+      <p style="color: #c9d1d9; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        This code snippet requires your consent to load content from GitHub, which may set cookies.
+      </p>
+      <button onclick="window.cookieConsent.enableEmbed('59884056128ba8e535e986dbfe388abf')"
+              style="padding: 0.625rem 1.5rem; background-color: #238636; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
+              onmouseover="this.style.backgroundColor='#2ea043'"
+              onmouseout="this.style.backgroundColor='#238636'">
+        Enable GitHub Gist
+      </button>
+      <p style="color: #8b949e; font-size: 0.75rem; margin-top: 0.75rem;">
+        rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2
+      </p>
+    </div>
+  </div>
+
+  
+  <div id="59884056128ba8e535e986dbfe388abf-gist" class="gist-container hidden"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      const embedId = '59884056128ba8e535e986dbfe388abf';
+      const placeholder = document.getElementById(embedId + '-placeholder');
+      const gistContainer = document.getElementById(embedId + '-gist');
+
+      function loadEmbed() {
+        if (!gistContainer || gistContainer.hasChildNodes()) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js';
+        gistContainer.appendChild(script);
+
+        if (placeholder) placeholder.classList.add('hidden');
+        gistContainer.classList.remove('hidden');
+      }
+
+      function checkConsent() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
+          loadEmbed();
+        } else {
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (gistContainer) gistContainer.classList.add('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadEmbeds', loadEmbed);
+      window.addEventListener('consentChanged', checkConsent);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsent);
+      } else {
+        checkConsent();
+      }
+    })();
+  </script>
 </div>
 
 <p>Once the editor language gets set to Azure Resource Manager Template, you can access over 70 snippets that come with the extension. For example, typing arm in the editor window, brings up the snippets that you can select and insert into the editor.</p>
@@ -1056,7 +1127,76 @@ Starting this part of the series for the next few days, you will start learning 
 <h2 id="basics">Basics</h2>
 <p>As you have seen already, an ARM template is JSON file with additional template functions and expressions that the Azure Resource Manager understands. Here is a basic skeleton structure of an ARM template.</p>
 <div class="gist-embed" style="margin: 1.5rem 0;">
-  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+  
+  <div id="59884056128ba8e535e986dbfe388abf-placeholder" class="gist-placeholder hidden">
+    <div style="background: linear-gradient(135deg, #24292e 0%, #2f363d 100%); border: 1px solid #444d56; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      
+      <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+
+      <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+        GitHub Gist
+      </h4>
+      <p style="color: #c9d1d9; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        This code snippet requires your consent to load content from GitHub, which may set cookies.
+      </p>
+      <button onclick="window.cookieConsent.enableEmbed('59884056128ba8e535e986dbfe388abf')"
+              style="padding: 0.625rem 1.5rem; background-color: #238636; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
+              onmouseover="this.style.backgroundColor='#2ea043'"
+              onmouseout="this.style.backgroundColor='#238636'">
+        Enable GitHub Gist
+      </button>
+      <p style="color: #8b949e; font-size: 0.75rem; margin-top: 0.75rem;">
+        rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2
+      </p>
+    </div>
+  </div>
+
+  
+  <div id="59884056128ba8e535e986dbfe388abf-gist" class="gist-container hidden"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      const embedId = '59884056128ba8e535e986dbfe388abf';
+      const placeholder = document.getElementById(embedId + '-placeholder');
+      const gistContainer = document.getElementById(embedId + '-gist');
+
+      function loadEmbed() {
+        if (!gistContainer || gistContainer.hasChildNodes()) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js';
+        gistContainer.appendChild(script);
+
+        if (placeholder) placeholder.classList.add('hidden');
+        gistContainer.classList.remove('hidden');
+      }
+
+      function checkConsent() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
+          loadEmbed();
+        } else {
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (gistContainer) gistContainer.classList.add('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadEmbeds', loadEmbed);
+      window.addEventListener('consentChanged', checkConsent);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsent);
+      } else {
+        checkConsent();
+      }
+    })();
+  </script>
 </div>
 
 <p>In the following sections, you will see quick overview of the elements in an ARM template.</p>
@@ -1086,7 +1226,76 @@ Starting this part of the series for the next few days, you will start learning 
 <h2 id="first-arm-template">First ARM template</h2>
 <p>Alright! After that quick overview of the template elements, this section will get you started with your first ARM template. For this purpose, you will perform a subscription scoped deployment to provision a new resource group. Within VS Code, if you want a quick snippet that supports subscription level deployments, you can type <code>arm!s</code> and press enter. You can now add the following snippet under the resource element.</p>
 <div class="gist-embed" style="margin: 1.5rem 0;">
-  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+  
+  <div id="59884056128ba8e535e986dbfe388abf-placeholder" class="gist-placeholder hidden">
+    <div style="background: linear-gradient(135deg, #24292e 0%, #2f363d 100%); border: 1px solid #444d56; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      
+      <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+
+      <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+        GitHub Gist
+      </h4>
+      <p style="color: #c9d1d9; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        This code snippet requires your consent to load content from GitHub, which may set cookies.
+      </p>
+      <button onclick="window.cookieConsent.enableEmbed('59884056128ba8e535e986dbfe388abf')"
+              style="padding: 0.625rem 1.5rem; background-color: #238636; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
+              onmouseover="this.style.backgroundColor='#2ea043'"
+              onmouseout="this.style.backgroundColor='#238636'">
+        Enable GitHub Gist
+      </button>
+      <p style="color: #8b949e; font-size: 0.75rem; margin-top: 0.75rem;">
+        rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2
+      </p>
+    </div>
+  </div>
+
+  
+  <div id="59884056128ba8e535e986dbfe388abf-gist" class="gist-container hidden"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      const embedId = '59884056128ba8e535e986dbfe388abf';
+      const placeholder = document.getElementById(embedId + '-placeholder');
+      const gistContainer = document.getElementById(embedId + '-gist');
+
+      function loadEmbed() {
+        if (!gistContainer || gistContainer.hasChildNodes()) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js';
+        gistContainer.appendChild(script);
+
+        if (placeholder) placeholder.classList.add('hidden');
+        gistContainer.classList.remove('hidden');
+      }
+
+      function checkConsent() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
+          loadEmbed();
+        } else {
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (gistContainer) gistContainer.classList.add('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadEmbeds', loadEmbed);
+      window.addEventListener('consentChanged', checkConsent);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsent);
+      } else {
+        checkConsent();
+      }
+    })();
+  </script>
 </div>
 
 <p>A typical resource specification will be very similar to what is shown above. The following table provides an overview of the resource group object properties that you can use in a template.</p>
@@ -1133,7 +1342,76 @@ Starting this part of the series for the next few days, you will start learning 
 </table>
 <p>For now, you don&rsquo;t have to worry about the parameters, variables, functions, and outputs in the template. You can simply leave them blank. With the addition of resource group snippet, here is how your first template should look like.</p>
 <div class="gist-embed" style="margin: 1.5rem 0;">
-  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+  
+  <div id="59884056128ba8e535e986dbfe388abf-placeholder" class="gist-placeholder hidden">
+    <div style="background: linear-gradient(135deg, #24292e 0%, #2f363d 100%); border: 1px solid #444d56; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      
+      <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+
+      <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+        GitHub Gist
+      </h4>
+      <p style="color: #c9d1d9; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        This code snippet requires your consent to load content from GitHub, which may set cookies.
+      </p>
+      <button onclick="window.cookieConsent.enableEmbed('59884056128ba8e535e986dbfe388abf')"
+              style="padding: 0.625rem 1.5rem; background-color: #238636; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
+              onmouseover="this.style.backgroundColor='#2ea043'"
+              onmouseout="this.style.backgroundColor='#238636'">
+        Enable GitHub Gist
+      </button>
+      <p style="color: #8b949e; font-size: 0.75rem; margin-top: 0.75rem;">
+        rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2
+      </p>
+    </div>
+  </div>
+
+  
+  <div id="59884056128ba8e535e986dbfe388abf-gist" class="gist-container hidden"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      const embedId = '59884056128ba8e535e986dbfe388abf';
+      const placeholder = document.getElementById(embedId + '-placeholder');
+      const gistContainer = document.getElementById(embedId + '-gist');
+
+      function loadEmbed() {
+        if (!gistContainer || gistContainer.hasChildNodes()) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js';
+        gistContainer.appendChild(script);
+
+        if (placeholder) placeholder.classList.add('hidden');
+        gistContainer.classList.remove('hidden');
+      }
+
+      function checkConsent() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
+          loadEmbed();
+        } else {
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (gistContainer) gistContainer.classList.add('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadEmbeds', loadEmbed);
+      window.addEventListener('consentChanged', checkConsent);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsent);
+      } else {
+        checkConsent();
+      }
+    })();
+  </script>
 </div>
 
 <p>This is ready for deployment. If you want to use Azure portal for template deployments, the subscription level deployment, at present, is available only in the preview portal. The below deploy to Azure button will take you directly to the preview portal.</p>
@@ -1148,7 +1426,76 @@ Starting this part of the series for the next few days, you will start learning 
 <p>If you have not already done so, you must first authenticate using <code>az login</code> command.</p>
 </blockquote>
 <div class="gist-embed" style="margin: 1.5rem 0;">
-  <script src="https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js"></script>
+  
+  <div id="59884056128ba8e535e986dbfe388abf-placeholder" class="gist-placeholder hidden">
+    <div style="background: linear-gradient(135deg, #24292e 0%, #2f363d 100%); border: 1px solid #444d56; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      
+      <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+
+      <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+        GitHub Gist
+      </h4>
+      <p style="color: #c9d1d9; font-size: 0.875rem; margin-bottom: 1.5rem;">
+        This code snippet requires your consent to load content from GitHub, which may set cookies.
+      </p>
+      <button onclick="window.cookieConsent.enableEmbed('59884056128ba8e535e986dbfe388abf')"
+              style="padding: 0.625rem 1.5rem; background-color: #238636; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
+              onmouseover="this.style.backgroundColor='#2ea043'"
+              onmouseout="this.style.backgroundColor='#238636'">
+        Enable GitHub Gist
+      </button>
+      <p style="color: #8b949e; font-size: 0.75rem; margin-top: 0.75rem;">
+        rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2
+      </p>
+    </div>
+  </div>
+
+  
+  <div id="59884056128ba8e535e986dbfe388abf-gist" class="gist-container hidden"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      const embedId = '59884056128ba8e535e986dbfe388abf';
+      const placeholder = document.getElementById(embedId + '-placeholder');
+      const gistContainer = document.getElementById(embedId + '-gist');
+
+      function loadEmbed() {
+        if (!gistContainer || gistContainer.hasChildNodes()) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://gist.github.com/rchaganti/d7e35878c6687da07ae5fa5dfb7d54c2.js';
+        gistContainer.appendChild(script);
+
+        if (placeholder) placeholder.classList.add('hidden');
+        gistContainer.classList.remove('hidden');
+      }
+
+      function checkConsent() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
+          loadEmbed();
+        } else {
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (gistContainer) gistContainer.classList.add('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadEmbeds', loadEmbed);
+      window.addEventListener('consentChanged', checkConsent);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsent);
+      } else {
+        checkConsent();
+      }
+    })();
+  </script>
 </div>
 
 <p>In the above command, do not confuse the <code>--name</code> and <code>--location</code> parameters to what you have in the ARM template. These two parameters indicate the name of the deployment and location where the deployment meta data should be stored. The <code>sub</code> subcommand within az deployment indicates that you are doing a subscription level deployment.</p>
@@ -1417,69 +1764,246 @@ function copyToClipboard(text) {
 <div class="comments-section mt-12 pt-8 border-t border-gray-200 dark:border-dark-border">
   <h3 class="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-dark-text">Comments</h3>
 
-  <div class="giscus-wrapper">
-    <script src="https://giscus.app/client.js"
-            data-repo="rchaganti/rchaganti.github.io"
-            data-repo-id="MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc="
-            data-category="Announcements"
-            data-category-id="DIC_kwDOEIN4I84CS4rW"
-            data-mapping="pathname"
-            data-strict="0"
-            data-reactions-enabled="1"
-            data-emit-metadata="0"
-            data-input-position="bottom"
-            data-theme="light"
-            data-lang="en"
-            data-loading="lazy"
-            crossorigin="anonymous"
-            async>
-    </script>
+  
+  <div id="comments-placeholder" class="hidden">
+    <div class="bg-gray-100 dark:bg-dark-bg border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-8 text-center">
+      <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
+        Comments Require Consent
+      </h4>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        The comment system (Giscus) uses GitHub and may set authentication cookies.
+        Enable comments to join the discussion.
+      </p>
+      <button onclick="window.cookieConsent.enableComments()"
+              class="px-6 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+        Enable Comments
+      </button>
+    </div>
   </div>
 
   
+  <div id="giscus-wrapper" class="giscus-wrapper"></div>
+
+  
   <script>
-    
-    function updateGiscusTheme() {
-      const isDark = document.documentElement.classList.contains('dark');
-      const theme = isDark ? 'dark' : 'light';
+    (function() {
+      'use strict';
 
-      const iframe = document.querySelector('iframe.giscus-frame');
-      if (iframe) {
-        iframe.contentWindow.postMessage(
-          { giscus: { setConfig: { theme: theme } } },
-          'https://giscus.app'
-        );
-      }
-    }
-
-    
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.attributeName === 'class') {
-          updateGiscusTheme();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    
-    window.addEventListener('message', function(event) {
-      if (event.origin !== 'https://giscus.app') return;
-      if (!(typeof event.data === 'object' && event.data.giscus)) return;
+      let giscusLoaded = false;
+      let themeObserver = null;
 
       
-      if (event.data.giscus.discussion) {
-        updateGiscusTheme();
+      function loadGiscus() {
+        if (giscusLoaded) return;
+
+        const wrapper = document.getElementById('giscus-wrapper');
+        const placeholder = document.getElementById('comments-placeholder');
+
+        if (!wrapper) return;
+
+        
+        if (placeholder) placeholder.classList.add('hidden');
+        wrapper.classList.remove('hidden');
+
+        
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.setAttribute('data-repo', 'rchaganti\/rchaganti.github.io');
+        script.setAttribute('data-repo-id', 'MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc=');
+        script.setAttribute('data-category', 'Announcements');
+        script.setAttribute('data-category-id', 'DIC_kwDOEIN4I84CS4rW');
+        script.setAttribute('data-mapping', 'pathname');
+        script.setAttribute('data-strict', '0');
+        script.setAttribute('data-reactions-enabled', '1');
+        script.setAttribute('data-emit-metadata', '0');
+        script.setAttribute('data-input-position', 'bottom');
+        script.setAttribute('data-theme', 'light');
+        script.setAttribute('data-lang', 'en');
+        script.setAttribute('data-loading', 'lazy');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+
+        wrapper.appendChild(script);
+        giscusLoaded = true;
+
+        
+        setupThemeObserver();
       }
-    });
+
+      
+      function updateGiscusTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const theme = isDark ? 'dark' : 'light';
+
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            { giscus: { setConfig: { theme: theme } } },
+            'https://giscus.app'
+          );
+        }
+      }
+
+      
+      function setupThemeObserver() {
+        if (themeObserver) return;
+
+        
+        themeObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+              updateGiscusTheme();
+            }
+          });
+        });
+
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['class']
+        });
+
+        
+        window.addEventListener('message', function(event) {
+          if (event.origin !== 'https://giscus.app') return;
+          if (!(typeof event.data === 'object' && event.data.giscus)) return;
+
+          
+          if (event.data.giscus.discussion) {
+            updateGiscusTheme();
+          }
+        });
+      }
+
+      
+      function checkConsentAndLoad() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('comments')) {
+          loadGiscus();
+        } else {
+          
+          const placeholder = document.getElementById('comments-placeholder');
+          if (placeholder) placeholder.classList.remove('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadComments', loadGiscus);
+      window.addEventListener('consentChanged', checkConsentAndLoad);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsentAndLoad);
+      } else {
+        checkConsentAndLoad();
+      }
+    })();
   </script>
 </div>
 
 
+      </div>
+      
+
+      
+      <aside class="hidden lg:block">
+        
+
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+      You May Also Like
+    </h3>
+    <div>
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/azure-resource-manager-using-secrets-in-arm-templates/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Azure Resource Manager - Using secrets in ARM templates
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2020-08-07">
+      Aug 7, 2020
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/azure-resource-manager-using-functions-in-arm-templates/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Azure Resource Manager - Using functions in ARM templates
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2020-07-31">
+      Jul 31, 2020
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/azure-resource-manager-in-30-days-using-expressions-and-variables-in-arm-templates/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Azure Resource Manager - Using expressions and variables in ARM templates
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2020-07-30">
+      Jul 30, 2020
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/azure-resource-manager-adding-parameters-to-arm-templates/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Azure Resource Manager - Adding parameters to ARM templates
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2020-07-24">
+      Jul 24, 2020
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/azure-resource-manager-tools-for-arm-template-design-authoring-and-deployment/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Azure Resource Manager - Tools for ARM template design, authoring, and deployment
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2020-07-17">
+      Jul 17, 2020
+    </time>
+  </a>
+</article>
+
+      
+    </div>
+  </div>
+
+
+      </aside>
+    </div>
+    
   </div>
 
   
@@ -1530,6 +2054,9 @@ function copyToClipboard(text) {
   <script src="/js/theme-toggle.js"></script>
 
   
+  <script src="/js/cookie-consent.js"></script>
+
+  
   
 
   
@@ -1539,6 +2066,174 @@ function copyToClipboard(text) {
     src="//gc.zgo.at/count.js">
   </script>
 
+
+
+  
+  
+<div id="cookie-consent-banner"
+     class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 transition-transform duration-300">
+  <div class="container mx-auto px-4 py-2">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+
+      
+      <div class="flex-1">
+        <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+          This site may load third-party content (comments, embeds) that could set cookies.
+          <a href="#"
+             id="cookie-learn-more"
+             class="text-primary hover:underline font-medium ml-1"
+             onclick="document.getElementById('cookie-customize').click(); return false;">
+            Learn more
+          </a>
+        </p>
+      </div>
+
+      
+      <div class="flex flex-row gap-2 w-full sm:w-auto flex-shrink-0">
+        <button id="cookie-reject-all"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Reject
+        </button>
+        <button id="cookie-customize"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Settings
+        </button>
+        <button id="cookie-accept-all"
+                class="px-3 py-1 text-xs font-medium text-white bg-primary hover:bg-blue-700 rounded transition-colors">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="cookie-settings-modal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl my-8">
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 rounded-t-lg">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+          Cookie Preferences
+        </h2>
+        <button id="cookie-modal-close"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                aria-label="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    
+    <div class="px-6 py-4 space-y-4 max-h-[calc(90vh-140px)] overflow-y-auto bg-white dark:bg-gray-800">
+
+      
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        <p>
+          Control what third-party content is loaded. We use privacy-friendly analytics with no cookies.
+        </p>
+      </div>
+
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Essential
+            </h3>
+            <div class="flex items-center justify-center w-10 h-5 bg-primary rounded-full flex-shrink-0">
+              <span class="text-xs font-medium text-white">ON</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Required for the website to function. Cannot be disabled.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Theme preference</li>
+            <li>• Privacy-friendly analytics</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Comments
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-comments"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Giscus comment system (GitHub Discussions).
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Authentication cookies</li>
+            <li>• GitHub privacy policy</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Embedded Content
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-embeds"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Videos, code snippets, presentations.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• YouTube, Gists, SlideShare</li>
+            <li>• May set tracking cookies</li>
+          </ul>
+        </div>
+      </div>
+
+      
+      <div class="bg-blue-50 dark:bg-blue-950 dark:bg-opacity-50 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <div class="text-sm">
+            <p class="font-semibold mb-1 text-blue-800 dark:text-blue-200">Privacy First</p>
+            <p class="text-xs text-gray-700 dark:text-gray-300">
+              No tracking cookies. Third-party content only loads with your consent. Preferences stored locally in your browser.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 rounded-b-lg">
+      <div class="flex justify-end">
+        <button id="cookie-save-preferences"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-700 dark:hover:bg-blue-600 rounded transition-colors shadow-sm">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
