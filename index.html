@@ -1234,6 +1234,48 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let touchStartY = 0;
+  let touchEndY = 0;
+
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  track.addEventListener('touchmove', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  track.addEventListener('touchend', () => {
+    const swipeDistanceX = touchStartX - touchEndX;
+    const swipeDistanceY = Math.abs(touchStartY - touchEndY);
+    const minSwipeDistance = 50; 
+
+    
+    if (Math.abs(swipeDistanceX) > minSwipeDistance && Math.abs(swipeDistanceX) > swipeDistanceY) {
+      if (swipeDistanceX > 0) {
+        
+        if (currentPage < totalPages - 1) {
+          currentPage++;
+        } else {
+          currentPage = 0;
+        }
+      } else {
+        
+        if (currentPage > 0) {
+          currentPage--;
+        } else {
+          currentPage = totalPages - 1;
+        }
+      }
+      updateCarousel();
+    }
+  }, { passive: true });
+
+  
   updateCarousel();
 });
 </script>
