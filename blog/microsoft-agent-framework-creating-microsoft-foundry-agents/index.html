@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   
   <script>
     (function() {
@@ -35,11 +35,11 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
   <meta property="og:description" content="In an earlier article, we looked at a brief introduction to the Microsoft Agent Framework. This framework combines the best parts of AutoGen and Semantic Kernel into a unified framework for building enterprise and production-ready AI agents. It supports various agent types, including Microsoft Foundry Agents. All agent types inherit from the common base class AIAgent to provide a consistent interface.
 The Foundry agents are created using AzureAIAgentClient. Let us start with an example.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/">
+  <meta property="og:url" content="http://localhost:1313/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
-  <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
+  <meta property="og:image" content="http://localhost:1313/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Microsoft Agent Framework - Creating Microsoft Foundry Agents">
@@ -58,14 +58,14 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
   <meta name="twitter:title" content="Microsoft Agent Framework - Creating Microsoft Foundry Agents">
   <meta name="twitter:description" content="In an earlier article, we looked at a brief introduction to the Microsoft Agent Framework. This framework combines the best parts of AutoGen and Semantic Kernel into a unified framework for building enterprise and production-ready AI agents. It supports various agent types, including Microsoft Foundry Agents. All agent types inherit from the common base class AIAgent to provide a consistent interface.
 The Foundry agents are created using AzureAIAgentClient. Let us start with an example.">
-  <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
+  <meta name="twitter:image" content="http://localhost:1313/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/">
+  <link rel="canonical" href="http://localhost:1313/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/">
 
   
-  <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
+  <link rel="alternate" type="application/rss+xml" href="http://localhost:1313/index.xml">
 
   
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -94,7 +94,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
   "headline": "Microsoft Agent Framework - Creating Microsoft Foundry Agents",
   "description": "In an earlier article, we looked at a brief introduction to the Microsoft Agent Framework. This framework combines the best parts of AutoGen and Semantic Kernel into a unified framework for building …",
   "articleBody": "\"In an earlier article, we looked at a brief introduction to the Microsoft Agent Framework. This framework combines the best parts of AutoGen and Semantic Kernel into a unified framework for building enterprise and production-ready AI agents. It supports various agent types, including Microsoft Foundry Agents. All agent types inherit from the common base class AIAgent to provide a consistent interface.\\nThe Foundry agents are created using AzureAIAgentClient. Let us start with an example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( project_endpoint=\\u0026#34;https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in\\u0026#34;, model_deployment_name=\\u0026#34;gpt-5-mini\\u0026#34;, async_credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34;) print(result.text) asyncio.run(main()) You can also supply the project_endpoint and model_deployment_name as environment variables.\\n1 2 export AZURE_AI_PROJECT_ENDPOINT=\\u0026#34;https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in\\u0026#34; export AZURE_AI_MODEL_DEPLOYMENT_NAME=\\u0026#34;gpt-4o-mini\\u0026#34; This example uses the Azure CLI credentials cached on the local system to authenticate with the Foundry. The create_agent() method provides a convenient way to create an agent. The run() method on the agent instance supplies the prompt to the LLM and retrieves the generated response.\\n1 2 3 4 5 6 7 8 9 10 11 12 PS C:\\\\\\u0026gt; python .\\\\01-agent-basic-no-env.py I can’t access live data from here. Do you want a real‑time forecast (I can’t fetch it unless you paste it or allow a tool) or a quick summary of typical/current-season weather for Bengaluru? Quick summary (typical for early December / dry season): - Overall: mild, dry and pleasant. - Daytime highs: about 24–30°C. - Night/morning lows: about 14–20°C. - Rain: low chance of rain (post‑monsoon season). - Wind: light to moderate breezes. - What to wear: light layers for daytime; a light sweater/jacket for mornings/evenings. If you want current temperature, wind, humidity, or a 7‑day forecast, tell me and I’ll (a) explain how to get it quickly online or (b) you can paste your current weather output and I’ll interpret it. Which would you like? You can generate a streaming response using the run_stream() method.\\n1 2 3 4 5 print(\\u0026#34;Agent: \\u0026#34;, end=\\u0026#34;\\u0026#34;, flush=True) async for chunk in agent.run_stream(\\u0026#34;Tell me a short story\\u0026#34;): if chunk.text: print(chunk.text, end=\\u0026#34;\\u0026#34;, flush=True) print() The model we use in these examples does not have access to real-time weather data. We can provide the agent with tools to address this. We will use the OpenWeatherMap API to retrieve the current weather at a given location and generate a response to a user\\u0026rsquo;s prompt.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 import asyncio from typing import Annotated from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential from pydantic import Field from dotenv import load_dotenv import os load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient(async_credential=credential).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a helpful weather assistant.\\u0026#34;, tools=get_weather, store=True ) as agent, ): result = await agent.run(\\u0026#34;Given the current climate in Bengaluru, what should I wear?\\u0026#34;) print(result.text) asyncio.run(main()) When we run this, the agent uses the get_weather tool to retrieve the weather at the location specified and generates an appropriate response to the prompt.\\n1 2 3 4 5 6 7 8 9 10 PS C:\\\\\\u0026gt; python .\\\\03-agent-tool-call.py Right now it’s about 20.5°C in Bengaluru — mild and slightly cool. Practical dressing tips: - Base layer: a light long-sleeve shirt, cotton tee with a thin sweater, or a casual button-down. - Outer layer: carry a light jacket, hoodie, or thin cardigan — easy to remove if it warms up. - Bottoms: jeans, chinos, or trousers are comfortable; skirts with light tights also work. - Shoes: closed shoes or sneakers; sandals are ok if you run warm, but a closed pair is more comfortable in the cool. - Accessories: a light scarf if you feel chilly in the morning/evening. Carry a compact umbrella or light windbreaker if you want to be safe against sudden showers/wind. If you tell me what you’ll be doing (office, outdoor activity, evening out) or whether you’re sensitive to cold, I can suggest a more specific outfit. Want me to check rain/wind for the next few hours? Besides the function tools, such as the example above, Foundry agents also support hosted tools. This includes a code interpreter tool. The next example demonstrates this.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import asyncio from agent_framework import HostedCodeInterpreterTool from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential from dotenv import load_dotenv load_dotenv() async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient(async_credential=credential).create_agent( name=\\u0026#34;CodingExecutionAgent\\u0026#34;, instructions=\\u0026#34;You are a helpful assistant that can write and execute Python code.\\u0026#34;, tools=HostedCodeInterpreterTool() ) as agent, ): result = await agent.run(\\u0026#34;Calculate the 100th prime number.\\u0026#34;) print(result.text) asyncio.run(main()) This program, when executed, generates and executes the code required to answer the prompt.\\n1 2 PS C:\\\\\\u0026gt; python .\\\\04-agent-code-interpreter.py The 100th prime number is 541. This article is a deep dive into creating Azure AI Foundry agents using the Microsoft Agent Framework. In the next parts of this series, we shall look at other types of agents that we can create using this framework.\\nℹ️ Last updated: 7th December 2025 \"",
-  "url": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/",
+  "url": "http:\/\/localhost:1313\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/",
   "datePublished": "2025-10-08T00:00:00Z",
   "dateModified": "2025-10-08T00:00:00Z",
   "author": {
@@ -110,13 +110,13 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
   
   "image": {
     "@type": "ImageObject",
-    "url": "https:\/\/ravichaganti.com\/images\/maf.png",
+    "url": "http:\/\/localhost:1313\/images\/maf.png",
     "width": 1200,
     "height": 630
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/"
+    "@id": "http:\/\/localhost:1313\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/"
   },
   
   "articleSection": "\"Microsoft\"",
@@ -142,14 +142,14 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
       "@type": "ListItem",
       "position": 1,
       "name": "Home",
-      "item": "https:\/\/ravichaganti.com\/"
+      "item": "http:\/\/localhost:1313\/"
     }
     ,
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Blog",
-      "item": "https:\/\/ravichaganti.com\/blog/"
+      "item": "http:\/\/localhost:1313\/blog/"
     }
     
     ,
@@ -157,13 +157,13 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
       "@type": "ListItem",
       "position": 3,
       "name": "Microsoft",
-      "item": "https:\/\/ravichaganti.com\/categories/microsoft/"
+      "item": "http:\/\/localhost:1313\/categories/microsoft/"
     },
     {
       "@type": "ListItem",
       "position": 4,
       "name": "Microsoft Agent Framework - Creating Microsoft Foundry Agents",
-      "item": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/"
+      "item": "http:\/\/localhost:1313\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/"
     }
     
     
@@ -180,7 +180,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
     <div class="flex items-center justify-between">
       
       <div class="flex items-center">
-        <a href="https://ravichaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+        <a href="http://localhost:1313/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
           
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
             <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
@@ -632,7 +632,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
       
       <nav class="text-xs sm:text-sm mb-4">
         <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
-          <li><a href="https://ravichaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+          <li><a href="http://localhost:1313/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
           <li><span class="mx-2">/</span></li>
           <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
           
@@ -800,7 +800,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <a href="http://localhost:1313/blog/introduction-to-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Introduction to Microsoft Agent Framework
                   </a>
                 
@@ -814,8 +814,8 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Building AI Agents with Microsoft Agent Framework
+                  <a href="http://localhost:1313/blog/building-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Building AI Agents with Microsoft Agent Framework and Microsoft Foundry
                   </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 4, 2025</p>
@@ -843,7 +843,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <a href="http://localhost:1313/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
                   </a>
                 
@@ -871,18 +871,18 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
           
           
             
-            <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="http://localhost:1313/blog/building-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Building AI Agents with Microsoft Agent Framework</span>
+              <span class="truncate">Building AI Agents with Microsoft Agent Framework and Microsoft Foundry</span>
             </a>
           
 
           
           
             
-            <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="http://localhost:1313/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <span class="truncate">Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry</span>
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -1286,7 +1286,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
 
     
     <a
-      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F&text=Microsoft&#43;Agent&#43;Framework&#43;-&#43;Creating&#43;Microsoft&#43;Foundry&#43;Agents"
+      href="https://twitter.com/intent/tweet?url=http%3A%2F%2Flocalhost%3A1313%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F&text=Microsoft&#43;Agent&#43;Framework&#43;-&#43;Creating&#43;Microsoft&#43;Foundry&#43;Agents"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1300,7 +1300,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
 
     
     <a
-      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F"
+      href="https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Flocalhost%3A1313%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1314,7 +1314,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
 
     
     <a
-      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F"
+      href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A1313%2Fblog%2Fmicrosoft-agent-framework-creating-microsoft-foundry-agents%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1328,7 +1328,7 @@ The Foundry agents are created using AzureAIAgentClient. Let us start with an ex
 
     
     <button
-      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/')"
+      onclick="copyToClipboard('http:\/\/localhost:1313\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/')"
       class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
       aria-label="Copy link"
       title="Copy link"
@@ -1348,7 +1348,7 @@ function shareNative() {
     navigator.share({
       title: 'Microsoft Agent Framework - Creating Microsoft Foundry Agents',
       text: 'Microsoft Agent Framework is the new open-source development kit for creating agents and agentic workflows. This article introduces foundry agents.',
-      url: 'https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/'
+      url: 'http:\/\/localhost:1313\/blog\/microsoft-agent-framework-creating-microsoft-foundry-agents\/'
     }).catch(function(error) {
       console.log('Error sharing:', error);
     });
@@ -1431,9 +1431,9 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/"
+        <a href="http://localhost:1313/blog/building-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Building AI Agents with Microsoft Agent Framework">
+           aria-label="Previous in Microsoft Agent Framework: Building AI Agents with Microsoft Agent Framework and Microsoft Foundry">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1446,7 +1446,7 @@ function copyToClipboard(text) {
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Building AI Agents with Microsoft Agent Framework
+                Building AI Agents with Microsoft Agent Framework and Microsoft Foundry
               </h3>
               
                 <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">The world of AI agents is evolving rapidly, and Microsoft&#39;s Agent Framework provides a powerful, unified foundation for building intelligent agents that can reason, take actions, and interact with users naturally. In this blog post, I&#39;ll walk you through a series of practical examples that demonstrate how to create and use Microsoft Foundry agents using MAF and Python.</p>
@@ -1460,7 +1460,7 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/"
+        <a href="http://localhost:1313/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
            aria-label="Next in Microsoft Agent Framework: Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
           <div class="flex items-start gap-3">
@@ -1656,7 +1656,7 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/" class="no-underline block group">
+  <a href="http://localhost:1313/blog/introduction-to-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
       Introduction to Microsoft Agent Framework
@@ -1672,7 +1672,7 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="no-underline block group">
+  <a href="http://localhost:1313/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
       Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
@@ -1688,10 +1688,10 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/" class="no-underline block group">
+  <a href="http://localhost:1313/blog/building-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Building AI Agents with Microsoft Agent Framework
+      Building AI Agents with Microsoft Agent Framework and Microsoft Foundry
     </h4>
 
     
