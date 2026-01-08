@@ -53,6 +53,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // Touch swipe support for mobile devices
+  const slider = document.querySelector('.book-slider');
+  if (slider) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    slider.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    slider.addEventListener('touchmove', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    slider.addEventListener('touchend', () => {
+      const swipeDistanceX = touchStartX - touchEndX;
+      const swipeDistanceY = Math.abs(touchStartY - touchEndY);
+      const minSwipeDistance = 50; // Minimum distance for swipe
+
+      // Only handle horizontal swipes (ignore if more vertical movement)
+      if (Math.abs(swipeDistanceX) > minSwipeDistance && Math.abs(swipeDistanceX) > swipeDistanceY) {
+        if (swipeDistanceX > 0) {
+          // Swipe left - go to next
+          nextSlide();
+        } else {
+          // Swipe right - go to previous
+          prevSlide();
+        }
+      }
+    }, { passive: true });
+  }
+
   // Optional: Auto-play (uncomment if desired)
   // setInterval(nextSlide, 5000);
 });
