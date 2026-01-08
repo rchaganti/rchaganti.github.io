@@ -54,24 +54,24 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Touch swipe support for mobile devices
-  const slider = document.querySelector('.book-slider');
-  if (slider) {
+  const sliderWrapper = document.querySelector('.book-slider-wrapper');
+  if (sliderWrapper) {
     let touchStartX = 0;
     let touchEndX = 0;
     let touchStartY = 0;
     let touchEndY = 0;
 
-    slider.addEventListener('touchstart', (e) => {
+    sliderWrapper.addEventListener('touchstart', (e) => {
       touchStartX = e.changedTouches[0].screenX;
       touchStartY = e.changedTouches[0].screenY;
     }, { passive: true });
 
-    slider.addEventListener('touchmove', (e) => {
+    sliderWrapper.addEventListener('touchmove', (e) => {
       touchEndX = e.changedTouches[0].screenX;
       touchEndY = e.changedTouches[0].screenY;
     }, { passive: true });
 
-    slider.addEventListener('touchend', () => {
+    sliderWrapper.addEventListener('touchend', () => {
       const swipeDistanceX = touchStartX - touchEndX;
       const swipeDistanceY = Math.abs(touchStartY - touchEndY);
       const minSwipeDistance = 50; // Minimum distance for swipe
