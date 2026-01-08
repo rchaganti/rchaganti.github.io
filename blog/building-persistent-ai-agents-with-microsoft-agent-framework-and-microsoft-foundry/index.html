@@ -18,10 +18,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Getting Started with Foundry Agents | Ravikanth Chaganti</title>
+  <title>Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, guardrails, and enterprise-ready governance for building AI agents. With the Foundry Agent service, developers can develop agents locally and deploy them to different environments seamlessly, leveraging the building blocks provided by Microsoft Foundry. Foundry Agent service provides the runtime that manages conversations, orchestrates tool calls, and integrates with identify and observability systems. As discussed in the previous article, agents use LLMs to reason and make decisions. Agents use tools to perform actions. Agents can participate in workflows or interact with other agents to achieve a bigger goal. This is achieved by treating agents as composable units.">
+  <meta name="description" content="In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In this follow-up, I want to explore a more streamlined approach using the Microsoft Agent Framework (MAF), with a focus on building persistent agents with tool capabilities.
+When working directly with the native SDK, the typical pattern involves:
+
+Creating an AIProjectClient
+Defining an agent with PromptAgentDefinition
+Managing conversations manually
+Handling responses through the OpenAI client wrapper
+
+Here&rsquo;s what that looks like with the native SDK:">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,36 +38,52 @@
   
 
   
-  <meta property="og:title" content="Getting Started with Foundry Agents">
-  <meta property="og:description" content="Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, guardrails, and enterprise-ready governance for building AI agents. With the Foundry Agent service, developers can develop agents locally and deploy them to different environments seamlessly, leveraging the building blocks provided by Microsoft Foundry. Foundry Agent service provides the runtime that manages conversations, orchestrates tool calls, and integrates with identify and observability systems. As discussed in the previous article, agents use LLMs to reason and make decisions. Agents use tools to perform actions. Agents can participate in workflows or interact with other agents to achieve a bigger goal. This is achieved by treating agents as composable units.">
+  <meta property="og:title" content="Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
+  <meta property="og:description" content="In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In this follow-up, I want to explore a more streamlined approach using the Microsoft Agent Framework (MAF), with a focus on building persistent agents with tool capabilities.
+When working directly with the native SDK, the typical pattern involves:
+
+Creating an AIProjectClient
+Defining an agent with PromptAgentDefinition
+Managing conversations manually
+Handling responses through the OpenAI client wrapper
+
+Here&rsquo;s what that looks like with the native SDK:">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/getting-started-with-foundry-agents/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
-  <meta property="og:image" content="https://ravichaganti.com/images/foundry.png">
+  <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Getting Started with Foundry Agents">
+  <meta property="og:image:alt" content="Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
 
   
   
-    <meta property="article:published_time" content="2025-10-03T00:00:00Z">
-    <meta property="article:modified_time" content="2025-10-03T00:00:00Z">
+    <meta property="article:published_time" content="2025-10-10T00:00:00Z">
+    <meta property="article:modified_time" content="2025-10-10T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
-    <meta property="article:section" content="Microsoft">
+    <meta property="article:section" content="Microsoft Agent Framework">
     
   
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Getting Started with Foundry Agents">
-  <meta name="twitter:description" content="Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, guardrails, and enterprise-ready governance for building AI agents. With the Foundry Agent service, developers can develop agents locally and deploy them to different environments seamlessly, leveraging the building blocks provided by Microsoft Foundry. Foundry Agent service provides the runtime that manages conversations, orchestrates tool calls, and integrates with identify and observability systems. As discussed in the previous article, agents use LLMs to reason and make decisions. Agents use tools to perform actions. Agents can participate in workflows or interact with other agents to achieve a bigger goal. This is achieved by treating agents as composable units.">
-  <meta name="twitter:image" content="https://ravichaganti.com/images/foundry.png">
+  <meta name="twitter:title" content="Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
+  <meta name="twitter:description" content="In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In this follow-up, I want to explore a more streamlined approach using the Microsoft Agent Framework (MAF), with a focus on building persistent agents with tool capabilities.
+When working directly with the native SDK, the typical pattern involves:
+
+Creating an AIProjectClient
+Defining an agent with PromptAgentDefinition
+Managing conversations manually
+Handling responses through the OpenAI client wrapper
+
+Here&rsquo;s what that looks like with the native SDK:">
+  <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/getting-started-with-foundry-agents/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +112,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Getting Started with Foundry Agents",
-  "description": "Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, …",
-  "articleBody": "\"Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, guardrails, and enterprise-ready governance for building AI agents. With the Foundry Agent service, developers can develop agents locally and deploy them to different environments seamlessly, leveraging the building blocks provided by Microsoft Foundry. Foundry Agent service provides the runtime that manages conversations, orchestrates tool calls, and integrates with identify and observability systems. As discussed in the previous article, agents use LLMs to reason and make decisions. Agents use tools to perform actions. Agents can participate in workflows or interact with other agents to achieve a bigger goal. This is achieved by treating agents as composable units.\\nFigure 1: Agents are composable units (Source: Microsoft)\\nIf you are looking to develop production-ready agents for your enterprise needs, the Foundry Agent service provides the necessary building blocks to help you achieve your goals. You can use the Foundry portal or the Foundry SDK to create agents. Before we switch gears to the Microsoft Agent Framework, let us quickly review how to use the Foundry SDK to create agents.\\nFirst, let us install the necessary packages.\\n1 2 $ pip install azure-ai-projects --pre $ pip install openai azure-identity python-dotenv You must create a Foundry project, deploy a model for the agent, and set the necessary environment variables.\\n1 2 AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=\\u0026lt;Foundry-Endpoint\\u0026gt; AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME=\\u0026#34;gpt-5-mini\\u0026#34; For this example, we will use Azure CLI to authenticate and DefaultAzureCredential to retrieve the authentication token within the Python program. Therefore, ensure that you have logged in using az login command.\\nThe following example demonstrates creating an agent and chatting with the agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 import os from dotenv import load_dotenv from azure.identity import DefaultAzureCredential from azure.ai.projects import AIProjectClient from azure.ai.projects.models import PromptAgentDefinition load_dotenv() agent_name = \\u0026#39;PyTutor\\u0026#39; foundry_endpoint = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT\\u0026#34;] foundry_model = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME\\u0026#34;] instruction = \\u0026#34;You are a helpful python programming tutor. Answer questions with code samples and explanation.\\u0026#34; project_client = AIProjectClient( endpoint=foundry_endpoint, credential=DefaultAzureCredential(), ) agent = project_client.agents.create_version( agent_name=agent_name, definition=PromptAgentDefinition( model=foundry_model, instructions=instruction, ), ) openai_client = project_client.get_openai_client() conversation = openai_client.conversations.create() response = openai_client.responses.create( conversation=conversation.id, extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent_name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, input=\\u0026#34;how do I create a python function?\\u0026#34;, ) print(f\\u0026#34;Response output: {response.output_text}\\u0026#34;) response = openai_client.responses.create( conversation=conversation.id, extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent_name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, input=\\u0026#34;Build a python function that returns fibonacci sequence up to n\\u0026#34;, ) print(f\\u0026#34;Response output: {response.output_text}\\u0026#34;) AIProjectClient() creates a Foundry client instance, which can be used to create an agent. This is done using agents.create_version() method. This creates an agent in the Foundry.\\nTo chat with this agent, we will need an OpenAI client. This is created using the get_openai_client() method. Using this client, we can create a conversation to use with the agent and then chat with the agent. This enables carrying multi-turn conversations.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 C:\\\\\\u0026gt; python.exe .\\\\00-microsoft-foundry-agent-create-agent.py Response output: A Python function is defined with the def keyword, a name, an optional parameter list, and a block of statements. It can optionally return a value with return. Here are concise examples and explanations. 1) Basic function ```python def greet(name): \\u0026#34;\\u0026#34;\\u0026#34;Return a greeting string for name.\\u0026#34;\\u0026#34;\\u0026#34; return f\\u0026#34;Hello, {name}!\\u0026#34; print(greet(\\u0026#34;Alice\\u0026#34;)) # Hello, Alice! ``` .... If you want, tell me what kind of function you need and I’ll show a tailored example. Response output: Here are two common interpretations of \\u0026#34;Fibonacci up to n\\u0026#34; and simple, clear functions for each. Both start the sequence 0, 1, 1, 2, 3, ... 1) \\u0026#34;Up to n terms\\u0026#34; — return the first n Fibonacci numbers ```python from typing import List def fib_n_terms(n: int) -\\u0026gt; List[int]: \\u0026#34;\\u0026#34;\\u0026#34;Return a list of the first n Fibonacci numbers (starting with 0). fib_n_terms(0) -\\u0026gt; [] fib_n_terms(1) -\\u0026gt; [0] fib_n_terms(5) -\\u0026gt; [0, 1, 1, 2, 3] \\u0026#34;\\u0026#34;\\u0026#34; if n \\u0026lt;= 0: return [] if n == 1: return [0] seq = [0, 1] while len(seq) \\u0026lt; n: seq.append(seq[-1] + seq[-2]) return seq # Example print(fib_n_terms(6)) # [0, 1, 1, 2, 3, 5] ``` .... Notes - Time complexity for these is O(n) (n = number of terms produced or upper bound on produced terms). - Use the \\u0026#34;n terms\\u0026#34; function when the caller wants a fixed-length sequence; use the \\u0026#34;up to value\\u0026#34; or generator when limited by a maximum value. - If you prefer the sequence to start at 1, 1 instead of 0, 1, I can show that variant too. Chat with an existing agent To chat with an existing Foundry agent, we need to obtain an agent instance. This is done using project_client.agents.get(agent_name=\\u0026quot;PyTutor\\u0026quot;) method.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 from azure.identity import DefaultAzureCredential from azure.ai.projects import AIProjectClient import os from dotenv import load_dotenv load_dotenv() agent_name = \\u0026#39;PyTutor\\u0026#39; foundry_endpoint = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT\\u0026#34;] project_client = AIProjectClient( endpoint=foundry_endpoint, credential=DefaultAzureCredential(), ) agent = project_client.agents.get(agent_name=agent_name) print(f\\u0026#34;Retrieved agent: {agent.name}\\u0026#34;) openai_client = project_client.get_openai_client() # Reference the agent to get a response response = openai_client.responses.create( input=[{\\u0026#34;role\\u0026#34;: \\u0026#34;user\\u0026#34;, \\u0026#34;content\\u0026#34;: \\u0026#34;Tell me what you can help with.\\u0026#34;}], extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent.name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, ) print(f\\u0026#34;Response output: {response.output_text}\\u0026#34;) Once we have an agent instance, we can use the OpenAI client to chat with the agent and retrieve a response.\\n1 2 3 4 5 6 7 C:\\\\\\u0026gt; python.exe .\\\\01-microsoft-foundry-agent-chat-with-existing-agent.py Retrieved agent: PyTutor Response output: I’m a Python programming tutor — I can help with pretty much anything related to learning, writing, debugging, and improving Python code. Here’s a quick summary of what I can do and how I’ll help you. What I can help with - Basics: syntax, variables, control flow, functions, classes, modules, file I/O. .... As shown earlier, agents created with the Foundry SDK are available in the Foundry Portal. You can customize the agents further using the portal functionality.\\nℹ️ Last updated: 7th December 2025 \"",
-  "url": "https:\/\/ravichaganti.com\/blog\/getting-started-with-foundry-agents\/",
-  "datePublished": "2025-10-03T00:00:00Z",
-  "dateModified": "2025-10-03T00:00:00Z",
+  "headline": "Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry",
+  "description": "In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In this follow-up, I want to …",
+  "articleBody": "\"In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In this follow-up, I want to explore a more streamlined approach using the Microsoft Agent Framework (MAF), with a focus on building persistent agents with tool capabilities.\\nWhen working directly with the native SDK, the typical pattern involves:\\nCreating an AIProjectClient Defining an agent with PromptAgentDefinition Managing conversations manually Handling responses through the OpenAI client wrapper Here\\u0026rsquo;s what that looks like with the native SDK:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 from azure.ai.projects import AIProjectClient from azure.ai.projects.models import PromptAgentDefinition project_client = AIProjectClient( endpoint=foundry_endpoint, credential=DefaultAzureCredential(), ) agent = project_client.agents.create_version( agent_name=agent_name, definition=PromptAgentDefinition( model=foundry_model, instructions=instruction, ), ) # Manually manage conversations conversation = openai_client.conversations.create() response = openai_client.responses.create( conversation=conversation.id, extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent_name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, input=\\u0026#34;your question here\\u0026#34;, ) While this approach gives you fine-grained control, it requires explicit conversation management and more boilerplate code. This is where the Microsoft Agent Framework comes into play. We have already seen the basics of MAF in an earlier article in this series. So, let\\u0026rsquo;s look at the persistent agent pattern.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 import os import asyncio from dotenv import load_dotenv from typing import Annotated from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential from pydantic import Field load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main() -\\u0026gt; None: async with AzureCliCredential() as credential: async with ( AzureAIClient( credential=credential, ).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.\\u0026#34;, tools=get_weather, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(f\\u0026#34;Agent: {result}\\u0026#34;) asyncio.run(main()) In both scenarios, an agent gets created in the Foundry.\\nAs in the previous scenario, the agent is persisted in Foundry. Note that we are using AzureAIClient rather than AzureAIAgentClient. This is the recommended approach.\\nTo use an existing Foundry agent with MAF, specify use_latest_version=True in the AzureAIClient definition.\\nIn the subsequent parts of this series, we will examine other types of agents we can create with MAF.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/",
+  "datePublished": "2025-10-10T00:00:00Z",
+  "dateModified": "2025-10-10T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -107,20 +131,20 @@
   
   "image": {
     "@type": "ImageObject",
-    "url": "https:\/\/ravichaganti.com\/images\/foundry.png",
+    "url": "https:\/\/ravichaganti.com\/images\/maf.png",
     "width": 1200,
     "height": 630
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/getting-started-with-foundry-agents\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/"
   },
   
-  "articleSection": "\"Microsoft\"",
+  "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT5M",
+  "timeRequired": "PT3M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -153,14 +177,14 @@
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "Microsoft",
-      "item": "https:\/\/ravichaganti.com\/categories/microsoft/"
+      "name": "Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/categories/microsoft-agent-framework/"
     },
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Getting Started with Foundry Agents",
-      "item": "https:\/\/ravichaganti.com\/blog\/getting-started-with-foundry-agents\/"
+      "name": "Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry",
+      "item": "https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/"
     }
     
     
@@ -634,14 +658,14 @@
           <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
           
             <li><span class="mx-2">/</span></li>
-            <li><a href="/categories/microsoft/" class="hover:text-primary dark:hover:text-blue-400">Microsoft</a></li>
+            <li><a href="/categories/microsoft-agent-framework/" class="hover:text-primary dark:hover:text-blue-400">Microsoft Agent Framework</a></li>
           
         </ol>
       </nav>
 
       
       <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-        Getting Started with Foundry Agents
+        Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
       </h1>
 
       
@@ -651,7 +675,7 @@
           <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <time datetime="2025-10-03">October 3, 2025</time>
+          <time datetime="2025-10-10">October 10, 2025</time>
         </div>
 
         
@@ -661,7 +685,7 @@
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>5 min read</span>
+            <span>3 min read</span>
           </div>
         
 
@@ -721,8 +745,8 @@
       <div class="flex flex-wrap gap-2 mb-6">
         
           
-            <a href="/categories/microsoft/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Microsoft
+            <a href="/categories/microsoft-agent-framework/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Microsoft Agent Framework
             </a>
           
             <a href="/categories/foundry/" class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
@@ -736,8 +760,8 @@
         
         
           
-            <a href="/series/microsoft-foundry/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
-              📚 Series: Microsoft Foundry
+            <a href="/series/microsoft-agent-framework/" class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
+              📚 Series: Microsoft Agent Framework
             </a>
           
         
@@ -746,7 +770,7 @@
       
       
         <div class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-          Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and other aspects such as observability, guardrails, and enterprise-ready governance for creating AI agents.
+          The Microsoft Agent Framework represents a significant improvement in developer experience over the raw Foundry SDK. While the native SDK gives you complete control, the Agent Framework provides less boilerplate, type-safe tools, consistent patterns, and resource safety.
         </div>
       
     </header>
@@ -758,6 +782,130 @@
   
   
   
+    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="series-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Series: Microsoft Agent Framework
+        </span>
+        <svg
+          id="series-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
+        Part of a 4-part series
+      </p>
+
+      
+      <nav id="series-content" class="series-content collapsed mt-1">
+        <ol class="space-y-3">
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Introduction to Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 2, 2025</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Building AI Agents with Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 4, 2025</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Microsoft Agent Framework - Creating Microsoft Foundry Agents
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 8, 2025</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                4
+              </span>
+              <div class="flex-grow">
+                
+                  <span class="font-bold text-secondary dark:text-purple-400">
+                    Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 10, 2025</p>
+              </div>
+            </li>
+          
+        </ol>
+
+        
+        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
+          
+          
+            
+          
+            
+          
+            
+          
+            
+              
+            
+          
+
+          
+          
+            
+            <a href="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              <span class="truncate">Microsoft Agent Framework - Creating Microsoft Foundry Agents</span>
+            </a>
+          
+
+          
+          
+        </div>
+      </nav>
+    </aside>
+  
 
 
 
@@ -768,34 +916,15 @@
 
     
     <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-      <p>Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and capabilities such as observability, guardrails, and enterprise-ready governance for building AI agents. With the Foundry Agent service, developers can develop agents locally and deploy them to different environments seamlessly, leveraging the building blocks provided by Microsoft Foundry. Foundry Agent service provides the runtime that manages conversations, orchestrates tool calls, and integrates with identify and observability systems. As discussed in the previous article, agents use LLMs to reason and make decisions. Agents use tools to perform actions. Agents can participate in workflows or interact with other agents to achieve a bigger goal. This is achieved by treating agents as composable units.</p>
-<p><img src="https://learn.microsoft.com/en-us/azure/ai-foundry/agents/media/what-is-an-agent.png?view=foundry-classic" alt=""></p>
-<p><strong>Figure 1</strong>: Agents are composable units (Source: Microsoft)</p>
-<p>If you are looking to develop production-ready agents for your enterprise needs, the Foundry Agent service provides the necessary building blocks to help you achieve your goals. You can use the Foundry portal or the Foundry SDK to create agents. Before we switch gears to the Microsoft Agent Framework, let us quickly review how to use the Foundry SDK to create agents.</p>
-<p>First, let us install the necessary packages.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ pip install azure-ai-projects --pre
-</span></span><span class="line"><span class="cl">$ pip install openai azure-identity python-dotenv
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>You must <a href="https://learn.microsoft.com/en-us/azure/ai-foundry/quickstarts/get-started-code?view=foundry&amp;tabs=python%2Cpython2#create-resources">create a Foundry project</a>, deploy a model for the agent, and set the necessary environment variables.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">AZURE_AI_FOUNDRY_PROJECT_ENDPOINT</span><span class="o">=</span>&lt;Foundry-Endpoint&gt;
-</span></span><span class="line"><span class="cl"><span class="nv">AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME</span><span class="o">=</span><span class="s2">&#34;gpt-5-mini&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>For this example, we will use Azure CLI to authenticate and <code>DefaultAzureCredential</code> to retrieve the authentication token within the Python program. Therefore, ensure that you have logged in using <code>az login</code> command.</p>
-<p>The following example demonstrates creating an agent and chatting with the agent.</p>
+      <p>In my earlier post on <a href="https://ravichaganti.com/blog/getting-started-with-foundry-agents/">Getting Started with Foundry Agents</a>, I covered the basics of creating agents using the Azure AI Foundry Agents service and the <code>azure-ai-projects</code> SDK. In this follow-up, I want to explore a more streamlined approach using the <strong>Microsoft Agent Framework (MAF)</strong>, with a focus on building persistent agents with tool capabilities.</p>
+<p>When working directly with the native SDK, the typical pattern involves:</p>
+<ol>
+<li>Creating an <code>AIProjectClient</code></li>
+<li>Defining an agent with <code>PromptAgentDefinition</code></li>
+<li>Managing conversations manually</li>
+<li>Handling responses through the OpenAI client wrapper</li>
+</ol>
+<p>Here&rsquo;s what that looks like with the native SDK:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -821,41 +950,10 @@
 </span><span class="lnt">21
 </span><span class="lnt">22
 </span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.ai.projects</span> <span class="kn">import</span> <span class="n">AIProjectClient</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.ai.projects</span> <span class="kn">import</span> <span class="n">AIProjectClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.ai.projects.models</span> <span class="kn">import</span> <span class="n">PromptAgentDefinition</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">agent_name</span> <span class="o">=</span> <span class="s1">&#39;PyTutor&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="n">foundry_endpoint</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">foundry_model</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">instruction</span> <span class="o">=</span> <span class="s2">&#34;You are a helpful python programming tutor. Answer questions with code samples and explanation.&#34;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">project_client</span> <span class="o">=</span> <span class="n">AIProjectClient</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">endpoint</span><span class="o">=</span><span class="n">foundry_endpoint</span><span class="p">,</span>
@@ -870,29 +968,16 @@
 </span></span><span class="line"><span class="cl">    <span class="p">),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">openai_client</span> <span class="o">=</span> <span class="n">project_client</span><span class="o">.</span><span class="n">get_openai_client</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Manually manage conversations</span>
 </span></span><span class="line"><span class="cl"><span class="n">conversation</span> <span class="o">=</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">conversations</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">conversation</span><span class="o">=</span><span class="n">conversation</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">extra_body</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;agent&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span> <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;agent_reference&#34;</span><span class="p">}},</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">input</span><span class="o">=</span><span class="s2">&#34;how do I create a python function?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">input</span><span class="o">=</span><span class="s2">&#34;your question here&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Response output: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">output_text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">conversation</span><span class="o">=</span><span class="n">conversation</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">extra_body</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;agent&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span> <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;agent_reference&#34;</span><span class="p">}},</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">input</span><span class="o">=</span><span class="s2">&#34;Build a python function that returns fibonacci sequence up to n&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Response output: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">output_text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><code>AIProjectClient()</code> creates a Foundry client instance, which can be used to create an agent. This is done using <code>agents.create_version()</code> method. This creates an agent in the Foundry.</p>
-<p><img src="/images/foundry-agent-1.png" alt="Foundry Agent"></p>
-<p>To chat with this agent, we will need an OpenAI client. This is created using the <code>get_openai_client()</code> method. Using this client, we can create a conversation to use with the agent and then chat with the agent. This enables carrying multi-turn conversations.</p>
+</div><p>While this approach gives you fine-grained control, it requires explicit conversation management and more boilerplate code. This is where the Microsoft Agent Framework comes into play. We have <a href="/blog/introduction-to-microsoft-agent-framework/">already seen the basics of MAF</a> in an earlier article in this series. So, let&rsquo;s look at the persistent agent pattern.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -940,201 +1025,90 @@
 </span><span class="lnt">43
 </span><span class="lnt">44
 </span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> python.exe .<span class="se">\0</span>0-microsoft-foundry-agent-create-agent.py
-</span></span><span class="line"><span class="cl">Response output: A Python <span class="k">function</span> is defined with the def keyword, a name, an optional parameter list, and a block of statements. It can optionally <span class="k">return</span> a value with <span class="k">return</span>. Here are concise examples and explanations.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">1<span class="o">)</span> Basic <span class="k">function</span>
-</span></span><span class="line"><span class="cl"><span class="sb">```</span>python
-</span></span><span class="line"><span class="cl">def greet<span class="o">(</span>name<span class="o">)</span>:
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Return a greeting string for name.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> f<span class="s2">&#34;Hello, {name}!&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">print<span class="o">(</span>greet<span class="o">(</span><span class="s2">&#34;Alice&#34;</span><span class="o">))</span>  <span class="c1"># Hello, Alice!</span>
-</span></span><span class="line"><span class="cl"><span class="sb">```</span>
-</span></span><span class="line"><span class="cl">....
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">If you want, tell me what kind of <span class="k">function</span> you need and I’ll show a tailored example.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Response output: Here are two common interpretations of <span class="s2">&#34;Fibonacci up to n&#34;</span> and simple, clear functions <span class="k">for</span> each. Both start the sequence 0, 1, 1, 2, 3, ...
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">1<span class="o">)</span> <span class="s2">&#34;Up to n terms&#34;</span> — <span class="k">return</span> the first n Fibonacci numbers
-</span></span><span class="line"><span class="cl"><span class="sb">```</span>python
-</span></span><span class="line"><span class="cl">from typing import List
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">def fib_n_terms<span class="o">(</span>n: int<span class="o">)</span> -&gt; List<span class="o">[</span>int<span class="o">]</span>:
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Return a list of the first n Fibonacci numbers (starting with 0).
-</span></span></span><span class="line"><span class="cl"><span class="s2">    fib_n_terms(0) -&gt; []
-</span></span></span><span class="line"><span class="cl"><span class="s2">    fib_n_terms(1) -&gt; [0]
-</span></span></span><span class="line"><span class="cl"><span class="s2">    fib_n_terms(5) -&gt; [0, 1, 1, 2, 3]
-</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> n &lt;<span class="o">=</span> 0:
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">[]</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nv">n</span> <span class="o">==</span> 1:
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">[</span>0<span class="o">]</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">seq</span> <span class="o">=</span> <span class="o">[</span>0, 1<span class="o">]</span>
-</span></span><span class="line"><span class="cl">    <span class="k">while</span> len<span class="o">(</span>seq<span class="o">)</span> &lt; n:
-</span></span><span class="line"><span class="cl">        seq.append<span class="o">(</span>seq<span class="o">[</span>-1<span class="o">]</span> + seq<span class="o">[</span>-2<span class="o">])</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> seq
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Example</span>
-</span></span><span class="line"><span class="cl">print<span class="o">(</span>fib_n_terms<span class="o">(</span>6<span class="o">))</span>  <span class="c1"># [0, 1, 1, 2, 3, 5]</span>
-</span></span><span class="line"><span class="cl"><span class="sb">```</span>
-</span></span><span class="line"><span class="cl">....
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Notes
-</span></span><span class="line"><span class="cl">- Time complexity <span class="k">for</span> these is O<span class="o">(</span>n<span class="o">)</span> <span class="o">(</span><span class="nv">n</span> <span class="o">=</span> number of terms produced or upper bound on produced terms<span class="o">)</span>.
-</span></span><span class="line"><span class="cl">- Use the <span class="s2">&#34;n terms&#34;</span> <span class="k">function</span> when the <span class="nb">caller</span> wants a fixed-length sequence<span class="p">;</span> use the <span class="s2">&#34;up to value&#34;</span> or generator when limited by a maximum value.
-</span></span><span class="line"><span class="cl">- If you prefer the sequence to start at 1, <span class="m">1</span> instead of 0, 1, I can show that variant too.
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="chat-with-an-existing-agent">Chat with an existing agent</h3>
-<p>To chat with an existing Foundry agent, we need to obtain an agent instance. This is done using <code>project_client.agents.get(agent_name=&quot;PyTutor&quot;)</code> method.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.ai.projects</span> <span class="kn">import</span> <span class="n">AIProjectClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">agent_name</span> <span class="o">=</span> <span class="s1">&#39;PyTutor&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="n">foundry_endpoint</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_weather</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">location</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;The location to get the weather for.&#34;</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">requests</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">json</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">project_client</span> <span class="o">=</span> <span class="n">AIProjectClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">endpoint</span><span class="o">=</span><span class="n">foundry_endpoint</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;OPEN_WEATHERMAP_API_KEY&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">agent</span> <span class="o">=</span> <span class="n">project_client</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Retrieved agent: </span><span class="si">{</span><span class="n">agent</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&#34;http://api.openweathermap.org/data/2.5/weather&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">complete_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">?q=</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&amp;appid=</span><span class="si">{</span><span class="n">api_key</span><span class="si">}</span><span class="s2">&amp;units=metric&#34;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">openai_client</span> <span class="o">=</span> <span class="n">project_client</span><span class="o">.</span><span class="n">get_openai_client</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">complete_url</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Reference the agent to get a response</span>
-</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">input</span><span class="o">=</span><span class="p">[{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;Tell me what you can help with.&#34;</span><span class="p">}],</span>
-</span></span><span class="line"><span class="cl">    <span class="n">extra_body</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;agent&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;agent_reference&#34;</span><span class="p">}},</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;cod&#34;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&#34;404&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">main_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;main&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">current_temperature</span> <span class="o">=</span> <span class="n">main_data</span><span class="p">[</span><span class="s2">&#34;temp&#34;</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Response output: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">output_text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Temperature: </span><span class="si">{</span><span class="n">current_temperature</span><span class="si">}</span><span class="s2">°C&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;City not found&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">tools</span><span class="o">=</span><span class="n">get_weather</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Agent: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Once we have an agent instance, we can use the OpenAI client to chat with the agent and retrieve a response.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> python.exe .<span class="se">\0</span>1-microsoft-foundry-agent-chat-with-existing-agent.py
-</span></span><span class="line"><span class="cl">Retrieved agent: PyTutor
-</span></span><span class="line"><span class="cl">Response output: I’m a Python programming tutor — I can <span class="nb">help</span> with pretty much anything related to learning, writing, debugging, and improving Python code. Here’s a quick summary of what I can <span class="k">do</span> and how I’ll <span class="nb">help</span> you.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">What I can <span class="nb">help</span> with
-</span></span><span class="line"><span class="cl">- Basics: syntax, variables, control flow, functions, classes, modules, file I/O.
-</span></span><span class="line"><span class="cl">....
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>As shown earlier, agents created with the Foundry SDK are available in the Foundry Portal. You can customize the agents further using the portal functionality.</p>
-<style>
-.notice-shortcode.notice-info {
-  background-color: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e3a8a;
-}
-.dark .notice-shortcode.notice-info {
-  background-color: rgba(30, 58, 138, 0.2);
-  border-color: #1e40af;
-  color: #f1f5f9;
-}
-.notice-shortcode.notice-warning {
-  background-color: #fefce8;
-  border-color: #fde047;
-  color: #854d0e;
-}
-.dark .notice-shortcode.notice-warning {
-  background-color: rgba(133, 77, 14, 0.2);
-  border-color: #ca8a04;
-  color: #fef9c3;
-}
-.notice-shortcode.notice-tip {
-  background-color: #f0fdf4;
-  border-color: #86efac;
-  color: #14532d;
-}
-.dark .notice-shortcode.notice-tip {
-  background-color: rgba(20, 83, 45, 0.2);
-  border-color: #16a34a;
-  color: #dcfce7;
-}
-.notice-shortcode.notice-danger {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-  color: #7f1d1d;
-}
-.dark .notice-shortcode.notice-danger {
-  background-color: rgba(127, 29, 29, 0.2);
-  border-color: #dc2626;
-  color: #fecaca;
-}
-.notice-shortcode.notice-success {
-  background-color: #ecfdf5;
-  border-color: #6ee7b7;
-  color: #064e3b;
-}
-.dark .notice-shortcode.notice-success {
-  background-color: rgba(6, 78, 59, 0.2);
-  border-color: #059669;
-  color: #d1fae5;
-}
-</style>
-
-<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
-  <div class="flex items-start gap-3">
-    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
-    <div class="flex-1 notice-content">
-      Last updated: 7th December 2025
-    </div>
-  </div>
-</div>
-
+</div><p>In both scenarios, an agent gets created in the Foundry.</p>
+<p><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/maf-persist-agent-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/maf-persist-agent-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lightbox = GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        moreLength: 0
+      });
+    });
+  </script></p>
+<p>As in the previous scenario, the agent is persisted in Foundry. Note that we are using <code>AzureAIClient</code> rather than <code>AzureAIAgentClient</code>. This is the recommended approach.</p>
+<p>To use an existing Foundry agent with MAF, specify <code>use_latest_version=True</code> in the <code>AzureAIClient</code> definition.</p>
+<p>In the subsequent parts of this series, we will examine other types of agents we can create with MAF.</p>
 
     </div>
 
@@ -1162,7 +1136,7 @@
 
     
     <a
-      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgetting-started-with-foundry-agents%2F&text=Getting&#43;Started&#43;with&#43;Foundry&#43;Agents"
+      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry%2F&text=Building&#43;persistent&#43;AI&#43;Agents&#43;with&#43;Microsoft&#43;Agent&#43;Framework&#43;and&#43;Microsoft&#43;Foundry"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1176,7 +1150,7 @@
 
     
     <a
-      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgetting-started-with-foundry-agents%2F"
+      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1190,7 +1164,7 @@
 
     
     <a
-      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgetting-started-with-foundry-agents%2F"
+      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1204,7 +1178,7 @@
 
     
     <button
-      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/getting-started-with-foundry-agents\/')"
+      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/')"
       class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
       aria-label="Copy link"
       title="Copy link"
@@ -1222,9 +1196,9 @@
 function shareNative() {
   if (navigator.share) {
     navigator.share({
-      title: 'Getting Started with Foundry Agents',
-      text: 'Microsoft Foundry (formerly Azure AI Foundry) is a unified system for building intelligent agents. It is a platform that provides models, tools, frameworks, and other aspects such as observability, guardrails, and enterprise-ready governance for creating AI agents.',
-      url: 'https:\/\/ravichaganti.com\/blog\/getting-started-with-foundry-agents\/'
+      title: 'Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry',
+      text: 'The Microsoft Agent Framework represents a significant improvement in developer experience over the raw Foundry SDK. While the native SDK gives you complete control, the Agent Framework provides less boilerplate, type-safe tools, consistent patterns, and resource safety.',
+      url: 'https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/'
     }).catch(function(error) {
       console.log('Error sharing:', error);
     });
@@ -1279,12 +1253,21 @@ function copyToClipboard(text) {
     
     
       
+    
+      
+    
+      
+    
+      
         
       
     
 
     
     
+      
+        
+        
       
       
     
@@ -1295,20 +1278,29 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Microsoft Agent Framework: Microsoft Agent Framework - Creating Microsoft Foundry Agents">
           <div class="flex items-start gap-3">
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </div>
-            <div class="flex-1">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Microsoft Agent Framework - Creating Microsoft Foundry Agents
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Microsoft Agent Framework is the new open-source development kit for creating agents and agentic workflows. This article introduces foundry agents.</p>
+              
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
 
@@ -1502,22 +1494,6 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-10">
-      Oct 10, 2025
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/building-ai-agents-with-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -1543,6 +1519,38 @@ function copyToClipboard(text) {
     
     <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-02">
       Oct 2, 2025
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/getting-started-with-foundry-agents/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Getting Started with Foundry Agents
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-03">
+      Oct 3, 2025
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-creating-microsoft-foundry-agents/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Microsoft Agent Framework - Creating Microsoft Foundry Agents
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-08">
+      Oct 8, 2025
     </time>
   </a>
 </article>
