@@ -18,26 +18,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Introduction to Google Agent Development Kit | Ravikanth Chaganti</title>
+  <title>Building a Multi-Agent LinkedIn Newsletter System with Google ADK | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Every other week, we see a new framework claiming to simplifythe  development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).
+  <meta name="description" content="Google&rsquo;s Agent Development Kit (ADK) offers workflow agents for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.
+In this post, I&rsquo;ll walk you through how I created an AI-powered content pipeline that:
 
-  
-  
-    
-      
-        
-        
-          
-        
+Researches trending topics using Google Search
+Writes engaging newsletter drafts
+Edits and quality-checks the content
+Publishes the final version to a local file
 
-        
-          YouTube Video
-        
-        
-          This video requires your consent to load content from YouTube, which may set tracking cookies.
-        ">
+Let&rsquo;s dive in!
+The Big Picture: A Team of Specialized Agents
+Instead of building one massive AI that does everything (and probably does nothing well), I went with a multi-agent architecture. Think of it like assembling a content team:">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -46,38 +40,32 @@
   
 
   
-  <meta property="og:title" content="Introduction to Google Agent Development Kit">
-  <meta property="og:description" content="Every other week, we see a new framework claiming to simplifythe  development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).
+  <meta property="og:title" content="Building a Multi-Agent LinkedIn Newsletter System with Google ADK">
+  <meta property="og:description" content="Google&rsquo;s Agent Development Kit (ADK) offers workflow agents for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.
+In this post, I&rsquo;ll walk you through how I created an AI-powered content pipeline that:
 
-  
-  
-    
-      
-        
-        
-          
-        
+Researches trending topics using Google Search
+Writes engaging newsletter drafts
+Edits and quality-checks the content
+Publishes the final version to a local file
 
-        
-          YouTube Video
-        
-        
-          This video requires your consent to load content from YouTube, which may set tracking cookies.
-        ">
+Let&rsquo;s dive in!
+The Big Picture: A Team of Specialized Agents
+Instead of building one massive AI that does everything (and probably does nothing well), I went with a multi-agent architecture. Think of it like assembling a content team:">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/introduction-to-google-agent-development-kit/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/building-a-multi-agent-linkedin-newsletter-system-with-google-adk/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/adk.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Introduction to Google Agent Development Kit">
+  <meta property="og:image:alt" content="Building a Multi-Agent LinkedIn Newsletter System with Google ADK">
 
   
   
-    <meta property="article:published_time" content="2025-12-01T00:00:00Z">
-    <meta property="article:modified_time" content="2025-12-01T00:00:00Z">
+    <meta property="article:published_time" content="2026-01-26T00:00:00Z">
+    <meta property="article:modified_time" content="2026-01-26T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Google">
     
@@ -85,29 +73,23 @@
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Introduction to Google Agent Development Kit">
-  <meta name="twitter:description" content="Every other week, we see a new framework claiming to simplifythe  development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).
+  <meta name="twitter:title" content="Building a Multi-Agent LinkedIn Newsletter System with Google ADK">
+  <meta name="twitter:description" content="Google&rsquo;s Agent Development Kit (ADK) offers workflow agents for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.
+In this post, I&rsquo;ll walk you through how I created an AI-powered content pipeline that:
 
-  
-  
-    
-      
-        
-        
-          
-        
+Researches trending topics using Google Search
+Writes engaging newsletter drafts
+Edits and quality-checks the content
+Publishes the final version to a local file
 
-        
-          YouTube Video
-        
-        
-          This video requires your consent to load content from YouTube, which may set tracking cookies.
-        ">
+Let&rsquo;s dive in!
+The Big Picture: A Team of Specialized Agents
+Instead of building one massive AI that does everything (and probably does nothing well), I went with a multi-agent architecture. Think of it like assembling a content team:">
   <meta name="twitter:image" content="https://ravichaganti.com/images/adk.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/introduction-to-google-agent-development-kit/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/building-a-multi-agent-linkedin-newsletter-system-with-google-adk/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -136,12 +118,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Introduction to Google Agent Development Kit",
-  "description": "Every other week, we see a new framework claiming to simplifythe development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing …",
-  "articleBody": "\"Every other week, we see a new framework claiming to simplifythe development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).\\nYouTube Video This video requires your consent to load content from YouTube, which may set tracking cookies. Enable YouTube Video ID: zgrOwow_uTQ Bo Yang, tech lead of the ADK project, wrote about how ADK was born and described how 100 lines of code became the most sought-after agent development framework. It is fascinating to read how ADK evolved into what it is today.\\nSo, what is ADK? What makes it special when there are a million other frameworks out there? In this series of posts, we will explore answers to these questions.\\nIntroduction Google ADK provides an open foundation for simplifying agent and agentic workflow development. With ADK, you can use not just Google\\u0026rsquo;s Gemini models but models from any provider, making model agnostic. The agents and workflows developed using ADK are deployment-agnostic and can run on your local machine, in Google Cloud, or in your own data center. True to its developers\\u0026rsquo; intentions, ADK supports interoperability with agents built in other frameworks via the Agent-to-Agent (A2A) protocol. In my work with various agent development frameworks, I found ADK to be very easy to get started with while providing powerful constructs for building enterprise-ready agents and agentic workflows. With ADK, you can create agents in Python, Go, and Java programming languages. All examples in this series of articles on ADK will be written in Python.\\nLet us explore further using code.\\nTo get started with creating agents, all you need is the google-adk package.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 C:\\\\\\u0026gt; pip install google-adk C:\\\\\\u0026gt; adk --help Usage: adk [OPTIONS] COMMAND [ARGS]... Agent Development Kit CLI tools. Options: --version Show the version and exit. --help Show this message and exit. Commands: api_server Starts a FastAPI server for agents. conformance Conformance testing tools for ADK. create Creates a new app in the current folder with prepopulated agent template. deploy Deploys agent to hosted environments. eval Evaluates an agent given the eval sets. eval_set Manage Eval Sets. run Runs an interactive CLI for a certain agent. web Starts a FastAPI server with Web UI for agents. The adk command-line provides the necessary capabilities to create, run, deploy, and evaluate agents. Using the adk web command, you can converse with the agents and debug their execution. Let us start with creating an agent using the adk create command. When you run this command, you will be prompted for a model to use, a backend for the agent deployment and services, and an API key if you have chosen the Google Gemini model.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 C:\\\\\\u0026gt; adk create code_agent Choose a model for the root agent: 1. gemini-2.5-flash 2. Other models (fill later) Choose model (1, 2): 1 1. Google AI 2. Vertex AI Choose a backend (1, 2): 1 Don\\u0026#39;t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey Enter Google API key: YOUR_API_KEY Agent created in C:\\\\GitHub\\\\google-adk-101\\\\code_agent: - .env - __init__.py - agent.py As seen in the output, this command generates the necessary scaffolding. The .env file contains environment variables, including GOOGLE_API_KEY for Google Gemini models. The __init__.py file serves as the agent entry point and imports the agent defined in agent.py. The agent.py contains the agent definition. Let us explore this further.\\n1 2 3 4 5 6 7 8 from google.adk.agents.llm_agent import Agent root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;root_agent\\u0026#39;, description=\\u0026#39;A helpful assistant for user questions.\\u0026#39;, instruction=\\u0026#39;Answer user questions to the best of your knowledge\\u0026#39;, ) Google ADK supports multiple agent types. The one we created is an LlmAgent. This category of agents uses an LLM as the core reasoning engine and is non-deterministic. In the preceding code, you can replace Agent with LlmAgent as both refer to the LLM Agent implementation. We will look at other types of agents later in this series.\\nIn the agent definition above, the model identifies the LLM agent to use for reasoning, and the instruction specifies the agent\\u0026rsquo;s behavior. This scaffold is sufficient to try running this agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 C:\\\\\\u0026gt; adk run .\\\\code_agent\\\\ .... [user]: Hello, how can you help? [root_agent]: Hello! I\\u0026#39;m here to help answer your questions and provide information to the best of my knowledge. Here are some examples of what I can do: * **Answer questions on a wide range of topics:** History, science, technology, culture, current events, and more. * **Explain concepts:** Describe how things work, define terms, or break down complex ideas. * **Provide summaries:** Give you a concise overview of a topic or document. * **Help with creative tasks:** Brainstorm ideas, write short pieces of text, or suggest options. * **Give recommendations:** Suggest books, movies, places, or tools based on your interests. Just tell me what you need, and I\\u0026#39;ll do my best to assist you! To open the dev-ui web interface, run the adk web command.\\nThe ADK web interface is a great resource for debugging agent conversations and interactions with other agents and tools.\\nADK provides a few built-in tools for our agents. The following example shows the built-in google-search tool for grounding LLMs with Google search results.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 from google.adk.agents.llm_agent import Agent from google.adk.tools import google_search root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;weather_agent\\u0026#39;, description=\\u0026#39;Weather agent that can get weather information for any location.\\u0026#39;, instruction=\\u0026#39;You are a weather agent that can get weather information for any location. \\\\ Respond in the following format: {\\u0026#34;location\\u0026#34;: \\u0026#34;city\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;temperature\\u0026#34;,\\u0026#34;condition\\u0026#34;: \\u0026#34;condition\\u0026#34;}\\u0026#39;, tools=[ google_search, ], ) When you run this agent using adk run, you will be presented with a conversational prompt.\\n1 2 3 4 5 C:\\\\\\u0026gt; adk run .\\\\weather_agent\\\\ .... Running agent weather_agent, type exit to exit. [user]: What is the weather in Bangalore like? [weather_agent]: {\\u0026#34;location\\u0026#34;: \\u0026#34;Bangalore\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;19 °C\\u0026#34;,\\u0026#34;condition\\u0026#34;: \\u0026#34;Partly cloudy\\u0026#34;} You can also supply Python functions as tools.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 from google.adk.agents.llm_agent import Agent import os from typing import Annotated from pydantic import Field def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; root_agent = Agent( model=\\u0026#39;gemini-2.5-flash\\u0026#39;, name=\\u0026#39;weather_agent\\u0026#39;, description=\\u0026#39;Weather agent that can get weather information for any location.\\u0026#39;, instruction=\\u0026#39;You are a weather agent that can get weather information for any location. \\\\ Respond in the following format: {\\u0026#34;location\\u0026#34;: \\u0026#34;city\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;temperature\\u0026#34;}\\u0026#39;, tools=[ get_weather ], ) The get_weather function uses the OpenWeatherMap API to retrieve weather data for any location.\\n1 2 3 4 5 C:\\\\\\u0026gt; adk run .\\\\code_agent\\\\ ... Running agent weather_agent, type exit to exit. [user]: What is the weather in Bangalore like? [weather_agent]: {\\u0026#34;location\\u0026#34;: \\u0026#34;Bangalore\\u0026#34;,\\u0026#34;temperature\\u0026#34;: \\u0026#34;18.66°C\\u0026#34;} Google ADK also supports the Model Context Protocol and can use other agents as tools. We will learn more about this later.\\nDeclarative Configuration What we have seen so far is an imperative-based approach to implementing agents in ADK. We can also do the same declaratively using a YAML configuration. Let us look at this method.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 C:\\\\\\u0026gt; adk create weather_agent --type=config Choose a model for the root agent: 1. gemini-2.5-flash 2. Other models (fill later) Choose model (1, 2): 1 1. Google AI 2. Vertex AI Choose a backend (1, 2): 1 Don\\u0026#39;t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey Enter Google API key: YOUR_GOOGLE_API_KEY Agent created in C:\\\\GitHub\\\\google-adk-101\\\\weather_agent: - .env - __init__.py - root_agent.yaml For creating a YAML-based agent configuration, you need to specify the --type=config optional parameter to the adk create command. This command generates root_agent.yaml instead of agent.py. If you intend to write declarative agents like this, ensure that you have root_agent.yaml always in the agent folder.\\n1 2 3 4 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash You can add tools to this configuration.\\n1 2 3 4 5 6 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash tools: - name: google_search This is how built-in tools can be specified. But what about functional tools, such as the get_weather tool we saw earlier? To use function tools within declarative configuration, we need to place them in a Python module and place that module under the agent package. For example, the get_weather function above can be added to the tools.py module.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 import os from typing import Annotated from pydantic import Field def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; The folder structure of the agent folder will be as follows:\\n1 2 3 4 5 6 7 8 C:\\\\\\u0026gt; tree /F /A .\\\\weather_agent\\\\ Folder PATH listing Volume serial number is 987A-295A C:\\\\WEATHER_AGENT .env root_agent.yaml tools.py __init__.py To reference the tool in the YAML configuration, we must provide the fully qualified path to the function.\\n1 2 3 4 5 6 name: root_agent description: A helpful assistant for user questions. instruction: Answer user questions to the best of your knowledge model: gemini-2.5-flash tools: - name: weather_agent.tools.get_weather With the basics out of the way, let\\u0026rsquo;s dive deep into developing agents and agentic workflows with Google ADK.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/",
-  "datePublished": "2025-12-01T00:00:00Z",
-  "dateModified": "2025-12-01T00:00:00Z",
+  "headline": "Building a Multi-Agent LinkedIn Newsletter System with Google ADK",
+  "description": "Google\u0026rsquo;s Agent Development Kit (ADK) offers workflow agents for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.\nIn this post, …",
+  "articleBody": "\"Google\\u0026rsquo;s Agent Development Kit (ADK) offers workflow agents for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.\\nIn this post, I\\u0026rsquo;ll walk you through how I created an AI-powered content pipeline that:\\nResearches trending topics using Google Search Writes engaging newsletter drafts Edits and quality-checks the content Publishes the final version to a local file Let\\u0026rsquo;s dive in!\\nThe Big Picture: A Team of Specialized Agents Instead of building one massive AI that does everything (and probably does nothing well), I went with a multi-agent architecture. Think of it like assembling a content team:\\nAgent Role Job Description WebResearchAgent Research Analyst Finds trending topics from the web WriterAgent Content Creator Transforms research into engaging prose EditorAgent Quality Control Reviews drafts and provides feedback PublisherAgent Publisher Saves the final approved content The cool part? These agents talk to each other, pass work around, and even have a built-in feedback loop. Let me show you how it all works.\\nSetting Up the Foundation First, let\\u0026rsquo;s look at the imports and setup:\\n1 2 3 4 5 6 7 8 9 10 import asyncio from google.adk.agents import LlmAgent, SequentialAgent, LoopAgent from google.adk.runners import Runner from google.adk.sessions import InMemorySessionService from google.adk.tools import google_search from google.genai import types from utils.agent_utils import load_instruction, save_to_local_file from dotenv import load_dotenv load_dotenv() The key imports here are:\\nLlmAgent – Your basic AI agent that can think and respond SequentialAgent – Runs agents one after another (like a pipeline) LoopAgent – Keeps running until a condition is met (perfect for edit cycles!) google_search – Built-in tool for web searches The Web Research Agent This agent is our digital bloodhound. It sniffs out the latest trends using Google Search.\\n1 2 3 4 5 6 7 web_research_agent = LlmAgent( name=\\u0026#34;WebResearchAgent\\u0026#34;, model=\\u0026#34;gemini-2.0-flash\\u0026#34;, instruction=load_instruction(\\u0026#34;web-search-agent.txt\\u0026#34;), tools=[google_search], output_key=\\u0026#34;research_output\\u0026#34;, ) Notice the output_key=\\u0026quot;research_output\\u0026quot; – this is crucial! It stores the agent\\u0026rsquo;s output in a shared state that other agents can access later. Think of it as the agent putting its work in a shared folder.\\nThe Research Prompt Here\\u0026rsquo;s what the research agent\\u0026rsquo;s instructions look like:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 Role: Strategic Research Analyst Task: Identify and summarize the top 5 trending items for a provided set of topics from the last 7 days. Instructions (Chain-of-Thought): For each topic provided, follow these steps internally: - Deconstruct: Break down the topic into 2-3 specific search queries - Execute: Use the Google Search tool for each query - Evaluate: Select the 5 most \\u0026#34;impactful\\u0026#34; items - Synthesize: Write a high-density summary for each item Required Output Format per Topic: Topic: [Topic Name] - [Headline]: [1-sentence summary] - Insight: [Why this matters to professionals] - Reference: [Source URL] The Chain-of-Thought (CoT) approach forces the agent to think systematically rather than just vomiting out whatever comes to mind first.\\nThe Writer Agent Now we need someone to turn that raw research into something people actually want to read.\\n1 2 3 4 5 6 writer_agent = LlmAgent( name=\\u0026#34;WriterAgent\\u0026#34;, model=\\u0026#34;gemini-2.0-flash\\u0026#34;, instruction=load_instruction(\\u0026#34;writer-agent.txt\\u0026#34;), output_key=\\u0026#34;writer_draft\\u0026#34; ) The Writer\\u0026rsquo;s Prompt 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 Role: Creative Content Creator Instruction: You are a professional Copywriter specializing in LinkedIn Newsletters. Research Output: {research_output} Your workflow: - Draft a LinkedIn Newsletter in Markdown format - Structure the draft with: - Catchy Title: Use a hook that targets professionals - Introduction: Briefly set the stage for the week\\u0026#39;s trends - Body Paragraphs: One section per topic (narrative style, not just a list!) - Always use citations and link to the sources - Takeaways: A \\u0026#34;So What?\\u0026#34; section for the reader - Call to Action (CTA): Encourage comments or shares Feedback Integration: If the editor responds with APPROVED, call the exit_loop tool. Otherwise, use editor feedback provided below and revise the draft. Editor Feedback (if any): {editor_feedback:} See that {research_output} placeholder? That\\u0026rsquo;s pulling in the WebResearchAgent\\u0026rsquo;s work automatically. And {editor_feedback} lets the writer know what needs fixing. Magic!\\nThe Editor Agent Every writer needs an editor (even AI writers). This agent plays the bad cop and ensures quality standards are met.\\n1 2 3 4 5 6 editor_agent = LlmAgent( name=\\u0026#34;EditorAgent\\u0026#34;, model=\\u0026#34;gemini-2.0-flash\\u0026#34;, instruction=load_instruction(\\u0026#34;editor-agent.txt\\u0026#34;), output_key=\\u0026#34;editor_feedback\\u0026#34; ) The Editor\\u0026rsquo;s Prompt 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 Role: Quality Control \\u0026amp; Compliance Instruction: You are a meticulous Senior Editor. Writer\\u0026#39;s Draft to Review: {writer_draft} Review Checklist: - Accuracy: Does it reflect the 5 trending items? - Trust Worthy: Are citations added and linked to sources? - Formatting: Is it valid Markdown with proper headers? - Tone: Is it appropriate for a LinkedIn professional audience? - Clarity: Any grammatical errors or awkward phrasings? - Engagement: Is the hook strong enough to stop the scroll? Response Logic: - If the draft passes all checks: Respond only with \\u0026#34;APPROVED\\u0026#34; - If the draft fails: Provide bulleted feedback for the Writer Agent (Do NOT rewrite the draft yourself!) The key here is the Response Logic – if everything looks good, the editor just says \\u0026ldquo;APPROVED\\u0026rdquo;, and we move on. If not, it sends feedback, and the loop continues.\\nThe Writer-Editor Loop This is where things get interesting. We wrap the writer and editor in a LoopAgent:\\n1 2 3 4 5 6 7 8 writer_editor_loop = LoopAgent( name=\\u0026#34;ReviewCycle\\u0026#34;, sub_agents=[ writer_agent, editor_agent ], max_iterations=3 ) What happens here:\\nWriter creates a draft Editor reviews it If \\u0026ldquo;APPROVED\\u0026rdquo; → Exit the loop If not → Writer revises based on feedback Repeat until approved or max iterations (3) is reached This mimics real-world content workflows! No more publishing first drafts.\\nThe Publisher Agent Once the editor gives the green light, we need to save the final product.\\n1 2 3 4 5 6 publisher_agent = LlmAgent( name=\\u0026#34;PublisherAgent\\u0026#34;, model=\\u0026#34;gemini-2.0-flash\\u0026#34;, instruction=load_instruction(\\u0026#34;publisher-agent.txt\\u0026#34;), tools=[save_to_local_file] ) Custom tool for saving the newsletter content The publisher uses a custom tool to save files:\\n1 2 3 4 5 6 7 8 9 10 11 12 def save_to_local_file(content: str, filename: str = None) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Saves the combined multi-topic newsletter to a local file.\\u0026#34;\\u0026#34;\\u0026#34; try: if filename is None: date_str = datetime.now().strftime(\\u0026#34;%Y-%m-%d\\u0026#34;) filename = f\\u0026#34;newsletter_issue_{date_str}.md\\u0026#34; with open(filename, \\u0026#34;w\\u0026#34;, encoding=\\u0026#34;utf-8\\u0026#34;) as f: f.write(content) return f\\u0026#34;SUCCESS: Multi-topic newsletter saved to {filename}\\u0026#34; except Exception as e: return f\\u0026#34;FAILURE: {str(e)}\\u0026#34; Always return meaningful success/failure messages from your tools. The agent needs to know what happened!\\nPutting It All Together: The Sequential Pipeline Now we chain everything into a master workflow:\\n1 2 3 4 5 6 7 8 newsletter_system = SequentialAgent( name=\\u0026#34;LinkedInNewsletterSystem\\u0026#34;, sub_agents=[ web_research_agent, # Step 1: Research writer_editor_loop, # Step 2: Write \\u0026amp; Review (loops) publisher_agent # Step 3: Publish ] ) This creates a pipeline that flows like:\\n1 Research → Write → Edit → (Loop if needed) → Publish Running the Whole Thing Here\\u0026rsquo;s the main() function that kicks everything off:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 async def main(): topics = [\\u0026#34;AI data center infrastructure\\u0026#34;, \\u0026#34;Networking for AI\\u0026#34;, \\u0026#34;Storage for AI\\u0026#34;] APP_NAME = \\u0026#34;linkedin_newsletter_assistant\\u0026#34; USER_ID = \\u0026#34;user_admin\\u0026#34; SESSION_ID = \\u0026#34;multi_topic_001\\u0026#34; # Create a session service to manage state session_service = InMemorySessionService() await session_service.create_session( app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID, ) # Create the runner runner = Runner( agent=newsletter_system, app_name=APP_NAME, session_service=session_service, ) print(f\\u0026#34;🚀 Launching Multi-Topic System for: {\\u0026#39;, \\u0026#39;.join(topics)}\\u0026#34;) # Send the initial message new_message = types.Content( role=\\u0026#34;user\\u0026#34;, parts=[types.Part(text=f\\u0026#34;Process these topics: {\\u0026#39;, \\u0026#39;.join(topics)}\\u0026#34;)], ) # Run and stream results for event in runner.run( new_message=new_message, user_id=USER_ID, session_id=SESSION_ID, ): if event.is_final_response() and event.content and event.content.parts: print(\\u0026#34;\\\\n--- Process Report ---\\u0026#34;) print(event.content.parts[0].text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The load_instruction helper function loads the agent\\u0026rsquo;s prompt from local text files. This helps keep the code clean.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 def load_instruction(file_name: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34; Finds the \\u0026#39;prompts\\u0026#39; directory relative to the project root and returns the content of the specified text file. \\u0026#34;\\u0026#34;\\u0026#34; current_dir = os.path.dirname(os.path.abspath(__file__)) project_root = os.path.dirname(current_dir) file_path = os.path.join(project_root, \\u0026#34;prompts\\u0026#34;, file_name) try: with open(file_path, \\u0026#39;r\\u0026#39;, encoding=\\u0026#34;utf-8\\u0026#34;) as file: return file.read().strip() except FileNotFoundError: return f\\u0026#34;Error: The file {file_name} was not found in the prompts directory.\\u0026#34; Keeping prompts in separate text files is a game-changer for:\\nVersion control – Track changes to prompts separately Non-technical editing – Let others tweak prompts without touching code Experimentation – A/B test different prompt strategies easily The Google ADK makes building these multi-agent systems surprisingly straightforward. An example of the output from this multi-agent system is available as a LinkedIn article I published last week.\\nGive it a try and let me know what you build!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/building-a-multi-agent-linkedin-newsletter-system-with-google-adk\/",
+  "datePublished": "2026-01-26T00:00:00Z",
+  "dateModified": "2026-01-26T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -161,14 +143,14 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/building-a-multi-agent-linkedin-newsletter-system-with-google-adk\/"
   },
   
   "articleSection": "\"Google\"",
   
   
   
-  "timeRequired": "PT9M",
+  "timeRequired": "PT7M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -207,8 +189,8 @@
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Introduction to Google Agent Development Kit",
-      "item": "https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/"
+      "name": "Building a Multi-Agent LinkedIn Newsletter System with Google ADK",
+      "item": "https:\/\/ravichaganti.com\/blog\/building-a-multi-agent-linkedin-newsletter-system-with-google-adk\/"
     }
     
     
@@ -637,7 +619,7 @@
 
       
       <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-        Introduction to Google Agent Development Kit
+        Building a Multi-Agent LinkedIn Newsletter System with Google ADK
       </h1>
 
       
@@ -647,7 +629,7 @@
           <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <time datetime="2025-12-01">December 1, 2025</time>
+          <time datetime="2026-01-26">January 26, 2026</time>
         </div>
 
         
@@ -657,7 +639,7 @@
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>9 min read</span>
+            <span>7 min read</span>
           </div>
         
 
@@ -742,7 +724,7 @@
       
       
         <div class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-          Google Agent Development Kit (ADK) is a flexible and modular framework for developing and deploying AI agents.
+          Automating content creation with a team of AI agents that research, write, edit, and publish
         </div>
       
     </header>
@@ -793,10 +775,9 @@
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/introduction-to-google-agent-development-kit/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Introduction to Google Agent Development Kit
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Dec 1, 2025</p>
               </div>
@@ -822,9 +803,10 @@
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/building-a-multi-agent-linkedin-newsletter-system-with-google-adk/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Building a Multi-Agent LinkedIn Newsletter System with Google ADK
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 26, 2026</p>
               </div>
@@ -837,28 +819,26 @@
           
           
             
+          
+            
+          
+            
               
             
           
-            
-          
-            
-          
-
-          
-          
-            <div></div>
-          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/google-adk-types-of-agents/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Google ADK - types of agents</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <a href="https://ravichaganti.com/blog/google-adk-types-of-agents/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
+              <span class="truncate">Google ADK - types of agents</span>
             </a>
+          
+
+          
           
         </div>
       </nav>
@@ -899,9 +879,21 @@
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#introduction">Introduction</a>
+    <li>
       <ul>
-        <li><a href="#declarative-configuration">Declarative Configuration</a></li>
+        <li><a href="#the-big-picture-a-team-of-specialized-agents">The Big Picture: A Team of Specialized Agents</a></li>
+        <li><a href="#setting-up-the-foundation">Setting Up the Foundation</a></li>
+        <li><a href="#the-web-research-agent">The Web Research Agent</a></li>
+        <li><a href="#the-writer-agent">The Writer Agent</a></li>
+        <li><a href="#the-editor-agent">The Editor Agent</a></li>
+        <li><a href="#the-writer-editor-loop">The Writer-Editor Loop</a></li>
+        <li><a href="#the-publisher-agent">The Publisher Agent</a></li>
+        <li><a href="#custom-tool-for-saving-the-newsletter-content">Custom tool for saving the newsletter content</a></li>
+      </ul>
+    </li>
+    <li><a href="#putting-it-all-together-the-sequential-pipeline">Putting It All Together: The Sequential Pipeline</a>
+      <ul>
+        <li><a href="#running-the-whole-thing">Running the Whole Thing</a></li>
       </ul>
     </li>
   </ul>
@@ -946,94 +938,167 @@
 
     
     <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-      <p>Every other week, we see a new framework claiming to simplifythe  development of AI agents. Thanks to the growing interest in agentic AI. Earlier this year, Google released its framework for developing agents, which it called the Agent Development Kit (ADK).</p>
-<div class="youtube-embed" style="max-width: 100%; margin: 1.5rem auto;">
-  
-  <div id="youtube-2d93e79017b3ec8606e6135d3548ef28-placeholder" class="youtube-placeholder hidden">
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 0.5rem; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);">
-      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
-        
-        <svg style="width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.9;" viewBox="0 0 24 24" fill="#FF0000">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-        </svg>
-
-        <h4 style="color: #ffffff; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
-          YouTube Video
-        </h4>
-        <p style="color: #cccccc; font-size: 0.875rem; margin-bottom: 1.5rem; max-width: 400px;">
-          This video requires your consent to load content from YouTube, which may set tracking cookies.
-        </p>
-        <button onclick="window.cookieConsent.enableEmbed('youtube-2d93e79017b3ec8606e6135d3548ef28')"
-                style="padding: 0.625rem 1.5rem; background-color: #FF0000; color: #ffffff; font-weight: 500; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; font-size: 0.875rem;"
-                onmouseover="this.style.backgroundColor='#CC0000'"
-                onmouseout="this.style.backgroundColor='#FF0000'">
-          Enable YouTube
-        </button>
-        <p style="color: #999999; font-size: 0.75rem; margin-top: 0.75rem;">
-          Video ID: zgrOwow_uTQ
-        </p>
-      </div>
-    </div>
-  </div>
-
-  
-  <div id="youtube-2d93e79017b3ec8606e6135d3548ef28-iframe" class="youtube-iframe-container hidden">
-    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-      <iframe
-        src="https://www.youtube.com/embed/zgrOwow_uTQ"
-        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid #ccc; border-radius: 0.5rem;"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
-    </div>
-  </div>
-
-  
-  <script>
-    (function() {
-      'use strict';
-
-      const embedId = 'youtube-2d93e79017b3ec8606e6135d3548ef28';
-      const placeholder = document.getElementById(embedId + '-placeholder');
-      const iframeContainer = document.getElementById(embedId + '-iframe');
-
-      function loadEmbed() {
-        if (placeholder && iframeContainer) {
-          placeholder.classList.add('hidden');
-          iframeContainer.classList.remove('hidden');
-        }
-      }
-
-      function checkConsent() {
-        if (window.cookieConsent && window.cookieConsent.hasConsent('embeds')) {
-          loadEmbed();
-        } else {
-          if (placeholder) placeholder.classList.remove('hidden');
-          if (iframeContainer) iframeContainer.classList.add('hidden');
-        }
-      }
-
-      
-      window.addEventListener('loadEmbeds', loadEmbed);
-      window.addEventListener('consentChanged', checkConsent);
-
-      
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', checkConsent);
-      } else {
-        checkConsent();
-      }
-    })();
-  </script>
+      <p>Google&rsquo;s Agent Development Kit (ADK) offers <a href="/blog/google-adk-types-of-agents/">workflow agents</a> for more deterministic agent execution. These workflows can be combined to create more complex agentic workflows.</p>
+<p>In this post, I&rsquo;ll walk you through how I created an AI-powered content pipeline that:</p>
+<ul>
+<li><strong>Researches</strong> trending topics using Google Search</li>
+<li><strong>Writes</strong> engaging newsletter drafts</li>
+<li><strong>Edits</strong> and quality-checks the content</li>
+<li><strong>Publishes</strong> the final version to a local file</li>
+</ul>
+<p>Let&rsquo;s dive in!</p>
+<h3 id="the-big-picture-a-team-of-specialized-agents">The Big Picture: A Team of Specialized Agents</h3>
+<p>Instead of building one massive AI that does everything (and probably does nothing well), I went with a <strong>multi-agent architecture</strong>. Think of it like assembling a content team:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Agent</th>
+          <th>Role</th>
+          <th>Job Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>WebResearchAgent</strong></td>
+          <td>Research Analyst</td>
+          <td>Finds trending topics from the web</td>
+      </tr>
+      <tr>
+          <td><strong>WriterAgent</strong></td>
+          <td>Content Creator</td>
+          <td>Transforms research into engaging prose</td>
+      </tr>
+      <tr>
+          <td><strong>EditorAgent</strong></td>
+          <td>Quality Control</td>
+          <td>Reviews drafts and provides feedback</td>
+      </tr>
+      <tr>
+          <td><strong>PublisherAgent</strong></td>
+          <td>Publisher</td>
+          <td>Saves the final approved content</td>
+      </tr>
+  </tbody>
+</table>
+<p>The cool part? These agents talk to each other, pass work around, and even have a built-in feedback loop. Let me show you how it all works.</p>
+<h3 id="setting-up-the-foundation">Setting Up the Foundation</h3>
+<p>First, let&rsquo;s look at the imports and setup:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.agents</span> <span class="kn">import</span> <span class="n">LlmAgent</span><span class="p">,</span> <span class="n">SequentialAgent</span><span class="p">,</span> <span class="n">LoopAgent</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.runners</span> <span class="kn">import</span> <span class="n">Runner</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.sessions</span> <span class="kn">import</span> <span class="n">InMemorySessionService</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.tools</span> <span class="kn">import</span> <span class="n">google_search</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.genai</span> <span class="kn">import</span> <span class="n">types</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">utils.agent_utils</span> <span class="kn">import</span> <span class="n">load_instruction</span><span class="p">,</span> <span class="n">save_to_local_file</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
 </div>
-
-<p><a href="https://medium.com/@bo-yang-svl">Bo Yang</a>, tech lead of the ADK project, wrote about <a href="https://medium.com/google-cloud/adk-insider-adk-when-it-was-born-06af442eb1ed">how ADK was born</a> and described how 100 lines of code became the most sought-after agent development framework. It is fascinating to read how ADK evolved into what it is today.</p>
-<p>So, what is ADK? What makes it special when there are a million other frameworks out there? In this series of posts, we will explore answers to these questions.</p>
-<h2 id="introduction">Introduction</h2>
-<p>Google ADK provides an open foundation for simplifying agent and agentic workflow development. With ADK, you can use not just Google&rsquo;s Gemini models but models from any provider, making model agnostic. The agents and workflows developed using ADK are deployment-agnostic and can run on your local machine, in Google Cloud, or in your own data center. True to its developers&rsquo; intentions, ADK supports interoperability with agents built in other frameworks via the Agent-to-Agent (A2A) protocol. In my work with various agent development frameworks, I found ADK to be very easy to get started with while providing powerful constructs for building enterprise-ready agents and agentic workflows. With ADK, you can create agents in Python, Go, and Java programming languages. All examples in this series of articles on ADK will be written in Python.</p>
-<p>Let us explore further using code.</p>
-<p>To get started with creating agents, all you need is the <code>google-adk</code> package.</p>
+</div><p>The key imports here are:</p>
+<ul>
+<li><strong><code>LlmAgent</code></strong> – Your basic AI agent that can think and respond</li>
+<li><strong><code>SequentialAgent</code></strong> – Runs agents one after another (like a pipeline)</li>
+<li><strong><code>LoopAgent</code></strong> – Keeps running until a condition is met (perfect for edit cycles!)</li>
+<li><strong><code>google_search</code></strong> – Built-in tool for web searches</li>
+</ul>
+<hr>
+<h3 id="the-web-research-agent">The Web Research Agent</h3>
+<p>This agent is our digital bloodhound. It sniffs out the latest trends using Google Search.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">web_research_agent</span> <span class="o">=</span> <span class="n">LlmAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WebResearchAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s2">&#34;gemini-2.0-flash&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="n">load_instruction</span><span class="p">(</span><span class="s2">&#34;web-search-agent.txt&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">google_search</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="n">output_key</span><span class="o">=</span><span class="s2">&#34;research_output&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice the <code>output_key=&quot;research_output&quot;</code> – this is crucial! It stores the agent&rsquo;s output in a shared state that other agents can access later. Think of it as the agent putting its work in a shared folder.</p>
+<h4 id="the-research-prompt">The Research Prompt</h4>
+<p>Here&rsquo;s what the research agent&rsquo;s instructions look like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">Role: Strategic Research Analyst
+</span></span><span class="line"><span class="cl">Task: Identify and summarize the top 5 trending items for a provided set of topics from the last 7 days.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Instructions (Chain-of-Thought): For each topic provided, follow these steps internally:
+</span></span><span class="line"><span class="cl">- Deconstruct: Break down the topic into 2-3 specific search queries
+</span></span><span class="line"><span class="cl">- Execute: Use the Google Search tool for each query
+</span></span><span class="line"><span class="cl">- Evaluate: Select the 5 most &#34;impactful&#34; items
+</span></span><span class="line"><span class="cl">- Synthesize: Write a high-density summary for each item
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Required Output Format per Topic:
+</span></span><span class="line"><span class="cl">Topic: [Topic Name]
+</span></span><span class="line"><span class="cl">- [Headline]: [1-sentence summary]
+</span></span><span class="line"><span class="cl">- Insight: [Why this matters to professionals]
+</span></span><span class="line"><span class="cl">- Reference: [Source URL]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The Chain-of-Thought (CoT) approach forces the agent to think systematically rather than just vomiting out whatever comes to mind first.</p>
+<hr>
+<h3 id="the-writer-agent">The Writer Agent</h3>
+<p>Now we need someone to turn that raw research into something people actually want to read.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">writer_agent</span> <span class="o">=</span> <span class="n">LlmAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WriterAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s2">&#34;gemini-2.0-flash&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="n">load_instruction</span><span class="p">(</span><span class="s2">&#34;writer-agent.txt&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">output_key</span><span class="o">=</span><span class="s2">&#34;writer_draft&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="the-writers-prompt">The Writer&rsquo;s Prompt</h4>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1055,30 +1120,56 @@
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> pip install google-adk
-</span></span><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk --help                          
-</span></span><span class="line"><span class="cl">Usage: adk <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+<pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">Role: Creative Content Creator
+</span></span><span class="line"><span class="cl">Instruction: You are a professional Copywriter specializing in LinkedIn Newsletters.
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  Agent Development Kit CLI tools.
+</span></span><span class="line"><span class="cl">Research Output:
+</span></span><span class="line"><span class="cl">{research_output}
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Options:
-</span></span><span class="line"><span class="cl">  --version  Show the version and exit.
-</span></span><span class="line"><span class="cl">  --help     Show this message and exit.
+</span></span><span class="line"><span class="cl">Your workflow:
+</span></span><span class="line"><span class="cl">- Draft a LinkedIn Newsletter in Markdown format
+</span></span><span class="line"><span class="cl">- Structure the draft with:
+</span></span><span class="line"><span class="cl">  - Catchy Title: Use a hook that targets professionals
+</span></span><span class="line"><span class="cl">  - Introduction: Briefly set the stage for the week&#39;s trends
+</span></span><span class="line"><span class="cl">  - Body Paragraphs: One section per topic (narrative style, not just a list!)
+</span></span><span class="line"><span class="cl">  - Always use citations and link to the sources
+</span></span><span class="line"><span class="cl">  - Takeaways: A &#34;So What?&#34; section for the reader
+</span></span><span class="line"><span class="cl">  - Call to Action (CTA): Encourage comments or shares
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Commands:
-</span></span><span class="line"><span class="cl">  api_server   Starts a FastAPI server <span class="k">for</span> agents.
-</span></span><span class="line"><span class="cl">  conformance  Conformance testing tools <span class="k">for</span> ADK.
-</span></span><span class="line"><span class="cl">  create       Creates a new app in the current folder with prepopulated agent template.
-</span></span><span class="line"><span class="cl">  deploy       Deploys agent to hosted environments.
-</span></span><span class="line"><span class="cl">  <span class="nb">eval</span>         Evaluates an agent given the <span class="nb">eval</span> sets.
-</span></span><span class="line"><span class="cl">  eval_set     Manage Eval Sets.
-</span></span><span class="line"><span class="cl">  run          Runs an interactive CLI <span class="k">for</span> a certain agent.
-</span></span><span class="line"><span class="cl">  web          Starts a FastAPI server with Web UI <span class="k">for</span> agents.
+</span></span><span class="line"><span class="cl">Feedback Integration: If the editor responds with APPROVED, call the exit_loop tool.
+</span></span><span class="line"><span class="cl">Otherwise, use editor feedback provided below and revise the draft.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Editor Feedback (if any):
+</span></span><span class="line"><span class="cl">{editor_feedback:}
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The <code>adk</code> command-line provides the necessary capabilities to <em>create</em>, <em>run</em>, <em>deploy</em>, and <em>evaluate</em> agents. Using the <code>adk web</code> command, you can converse with the agents and debug their execution. Let us start with creating an agent using the <code>adk create</code> command. When you run this command, you will be prompted for a model to use, a backend for the agent deployment and services, and an API key if you have chosen the Google Gemini model.</p>
+</div><p>See that <code>{research_output}</code> placeholder? That&rsquo;s pulling in the <code>WebResearchAgent</code>&rsquo;s work automatically. And <code>{editor_feedback}</code> lets the writer know what needs fixing. Magic!</p>
+<hr>
+<h3 id="the-editor-agent">The Editor Agent</h3>
+<p>Every writer needs an editor (even AI writers). This agent plays the bad cop and ensures quality standards are met.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">editor_agent</span> <span class="o">=</span> <span class="n">LlmAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;EditorAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s2">&#34;gemini-2.0-flash&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="n">load_instruction</span><span class="p">(</span><span class="s2">&#34;editor-agent.txt&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">output_key</span><span class="o">=</span><span class="s2">&#34;editor_feedback&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="the-editors-prompt">The Editor&rsquo;s Prompt</h4>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1098,28 +1189,33 @@
 </span><span class="lnt">15
 </span><span class="lnt">16
 </span><span class="lnt">17
+</span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk create code_agent
-</span></span><span class="line"><span class="cl">Choose a model <span class="k">for</span> the root agent:
-</span></span><span class="line"><span class="cl">1. gemini-2.5-flash
-</span></span><span class="line"><span class="cl">2. Other models <span class="o">(</span>fill later<span class="o">)</span>
-</span></span><span class="line"><span class="cl">Choose model <span class="o">(</span>1, 2<span class="o">)</span>: <span class="m">1</span>
-</span></span><span class="line"><span class="cl">1. Google AI
-</span></span><span class="line"><span class="cl">2. Vertex AI
-</span></span><span class="line"><span class="cl">Choose a backend <span class="o">(</span>1, 2<span class="o">)</span>: <span class="m">1</span>
+<pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">Role: Quality Control &amp; Compliance
+</span></span><span class="line"><span class="cl">Instruction: You are a meticulous Senior Editor.
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Don<span class="err">&#39;</span>t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey
+</span></span><span class="line"><span class="cl">Writer&#39;s Draft to Review:
+</span></span><span class="line"><span class="cl">{writer_draft}
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Enter Google API key: YOUR_API_KEY
+</span></span><span class="line"><span class="cl">Review Checklist:
+</span></span><span class="line"><span class="cl">- Accuracy: Does it reflect the 5 trending items?
+</span></span><span class="line"><span class="cl">- Trust Worthy: Are citations added and linked to sources?
+</span></span><span class="line"><span class="cl">- Formatting: Is it valid Markdown with proper headers?
+</span></span><span class="line"><span class="cl">- Tone: Is it appropriate for a LinkedIn professional audience?
+</span></span><span class="line"><span class="cl">- Clarity: Any grammatical errors or awkward phrasings?
+</span></span><span class="line"><span class="cl">- Engagement: Is the hook strong enough to stop the scroll?
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Agent created in C:<span class="se">\G</span>itHub<span class="se">\g</span>oogle-adk-101<span class="se">\c</span>ode_agent:
-</span></span><span class="line"><span class="cl">- .env
-</span></span><span class="line"><span class="cl">- __init__.py
-</span></span><span class="line"><span class="cl">- agent.py
+</span></span><span class="line"><span class="cl">Response Logic:
+</span></span><span class="line"><span class="cl">- If the draft passes all checks: Respond only with &#34;APPROVED&#34;
+</span></span><span class="line"><span class="cl">- If the draft fails: Provide bulleted feedback for the Writer Agent
+</span></span><span class="line"><span class="cl">  (Do NOT rewrite the draft yourself!)
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>As seen in the output, this command generates the necessary scaffolding. The <code>.env</code> file contains environment variables, including <code>GOOGLE_API_KEY</code> for Google Gemini models. The <code>__init__.py</code> file serves as the agent entry point and imports the agent defined in <code>agent.py</code>. The <code>agent.py</code> contains the agent definition. Let us explore this further.</p>
+</div><p>The key here is the <strong>Response Logic</strong> – if everything looks good, the editor just says &ldquo;APPROVED&rdquo;, and we move on. If not, it sends feedback, and the loop continues.</p>
+<hr>
+<h3 id="the-writer-editor-loop">The Writer-Editor Loop</h3>
+<p>This is where things get interesting. We wrap the writer and editor in a <code>LoopAgent</code>:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1132,113 +1228,27 @@
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.agents.llm_agent</span> <span class="kn">import</span> <span class="n">Agent</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">root_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;root_agent&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;A helpful assistant for user questions.&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="s1">&#39;Answer user questions to the best of your knowledge&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Google ADK supports multiple agent types. The one we created is an <code>LlmAgent</code>. This category of agents uses an LLM as the core reasoning engine and is non-deterministic. In the preceding code, you can replace <code>Agent</code> with <code>LlmAgent</code> as both refer to the LLM Agent implementation. We will look at other types of agents later in this series.</p>
-<p>In the agent definition above, the <code>model</code> identifies the LLM agent to use for reasoning, and the <code>instruction</code> specifies the agent&rsquo;s behavior. This scaffold is sufficient to try running this agent.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk run .<span class="se">\c</span>ode_agent<span class="se">\
-</span></span></span><span class="line"><span class="cl">....
-</span></span><span class="line"><span class="cl"><span class="o">[</span>user<span class="o">]</span>: Hello, how can you help?
-</span></span><span class="line"><span class="cl"><span class="o">[</span>root_agent<span class="o">]</span>: Hello! I<span class="s1">&#39;m here to help answer your questions and provide information to the best of my knowledge.
-</span></span></span><span class="line"><span class="cl"><span class="s1">
-</span></span></span><span class="line"><span class="cl"><span class="s1">Here are some examples of what I can do:
-</span></span></span><span class="line"><span class="cl"><span class="s1">
-</span></span></span><span class="line"><span class="cl"><span class="s1">*   **Answer questions on a wide range of topics:** History, science, technology, culture, current events, and more.
-</span></span></span><span class="line"><span class="cl"><span class="s1">*   **Explain concepts:** Describe how things work, define terms, or break down complex ideas.
-</span></span></span><span class="line"><span class="cl"><span class="s1">*   **Provide summaries:** Give you a concise overview of a topic or document.
-</span></span></span><span class="line"><span class="cl"><span class="s1">*   **Help with creative tasks:** Brainstorm ideas, write short pieces of text, or suggest options.
-</span></span></span><span class="line"><span class="cl"><span class="s1">*   **Give recommendations:** Suggest books, movies, places, or tools based on your interests.
-</span></span></span><span class="line"><span class="cl"><span class="s1">
-</span></span></span><span class="line"><span class="cl"><span class="s1">Just tell me what you need, and I&#39;</span>ll <span class="k">do</span> my best to assist you!
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>To open the dev-ui web interface, run the <code>adk web</code> command.</p>
-<p><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/adk-web.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/adk-web.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a></figure>
- 
- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
- 
- 
- <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
- 
- 
- <script>
-   document.addEventListener('DOMContentLoaded', function() {
-     const lightbox = GLightbox({
-       selector: '.glightbox',
-       touchNavigation: true,
-       loop: true,
-       autoplayVideos: true,
-       zoomable: true,
-       draggable: true,
-       closeButton: true,
-       moreLength: 0
-     });
-   });
- </script></p>
-<p>The ADK web interface is a great resource for debugging agent conversations and interactions with other agents and tools.</p>
-<p>ADK provides a few built-in tools for our agents. The following example shows the built-in <code>google-search</code> tool for grounding LLMs with Google search results.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.agents.llm_agent</span> <span class="kn">import</span> <span class="n">Agent</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.tools</span> <span class="kn">import</span> <span class="n">google_search</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">root_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weather_agent&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Weather agent that can get weather information for any location.&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="s1">&#39;You are a weather agent that can get weather information for any location. </span><span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="s1">        Respond in the following format: {&#34;location&#34;: &#34;city&#34;,&#34;temperature&#34;: &#34;temperature&#34;,&#34;condition&#34;: &#34;condition&#34;}&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="n">google_search</span><span class="p">,</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">writer_editor_loop</span> <span class="o">=</span> <span class="n">LoopAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;ReviewCycle&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sub_agents</span><span class="o">=</span><span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="n">writer_agent</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">editor_agent</span>
 </span></span><span class="line"><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="n">max_iterations</span><span class="o">=</span><span class="mi">3</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>When you run this agent using <code>adk run</code>, you will be presented with a conversational prompt.</p>
+</div><p>What happens here:</p>
+<ol>
+<li>Writer creates a draft</li>
+<li>Editor reviews it</li>
+<li>If &ldquo;APPROVED&rdquo; → Exit the loop</li>
+<li>If not → Writer revises based on feedback</li>
+<li>Repeat until approved or max iterations (3) is reached</li>
+</ol>
+<p>This mimics real-world content workflows! No more publishing first drafts.</p>
+<h3 id="the-publisher-agent">The Publisher Agent</h3>
+<p>Once the editor gives the green light, we need to save the final product.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1246,16 +1256,87 @@
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
+</span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk run .<span class="se">\w</span>eather_agent<span class="se">\ </span>  
-</span></span><span class="line"><span class="cl">....
-</span></span><span class="line"><span class="cl">Running agent weather_agent, <span class="nb">type</span> <span class="nb">exit</span> to exit.
-</span></span><span class="line"><span class="cl"><span class="o">[</span>user<span class="o">]</span>: What is the weather in Bangalore like?
-</span></span><span class="line"><span class="cl"><span class="o">[</span>weather_agent<span class="o">]</span>: <span class="o">{</span><span class="s2">&#34;location&#34;</span>: <span class="s2">&#34;Bangalore&#34;</span>,<span class="s2">&#34;temperature&#34;</span>: <span class="s2">&#34;19 °C&#34;</span>,<span class="s2">&#34;condition&#34;</span>: <span class="s2">&#34;Partly cloudy&#34;</span><span class="o">}</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">publisher_agent</span> <span class="o">=</span> <span class="n">LlmAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;PublisherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s2">&#34;gemini-2.0-flash&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="n">load_instruction</span><span class="p">(</span><span class="s2">&#34;publisher-agent.txt&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">save_to_local_file</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>You can also supply Python functions as tools.</p>
+</div><h3 id="custom-tool-for-saving-the-newsletter-content">Custom tool for saving the newsletter content</h3>
+<p>The publisher uses a custom tool to save files:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">save_to_local_file</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Saves the combined multi-topic newsletter to a local file.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">date_str</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&#34;%Y-%m-</span><span class="si">%d</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;newsletter_issue_</span><span class="si">{</span><span class="n">date_str</span><span class="si">}</span><span class="s2">.md&#34;</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&#34;w&#34;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;SUCCESS: Multi-topic newsletter saved to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;FAILURE: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Always return meaningful success/failure messages from your tools. The agent needs to know what happened!</p>
+</blockquote>
+<h2 id="putting-it-all-together-the-sequential-pipeline">Putting It All Together: The Sequential Pipeline</h2>
+<p>Now we chain everything into a master workflow:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">newsletter_system</span> <span class="o">=</span> <span class="n">SequentialAgent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;LinkedInNewsletterSystem&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sub_agents</span><span class="o">=</span><span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="n">web_research_agent</span><span class="p">,</span>    <span class="c1"># Step 1: Research</span>
+</span></span><span class="line"><span class="cl">        <span class="n">writer_editor_loop</span><span class="p">,</span>     <span class="c1"># Step 2: Write &amp; Review (loops)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">publisher_agent</span>         <span class="c1"># Step 3: Publish</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This creates a pipeline that flows like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Research → Write → Edit → (Loop if needed) → Publish
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="running-the-whole-thing">Running the Whole Thing</h3>
+<p>Here&rsquo;s the <code>main()</code> function that kicks everything off:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1295,67 +1376,60 @@
 </span><span class="lnt">35
 </span><span class="lnt">36
 </span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.agents.llm_agent</span> <span class="kn">import</span> <span class="n">Agent</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">topics</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;AI data center infrastructure&#34;</span><span class="p">,</span> <span class="s2">&#34;Networking for AI&#34;</span><span class="p">,</span> <span class="s2">&#34;Storage for AI&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">APP_NAME</span> <span class="o">=</span> <span class="s2">&#34;linkedin_newsletter_assistant&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">USER_ID</span> <span class="o">=</span> <span class="s2">&#34;user_admin&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">SESSION_ID</span> <span class="o">=</span> <span class="s2">&#34;multi_topic_001&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Create a session service to manage state</span>
+</span></span><span class="line"><span class="cl">    <span class="n">session_service</span> <span class="o">=</span> <span class="n">InMemorySessionService</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">session_service</span><span class="o">.</span><span class="n">create_session</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">app_name</span><span class="o">=</span><span class="n">APP_NAME</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">user_id</span><span class="o">=</span><span class="n">USER_ID</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">session_id</span><span class="o">=</span><span class="n">SESSION_ID</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Create the runner</span>
+</span></span><span class="line"><span class="cl">    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent</span><span class="o">=</span><span class="n">newsletter_system</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">app_name</span><span class="o">=</span><span class="n">APP_NAME</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">session_service</span><span class="o">=</span><span class="n">session_service</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;🚀 Launching Multi-Topic System for: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">topics</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Send the initial message</span>
+</span></span><span class="line"><span class="cl">    <span class="n">new_message</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">role</span><span class="o">=</span><span class="s2">&#34;user&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="n">types</span><span class="o">.</span><span class="n">Part</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&#34;Process these topics: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">topics</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Run and stream results</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">new_message</span><span class="o">=</span><span class="n">new_message</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">user_id</span><span class="o">=</span><span class="n">USER_ID</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">session_id</span><span class="o">=</span><span class="n">SESSION_ID</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">is_final_response</span><span class="p">()</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">--- Process Report ---&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_weather</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">location</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;The location to get the weather for.&#34;</span><span class="p">)],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">requests</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">json</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;OPEN_WEATHERMAP_API_KEY&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&#34;http://api.openweathermap.org/data/2.5/weather&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">complete_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">?q=</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&amp;appid=</span><span class="si">{</span><span class="n">api_key</span><span class="si">}</span><span class="s2">&amp;units=metric&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">complete_url</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;cod&#34;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&#34;404&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">main_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;main&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">        <span class="n">current_temperature</span> <span class="o">=</span> <span class="n">main_data</span><span class="p">[</span><span class="s2">&#34;temp&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Temperature: </span><span class="si">{</span><span class="n">current_temperature</span><span class="si">}</span><span class="s2">°C&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;City not found&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">root_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gemini-2.5-flash&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weather_agent&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Weather agent that can get weather information for any location.&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instruction</span><span class="o">=</span><span class="s1">&#39;You are a weather agent that can get weather information for any location. </span><span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="s1">        Respond in the following format: {&#34;location&#34;: &#34;city&#34;,&#34;temperature&#34;: &#34;temperature&#34;}&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="n">get_weather</span>
-</span></span><span class="line"><span class="cl">    <span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The <code>get_weather</code> function uses the OpenWeatherMap API to retrieve weather data for any location.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk run .<span class="se">\c</span>ode_agent<span class="se">\
-</span></span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">Running agent weather_agent, <span class="nb">type</span> <span class="nb">exit</span> to exit.
-</span></span><span class="line"><span class="cl"><span class="o">[</span>user<span class="o">]</span>: What is the weather in Bangalore like?
-</span></span><span class="line"><span class="cl"><span class="o">[</span>weather_agent<span class="o">]</span>: <span class="o">{</span><span class="s2">&#34;location&#34;</span>: <span class="s2">&#34;Bangalore&#34;</span>,<span class="s2">&#34;temperature&#34;</span>: <span class="s2">&#34;18.66°C&#34;</span><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Google ADK also supports the Model Context Protocol and can use other agents as tools. We will learn more about this later.</p>
-<h3 id="declarative-configuration">Declarative Configuration</h3>
-<p>What we have seen so far is an imperative-based approach to implementing agents in ADK. We can also do the same declaratively using a <a href="https://google.github.io/adk-docs/agents/config/">YAML configuration</a>. Let us look at this method.</p>
+</div><p>The <code>load_instruction</code> helper function loads the agent&rsquo;s prompt from local text files. This helps keep the code clean.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1372,169 +1446,32 @@
 </span><span class="lnt">12
 </span><span class="lnt">13
 </span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> adk create weather_agent --type<span class="o">=</span>config
-</span></span><span class="line"><span class="cl">Choose a model <span class="k">for</span> the root agent:
-</span></span><span class="line"><span class="cl">1. gemini-2.5-flash
-</span></span><span class="line"><span class="cl">2. Other models <span class="o">(</span>fill later<span class="o">)</span>
-</span></span><span class="line"><span class="cl">Choose model <span class="o">(</span>1, 2<span class="o">)</span>: <span class="m">1</span>
-</span></span><span class="line"><span class="cl">1. Google AI
-</span></span><span class="line"><span class="cl">2. Vertex AI
-</span></span><span class="line"><span class="cl">Choose a backend <span class="o">(</span>1, 2<span class="o">)</span>: <span class="m">1</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Don<span class="err">&#39;</span>t have API Key? Create one in AI Studio: https://aistudio.google.com/apikey
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Enter Google API key: YOUR_GOOGLE_API_KEY
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Agent created in C:<span class="se">\G</span>itHub<span class="se">\g</span>oogle-adk-101<span class="se">\w</span>eather_agent:
-</span></span><span class="line"><span class="cl">- .env
-</span></span><span class="line"><span class="cl">- __init__.py
-</span></span><span class="line"><span class="cl">- root_agent.yaml
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">load_instruction</span><span class="p">(</span><span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Finds the &#39;prompts&#39; directory relative to the project root 
+</span></span></span><span class="line"><span class="cl"><span class="s2">    and returns the content of the specified text file.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="n">project_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s2">&#34;prompts&#34;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Error: The file </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2"> was not found in the prompts directory.&#34;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>For creating a YAML-based agent configuration, you need to specify the <code>--type=config</code> optional parameter to the <code>adk create</code> command. This command generates <code>root_agent.yaml</code> instead of agent.py. If you intend to write declarative agents like this, ensure that you have <code>root_agent.yaml</code> always in the agent folder.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">root_agent</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">A helpful assistant for user questions.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">instruction</span><span class="p">:</span><span class="w"> </span><span class="l">Answer user questions to the best of your knowledge</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">gemini-2.5-flash</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>You can add tools to this configuration.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">root_agent</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">A helpful assistant for user questions.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">instruction</span><span class="p">:</span><span class="w"> </span><span class="l">Answer user questions to the best of your knowledge</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">gemini-2.5-flash</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">tools</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">google_search</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>This is how built-in tools can be specified. But what about functional tools, such as the <code>get_weather</code> tool we saw earlier? To use function tools within declarative configuration, we need to place them in a Python module and place that module under the agent package. For example, the <code>get_weather</code> function above can be added to the <code>tools.py</code> module.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_weather</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">location</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;The location to get the weather for.&#34;</span><span class="p">)],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">requests</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">json</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;OPEN_WEATHERMAP_API_KEY&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&#34;http://api.openweathermap.org/data/2.5/weather&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">complete_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">?q=</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&amp;appid=</span><span class="si">{</span><span class="n">api_key</span><span class="si">}</span><span class="s2">&amp;units=metric&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">complete_url</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;cod&#34;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&#34;404&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">main_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&#34;main&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">        <span class="n">current_temperature</span> <span class="o">=</span> <span class="n">main_data</span><span class="p">[</span><span class="s2">&#34;temp&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Temperature: </span><span class="si">{</span><span class="n">current_temperature</span><span class="si">}</span><span class="s2">°C&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;City not found&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The folder structure of the agent folder will be as follows:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\&gt;</span> tree /F /A .<span class="se">\w</span>eather_agent<span class="se">\
-</span></span></span><span class="line"><span class="cl">Folder PATH listing
-</span></span><span class="line"><span class="cl">Volume serial number is 987A-295A
-</span></span><span class="line"><span class="cl">C:<span class="se">\W</span>EATHER_AGENT
-</span></span><span class="line"><span class="cl">    .env
-</span></span><span class="line"><span class="cl">    root_agent.yaml
-</span></span><span class="line"><span class="cl">    tools.py
-</span></span><span class="line"><span class="cl">    __init__.py
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>To reference the tool in the YAML configuration, we must provide the fully qualified path to the function.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">root_agent</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">A helpful assistant for user questions.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">instruction</span><span class="p">:</span><span class="w"> </span><span class="l">Answer user questions to the best of your knowledge</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">gemini-2.5-flash</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nt">tools</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">weather_agent.tools.get_weather</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/adk-web-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/adk-web-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a></figure>
-
-<p>With the basics out of the way, let&rsquo;s dive deep into developing agents and agentic workflows with Google ADK.</p>
+</div><p>Keeping prompts in separate text files is a game-changer for:</p>
+<ul>
+<li><strong>Version control</strong> – Track changes to prompts separately</li>
+<li><strong>Non-technical editing</strong> – Let others tweak prompts without touching code</li>
+<li><strong>Experimentation</strong> – A/B test different prompt strategies easily</li>
+</ul>
+<p>The Google ADK makes building these multi-agent systems surprisingly straightforward. An example of the output from this multi-agent system is available as a <a href="https://www.linkedin.com/pulse/ai-making-us-smarter-just-lazier-deep-work-dilemma-ravikanth-chaganti-9xgle/?trackingId=AAMVZzHobMNO7NspX0iQXA%3D%3D">LinkedIn article I published</a> last week.</p>
+<p>Give it a try and let me know what you build!</p>
 
     </div>
 
@@ -1562,7 +1499,7 @@
 
     
     <a
-      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-google-agent-development-kit%2F&text=Introduction&#43;to&#43;Google&#43;Agent&#43;Development&#43;Kit"
+      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-a-multi-agent-linkedin-newsletter-system-with-google-adk%2F&text=Building&#43;a&#43;Multi-Agent&#43;LinkedIn&#43;Newsletter&#43;System&#43;with&#43;Google&#43;ADK"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1576,7 +1513,7 @@
 
     
     <a
-      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-google-agent-development-kit%2F"
+      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-a-multi-agent-linkedin-newsletter-system-with-google-adk%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1590,7 +1527,7 @@
 
     
     <a
-      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-google-agent-development-kit%2F"
+      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fbuilding-a-multi-agent-linkedin-newsletter-system-with-google-adk%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1604,7 +1541,7 @@
 
     
     <button
-      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/')"
+      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/building-a-multi-agent-linkedin-newsletter-system-with-google-adk\/')"
       class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
       aria-label="Copy link"
       title="Copy link"
@@ -1622,9 +1559,9 @@
 function shareNative() {
   if (navigator.share) {
     navigator.share({
-      title: 'Introduction to Google Agent Development Kit',
-      text: 'Google Agent Development Kit (ADK) is a flexible and modular framework for developing and deploying AI agents.',
-      url: 'https:\/\/ravichaganti.com\/blog\/introduction-to-google-agent-development-kit\/'
+      title: 'Building a Multi-Agent LinkedIn Newsletter System with Google ADK',
+      text: 'Automating content creation with a team of AI agents that research, write, edit, and publish',
+      url: 'https:\/\/ravichaganti.com\/blog\/building-a-multi-agent-linkedin-newsletter-system-with-google-adk\/'
     }).catch(function(error) {
       console.log('Error sharing:', error);
     });
@@ -1679,20 +1616,20 @@ function copyToClipboard(text) {
     
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
 
     
     
       
+        
+        
       
-        
-        
       
     
   
@@ -1702,33 +1639,20 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/google-adk-types-of-agents/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in Google ADK: Google ADK - types of agents">
           <div class="flex items-start gap-3">
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </div>
-            <div class="flex-1">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
-            </div>
-          </div>
-        </div>
-      
-    </div>
 
-    
-    <div class="flex">
-      
-        <a href="https://ravichaganti.com/blog/google-adk-types-of-agents/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Google ADK: Google ADK - types of agents">
-          <div class="flex items-start gap-3">
             
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Google ADK</p>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Google ADK</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
                 Google ADK - types of agents
               </h3>
@@ -1736,15 +1660,28 @@ function copyToClipboard(text) {
                 <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Google Agent Development Kit (ADK) is a flexible and modular framework for developing and deploying AI agents. It offers different types agents.</p>
               
             </div>
+          </div>
+        </a>
+      
+    </div>
 
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+    
+    <div class="flex">
+      
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -1958,15 +1895,15 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/building-a-multi-agent-linkedin-newsletter-system-with-google-adk/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/introduction-to-google-agent-development-kit/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Building a Multi-Agent LinkedIn Newsletter System with Google ADK
+      Introduction to Google Agent Development Kit
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-01-26">
-      Jan 26, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-12-01">
+      Dec 1, 2025
     </time>
   </a>
 </article>
