@@ -18,10 +18,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
+  <title>Concurrent workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta name="description" content="In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don&rsquo;t depend on each other&rsquo;s output, running them one at a time is inefficient.
+Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,22 +31,23 @@
   
 
   
-  <meta property="og:title" content="Sequential workflows in Microsoft Agent Framework">
-  <meta property="og:description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta property="og:title" content="Concurrent workflows in Microsoft Agent Framework">
+  <meta property="og:description" content="In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don&rsquo;t depend on each other&rsquo;s output, running them one at a time is inefficient.
+Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Sequential workflows in Microsoft Agent Framework">
+  <meta property="og:image:alt" content="Concurrent workflows in Microsoft Agent Framework">
 
   
   
-    <meta property="article:published_time" content="2025-10-12T00:00:00Z">
-    <meta property="article:modified_time" content="2025-10-12T00:00:00Z">
+    <meta property="article:published_time" content="2025-10-14T00:00:00Z">
+    <meta property="article:modified_time" content="2025-10-14T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -53,13 +55,14 @@
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Sequential workflows in Microsoft Agent Framework">
-  <meta name="twitter:description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta name="twitter:title" content="Concurrent workflows in Microsoft Agent Framework">
+  <meta name="twitter:description" content="In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don&rsquo;t depend on each other&rsquo;s output, running them one at a time is inefficient.
+Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +91,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Sequential workflows in Microsoft Agent Framework",
-  "description": "A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing …",
-  "articleBody": "\"A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another\\u0026rsquo;s work and handle complex tool invocation.\\nTrying to cram all of this into one agent leads to:\\nConfused outputs (the agent doesn\\u0026rsquo;t know which \\u0026ldquo;hat\\u0026rdquo; to wear) Context overload (too many tools and instructions) Difficult debugging (hard to know what went wrong) Microsoft Agent Framework (MAF) makes this orchestration simple with its workflow patterns. Workflows in MAF connect multiple agents (and other executors) into a graph that defines how data flows between them. Think of it as the \\u0026ldquo;plumbing\\u0026rdquo; that connects your agents together. In this article, we\\u0026rsquo;ll focus on the most fundamental pattern: Sequential Workflows.\\nSequential Workflows The Sequential Pattern is the simplest and most intuitive workflow pattern. Agents process data sequentially, each building on the previous agent\\u0026rsquo;s output.\\nIn a sequential flow, each agent receives the accumulated conversation history (including all previous messages), processes the input, generates a response, appends it to the conversation, and passes the updated conversation to the next agent. These workflows are perfect for content pipelines (research → write → edit → publish), data transformation chains (extract → transform → load), review processes (draft → review → approve), and step-by-step analysis (collect data → analyze → summarize).\\nBuilding a Sequential Workflow: Step by Step Let\\u0026rsquo;s build a content creation pipeline that demonstrates the sequential pattern. We\\u0026rsquo;ll start simple and gradually add complexity.\\nFirst, install the required packages:\\n1 2 $ pip install agent-framework-azure-ai --pre $ pip install python-dotenv azure-identity Set up your environment variables (create a .env file):\\n1 2 AZURE_OPENAI_ENDPOINT=\\u0026#34;https://your-resource.openai.azure.com/\\u0026#34; AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=\\u0026#34;gpt-4o\\u0026#34; Let\\u0026rsquo;s start by importing everything we need:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 from agent_framework import ( SequentialBuilder, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from typing import Any from dotenv import load_dotenv load_dotenv() SequentialBuilder in the MAF package agent_framework is used to build a sequential workflow. We will discuss other imports as we progress further.\\nWe need a chat client for the workflow.\\n1 2 3 chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) The DefaultAzureCredential handles authentication automatically. It tries multiple authentication methods in order:\\nEnvironment variables Managed Identity Azure CLI (az login) Now let\\u0026rsquo;s create three specialized agents for our content pipeline:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 researcher = chat_client.create_agent( name=\\u0026#34;Researcher\\u0026#34;, instructions=\\u0026#34;Research the given topic and provide key facts and statistics.\\u0026#34;, ) writer = chat_client.create_agent( name=\\u0026#34;Writer\\u0026#34;, instructions=\\u0026#34;Take the research and write an engaging article draft.\\u0026#34;, ) editor = chat_client.create_agent( name=\\u0026#34;Editor\\u0026#34;, instructions=\\u0026#34;Review the draft for clarity, grammar, and engagement. Provide the final version.\\u0026#34;, ) A sequential workflow is created using the SequentialBuilder().\\n1 2 3 4 5 workflow = ( SequentialBuilder() .participants([researcher, writer, editor]) .build() ) That\\u0026rsquo;s it! Just two method calls:\\n.participants([...])- List your agents in the order they should execute. .build()- Construct the workflow. Under the hood, this creates:\\nAn executor for each agent Edges connecting them in sequence A start point (first agent) and an end point (last agent) Running the Workflow with Streaming MAF supports real-time event streaming during workflow execution. This gives you visibility into what\\u0026rsquo;s happening:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 async def main(): # Run the workflow with streaming events print(\\u0026#34;Running sequential workflow: Researcher → Writer → Editor\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Write about the future of AI agents\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event Let\\u0026rsquo;s understand each event type:\\nEvent When It Fires What It Contains ExecutorInvokedEvent When an agent starts processing executor_id - the agent\\u0026rsquo;s name ExecutorCompletedEvent When an agent finishes executor_id WorkflowStatusEvent When the workflow state changes state - RUNNING, IDLE, ERROR WorkflowOutputEvent When the workflow produces output data - the final result The final output contains the complete conversation history.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;FINAL CONVERSATION\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages: list[ChatMessage] | Any = output_evt.data for i, msg in enumerate(messages, start=1): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The WorkflowOutputEvent.data contains a list of ChatMessage objects with:\\nrole: USER or ASSISTANT author_name: The agent\\u0026rsquo;s name (for assistant messages) text: The message content Here is the complete example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 from agent_framework import ( SequentialBuilder, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from typing import Any from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create specialized agents researcher = chat_client.create_agent( name=\\u0026#34;Researcher\\u0026#34;, instructions=\\u0026#34;Research the given topic and provide key facts and statistics.\\u0026#34;, ) writer = chat_client.create_agent( name=\\u0026#34;Writer\\u0026#34;, instructions=\\u0026#34;Take the research and write an engaging article draft.\\u0026#34;, ) editor = chat_client.create_agent( name=\\u0026#34;Editor\\u0026#34;, instructions=\\u0026#34;Review the draft for clarity, grammar, and engagement. Provide the final version.\\u0026#34;, ) async def main(): # Build sequential workflow workflow = ( SequentialBuilder() .participants([researcher, writer, editor]) .build() ) # Run the workflow with streaming events print(\\u0026#34;Running sequential workflow: Researcher → Writer → Editor\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Write about the future of AI agents\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;FINAL CONVERSATION\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages: list[ChatMessage] | Any = output_evt.data for i, msg in enumerate(messages, start=1): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) When you run this workflow, you\\u0026rsquo;ll see something like:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 Running sequential workflow: Researcher → Writer → Editor ============================================================ ⚡ Starting: Researcher ✓ Completed: Researcher ⚡ Starting: Writer ✓ Completed: Writer ⚡ Starting: Editor ✓ Completed: Editor ✅ Workflow completed! ============================================================ FINAL CONVERSATION ============================================================ ------------------------------------------------------------ 01 [user] ------------------------------------------------------------ Write about the future of AI agents ------------------------------------------------------------ 02 [Researcher] ------------------------------------------------------------ # Key Facts and Statistics on AI Agents ## Market Growth - The AI agent market is projected to reach $47.1 billion by 2030 - Autonomous AI systems are expected to handle 85% of customer interactions by 2027 ... ------------------------------------------------------------ 03 [Writer] ------------------------------------------------------------ # The Future of AI Agents: A New Era of Intelligent Automation The rise of AI agents represents one of the most transformative shifts... [Engaging article draft based on the research] ------------------------------------------------------------ 04 [Editor] ------------------------------------------------------------ # The Future of AI Agents: Reshaping How We Work and Live .... Sequential workflows in MAF provide a simple yet powerful way to orchestrate multiple AI agents. With just a few lines of code, you can create sophisticated pipelines where:\\nEach agent specializes in one task Data flows naturally from one agent to the next You have full visibility through event streaming The framework handles all the orchestration complexity The SequentialBuilder makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/",
-  "datePublished": "2025-10-12T00:00:00Z",
-  "dateModified": "2025-10-12T00:00:00Z",
+  "headline": "Concurrent workflows in Microsoft Agent Framework",
+  "description": "In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks …",
+  "articleBody": "\"In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don\\u0026rsquo;t depend on each other\\u0026rsquo;s output, running them one at a time is inefficient.\\nHere\\u0026rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.\\nIn this article, we\\u0026rsquo;ll build up from a simple example to a sophisticated multi-analyst system that gathers insights from different perspectives and synthesizes them into a unified executive summary.\\nThe concurrent pattern is useful in scenarios such as:\\nIndependent analysis: Multiple agents can analyze the same input without needing each other\\u0026rsquo;s results. Time-sensitive operations: You need results fast, and parallelism can speed things up. Diverse perspectives: You want varied viewpoints on the same topic (technical, business, ethical, and so on). Redundancy/voting: Multiple agents tackle the same problem, and you aggregate their answers. Let us explore this further using an example. In this example, we will create three analyst agents that analyze a topic across three facets: technical, business, and ethical.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 from agent_framework import ( ConcurrentBuilder, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create three specialized analyst agents technical_analyst = chat_client.create_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.create_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.create_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Build the concurrent workflow workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .build() ) async def main(): print(\\u0026#34;Running concurrent analysis with 3 analysts...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;RESULTS\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) for msg in event.data: name = msg.author_name or \\u0026#34;Assistant\\u0026#34; print(f\\u0026#34;\\\\n--- {name} ---\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) In this concurrent workflow, three agents are created, each with a different analytical perspective. ConcurrentBuilder creates a workflow that runs all participants in parallel. All three agents receive the same input: Analyze the impact of autonomous vehicles. They execute simultaneously, returning results as they complete.\\nThe ConcurrentBuilder is a fluent builder pattern for constructing concurrent workflows:\\n1 2 3 4 5 workflow = ( ConcurrentBuilder() .participants([agent1, agent2, agent3]) # Agents to run in parallel .build() # Finalize and return the workflow ) Unlike SequentialBuilder, where agents run one after another, passing output forward, ConcurrentBuilder fans out the input to all participants simultaneously.\\nWith the help of events, we can track the progress of the agents as they complete.\\n1 2 3 4 5 6 7 8 9 10 11 12 $ python concurrent.py Running concurrent analysis with 3 analysts... ============================================================ ⚡ Starting: TechnicalAnalyst ⚡ Starting: BusinessAnalyst ⚡ Starting: EthicalAnalyst ✓ Completed: BusinessAnalyst ✓ Completed: TechnicalAnalyst ✓ Completed: EthicalAnalyst .... ✅ Workflow completed! So far, we have received individual responses from each agent. But what if we want to combine their insights into a unified summary? This is where aggregators come in.\\nWe can extend this workflow by adding an aggregator. It would be nice if another agent could take the response from the parallel workflow and summarize it for us.\\nBuilding a custom aggregator function An aggregator is an async function that receives all agent responses and produces a combined output.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 from agent_framework import AgentExecutorResponse, ChatMessage, Role # Create a summarizer agent to synthesize results summarizer = chat_client.create_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Create a unified executive summary that: 1. Highlights key insights from each perspective 2. Identifies common themes 3. Notes tensions or trade-offs 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Step 1: Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Step 2: Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Step 3: Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text This aggregator function can be used with ConcurrentBuilder().\\n1 2 3 4 5 6 workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) The .with_aggregator() method tells the workflow what to do with all the parallel results:\\nAll three analysts run concurrently. Once all are complete, the results are passed to aggregate_with_summarizer. The summarizer creates a unified executive summary. The summary becomes the final WorkflowOutputEvent.data Here is the complete working example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 from agent_framework import ( ConcurrentBuilder, AgentExecutorResponse, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create agents with different perspectives technical_analyst = chat_client.create_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.create_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.create_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Create aggregator/summarizer agent summarizer = chat_client.create_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three different perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Your job is to create a unified executive summary that: 1. Highlights the key insights from each perspective 2. Identifies common themes across all analyses 3. Notes any tensions or trade-offs between perspectives 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) # Custom aggregator function that uses the summarizer agent async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text # Build concurrent workflow with custom aggregator workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) async def main(): # Run the workflow with streaming events print(\\u0026#34;Running concurrent analysis with 3 analysts + summarizer...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the aggregated summary if output_evt: print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;EXECUTIVE SUMMARY (Aggregated by Summarizer Agent)\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(output_evt.data) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The design of an aggregator is important. Consider the following for designing a meaningful aggregator.\\nWhat insights should be preserved from each agent? How should conflicts between perspectives be handled? What format does the final output need to be in? Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.\\nIn the next article, we\\u0026rsquo;ll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/",
+  "datePublished": "2025-10-14T00:00:00Z",
+  "dateModified": "2025-10-14T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -113,14 +116,14 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/"
   },
   
   "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT7M",
+  "timeRequired": "PT8M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -159,8 +162,8 @@
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Sequential workflows in Microsoft Agent Framework",
-      "item": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/"
+      "name": "Concurrent workflows in Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/"
     }
     
     
@@ -589,7 +592,7 @@
 
       
       <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-        Sequential workflows in Microsoft Agent Framework
+        Concurrent workflows in Microsoft Agent Framework
       </h1>
 
       
@@ -599,7 +602,7 @@
           <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <time datetime="2025-10-12">October 12, 2025</time>
+          <time datetime="2025-10-14">October 14, 2025</time>
         </div>
 
         
@@ -609,7 +612,7 @@
             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>7 min read</span>
+            <span>8 min read</span>
           </div>
         
 
@@ -694,7 +697,7 @@
       
       
         <div class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-          Learn how to orchestrate AI agents in a step-by-step pipeline using Microsoft Agent Framework&#39;s SequentialBuilder
+          Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s ConcurrentBuilder
         </div>
       
     </header>
@@ -787,10 +790,9 @@
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Sequential workflows in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 12, 2025</p>
               </div>
@@ -802,9 +804,10 @@
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Concurrent workflows in Microsoft Agent Framework
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 14, 2025</p>
               </div>
@@ -837,9 +840,9 @@
             
           
             
-              
-            
           
+            
+              
             
           
             
@@ -848,19 +851,19 @@
           
           
             
-            <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry</span>
+              <span class="truncate">Sequential workflows in Microsoft Agent Framework</span>
             </a>
           
 
           
           
             
-            <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Concurrent workflows in Microsoft Agent Framework</span>
+            <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Handoff workflows in Microsoft Agent Framework</span>
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
@@ -876,96 +879,24 @@
     
     
 
-  
-    <div class="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-gray-200 dark:border-dark-border">
-      
-      <button
-        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-primary dark:hover:text-blue-400 transition-colors"
-        aria-expanded="false"
-        aria-controls="toc-content"
-      >
-        <span class="flex items-center">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-          </svg>
-          Table of Contents
-        </span>
-        <svg
-          id="toc-chevron"
-          class="w-4 h-4 transform transition-transform -rotate-90"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
-
-      
-      <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
-        <nav id="TableOfContents">
-  <ul>
-    <li><a href="#sequential-workflows">Sequential Workflows</a>
-      <ul>
-        <li><a href="#building-a-sequential-workflow-step-by-step">Building a Sequential Workflow: Step by Step</a></li>
-        <li><a href="#running-the-workflow-with-streaming">Running the Workflow with Streaming</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-      </nav>
-    </div>
-
-    <style>
-      #toc-content ul {
-        list-style: none;
-        padding-left: 1rem;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-      }
-      #toc-content > nav > ul {
-        padding-left: 0;
-      }
-      #toc-content li {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-      }
-      #toc-content a {
-        color: #374151;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      #toc-content a:hover {
-        color: #1e40af;
-        text-decoration: underline;
-      }
-       
-      .dark #toc-content a {
-        color: #cbd5e1;
-      }
-      .dark #toc-content a:hover {
-        color: #60a5fa;
-      }
-    </style>
-  
-
 
 
     
     <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-      <p>A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.</p>
-<p>Trying to cram all of this into one agent leads to:</p>
+      <p>In the [previous article](<a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti</a>), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don&rsquo;t depend on each other&rsquo;s output, running them one at a time is inefficient.</p>
+<p>Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.</p>
+<p>In this article, we&rsquo;ll build up from a simple example to a sophisticated multi-analyst system that gathers insights from different perspectives and synthesizes them into a unified executive summary.</p>
+<p>The concurrent pattern is useful in scenarios such as:</p>
 <ul>
-<li>Confused outputs (the agent doesn&rsquo;t know which &ldquo;hat&rdquo; to wear)</li>
-<li>Context overload (too many tools and instructions)</li>
-<li>Difficult debugging (hard to know what went wrong)</li>
+<li>Independent analysis: Multiple agents can analyze the same input without needing each other&rsquo;s results.</li>
+<li>Time-sensitive operations: You need results fast, and parallelism can speed things up.</li>
+<li>Diverse perspectives: You want varied viewpoints on the same topic (technical, business, ethical, and so on).</li>
+<li>Redundancy/voting: Multiple agents tackle the same problem, and you aggregate their answers.</li>
 </ul>
-<p>Microsoft Agent Framework (MAF) makes this orchestration simple with its workflow patterns. Workflows in MAF connect multiple agents (and other executors) into a graph that defines how data flows between them. Think of it as the &ldquo;plumbing&rdquo; that connects your agents together.  In this article, we&rsquo;ll focus on the most fundamental pattern: <a href="https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/orchestrations/sequential?pivots=programming-language-python">Sequential Workflows</a>.</p>
-<h2 id="sequential-workflows">Sequential Workflows</h2>
-<p>The Sequential Pattern is the simplest and most intuitive workflow pattern. Agents process data sequentially, each building on the previous agent&rsquo;s output.</p>
+<p>Let us explore this further using an example. In this example, we will create three analyst agents that analyze a topic across three facets: technical, business, and ethical.</p>
 <p><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/maf-sequential.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/maf-sequential.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  <a href="/images/maf-concurrent.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/maf-concurrent.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
@@ -988,275 +919,6 @@
       });
     });
   </script></p>
-<p>In a sequential flow, each agent receives the accumulated conversation history (including all previous messages), processes the input, generates a response, appends it to the conversation, and passes the updated conversation to the next agent. These workflows are perfect for content pipelines (research → write → edit → publish), data transformation chains (extract → transform → load), review processes (draft → review → approve), and step-by-step analysis (collect data → analyze → summarize).</p>
-<h3 id="building-a-sequential-workflow-step-by-step">Building a Sequential Workflow: Step by Step</h3>
-<p>Let&rsquo;s build a content creation pipeline that demonstrates the sequential pattern. We&rsquo;ll start simple and gradually add complexity.</p>
-<p>First, install the required packages:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ pip install agent-framework-azure-ai --pre
-</span></span><span class="line"><span class="cl">$ pip install python-dotenv azure-identity
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Set up your environment variables (create a <code>.env</code> file):</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">AZURE_OPENAI_ENDPOINT</span><span class="o">=</span><span class="s2">&#34;https://your-resource.openai.azure.com/&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nv">AZURE_OPENAI_CHAT_DEPLOYMENT_NAME</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Let&rsquo;s start by importing everything we need:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="n">SequentialBuilder</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ChatMessage</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">Role</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowRunState</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p><code>SequentialBuilder</code> in the MAF package <code>agent_framework</code> is used to build a sequential workflow. We will discuss other imports as we progress further.</p>
-<p>We need a chat client for the workflow.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>DefaultAzureCredential</code> handles authentication automatically. It tries multiple authentication methods in order:</p>
-<ul>
-<li>Environment variables</li>
-<li>Managed Identity</li>
-<li>Azure CLI (<code>az login</code>)</li>
-</ul>
-<p>Now let&rsquo;s create three specialized agents for our content pipeline:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">researcher</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Researcher&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Research the given topic and provide key facts and statistics.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Writer&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Take the research and write an engaging article draft.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">editor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Editor&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Review the draft for clarity, grammar, and engagement. Provide the final version.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>A sequential workflow is created using the <code>SequentialBuilder()</code>.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">SequentialBuilder</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">researcher</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">editor</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>That&rsquo;s it! Just two method calls:</p>
-<ul>
-<li><code>.participants([...])</code>- List your agents in the order they should execute.</li>
-<li><code>.build()</code>- Construct the workflow.</li>
-</ul>
-<p>Under the hood, this creates:</p>
-<ul>
-<li>An executor for each agent</li>
-<li>Edges connecting them in sequence</li>
-<li>A start point (first agent) and an end point (last agent)</li>
-</ul>
-<h3 id="running-the-workflow-with-streaming">Running the Workflow with Streaming</h3>
-<p>MAF supports real-time event streaming during workflow execution. This gives you visibility into what&rsquo;s happening:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>        
-</span></span><span class="line"><span class="cl">    <span class="c1"># Run the workflow with streaming events</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running sequential workflow: Researcher → Writer → Editor&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Write about the future of AI agents&#34;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Let&rsquo;s understand each event type:</p>
-<table>
-  <thead>
-      <tr>
-          <th>Event</th>
-          <th>When It Fires</th>
-          <th>What It Contains</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>ExecutorInvokedEvent</code></td>
-          <td>When an agent starts processing</td>
-          <td><code>executor_id</code> - the agent&rsquo;s name</td>
-      </tr>
-      <tr>
-          <td><code>ExecutorCompletedEvent</code></td>
-          <td>When an agent finishes</td>
-          <td><code>executor_id</code></td>
-      </tr>
-      <tr>
-          <td><code>WorkflowStatusEvent</code></td>
-          <td>When the workflow state changes</td>
-          <td><code>state</code> - RUNNING, IDLE, ERROR</td>
-      </tr>
-      <tr>
-          <td><code>WorkflowOutputEvent</code></td>
-          <td>When the workflow produces output</td>
-          <td><code>data</code> - the final result</td>
-      </tr>
-  </tbody>
-</table>
-<p>The final output contains the complete conversation history.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="c1"># Display the final conversation</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;FINAL CONVERSATION&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&#34;assistant&#34;</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">ASSISTANT</span> <span class="k">else</span> <span class="s2">&#34;user&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>WorkflowOutputEvent.data</code> contains a list of <code>ChatMessage</code> objects with:</p>
-<ul>
-<li><code>role</code>: USER or ASSISTANT</li>
-<li><code>author_name</code>: The agent&rsquo;s name (for assistant messages)</li>
-<li><code>text</code>: The message content</li>
-</ul>
-<p>Here is the complete example.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1325,26 +987,10 @@
 </span><span class="lnt">64
 </span><span class="lnt">65
 </span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span><span class="lnt">71
-</span><span class="lnt">72
-</span><span class="lnt">73
-</span><span class="lnt">74
-</span><span class="lnt">75
-</span><span class="lnt">76
-</span><span class="lnt">77
-</span><span class="lnt">78
-</span><span class="lnt">79
-</span><span class="lnt">80
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">SequentialBuilder</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ChatMessage</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">Role</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ConcurrentBuilder</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
@@ -1354,10 +1000,8 @@
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
-</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
@@ -1365,37 +1009,34 @@
 </span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Create specialized agents</span>
-</span></span><span class="line"><span class="cl"><span class="n">researcher</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Researcher&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Research the given topic and provide key facts and statistics.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Create three specialized analyst agents</span>
+</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;TechnicalAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a technical/engineering perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Writer&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Take the research and write an engaging article draft.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;BusinessAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a business/market perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">editor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Editor&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Review the draft for clarity, grammar, and engagement. Provide the final version.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;EthicalAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from an ethical/societal perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>        
-</span></span><span class="line"><span class="cl">    <span class="c1"># Build sequential workflow</span>
-</span></span><span class="line"><span class="cl">    <span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SequentialBuilder</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">researcher</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">editor</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Build the concurrent workflow</span>
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ConcurrentBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">technical_analyst</span><span class="p">,</span> <span class="n">business_analyst</span><span class="p">,</span> <span class="n">ethical_analyst</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Run the workflow with streaming events</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running sequential workflow: Researcher → Writer → Editor&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running concurrent analysis with 3 analysts...&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Write about the future of AI agents&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Analyze the impact of autonomous vehicles&#34;</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
@@ -1404,26 +1045,77 @@
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Display the final conversation</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;FINAL CONVERSATION&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&#34;assistant&#34;</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">ASSISTANT</span> <span class="k">else</span> <span class="s2">&#34;user&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;RESULTS&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="s2">&#34;Assistant&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">--- </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> ---&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>When you run this workflow, you&rsquo;ll see something like:</p>
+</div><p>In this concurrent workflow, three agents are created, each with a different analytical perspective. <code>ConcurrentBuilder</code> creates a workflow that runs all participants in parallel. All three agents receive the same input: <em>Analyze the impact of autonomous vehicles</em>. They execute simultaneously, returning results as they complete.</p>
+<p>The <code>ConcurrentBuilder</code> is a fluent builder pattern for constructing concurrent workflows:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">ConcurrentBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">agent1</span><span class="p">,</span> <span class="n">agent2</span><span class="p">,</span> <span class="n">agent3</span><span class="p">])</span>  <span class="c1"># Agents to run in parallel</span>
+</span></span><span class="line"><span class="cl">  <span class="o">.</span><span class="n">build</span><span class="p">()</span>                  <span class="c1"># Finalize and return the workflow</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Unlike <code>SequentialBuilder</code>, where agents run one after another, passing output forward, <code>ConcurrentBuilder</code> fans out the input to all participants simultaneously.</p>
+<p>With the help of events, we can track the progress of the agents as they complete.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ python concurrent.py
+</span></span><span class="line"><span class="cl">Running concurrent analysis with <span class="m">3</span> analysts...
+</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
+</span></span><span class="line"><span class="cl">⚡ Starting: TechnicalAnalyst
+</span></span><span class="line"><span class="cl">⚡ Starting: BusinessAnalyst
+</span></span><span class="line"><span class="cl">⚡ Starting: EthicalAnalyst
+</span></span><span class="line"><span class="cl">✓ Completed: BusinessAnalyst
+</span></span><span class="line"><span class="cl">✓ Completed: TechnicalAnalyst
+</span></span><span class="line"><span class="cl">✓ Completed: EthicalAnalyst
+</span></span><span class="line"><span class="cl">....
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">✅ Workflow completed!
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>So far, we have received individual responses from each agent. But what if we want to combine their insights into a unified summary? This is where aggregators come in.</p>
+<p>We can extend this workflow by adding an aggregator. It would be nice if another agent could take the response from the parallel workflow and summarize it for us.</p>
+<h3 id="building-a-custom-aggregator-function">Building a custom aggregator function</h3>
+<p>An aggregator is an async function that receives all agent responses and produces a combined output.</p>
+<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
+  <a href="/images/maf-concurrent-aggregator.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
+    <img src="/images/maf-concurrent-aggregator.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1466,64 +1158,317 @@
 </span><span class="lnt">38
 </span><span class="lnt">39
 </span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">Running sequential workflow: Researcher → Writer → <span class="nv">Editor</span>
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">⚡ Starting: Researcher
-</span></span><span class="line"><span class="cl">✓ Completed: Researcher
-</span></span><span class="line"><span class="cl">⚡ Starting: Writer
-</span></span><span class="line"><span class="cl">✓ Completed: Writer
-</span></span><span class="line"><span class="cl">⚡ Starting: Editor
-</span></span><span class="line"><span class="cl">✓ Completed: Editor
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">AgentExecutorResponse</span><span class="p">,</span> <span class="n">ChatMessage</span><span class="p">,</span> <span class="n">Role</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">✅ Workflow completed!
+</span></span><span class="line"><span class="cl"><span class="c1"># Create a summarizer agent to synthesize results</span>
+</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Summarizer&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are an expert synthesizer. You will receive analyses from three perspectives:
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Technical/Engineering
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Business/Market  
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Ethical/Societal
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Create a unified executive summary that:
+</span></span></span><span class="line"><span class="cl"><span class="s2">    1. Highlights key insights from each perspective
+</span></span></span><span class="line"><span class="cl"><span class="s2">    2. Identifies common themes
+</span></span></span><span class="line"><span class="cl"><span class="s2">    3. Notes tensions or trade-offs
+</span></span></span><span class="line"><span class="cl"><span class="s2">    4. Provides actionable recommendations
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Keep the summary concise but comprehensive.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">FINAL <span class="nv">CONVERSATION</span>
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">01</span> <span class="o">[</span>user<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl">Write about the future of AI agents
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">02</span> <span class="o">[</span>Researcher<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># Key Facts and Statistics on AI Agents</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">## Market Growth</span>
-</span></span><span class="line"><span class="cl">- The AI agent market is projected to reach <span class="nv">$47</span>.1 billion by <span class="m">2030</span>
-</span></span><span class="line"><span class="cl">- Autonomous AI systems are expected to handle 85% of customer interactions by <span class="m">2027</span>
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">03</span> <span class="o">[</span>Writer<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># The Future of AI Agents: A New Era of Intelligent Automation</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">The rise of AI agents represents one of the most transformative shifts...
-</span></span><span class="line"><span class="cl"><span class="o">[</span>Engaging article draft based on the research<span class="o">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">04</span> <span class="o">[</span>Editor<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># The Future of AI Agents: Reshaping How We Work and Live</span>
-</span></span><span class="line"><span class="cl">....
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">aggregate_with_summarizer</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentExecutorResponse</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Aggregate all analyst responses using the summarizer agent.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Step 1: Collect all analyses</span>
+</span></span><span class="line"><span class="cl">    <span class="n">analyses</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent_name</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">executor_id</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Get the last assistant message (the analysis)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">agent_run_response</span><span class="o">.</span><span class="n">messages</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s2">&#34;assistant&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">analyses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;## </span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2"> Analysis</span><span class="se">\n</span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Step 2: Create prompt for summarizer</span>
+</span></span><span class="line"><span class="cl">    <span class="n">combined</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">analyses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Please synthesize the following three analyses into a unified executive summary:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">combined</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Step 3: Run summarizer agent</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">summarizer</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">ChatMessage</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">Role</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">prompt</span><span class="p">)])</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Sequential workflows in MAF provide a simple yet powerful way to orchestrate multiple AI agents. With just a few lines of code, you can create sophisticated pipelines where:</p>
+</div><p>This aggregator function can be used with <code>ConcurrentBuilder()</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ConcurrentBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">technical_analyst</span><span class="p">,</span> <span class="n">business_analyst</span><span class="p">,</span> <span class="n">ethical_analyst</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_aggregator</span><span class="p">(</span><span class="n">aggregate_with_summarizer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The <code>.with_aggregator()</code> method tells the workflow what to do with all the parallel results:</p>
 <ul>
-<li>Each agent specializes in one task</li>
-<li>Data flows naturally from one agent to the next</li>
-<li>You have full visibility through event streaming</li>
-<li>The framework handles all the orchestration complexity</li>
+<li>All three analysts run concurrently.</li>
+<li>Once all are complete, the results are passed to <code>aggregate_with_summarizer</code>.</li>
+<li>The summarizer creates a unified executive summary.</li>
+<li>The summary becomes the final <code>WorkflowOutputEvent.data</code></li>
 </ul>
-<p>The <code>SequentialBuilder</code> makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.</p>
+<p>Here is the complete working example.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ConcurrentBuilder</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">AgentExecutorResponse</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChatMessage</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Role</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowRunState</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create agents with different perspectives</span>
+</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;TechnicalAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a technical/engineering perspective. Be concise.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;BusinessAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a business/market perspective. Be concise.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;EthicalAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from an ethical/societal perspective. Be concise.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create aggregator/summarizer agent</span>
+</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Summarizer&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are an expert synthesizer. You will receive analyses from three different perspectives:
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Technical/Engineering
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Business/Market  
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - Ethical/Societal
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Your job is to create a unified executive summary that:
+</span></span></span><span class="line"><span class="cl"><span class="s2">    1. Highlights the key insights from each perspective
+</span></span></span><span class="line"><span class="cl"><span class="s2">    2. Identifies common themes across all analyses
+</span></span></span><span class="line"><span class="cl"><span class="s2">    3. Notes any tensions or trade-offs between perspectives
+</span></span></span><span class="line"><span class="cl"><span class="s2">    4. Provides actionable recommendations
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Keep the summary concise but comprehensive.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Custom aggregator function that uses the summarizer agent</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">aggregate_with_summarizer</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AgentExecutorResponse</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Aggregate all analyst responses using the summarizer agent.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># Collect all analyses</span>
+</span></span><span class="line"><span class="cl">    <span class="n">analyses</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent_name</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">executor_id</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Get the last assistant message (the analysis)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">agent_run_response</span><span class="o">.</span><span class="n">messages</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s2">&#34;assistant&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">analyses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;## </span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2"> Analysis</span><span class="se">\n</span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Create prompt for summarizer</span>
+</span></span><span class="line"><span class="cl">    <span class="n">combined</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">analyses</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;Please synthesize the following three analyses into a unified executive summary:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">combined</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Run summarizer agent</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">summarizer</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">ChatMessage</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">Role</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">prompt</span><span class="p">)])</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Build concurrent workflow with custom aggregator</span>
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ConcurrentBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">technical_analyst</span><span class="p">,</span> <span class="n">business_analyst</span><span class="p">,</span> <span class="n">ethical_analyst</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_aggregator</span><span class="p">(</span><span class="n">aggregate_with_summarizer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># Run the workflow with streaming events</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running concurrent analysis with 3 analysts + summarizer...&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Analyze the impact of autonomous vehicles&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Display the aggregated summary</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;EXECUTIVE SUMMARY (Aggregated by Summarizer Agent)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">output_evt</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The design of an aggregator is important. Consider the following for designing a meaningful aggregator.</p>
+<ul>
+<li>What insights should be preserved from each agent?</li>
+<li>How should conflicts between perspectives be handled?</li>
+<li>What format does the final output need to be in?</li>
+</ul>
+<p>Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.</p>
+<p>In the next article, we&rsquo;ll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!</p>
 
     </div>
 
@@ -1551,7 +1496,7 @@
 
     
     <a
-      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F&text=Sequential&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fconcurrent-workflows-in-microsoft-agent-framework%2F&text=Concurrent&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1565,7 +1510,7 @@
 
     
     <a
-      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F"
+      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fconcurrent-workflows-in-microsoft-agent-framework%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1579,7 +1524,7 @@
 
     
     <a
-      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F"
+      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fconcurrent-workflows-in-microsoft-agent-framework%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1593,7 +1538,7 @@
 
     
     <button
-      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/')"
+      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/')"
       class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
       aria-label="Copy link"
       title="Copy link"
@@ -1611,9 +1556,9 @@
 function shareNative() {
   if (navigator.share) {
     navigator.share({
-      title: 'Sequential workflows in Microsoft Agent Framework',
-      text: 'Learn how to orchestrate AI agents in a step-by-step pipeline using Microsoft Agent Framework\u0027s SequentialBuilder',
-      url: 'https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/'
+      title: 'Concurrent workflows in Microsoft Agent Framework',
+      text: 'Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework\u0027s ConcurrentBuilder',
+      url: 'https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/'
     }).catch(function(error) {
       console.log('Error sharing:', error);
     });
@@ -1674,9 +1619,9 @@ function copyToClipboard(text) {
       
     
       
-        
-      
     
+      
+        
       
     
       
@@ -1700,9 +1645,9 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/"
+        <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
+           aria-label="Previous in Microsoft Agent Framework: Sequential workflows in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1715,10 +1660,10 @@ function copyToClipboard(text) {
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
+                Sequential workflows in Microsoft Agent Framework
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">The Microsoft Agent Framework represents a significant improvement in developer experience over the raw Foundry SDK. While the native SDK gives you complete control, the Agent Framework provides less boilerplate, type-safe tools, consistent patterns, and resource safety.</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a step-by-step pipeline using Microsoft Agent Framework&#39;s SequentialBuilder</p>
               
             </div>
           </div>
@@ -1729,18 +1674,18 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/"
+        <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Concurrent workflows in Microsoft Agent Framework">
+           aria-label="Next in Microsoft Agent Framework: Handoff workflows in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
             
             <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Concurrent workflows in Microsoft Agent Framework
+                Handoff workflows in Microsoft Agent Framework
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s ConcurrentBuilder</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s HandoffBuilder</p>
               
             </div>
 
@@ -1965,15 +1910,15 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Concurrent workflows in Microsoft Agent Framework
+      Sequential workflows in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-14">
-      Oct 14, 2025
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-12">
+      Oct 12, 2025
     </time>
   </a>
 </article>
