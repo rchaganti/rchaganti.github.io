@@ -18,10 +18,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Handoff workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
+  <title>Group chat workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: the handoff workflow. The handoff pattern models real-world scenarios in which a conversation or task is transferred from one agent to another based on context, expertise, or role. Think of it like a customer support call center—you first speak with a frontline agent who assesses your issue and then routes you to the appropriate specialist.">
+  <meta name="description" content="In the previous articles of this series, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):
+
+Sequential: Agents process in a fixed order, like a pipeline.
+Concurrent: Agents work in parallel, with results aggregated.
+Handoff: A coordinator routes requests to specialist agents.
+
+But what happens when you need agents to discuss, debate, and build on each other&rsquo;s ideas, like a brainstorming session or a committee meeting? This is where the GroupChat workflow pattern shines. In this article, we&rsquo;ll explore how to build dynamic multi-agent conversations using GroupChatBuilder, where a moderator (or selection function) orchestrates turn-based discussions among participant agents.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,22 +36,28 @@
   
 
   
-  <meta property="og:title" content="Handoff workflows in Microsoft Agent Framework">
-  <meta property="og:description" content="In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: the handoff workflow. The handoff pattern models real-world scenarios in which a conversation or task is transferred from one agent to another based on context, expertise, or role. Think of it like a customer support call center—you first speak with a frontline agent who assesses your issue and then routes you to the appropriate specialist.">
+  <meta property="og:title" content="Group chat workflows in Microsoft Agent Framework">
+  <meta property="og:description" content="In the previous articles of this series, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):
+
+Sequential: Agents process in a fixed order, like a pipeline.
+Concurrent: Agents work in parallel, with results aggregated.
+Handoff: A coordinator routes requests to specialist agents.
+
+But what happens when you need agents to discuss, debate, and build on each other&rsquo;s ideas, like a brainstorming session or a committee meeting? This is where the GroupChat workflow pattern shines. In this article, we&rsquo;ll explore how to build dynamic multi-agent conversations using GroupChatBuilder, where a moderator (or selection function) orchestrates turn-based discussions among participant agents.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Handoff workflows in Microsoft Agent Framework">
+  <meta property="og:image:alt" content="Group chat workflows in Microsoft Agent Framework">
 
   
   
-    <meta property="article:published_time" content="2025-10-16T00:00:00Z">
-    <meta property="article:modified_time" content="2025-10-16T00:00:00Z">
+    <meta property="article:published_time" content="2025-10-18T00:00:00Z">
+    <meta property="article:modified_time" content="2025-10-18T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -53,13 +65,19 @@
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Handoff workflows in Microsoft Agent Framework">
-  <meta name="twitter:description" content="In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: the handoff workflow. The handoff pattern models real-world scenarios in which a conversation or task is transferred from one agent to another based on context, expertise, or role. Think of it like a customer support call center—you first speak with a frontline agent who assesses your issue and then routes you to the appropriate specialist.">
+  <meta name="twitter:title" content="Group chat workflows in Microsoft Agent Framework">
+  <meta name="twitter:description" content="In the previous articles of this series, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):
+
+Sequential: Agents process in a fixed order, like a pipeline.
+Concurrent: Agents work in parallel, with results aggregated.
+Handoff: A coordinator routes requests to specialist agents.
+
+But what happens when you need agents to discuss, debate, and build on each other&rsquo;s ideas, like a brainstorming session or a committee meeting? This is where the GroupChat workflow pattern shines. In this article, we&rsquo;ll explore how to build dynamic multi-agent conversations using GroupChatBuilder, where a moderator (or selection function) orchestrates turn-based discussions among participant agents.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +106,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Handoff workflows in Microsoft Agent Framework",
-  "description": "In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: …",
-  "articleBody": "\"In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: the handoff workflow. The handoff pattern models real-world scenarios in which a conversation or task is transferred from one agent to another based on context, expertise, or role. Think of it like a customer support call center—you first speak with a frontline agent who assesses your issue and then routes you to the appropriate specialist.\\nUnlike sequential workflows (where agents execute in a fixed order) or concurrent workflows (where agents work in parallel), handoff workflows are dynamic and conditional. The flow is determined at runtime based on the conversation context. Handoff workflows are useful in scenarios like:\\nCustomer support systems: Route to refund, shipping, or technical specialists. Intake and triage: Assess requests and delegate to domain experts. Escalation workflows: Pass complex issues to senior agents. Multi-department routing: Direct inquiries to sales, support, or billing. Before building our handoff workflow, let\\u0026rsquo;s understand the core concepts.\\nThe coordinator is the entry point agent that assesses incoming requests and decides which specialist to hand off to. It acts as a dispatcher or router. The specialists are the participant agents. These are domain-specific agents with focused expertise. Each specialist handles a particular type of request. The framework automatically provides handoff tools to the coordinator, enabling it to transfer control to specialists. The agent simply calls the appropriate handoff function when it determines the right specialist. The interaction mode controls how the workflow handles the conversation:\\n\\u0026quot;autonomous\\u0026quot;: Agents operate without waiting for user input between turns. \\u0026quot;interactive\\u0026quot;: Pauses for user input during the conversation. A termination condition is a function that examines the conversation and decides when the workflow should end. This prevents infinite loops and ensures conversations reach a natural conclusion.\\nBuilding a customer support handoff system Let\\u0026rsquo;s build a customer support system step by step. We\\u0026rsquo;ll start simple and progressively add sophistication. First, let us define the coordinator.\\n1 2 3 4 5 6 7 8 9 10 11 coordinator = chat_client.create_agent( name=\\u0026#34;coordinator_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a frontline customer support agent. Assess the customer\\u0026#39;s issue and hand off to the appropriate specialist: - For refund requests → hand off to refund_agent - For shipping issues → hand off to shipping_agent - For technical problems → hand off to technical_agent Use the handoff tools to transfer the conversation. After the specialist resolves the issue, thank the customer and end the conversation.\\u0026#34;\\u0026#34;\\u0026#34;, ) Notice how the instructions explicitly tell the agent:\\nWhat types of issues exist? Which specialist handles each type? How to perform the handoff (using tools). The agent names in the instructions (refund_agent and shipping_agent) must match the actual agent names; this is how the coordinator knows which handoff tool to invoke.\\nWe will now build the participant or the specialist agents. Each specialist has focused expertise and clear instructions on how to handle their domain:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 refund_agent = chat_client.create_agent( name=\\u0026#34;refund_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You handle refund requests. Ask for order details and process refunds. Once you have helped the customer, provide a clear resolution and end your response. Do not hand off back to the coordinator - just provide your final answer.\\u0026#34;\\u0026#34;\\u0026#34;, ) shipping_agent = chat_client.create_agent( name=\\u0026#34;shipping_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You resolve shipping issues. Track packages and update delivery status. For order #12345, inform the customer that you\\u0026#39;ve located the package and it will be delivered within 2 business days. Provide a clear resolution and end your response. Do not ask follow-up questions.\\u0026#34;\\u0026#34;\\u0026#34;, ) technical_agent = chat_client.create_agent( name=\\u0026#34;technical_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You solve technical problems. Troubleshoot issues step by step. Once you have helped the customer, provide a clear resolution and end your response. Do not hand off back to the coordinator - just provide your final answer.\\u0026#34;\\u0026#34;\\u0026#34;, ) With the coordinator and specialist agents in place, we need a termination condition. The termination condition prevents runaway conversations. It\\u0026rsquo;s a function that returns True when the workflow should stop.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 def should_terminate(conversation: list) -\\u0026gt; bool: \\u0026#34;\\u0026#34;\\u0026#34;End when the conversation includes resolution keywords or reaches length limit.\\u0026#34;\\u0026#34;\\u0026#34; # Safety limit: end after too many turns if len(conversation) \\u0026gt;= 6: return True # Content-based termination: look for resolution indicators for msg in conversation: if hasattr(msg, \\u0026#39;text\\u0026#39;) and msg.text: text_lower = msg.text.lower() resolution_keywords = [\\u0026#39;resolved\\u0026#39;, \\u0026#39;delivered\\u0026#39;, \\u0026#39;refunded\\u0026#39;, \\u0026#39;fixed\\u0026#39;, \\u0026#39;thank you for contacting\\u0026#39;] if any(word in text_lower for word in resolution_keywords): return True return False This function checks two conditions:\\nConversation length: Prevents runaway loops by limiting turns. Resolution keywords: Detects when the issue has been resolved With the termination function ready, we can build the handoff workflow.\\n1 2 3 4 5 6 7 8 workflow = ( HandoffBuilder(name=\\u0026#34;customer_support\\u0026#34;) .participants([coordinator, refund_agent, shipping_agent, technical_agent]) .set_coordinator(coordinator) .with_interaction_mode(\\u0026#34;autonomous\\u0026#34;) .with_termination_condition(should_terminate) .build() ) Let\\u0026rsquo;s break down each builder method:\\nMethod Purpose HandoffBuilder(name=\\u0026quot;...\\u0026quot;) Creates a named workflow for identification .participants([...]) Registers all agents that can participate .set_coordinator(agent) Designates the entry-point agent .with_interaction_mode(\\u0026quot;autonomous\\u0026quot;) Runs without waiting for user input .with_termination_condition(fn) Sets custom logic to end the workflow .build() Compiles the workflow configuration To see the handoff workflow in action, we can use streaming events.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 async def main(): print(\\u0026#34;Running handoff workflow: Coordinator → Specialists\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;I never received my order #12345\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the conversation history if output_evt: print(\\u0026#34;\\\\nCONVERSATION HISTORY\\u0026#34;) messages = output_evt.data for msg in messages: if hasattr(msg, \\u0026#39;role\\u0026#39;): name = msg.author_name or msg.role.value print(f\\u0026#34;[{name}]: {msg.text}\\u0026#34;) The streaming API emits different event types that let you track workflow progress:\\nEvent Type When It Fires Use Case ExecutorInvokedEvent An agent starts processing Show \\u0026ldquo;Agent X is working\\u0026hellip;\\u0026rdquo; ExecutorCompletedEvent An agent finishes Update progress indicators WorkflowStatusEvent Workflow state changes Detect completion or errors WorkflowOutputEvent Final output is ready Capture the result The WorkflowRunState.IDLE status indicates that the workflow has finished processing.\\nHere is the complete example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 from agent_framework import ( HandoffBuilder, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Coordinator agent coordinator = chat_client.create_agent( name=\\u0026#34;coordinator_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a frontline customer support agent. Assess the customer\\u0026#39;s issue and hand off to the appropriate specialist: - For refund requests → hand off to refund_agent - For shipping issues → hand off to shipping_agent - For technical problems → hand off to technical_agent Use the handoff tools to transfer the conversation. After the specialist resolves the issue, thank the customer and end the conversation.\\u0026#34;\\u0026#34;\\u0026#34;, ) # Specialist agents refund_agent = chat_client.create_agent( name=\\u0026#34;refund_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You handle refund requests. Ask for order details and process refunds. Once you have helped the customer, provide a clear resolution and end your response. Do not hand off back to the coordinator - just provide your final answer.\\u0026#34;\\u0026#34;\\u0026#34;, ) shipping_agent = chat_client.create_agent( name=\\u0026#34;shipping_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You resolve shipping issues. Track packages and update delivery status. For order #12345, inform the customer that you\\u0026#39;ve located the package and it will be delivered within 2 business days. Provide a clear resolution and end your response. Do not ask follow-up questions.\\u0026#34;\\u0026#34;\\u0026#34;, ) technical_agent = chat_client.create_agent( name=\\u0026#34;technical_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You solve technical problems. Troubleshoot issues step by step. Once you have helped the customer, provide a clear resolution and end your response. Do not hand off back to the coordinator - just provide your final answer.\\u0026#34;\\u0026#34;\\u0026#34;, ) def should_terminate(conversation: list) -\\u0026gt; bool: \\u0026#34;\\u0026#34;\\u0026#34;End when the conversation includes resolution keywords or reaches length limit.\\u0026#34;\\u0026#34;\\u0026#34; if len(conversation) \\u0026gt;= 6: return True for msg in conversation: if hasattr(msg, \\u0026#39;text\\u0026#39;) and msg.text: text_lower = msg.text.lower() if any(word in text_lower for word in [\\u0026#39;resolved\\u0026#39;, \\u0026#39;delivered\\u0026#39;, \\u0026#39;refunded\\u0026#39;, \\u0026#39;fixed\\u0026#39;, \\u0026#39;thank you for contacting\\u0026#39;]): return True return False workflow = ( HandoffBuilder(name=\\u0026#34;customer_support\\u0026#34;) .participants([coordinator, refund_agent, shipping_agent, technical_agent]) .set_coordinator(coordinator) .with_interaction_mode(\\u0026#34;autonomous\\u0026#34;) # Complete without prompting for user input .with_termination_condition(should_terminate) .build() ) async def main(): print(\\u0026#34;Running handoff workflow: Coordinator → Specialists\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;Customer issue: I never received my order #12345\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;I never received my order #12345\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;CONVERSATION HISTORY\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages = output_evt.data if isinstance(messages, list): for i, msg in enumerate(messages, start=1): if hasattr(msg, \\u0026#39;role\\u0026#39;): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) else: print(output_evt.data) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) Here is the expected output when you run this workflow.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 \\u0026gt; python.exe .\\\\03-handoff.py Running handoff workflow: Coordinator → Specialists ============================================================ Customer issue: I never received my order #12345 ============================================================ ⚡ Starting: input-conversation ✓ Completed: input-conversation ⚡ Starting: coordinator_agent ✓ Completed: coordinator_agent ⚡ Starting: handoff-coordinator ✓ Completed: handoff-coordinator ⚡ Starting: shipping_agent ✓ Completed: shipping_agent ⚡ Starting: handoff-coordinator ✓ Completed: handoff-coordinator ✅ Workflow completed! ============================================================ CONVERSATION HISTORY ============================================================ ------------------------------------------------------------ 01 [user] ------------------------------------------------------------ I never received my order #12345 ------------------------------------------------------------ 02 [shipping_agent] ------------------------------------------------------------ Thank you — I’ve located the package for order #12345. It’s back in transit with the carrier and is scheduled to be delivered within 2 business days (by Tuesday, February 3, 2026). No action is needed on your part; we’ll continue to monitor until delivery. Apologies for the delay — the issue is resolved. In the advanced implementation of this workflow, a specialist can hand off to other specialists.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 senior_technical_agent = chat_client.create_agent( name=\\u0026#34;senior_technical_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You handle escalated technical issues that require deep expertise. You receive cases from the technical_agent.\\u0026#34;\\u0026#34;\\u0026#34;, ) technical_agent = chat_client.create_agent( name=\\u0026#34;technical_agent\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You solve technical problems. For complex issues you cannot resolve, hand off to senior_technical_agent.\\u0026#34;\\u0026#34;\\u0026#34;, ) ..... workflow = ( HandoffBuilder(name=\\u0026#34;support\\u0026#34;) .set_coordinator(coordinator) .participants([refund_agent, shipping_agent, technical_agent]) .add_handoff(refund_agent, technical_agent) # Refund can transfer to Technical .add_handoff(shipping_agent, refund_agent) # Shipping can transfer to Refund .build() ) For scenarios that require a human-in-the-loop, you can set the interaction mode to interactive.\\n1 2 3 4 5 6 7 workflow = ( HandoffBuilder(name=\\u0026#34;customer_support\\u0026#34;) .participants([coordinator, refund_agent, shipping_agent]) .set_coordinator(coordinator) .with_interaction_mode(\\u0026#34;interactive\\u0026#34;) .build() ) This pauses the workflow at natural points, allowing users to provide additional information or confirm actions.\\nThe Handoff pattern enables dynamic, context-aware routing between agents. This is perfect for customer support, intake systems, and any scenario where different experts handle different concerns. By combining a coordinator, specialized agents, and smart termination logic, you can build sophisticated multi-agent systems that feel natural and efficient. When using this workflow:\\nBe explicit about when and to whom an agent should hand off. Always include a length-based termination to prevent infinite loops. Ensure each agent excels at exactly one thing. In the next article, we\\u0026rsquo;ll explore the group chat orchestration pattern for even more complex multi-agent collaboration scenarios.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/handoff-workflows-in-microsoft-agent-framework\/",
-  "datePublished": "2025-10-16T00:00:00Z",
-  "dateModified": "2025-10-16T00:00:00Z",
+  "headline": "Group chat workflows in Microsoft Agent Framework",
+  "description": "In the previous articles of this series, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):\nSequential: Agents process in a fixed order, like a pipeline. Concurrent: …",
+  "articleBody": "\"In the previous articles of this series, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):\\nSequential: Agents process in a fixed order, like a pipeline. Concurrent: Agents work in parallel, with results aggregated. Handoff: A coordinator routes requests to specialist agents. But what happens when you need agents to discuss, debate, and build on each other\\u0026rsquo;s ideas, like a brainstorming session or a committee meeting? This is where the GroupChat workflow pattern shines. In this article, we\\u0026rsquo;ll explore how to build dynamic multi-agent conversations using GroupChatBuilder, where a moderator (or selection function) orchestrates turn-based discussions among participant agents.\\nThe GroupChat workflow is ideal for scenarios where:\\nMultiple perspectives are needed on a single topic. Ideas need to evolve through discussion and refinement. Agents should react to each other\\u0026rsquo;s outputs, not just the original input. Consensus or synthesis emerges from collaborative dialogue. To understand this better, let us start with an example. Let\\u0026rsquo;s build a classic brainstorming setup with three agents: a creative who generates ideas, a critic who challenges them, and a synthesizer who combines the best elements. Each agent needs a distinct perspective defined in its instructions:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 creative = chat_client.create_agent( name=\\u0026#34;Creative\\u0026#34;, instructions=\\u0026#34;You are a creative thinker. Generate bold, innovative ideas.\\u0026#34;, ) critic = chat_client.create_agent( name=\\u0026#34;Critic\\u0026#34;, instructions=\\u0026#34;You are a critical thinker. Identify potential issues and challenges.\\u0026#34;, ) synthesizer = chat_client.create_agent( name=\\u0026#34;Synthesizer\\u0026#34;, instructions=\\u0026#34;You synthesize ideas. Combine the best elements into actionable plans.\\u0026#34;, ) The heart of a GroupChat workflow is the speaker selection function. This function decides who speaks next based on the current state of the conversation. The speaker selection function receives the conversation state.\\n1 2 3 4 5 GroupChatStateSnapshot = TypedDict(\\u0026#39;GroupChatStateSnapshot\\u0026#39;, { \\u0026#39;participants\\u0026#39;: dict, # Dictionary of participant agents (name → agent) \\u0026#39;history\\u0026#39;: list, # Conversation history so far \\u0026#39;round_index\\u0026#39;: int, # Current round number (0-indexed) }) Field Description participants A dictionary where keys are agent names history List of messages exchanged so far round_index How many turns have been taken A simple way to select speakers is to use a round-robin method. In this approach, each agent speaks in order.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 def select_speaker(state: GroupChatStateSnapshot) -\\u0026gt; str | None: \\u0026#34;\\u0026#34;\\u0026#34;Select the next speaker in round-robin order.\\u0026#34;\\u0026#34;\\u0026#34; participants = state[\\u0026#34;participants\\u0026#34;] round_index = state[\\u0026#34;round_index\\u0026#34;] # End after 6 rounds (2 full cycles through 3 agents) if round_index \\u0026gt;= 6: return None # Returning None ends the conversation # Get the list of participant names participant_names = list(participants.keys()) # Select based on round index return participant_names[round_index % len(participant_names)] As defined in this function, the next participant name is returned. To terminate the conversation, this function returns None.\\nWith the speaker selection in place, let us build the workflow.\\n1 2 3 4 5 6 workflow = ( GroupChatBuilder() .set_select_speakers_func(select_speaker) .participants([creative, critic, synthesizer]) .build() ) The set_select_speakers_func(func) method sets the speaker selection function. participants([...]) registers the agents that can participate, and build()creates the executable workflow. We will use the well-known pattern for running the workflow.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 async def main(): print(\\u0026#34;Running group chat workflow: Creative ↔ Critic ↔ Synthesizer\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;Topic: How can we make AI agents more trustworthy?\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;How can we make AI agents more trustworthy?\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Group chat completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event The WorkflowOutputEvent.data contains the full conversation as a list of messages:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;GROUP CHAT TRANSCRIPT\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages = output_evt.data if isinstance(messages, list): for i, msg in enumerate(messages, start=1): if hasattr(msg, \\u0026#39;role\\u0026#39;): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) Here\\u0026rsquo;s the complete code for a brainstorming GroupChat.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 from agent_framework import ( GroupChatBuilder, GroupChatStateSnapshot, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create participant agents creative = chat_client.create_agent( name=\\u0026#34;Creative\\u0026#34;, instructions=\\u0026#34;You are a creative thinker. Generate bold, innovative ideas.\\u0026#34;, ) critic = chat_client.create_agent( name=\\u0026#34;Critic\\u0026#34;, instructions=\\u0026#34;You are a critical thinker. Identify potential issues and challenges.\\u0026#34;, ) synthesizer = chat_client.create_agent( name=\\u0026#34;Synthesizer\\u0026#34;, instructions=\\u0026#34;You synthesize ideas. Combine the best elements into actionable plans.\\u0026#34;, ) # Simple round-robin speaker selection def select_speaker(state: GroupChatStateSnapshot) -\\u0026gt; str | None: participants = state[\\u0026#34;participants\\u0026#34;] round_index = state[\\u0026#34;round_index\\u0026#34;] # End after 6 rounds (2 full cycles) if round_index \\u0026gt;= 6: return None # participants is a dict with agent names as keys participant_names = list(participants.keys()) return participant_names[round_index % len(participant_names)] # Build group chat workflow workflow = ( GroupChatBuilder() .set_select_speakers_func(select_speaker) .participants([creative, critic, synthesizer]) .build() ) async def main(): print(\\u0026#34;Running group chat workflow: Creative ↔ Critic ↔ Synthesizer\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;Topic: How can we make AI agents more trustworthy?\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;How can we make AI agents more trustworthy?\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Group chat completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;GROUP CHAT TRANSCRIPT\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages = output_evt.data if isinstance(messages, list): for i, msg in enumerate(messages, start=1): if hasattr(msg, \\u0026#39;role\\u0026#39;): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) else: print(output_evt.data) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) Here\\u0026rsquo;s what you can expect when you run this workflow.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 \\u0026gt; python.exe .\\\\04-group_chat.py Running group chat workflow: Creative ↔ Critic ↔ Synthesizer ============================================================ Topic: How can we make AI agents more trustworthy? ============================================================ ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Creative ✓ Completed: groupchat_agent:Creative ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Critic ✓ Completed: groupchat_agent:Critic ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Synthesizer ✓ Completed: groupchat_agent:Synthesizer ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Creative ✓ Completed: groupchat_agent:Creative ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Critic ✓ Completed: groupchat_agent:Critic ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ⚡ Starting: groupchat_agent:Synthesizer ✓ Completed: groupchat_agent:Synthesizer ⚡ Starting: groupchat_orchestrator_08ab99b0 ✓ Completed: groupchat_orchestrator_08ab99b0 ✅ Group chat completed! ============================================================ GROUP CHAT TRANSCRIPT ============================================================ ..... The round-robin method for speaker selection is simple but does not necessarily reflect real-world brainstorming. In the following sections, we will look at slightly more advanced methods for selecting a speaker in a GroupChat workflow.\\nConditional selection based on consent In this pattern, we let the content of the conversation drive the speaker selection. Let us look at the implementation.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 def content_aware_selection(state: GroupChatStateSnapshot) -\\u0026gt; str | None: \\u0026#34;\\u0026#34;\\u0026#34;Select speaker based on what was just said.\\u0026#34;\\u0026#34;\\u0026#34; history = state[\\u0026#34;history\\u0026#34;] round_index = state[\\u0026#34;round_index\\u0026#34;] if round_index \\u0026gt;= 9: return None if round_index == 0: return \\u0026#34;Creative\\u0026#34; last_turn = history[-1] if history else None last_message = \\u0026#34;\\u0026#34; if last_turn and hasattr(last_turn, \\u0026#39;message\\u0026#39;): last_message = last_turn.message.lower() if isinstance(last_turn.message, str) else \\u0026#34;\\u0026#34; if \\u0026#34;idea\\u0026#34; in last_message or \\u0026#34;propose\\u0026#34; in last_message: return \\u0026#34;Critic\\u0026#34; if \\u0026#34;concern\\u0026#34; in last_message or \\u0026#34;risk\\u0026#34; in last_message: return \\u0026#34;Creative\\u0026#34; return \\u0026#34;Synthesizer\\u0026#34; In this pattern, based on the creative or critic agent\\u0026rsquo;s response, we choose the next speaker. Again, this may not always be the right thing. Imagine a chatty, opinionated co-worker in a brainstorming session. They end up taking a lot of time. To address this, we can use a weighted selection where a few agents are selected more often than others.\\nPriority-Based Selection In this method, you can prioritize one speaker over others.\\n1 2 3 4 5 6 7 8 9 10 def weighted_selection(state: GroupChatStateSnapshot) -\\u0026gt; str | None: \\u0026#34;\\u0026#34;\\u0026#34;Weighted speaker selection - Creative speaks more often.\\u0026#34;\\u0026#34;\\u0026#34; round_index = state[\\u0026#34;round_index\\u0026#34;] if round_index \\u0026gt;= 8: return None # Pattern: Creative, Critic, Creative, Synthesizer, repeat pattern = [\\u0026#34;Creative\\u0026#34;, \\u0026#34;Critic\\u0026#34;, \\u0026#34;Creative\\u0026#34;, \\u0026#34;Synthesizer\\u0026#34;] return pattern[round_index % len(pattern)] In this example, the creative agent is given greater weight than the others.\\nLast speaker exclusion In this pattern, we ensure that the same agent doesn\\u0026rsquo;t speak twice in a row.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 def no_repeat_selection(state: GroupChatStateSnapshot) -\\u0026gt; str | None: \\u0026#34;\\u0026#34;\\u0026#34;Prevent the same agent from speaking consecutively.\\u0026#34;\\u0026#34;\\u0026#34; participants = state[\\u0026#34;participants\\u0026#34;] history = state[\\u0026#34;history\\u0026#34;] round_index = state[\\u0026#34;round_index\\u0026#34;] if round_index \\u0026gt;= 6: return None participant_names = list(participants.keys()) # Find who spoke last last_speaker = None for msg in reversed(history): if hasattr(msg, \\u0026#39;author_name\\u0026#39;) and msg.author_name: last_speaker = msg.author_name break # Filter out last speaker available = [p for p in participant_names if p != last_speaker] # Simple rotation among available speakers return available[round_index % len(available)] In this method, from the message history, we identify who spoke last and remove that speaker from the list of potential participants.\\nLLM-based speaker selection For scenarios that require dynamic speaker selection, you can assign an LLM to be the manager.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 moderator = chat_client.create_agent( name=\\u0026#34;Moderator\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a discussion moderator. Based on the conversation so far, decide who should speak next: - \\u0026#39;Creative\\u0026#39; when new ideas are needed - \\u0026#39;Critic\\u0026#39; when ideas need evaluation - \\u0026#39;Synthesizer\\u0026#39; when it\\u0026#39;s time to consolidate Return ONLY the agent name, nothing else.\\u0026#34;\\u0026#34;\\u0026#34;, temperature=0.3, ) workflow = ( GroupChatBuilder() .set_manager(moderator, display_name=\\u0026#34;Moderator\\u0026#34;) .participants([creative, critic, synthesizer]) .with_max_rounds(10) .build() ) In this approach, the moderator agent becomes the manager of the conversation and selects the appropriate agent based on the goal. This agent has access to the full conversation history, returns the name of the next speaker, and can make dynamic decisions based on context.\\nIn addition to speaker selection, identifying and implementing an appropriate termination condition is important. There are multiple ways to do this.\\nReturn None from Selection Function The simplest approach is to return None when you want to stop:\\n1 2 3 4 def select_speaker(state: GroupChatStateSnapshot) -\\u0026gt; str | None: if state[\\u0026#34;round_index\\u0026#34;] \\u0026gt;= 10: return None # End after 10 rounds # ... selection logic Implementing a custom termination condition We can use with_termination_condition() for complex logic.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 def check_consensus(state: GroupChatStateSnapshot) -\\u0026gt; bool: \\u0026#34;\\u0026#34;\\u0026#34;End when agents reach consensus.\\u0026#34;\\u0026#34;\\u0026#34; for entry in state[\\u0026#34;history\\u0026#34;]: text = entry.text.upper() if hasattr(entry, \\u0026#39;text\\u0026#39;) else \\u0026#34;\\u0026#34; if \\u0026#34;CONSENSUS REACHED\\u0026#34; in text or \\u0026#34;AGREED\\u0026#34; in text: return True return False workflow = ( GroupChatBuilder() .set_select_speakers_func(select_speaker) .participants([creative, critic, synthesizer]) .with_termination_condition(check_consensus) .build() ) As shown in the LLM-based speaker selection example, one additional way to terminate a conversation is to specify a maximum number of rounds using with_max_rounds().\\nThe GroupChat workflow pattern enables dynamic, turn-based conversations between multiple AI agents. Key takeaways.\\nSpeaker selection is the control mechanism. You can use functions or an LLM manager. All agents share the conversation history, enabling true dialogue. Termination conditions prevent infinite loops. Design complementary personas for productive discussions. Use streaming events to monitor conversation progress GroupChat excels when you need agents to build on each other\\u0026rsquo;s ideas; brainstorm, debate, code-review, and collaborate on problem-solving.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/group-chat-workflows-in-microsoft-agent-framework\/",
+  "datePublished": "2025-10-18T00:00:00Z",
+  "dateModified": "2025-10-18T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -113,7 +131,7 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/handoff-workflows-in-microsoft-agent-framework\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/group-chat-workflows-in-microsoft-agent-framework\/"
   },
   
   "articleSection": "\"Microsoft Agent Framework\"",
@@ -159,8 +177,8 @@
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Handoff workflows in Microsoft Agent Framework",
-      "item": "https:\/\/ravichaganti.com\/blog\/handoff-workflows-in-microsoft-agent-framework\/"
+      "name": "Group chat workflows in Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/blog\/group-chat-workflows-in-microsoft-agent-framework\/"
     }
     
     
@@ -589,7 +607,7 @@
 
       
       <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-        Handoff workflows in Microsoft Agent Framework
+        Group chat workflows in Microsoft Agent Framework
       </h1>
 
       
@@ -599,7 +617,7 @@
           <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <time datetime="2025-10-16">October 16, 2025</time>
+          <time datetime="2025-10-18">October 18, 2025</time>
         </div>
 
         
@@ -694,7 +712,7 @@
       
       
         <div class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-          Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s HandoffBuilder
+          Building dynamic multi-agent discussions where AI agents collaborate, debate, and converge on solutions with GroupChatBuilder
         </div>
       
     </header>
@@ -815,10 +833,9 @@
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Handoff workflows in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 16, 2025</p>
               </div>
@@ -830,9 +847,10 @@
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Group chat workflows in Microsoft Agent Framework
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 18, 2025</p>
               </div>
@@ -855,32 +873,24 @@
             
           
             
+          
+            
               
             
           
-            
-          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Concurrent workflows in Microsoft Agent Framework</span>
+              <span class="truncate">Handoff workflows in Microsoft Agent Framework</span>
             </a>
           
 
           
-          
-            
-            <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Group chat workflows in Microsoft Agent Framework</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
           
         </div>
       </nav>
@@ -896,59 +906,21 @@
 
     
     <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-      <p>In the previous articles, we explored Sequential and Concurrent workflow patterns in the Microsoft Agent Framework (MAF). Today, we dive into one of the most practical and widely-applicable patterns: the handoff workflow. The handoff pattern models real-world scenarios in which a conversation or task is transferred from one agent to another based on context, expertise, or role. Think of it like a customer support call center—you first speak with a frontline agent who assesses your issue and then routes you to the appropriate specialist.</p>
-<p>Unlike sequential workflows (where agents execute in a fixed order) or concurrent workflows (where agents work in parallel), handoff workflows are dynamic and conditional. The flow is determined at runtime based on the conversation context. Handoff workflows are useful in scenarios like:</p>
+      <p>In the previous articles of this <a href="https://ravichaganti.com/series/microsoft-agent-framework/">series</a>, we explored three powerful workflow patterns in Microsoft Agent Framework (MAF):</p>
 <ul>
-<li>Customer support systems: Route to refund, shipping, or technical specialists.</li>
-<li>Intake and triage: Assess requests and delegate to domain experts.</li>
-<li>Escalation workflows: Pass complex issues to senior agents.</li>
-<li>Multi-department routing: Direct inquiries to sales, support, or billing.</li>
+<li>Sequential: Agents process in a fixed order, like a pipeline.</li>
+<li>Concurrent: Agents work in parallel, with results aggregated.</li>
+<li>Handoff: A coordinator routes requests to specialist agents.</li>
 </ul>
-<p>Before building our handoff workflow, let&rsquo;s understand the core concepts.</p>
-<p>The <em>coordinator</em> is the entry point agent that assesses incoming requests and decides which specialist to hand off to. It acts as a dispatcher or router. The specialists are the <em>participant agents</em>. These are domain-specific agents with focused expertise. Each specialist handles a particular type of request. The framework automatically provides handoff tools to the coordinator, enabling it to transfer control to specialists. The agent simply calls the appropriate handoff function when it determines the right specialist. The interaction mode controls how the workflow handles the conversation:</p>
+<p>But what happens when you need agents to discuss, debate, and build on each other&rsquo;s ideas, like a brainstorming session or a committee meeting? This is where the <code>GroupChat</code> workflow pattern shines. In this article, we&rsquo;ll explore how to build dynamic multi-agent conversations using <code>GroupChatBuilder</code>, where a moderator (or selection function) orchestrates turn-based discussions among participant agents.</p>
+<p>The <code>GroupChat</code> workflow is ideal for scenarios where:</p>
 <ul>
-<li><code>&quot;autonomous&quot;</code>: Agents operate without waiting for user input between turns.</li>
-<li><code>&quot;interactive&quot;</code>: Pauses for user input during the conversation.</li>
+<li>Multiple perspectives are needed on a single topic.</li>
+<li>Ideas need to evolve through discussion and refinement.</li>
+<li>Agents should react to each other&rsquo;s outputs, not just the original input.</li>
+<li>Consensus or synthesis emerges from collaborative dialogue.</li>
 </ul>
-<p>A termination condition is a function that examines the conversation and decides when the workflow should end. This prevents infinite loops and ensures conversations reach a natural conclusion.</p>
-<h3 id="building-a-customer-support-handoff-system">Building a customer support handoff system</h3>
-<p>Let&rsquo;s build a customer support system step by step. We&rsquo;ll start simple and progressively add sophistication. First, let us define the coordinator.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">coordinator</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;coordinator_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a frontline customer support agent. 
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Assess the customer&#39;s issue and hand off to the appropriate specialist:
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For refund requests → hand off to refund_agent
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For shipping issues → hand off to shipping_agent  
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For technical problems → hand off to technical_agent
-</span></span></span><span class="line"><span class="cl"><span class="s2">    
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Use the handoff tools to transfer the conversation.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    After the specialist resolves the issue, thank the customer and end the conversation.&#34;&#34;&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Notice how the instructions explicitly tell the agent:</p>
-<ul>
-<li>What types of issues exist?</li>
-<li>Which specialist handles each type?</li>
-<li>How to perform the handoff (using tools).</li>
-</ul>
-<p>The agent names in the instructions (<code>refund_agent</code> and <code>shipping_agent</code>) must match the actual agent names; this is how the coordinator knows which handoff tool to invoke.</p>
-<p>We will now build the participant or the specialist agents. Each specialist has focused expertise and clear instructions on how to handle their domain:</p>
+<p>To understand this better, let us start with an example. Let&rsquo;s build a classic brainstorming setup with three agents: a creative who generates ideas, a critic who challenges them, and a synthesizer who combines the best elements. Each agent needs a distinct perspective defined in its instructions:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -965,39 +937,64 @@
 </span><span class="lnt">12
 </span><span class="lnt">13
 </span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">refund_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;refund_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You handle refund requests. Ask for order details and process refunds.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Once you have helped the customer, provide a clear resolution and end your response.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Do not hand off back to the coordinator - just provide your final answer.&#34;&#34;&#34;</span><span class="p">,</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">creative</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Creative&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a creative thinker. Generate bold, innovative ideas.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">shipping_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;shipping_agent&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You resolve shipping issues. Track packages and update delivery status.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    For order #12345, inform the customer that you&#39;ve located the package and 
-</span></span></span><span class="line"><span class="cl"><span class="s2">    it will be delivered within 2 business days.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Provide a clear resolution and end your response. Do not ask follow-up questions.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">critic</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Critic&#34;</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a critical thinker. Identify potential issues and challenges.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">technical_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;technical_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You solve technical problems. Troubleshoot issues step by step.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Once you have helped the customer, provide a clear resolution and end your response.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Do not hand off back to the coordinator - just provide your final answer.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">synthesizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Synthesizer&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You synthesize ideas. Combine the best elements into actionable plans.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>With the coordinator and specialist agents in place, we need a termination condition. The termination condition prevents runaway conversations. It&rsquo;s a function that returns <code>True</code> when the workflow should stop.</p>
+</div><p>The heart of a <code>GroupChat</code> workflow is the speaker selection function. This function decides who speaks next based on the current state of the conversation. The speaker selection function receives the conversation state.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">GroupChatStateSnapshot</span> <span class="o">=</span> <span class="n">TypedDict</span><span class="p">(</span><span class="s1">&#39;GroupChatStateSnapshot&#39;</span><span class="p">,</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;participants&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>  <span class="c1"># Dictionary of participant agents (name → agent)</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;history&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>       <span class="c1"># Conversation history so far</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;round_index&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>    <span class="c1"># Current round number (0-indexed)</span>
+</span></span><span class="line"><span class="cl"><span class="p">})</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+  <thead>
+      <tr>
+          <th>Field</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>participants</code></td>
+          <td>A dictionary where keys are agent names</td>
+      </tr>
+      <tr>
+          <td><code>history</code></td>
+          <td>List of messages exchanged so far</td>
+      </tr>
+      <tr>
+          <td><code>round_index</code></td>
+          <td>How many turns have been taken</td>
+      </tr>
+  </tbody>
+</table>
+<p>A simple way to select speakers is to use a round-robin method. In this approach, each agent speaks in order.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1014,32 +1011,26 @@
 </span><span class="lnt">12
 </span><span class="lnt">13
 </span><span class="lnt">14
-</span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">should_terminate</span><span class="p">(</span><span class="n">conversation</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;End when the conversation includes resolution keywords or reaches length limit.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="c1"># Safety limit: end after too many turns</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">conversation</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">True</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">select_speaker</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Select the next speaker in round-robin order.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">participants</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;participants&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">round_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="c1"># Content-based termination: look for resolution indicators</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">conversation</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">text_lower</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resolution_keywords</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;resolved&#39;</span><span class="p">,</span> <span class="s1">&#39;delivered&#39;</span><span class="p">,</span> <span class="s1">&#39;refunded&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed&#39;</span><span class="p">,</span> <span class="s1">&#39;thank you for contacting&#39;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">word</span> <span class="ow">in</span> <span class="n">text_lower</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">resolution_keywords</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">True</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># End after 6 rounds (2 full cycles through 3 agents)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># Returning None ends the conversation</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="kc">False</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># Get the list of participant names</span>
+</span></span><span class="line"><span class="cl">    <span class="n">participant_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">participants</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Select based on round index</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">participant_names</span><span class="p">[</span><span class="n">round_index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">participant_names</span><span class="p">)]</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>This function checks two conditions:</p>
-<ul>
-<li>Conversation length: Prevents runaway loops by limiting turns.</li>
-<li>Resolution keywords: Detects when the issue has been resolved</li>
-</ul>
-<p>With the termination function ready, we can build the handoff workflow.</p>
+</div><p>As defined in this function, the next participant name is returned. To terminate the conversation, this function returns <code>None</code>.</p>
+<p>With the speaker selection in place, let us build the workflow.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1048,56 +1039,17 @@
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">HandoffBuilder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&#34;customer_support&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">coordinator</span><span class="p">,</span> <span class="n">refund_agent</span><span class="p">,</span> <span class="n">shipping_agent</span><span class="p">,</span> <span class="n">technical_agent</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_interaction_mode</span><span class="p">(</span><span class="s2">&#34;autonomous&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_termination_condition</span><span class="p">(</span><span class="n">should_terminate</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_select_speakers_func</span><span class="p">(</span><span class="n">select_speaker</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Let&rsquo;s break down each builder method:</p>
-<table>
-  <thead>
-      <tr>
-          <th>Method</th>
-          <th>Purpose</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>HandoffBuilder(name=&quot;...&quot;)</code></td>
-          <td>Creates a named workflow for identification</td>
-      </tr>
-      <tr>
-          <td><code>.participants([...])</code></td>
-          <td>Registers all agents that can participate</td>
-      </tr>
-      <tr>
-          <td><code>.set_coordinator(agent)</code></td>
-          <td>Designates the entry-point agent</td>
-      </tr>
-      <tr>
-          <td><code>.with_interaction_mode(&quot;autonomous&quot;)</code></td>
-          <td>Runs without waiting for user input</td>
-      </tr>
-      <tr>
-          <td><code>.with_termination_condition(fn)</code></td>
-          <td>Sets custom logic to end the workflow</td>
-      </tr>
-      <tr>
-          <td><code>.build()</code></td>
-          <td>Compiles the workflow configuration</td>
-      </tr>
-  </tbody>
-</table>
-<p>To see the handoff workflow in action, we can use streaming events.</p>
+</div><p>The <code>set_select_speakers_func(func)</code> method sets the speaker selection function. <code>participants([...])</code> registers the agents that can participate, and <code>build()</code>creates the executable workflow. We will use the well-known pattern for running the workflow.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1118,76 +1070,62 @@
 </span><span class="lnt">16
 </span><span class="lnt">17
 </span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running handoff workflow: Coordinator → Specialists&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running group chat workflow: Creative ↔ Critic ↔ Synthesizer&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Topic: How can we make AI agents more trustworthy?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    
 </span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;I never received my order #12345&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;How can we make AI agents more trustworthy?&#34;</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Group chat completed!&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Display the conversation history</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">CONVERSATION HISTORY&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">messages</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="s1">&#39;role&#39;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">                <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">value</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]: </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The streaming API emits different event types that let you track workflow progress:</p>
-<table>
-  <thead>
-      <tr>
-          <th>Event Type</th>
-          <th>When It Fires</th>
-          <th>Use Case</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>ExecutorInvokedEvent</code></td>
-          <td>An agent starts processing</td>
-          <td>Show &ldquo;Agent X is working&hellip;&rdquo;</td>
-      </tr>
-      <tr>
-          <td><code>ExecutorCompletedEvent</code></td>
-          <td>An agent finishes</td>
-          <td>Update progress indicators</td>
-      </tr>
-      <tr>
-          <td><code>WorkflowStatusEvent</code></td>
-          <td>Workflow state changes</td>
-          <td>Detect completion or errors</td>
-      </tr>
-      <tr>
-          <td><code>WorkflowOutputEvent</code></td>
-          <td>Final output is ready</td>
-          <td>Capture the result</td>
-      </tr>
-  </tbody>
-</table>
-<p>The <code>WorkflowRunState.IDLE</code> status indicates that the workflow has finished processing.</p>
-<p>Here is the complete example.</p>
+</div><p>The <code>WorkflowOutputEvent.data</code> contains the full conversation as a list of messages:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;GROUP CHAT TRANSCRIPT&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">messages</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="s1">&#39;role&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">                <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&#34;assistant&#34;</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">ASSISTANT</span> <span class="k">else</span> <span class="s2">&#34;user&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Here&rsquo;s the complete code for a brainstorming <code>GroupChat</code>.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">  1
@@ -1290,24 +1228,11 @@
 </span><span class="lnt"> 98
 </span><span class="lnt"> 99
 </span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
-</span><span class="lnt">107
-</span><span class="lnt">108
-</span><span class="lnt">109
-</span><span class="lnt">110
-</span><span class="lnt">111
-</span><span class="lnt">112
-</span><span class="lnt">113
-</span><span class="lnt">114
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">HandoffBuilder</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatBuilder</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatStateSnapshot</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">Role</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
@@ -1323,88 +1248,72 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
 </span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Coordinator agent</span>
-</span></span><span class="line"><span class="cl"><span class="n">coordinator</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;coordinator_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a frontline customer support agent. 
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Assess the customer&#39;s issue and hand off to the appropriate specialist:
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For refund requests → hand off to refund_agent
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For shipping issues → hand off to shipping_agent  
-</span></span></span><span class="line"><span class="cl"><span class="s2">    - For technical problems → hand off to technical_agent
-</span></span></span><span class="line"><span class="cl"><span class="s2">    
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Use the handoff tools to transfer the conversation.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    After the specialist resolves the issue, thank the customer and end the conversation.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Create participant agents</span>
+</span></span><span class="line"><span class="cl"><span class="n">creative</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Creative&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a creative thinker. Generate bold, innovative ideas.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Specialist agents</span>
-</span></span><span class="line"><span class="cl"><span class="n">refund_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;refund_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You handle refund requests. Ask for order details and process refunds.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Once you have helped the customer, provide a clear resolution and end your response.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Do not hand off back to the coordinator - just provide your final answer.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">critic</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Critic&#34;</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a critical thinker. Identify potential issues and challenges.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">shipping_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;shipping_agent&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You resolve shipping issues. Track packages and update delivery status.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    For order #12345, inform the customer that you&#39;ve located the package and it will be delivered within 2 business days.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Provide a clear resolution and end your response. Do not ask follow-up questions.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">synthesizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Synthesizer&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You synthesize ideas. Combine the best elements into actionable plans.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">technical_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;technical_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You solve technical problems. Troubleshoot issues step by step.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Once you have helped the customer, provide a clear resolution and end your response.
-</span></span></span><span class="line"><span class="cl"><span class="s2">    Do not hand off back to the coordinator - just provide your final answer.&#34;&#34;&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Simple round-robin speaker selection</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">select_speaker</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">participants</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;participants&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">round_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># End after 6 rounds (2 full cycles)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># participants is a dict with agent names as keys</span>
+</span></span><span class="line"><span class="cl">    <span class="n">participant_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">participants</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">participant_names</span><span class="p">[</span><span class="n">round_index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">participant_names</span><span class="p">)]</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">should_terminate</span><span class="p">(</span><span class="n">conversation</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;End when the conversation includes resolution keywords or reaches length limit.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">conversation</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">True</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">conversation</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">text_lower</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">word</span> <span class="ow">in</span> <span class="n">text_lower</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;resolved&#39;</span><span class="p">,</span> <span class="s1">&#39;delivered&#39;</span><span class="p">,</span> <span class="s1">&#39;refunded&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed&#39;</span><span class="p">,</span> <span class="s1">&#39;thank you for contacting&#39;</span><span class="p">]):</span>
-</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">True</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="kc">False</span>
-</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Build group chat workflow</span>
 </span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">HandoffBuilder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&#34;customer_support&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">coordinator</span><span class="p">,</span> <span class="n">refund_agent</span><span class="p">,</span> <span class="n">shipping_agent</span><span class="p">,</span> <span class="n">technical_agent</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_interaction_mode</span><span class="p">(</span><span class="s2">&#34;autonomous&#34;</span><span class="p">)</span>  <span class="c1"># Complete without prompting for user input</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_termination_condition</span><span class="p">(</span><span class="n">should_terminate</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_select_speakers_func</span><span class="p">(</span><span class="n">select_speaker</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running handoff workflow: Coordinator → Specialists&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running group chat workflow: Creative ↔ Critic ↔ Synthesizer&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Customer issue: I never received my order #12345&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Topic: How can we make AI agents more trustworthy?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    
 </span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;I never received my order #12345&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;How can we make AI agents more trustworthy?&#34;</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Group chat completed!&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="c1"># Display the final conversation</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;CONVERSATION HISTORY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;GROUP CHAT TRANSCRIPT&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="n">messages</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -1418,11 +1327,12 @@
 </span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">output_evt</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Here is the expected output when you run this workflow.</p>
+</div><p>Here&rsquo;s what you can expect when you run this workflow.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1456,42 +1366,58 @@
 </span><span class="lnt">29
 </span><span class="lnt">30
 </span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">&gt; python.exe .<span class="se">\0</span>3-handoff.py    
-</span></span><span class="line"><span class="cl">Running handoff workflow: Coordinator → <span class="nv">Specialists</span>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">&gt; python.exe .<span class="se">\0</span>4-group_chat.py
+</span></span><span class="line"><span class="cl">Running group chat workflow: Creative ↔ Critic ↔ <span class="nv">Synthesizer</span>
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">Customer issue: I never received my order <span class="c1">#12345</span>
+</span></span><span class="line"><span class="cl">Topic: How can we make AI agents more trustworthy?
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">⚡ Starting: input-conversation
-</span></span><span class="line"><span class="cl">✓ Completed: input-conversation
-</span></span><span class="line"><span class="cl">⚡ Starting: coordinator_agent
-</span></span><span class="line"><span class="cl">✓ Completed: coordinator_agent
-</span></span><span class="line"><span class="cl">⚡ Starting: handoff-coordinator
-</span></span><span class="line"><span class="cl">✓ Completed: handoff-coordinator
-</span></span><span class="line"><span class="cl">⚡ Starting: shipping_agent
-</span></span><span class="line"><span class="cl">✓ Completed: shipping_agent
-</span></span><span class="line"><span class="cl">⚡ Starting: handoff-coordinator
-</span></span><span class="line"><span class="cl">✓ Completed: handoff-coordinator
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Creative
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Creative
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Critic
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Critic
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Synthesizer
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Synthesizer
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Creative
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Creative
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Critic
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Critic
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_agent:Synthesizer
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_agent:Synthesizer
+</span></span><span class="line"><span class="cl">⚡ Starting: groupchat_orchestrator_08ab99b0
+</span></span><span class="line"><span class="cl">✓ Completed: groupchat_orchestrator_08ab99b0
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">✅ Workflow completed!
+</span></span><span class="line"><span class="cl">✅ Group chat completed!
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">CONVERSATION <span class="nv">HISTORY</span>
+</span></span><span class="line"><span class="cl">GROUP CHAT <span class="nv">TRANSCRIPT</span>
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">01</span> <span class="o">[</span>user<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl">I never received my order <span class="c1">#12345</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">02</span> <span class="o">[</span>shipping_agent<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl">Thank you — I’ve located the package <span class="k">for</span> order <span class="c1">#12345. It’s back in transit with the carrier and is scheduled to be delivered within 2 business days (by Tuesday, February 3, 2026). No action is needed on your part; we’ll continue to monitor until delivery. Apologies for the delay — the issue is resolved.</span>
+</span></span><span class="line"><span class="cl">.....
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>In the advanced implementation of this workflow, a specialist can hand off to other specialists.</p>
+</div><p>The round-robin method for speaker selection is simple but does not necessarily reflect real-world brainstorming. In the following sections, we will look at slightly more advanced methods for selecting a speaker in a <code>GroupChat</code> workflow.</p>
+<h3 id="conditional-selection-based-on-consent">Conditional selection based on consent</h3>
+<p>In this pattern, we let the content of the conversation drive the speaker selection. Let us look at the implementation.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1516,61 +1442,231 @@
 </span><span class="lnt">20
 </span><span class="lnt">21
 </span><span class="lnt">22
+</span><span class="lnt">23
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">senior_technical_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;senior_technical_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You handle escalated technical issues that require 
-</span></span></span><span class="line"><span class="cl"><span class="s2">    deep expertise. You receive cases from the technical_agent.&#34;&#34;&#34;</span><span class="p">,</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">content_aware_selection</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Select speaker based on what was just said.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">history</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;history&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">round_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">&gt;=</span> <span class="mi">9</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;Creative&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">last_turn</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">history</span> <span class="k">else</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    <span class="n">last_message</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">last_turn</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">last_turn</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">last_message</span> <span class="o">=</span> <span class="n">last_turn</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_turn</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;idea&#34;</span> <span class="ow">in</span> <span class="n">last_message</span> <span class="ow">or</span> <span class="s2">&#34;propose&#34;</span> <span class="ow">in</span> <span class="n">last_message</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;Critic&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;concern&#34;</span> <span class="ow">in</span> <span class="n">last_message</span> <span class="ow">or</span> <span class="s2">&#34;risk&#34;</span> <span class="ow">in</span> <span class="n">last_message</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;Creative&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;Synthesizer&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In this pattern, based on the <code>creative</code> or <code>critic</code> agent&rsquo;s response, we choose the next speaker. Again, this may not always be the right thing. Imagine a chatty, opinionated co-worker in a brainstorming session. They end up taking a lot of time. To address this, we can use a weighted selection where a few agents are selected more often than others.</p>
+<h3 id="priority-based-selection"><strong>Priority-Based Selection</strong></h3>
+<p>In this method, you can prioritize one speaker over others.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">weighted_selection</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Weighted speaker selection - Creative speaks more often.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">round_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Pattern: Creative, Critic, Creative, Synthesizer, repeat</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;Creative&#34;</span><span class="p">,</span> <span class="s2">&#34;Critic&#34;</span><span class="p">,</span> <span class="s2">&#34;Creative&#34;</span><span class="p">,</span> <span class="s2">&#34;Synthesizer&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">pattern</span><span class="p">[</span><span class="n">round_index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In this example, the <code>creative</code> agent is given greater weight than the others.</p>
+<h3 id="last-speaker-exclusion">Last speaker exclusion</h3>
+<p>In this pattern, we ensure that the same agent doesn&rsquo;t speak twice in a row.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">no_repeat_selection</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Prevent the same agent from speaking consecutively.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">participants</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;participants&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">history</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;history&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">round_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">round_index</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">participant_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">participants</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Find who spoke last</span>
+</span></span><span class="line"><span class="cl">    <span class="n">last_speaker</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">history</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="s1">&#39;author_name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">last_speaker</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Filter out last speaker</span>
+</span></span><span class="line"><span class="cl">    <span class="n">available</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">participant_names</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">last_speaker</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Simple rotation among available speakers</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">available</span><span class="p">[</span><span class="n">round_index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">available</span><span class="p">)]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In this method, from the message history, we identify who spoke last and remove that speaker from the list of potential participants.</p>
+<h3 id="llm-based-speaker-selection">LLM-based speaker selection</h3>
+<p>For scenarios that require dynamic speaker selection, you can assign an LLM to be the manager.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">moderator</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Moderator&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a discussion moderator. 
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Based on the conversation so far, decide who should speak next:
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - &#39;Creative&#39; when new ideas are needed
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - &#39;Critic&#39; when ideas need evaluation
+</span></span></span><span class="line"><span class="cl"><span class="s2">    - &#39;Synthesizer&#39; when it&#39;s time to consolidate
+</span></span></span><span class="line"><span class="cl"><span class="s2">    
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Return ONLY the agent name, nothing else.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">technical_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;technical_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You solve technical problems. For complex issues 
-</span></span></span><span class="line"><span class="cl"><span class="s2">    you cannot resolve, hand off to senior_technical_agent.&#34;&#34;&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">.....</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">HandoffBuilder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&#34;support&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">refund_agent</span><span class="p">,</span> <span class="n">shipping_agent</span><span class="p">,</span> <span class="n">technical_agent</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_handoff</span><span class="p">(</span><span class="n">refund_agent</span><span class="p">,</span> <span class="n">technical_agent</span><span class="p">)</span>  <span class="c1"># Refund can transfer to Technical</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_handoff</span><span class="p">(</span><span class="n">shipping_agent</span><span class="p">,</span> <span class="n">refund_agent</span><span class="p">)</span>   <span class="c1"># Shipping can transfer to Refund</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_manager</span><span class="p">(</span><span class="n">moderator</span><span class="p">,</span> <span class="n">display_name</span><span class="o">=</span><span class="s2">&#34;Moderator&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_max_rounds</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>For scenarios that require a human-in-the-loop, you can set the interaction mode to <code>interactive</code>.</p>
+</div><p>In this approach, the <code>moderator</code> agent becomes the manager of the conversation and selects the appropriate agent based on the goal. This agent has access to the full conversation history, returns the name of the next speaker, and can make dynamic decisions based on context.</p>
+<p>In addition to speaker selection, identifying and implementing an appropriate termination condition is important. There are multiple ways to do this.</p>
+<h3 id="return-none-from-selection-function">Return None from Selection Function</h3>
+<p>The simplest approach is to return <code>None</code> when you want to stop:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">HandoffBuilder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&#34;customer_support&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">coordinator</span><span class="p">,</span> <span class="n">refund_agent</span><span class="p">,</span> <span class="n">shipping_agent</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_coordinator</span><span class="p">(</span><span class="n">coordinator</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_interaction_mode</span><span class="p">(</span><span class="s2">&#34;interactive&#34;</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">select_speaker</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;round_index&#34;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># End after 10 rounds</span>
+</span></span><span class="line"><span class="cl">  <span class="c1"># ... selection logic</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="implementing-a-custom-termination-condition">Implementing a custom termination condition</h3>
+<p>We can use <code>with_termination_condition()</code> for complex logic.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">check_consensus</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatStateSnapshot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;End when agents reach consensus.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;history&#34;</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">text</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="s2">&#34;CONSENSUS REACHED&#34;</span> <span class="ow">in</span> <span class="n">text</span> <span class="ow">or</span> <span class="s2">&#34;AGREED&#34;</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">True</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="kc">False</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GroupChatBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_select_speakers_func</span><span class="p">(</span><span class="n">select_speaker</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_termination_condition</span><span class="p">(</span><span class="n">check_consensus</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>This pauses the workflow at natural points, allowing users to provide additional information or confirm actions.</p>
-<p>The Handoff pattern enables dynamic, context-aware routing between agents. This is perfect for customer support, intake systems, and any scenario where different experts handle different concerns. By combining a coordinator, specialized agents, and smart termination logic, you can build sophisticated multi-agent systems that feel natural and efficient. When using this workflow:</p>
+</div><p>As shown in the LLM-based speaker selection example, one additional way to terminate a conversation is to specify a maximum number of rounds using <code>with_max_rounds()</code>.</p>
+<p>The <code>GroupChat</code> workflow pattern enables dynamic, turn-based conversations between multiple AI agents. Key takeaways.</p>
 <ul>
-<li>Be explicit about when and to whom an agent should hand off.</li>
-<li>Always include a length-based termination to prevent infinite loops.</li>
-<li>Ensure each agent excels at exactly one thing.</li>
+<li>Speaker selection is the control mechanism. You can use functions or an LLM manager.</li>
+<li>All agents share the conversation history, enabling true dialogue.</li>
+<li>Termination conditions prevent infinite loops.</li>
+<li>Design complementary personas for productive discussions.</li>
+<li>Use streaming events to monitor conversation progress</li>
 </ul>
-<p>In the next article, we&rsquo;ll explore the group chat orchestration pattern for even more complex multi-agent collaboration scenarios.</p>
+<p><code>GroupChat</code> excels when you need agents to build on each other&rsquo;s ideas; brainstorm, debate, code-review, and collaborate on problem-solving.</p>
 
     </div>
 
@@ -1598,7 +1694,7 @@
 
     
     <a
-      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fhandoff-workflows-in-microsoft-agent-framework%2F&text=Handoff&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+      href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgroup-chat-workflows-in-microsoft-agent-framework%2F&text=Group&#43;chat&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1612,7 +1708,7 @@
 
     
     <a
-      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fhandoff-workflows-in-microsoft-agent-framework%2F"
+      href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgroup-chat-workflows-in-microsoft-agent-framework%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#0077B5] hover:bg-[#006399] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1626,7 +1722,7 @@
 
     
     <a
-      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fhandoff-workflows-in-microsoft-agent-framework%2F"
+      href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fgroup-chat-workflows-in-microsoft-agent-framework%2F"
       target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#1564d3] text-white flex items-center justify-center transition-all no-underline shadow-md hover:shadow-lg hover:scale-105"
@@ -1640,7 +1736,7 @@
 
     
     <button
-      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/handoff-workflows-in-microsoft-agent-framework\/')"
+      onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/group-chat-workflows-in-microsoft-agent-framework\/')"
       class="w-12 h-12 rounded-full bg-accent hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105"
       aria-label="Copy link"
       title="Copy link"
@@ -1658,9 +1754,9 @@
 function shareNative() {
   if (navigator.share) {
     navigator.share({
-      title: 'Handoff workflows in Microsoft Agent Framework',
-      text: 'Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework\u0027s HandoffBuilder',
-      url: 'https:\/\/ravichaganti.com\/blog\/handoff-workflows-in-microsoft-agent-framework\/'
+      title: 'Group chat workflows in Microsoft Agent Framework',
+      text: 'Building dynamic multi-agent discussions where AI agents collaborate, debate, and converge on solutions with GroupChatBuilder',
+      url: 'https:\/\/ravichaganti.com\/blog\/group-chat-workflows-in-microsoft-agent-framework\/'
     }).catch(function(error) {
       console.log('Error sharing:', error);
     });
@@ -1725,9 +1821,9 @@ function copyToClipboard(text) {
       
     
       
-        
-      
     
+      
+        
       
     
 
@@ -1737,9 +1833,6 @@ function copyToClipboard(text) {
         
         
       
-      
-        
-        
       
     
   
@@ -1749,9 +1842,9 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/"
+        <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Concurrent workflows in Microsoft Agent Framework">
+           aria-label="Previous in Microsoft Agent Framework: Handoff workflows in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1764,10 +1857,10 @@ function copyToClipboard(text) {
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Concurrent workflows in Microsoft Agent Framework
+                Handoff workflows in Microsoft Agent Framework
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s ConcurrentBuilder</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s HandoffBuilder</p>
               
             </div>
           </div>
@@ -1778,29 +1871,20 @@ function copyToClipboard(text) {
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Group chat workflows in Microsoft Agent Framework">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Group chat workflows in Microsoft Agent Framework
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Building dynamic multi-agent discussions where AI agents collaborate, debate, and converge on solutions with GroupChatBuilder</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -1998,15 +2082,15 @@ function copyToClipboard(text) {
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Group chat workflows in Microsoft Agent Framework
+      Handoff workflows in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-18">
-      Oct 18, 2025
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-16">
+      Oct 16, 2025
     </time>
   </a>
 </article>
