@@ -1048,9 +1048,9 @@
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
           <p><strong>Intrinsic events</strong> are used to monitor a resource represented by a class in the CIM repository. In other words, the intrinsic events occur in response to a change in the standard WMI data model. WMI creates intrinsic events for objects stored in the WMI repository. A provider generates intrinsic events for dynamic classes, but WMI can create an instance for a dynamic class if no provider is available. WMI uses polling to detect the changes.</p>
 <p>There are many system classes that WMI uses to report intrinsic events. However, the ones that are most interesting and useful are __InstanceCreationEvent, __InstanceModificationEvent, and __InstanceDeletionEvent. Hence, monitoring resources on a system involves monitoring of these system classes. These classes are derived from the __InstanceOperationEvent class which is derived from the __Event system class under root\Default namespace. The following capture of WMI CIM Studio shows this hierarchy.</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/WQL8-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/WQL8-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/WQL8-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/WQL8-1.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>The WQL syntax for WMI intrinsic event queries is:</p>
@@ -1110,9 +1110,9 @@
 </div>
 </div><p>All of the examples above just displayed a message when the event notification was received. Instead, we can do something useful within the script block. For example, in the __InstanceCreationEvent example, we are just displaying that a new process was created but not the process name that just got created. <strong>So, how do we access that information in the script block and tell a user the name of the process that was created?</strong></p>
 <p>Simple, PowerShell creates an automatic variable called $event and stores the last event received in that variable. And, this automatic variable can be accessed in the -Action scriptblock you specify during a WMI event registration. Let us see an example.</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/WQL8-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/WQL8-2.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/WQL8-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/WQL8-2.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>If you see in the above example, I made an event registration for process creation events and in the -Action script block, assigned the $event variable to a variable in the global scope ($myEvent). This is essential because we cannot access the $event variable outside the -Action script block. Once the registration was done, I opened a notepad. This will fire the __InstanceCreationEvent and $myEvent should have the details around the event. So, I tried looking at all the members of this event. After exploring that a bit, I figured out that $myEvent.SourceEventArgs.NewEvent.TargetInstance.Name has the name of the new process which is notepad.exe. This is precisely what you see in the last line there.</p>

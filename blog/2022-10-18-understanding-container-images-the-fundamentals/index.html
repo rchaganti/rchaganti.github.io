@@ -823,9 +823,9 @@
 <h4 id="union-file-system">Union File System</h4>
 <p>The Union File System (<a href="https://unionfs.filesystems.org/">UnionFS</a>) in Linux allows merging the contents of one or more file systems [directories] while keeping the content [physically] separate. Different implementations, such as AUFS and  OverlayFS, are meant for union mounts. Each of these different implementations has its pros and cons. To understand the concept of a union file system, let us take OverlayFS as an example.</p>
 <p>OverlayFS deals with layers of content &ndash; one or more lower layers and one upper layer. The lower layers are treated as read-only and the upper layer as read-write. OverlayFS provides a unified view of these layers through a union mount.</p>
-<p><figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<p><figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-1.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
@@ -851,23 +851,23 @@
 <p>As you can see in this depiction, the merged or union view takes content from both lower and upper layers. If a file exists in both layers, such as file F3, the file in the upper layer overrides the one in the lower layer(s). Each file or directory operation has a specific result.</p>
 <h4 id="adding-new-files">Adding new files</h4>
 <p>When adding a new file, OverlayFS adds it to the upper layer.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-2.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-2.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <h4 id="deleting-an-existing-file">Deleting an existing file</h4>
 <p>When you delete a file or folder from the upper layer, it gets deleted. However, when you delete a file that is in the lower layer(s), a special character device gets created with the same name in the upper layer. The lower layers are read-only; therefore, no files or folders get deleted. The character device in the upper layer indicates that the file or folder should be hidden from the unified view.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-3.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-3.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-3.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-3.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <h4 id="modify-an-existing-file">Modify an existing file</h4>
 <p>There won&rsquo;t be any special change if you modify a file in the upper layer. However, if you modify a file in the lower layer(s), the file first gets copied to the upper layer, and then the changes are made to this copy.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-4.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-4.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-4.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-4.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>Talk is cheap. Let us see this in action.</p>
@@ -1085,9 +1085,9 @@
 <p>Now that you understand how OverlayFS works, it is time to see how container engines use the union file system to manage container images.</p>
 <h3 id="container-images">Container images</h3>
 <p>Container engines like Docker support different types of storage drivers responsible for combining stacked layers into a single unified view. Similar to what you saw in the earlier example, each layer contains only the differences from the below layer. The immutable nature of these layers makes the container image reusable and allows you to run multiple containers from a single image. Each container gets its thin writable layer to facilitate writing to the container file system or modifying or deleting existing files. The storage driver used by the container engine is responsible for managing the copy-on-write (CoW) layer. The Docker engine defaults to overlay2 as the storage driver.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/image-layers-containers.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/image-layers-containers.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/image-layers-containers.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/image-layers-containers.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>Let us dig into how this works. First, let us pull an image from the Docker hub for this exercise.</p>
@@ -1334,9 +1334,9 @@
 </div>
 </div><p>This layer has two layers below it and therefore you see two entries (separated by :) in the file named <code>lower</code>. Similar to the previous layer, the <code>diff</code> directory in the layer contains a file named hello.txt. As this is the upper layer or the topmost layer, when a container is created using this image, you should see the contents of this hello.txt file within the container.</p>
 <p>To better understand this, you need to visualize this layer structure.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-layers-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-layers-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-layers-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-layers-1.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>As described earlier, container images are immutable. You cannot write anything directly to these layers. The only way to consume these layers is to create a container instance. You can do that using the <code>docker run</code> command.</p>
@@ -1511,9 +1511,9 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>If you follow the same steps you followed to determine the links between multiple image layers, you will see the association between the CoW layer and the lower immutable image layers.</p>
-<figure class="figure " style="max-width: 450px; margin: 1.5rem auto;">
-  <a href="/images/overlay-layers-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/overlay-layers-2.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/overlay-layers-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/overlay-layers-2.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>This is one messy diagram but it demonstrates the point. The topmost layer is the CoW read/write layer and all layers below are read-only layers. I mentioned earlier that this is a temporary lived read/write layer. What happens if we stop and start the container? What happens if we remove the container?</p>

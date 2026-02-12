@@ -967,9 +967,9 @@
 </blockquote>
 <p>The concepts of remoting output are explained in a TechNet article at <a href="http://technet.microsoft.com/en-us/library/dd347582.aspx">http://technet.microsoft.com/en-us/library/dd347582.aspx</a>. I am going to put some story around this to help you understand the concepts well.</p>
 <p>First, let us start with an obvious difference in the output received from a remote session. If you use Invoke-Command to run Get-PSDrive, you see something like this.</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-1.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-1.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>You can see an additional column in the output that shows the remote computer name with PSComputerName as the column name. This won’t be displayed if you run the same cmdlet on local computer. So, if you don’t want to display this information in the remote output you can use the -HideComputerName parameter.</p>
@@ -982,9 +982,9 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE,SP2010-APP -ScriptBlock {Get-Date} | ft DateTime, PSComputerName -Auto
 </span></span></code></pre></td></tr></table>
 </div>
-</div><figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-2.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+</div><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-2.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-2.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p><strong>How remote command output is sent over to local computer?</strong></p>
@@ -994,15 +994,15 @@
 </blockquote>
 <p><strong>So, what does this mean to us in PowerShell remoting?</strong></p>
 <p>As it is defined above, the live objects are converted in to XML based representation. So, once deserialized in the local session, they don’t expose any methods that actually belong to the object. Let us see an example to understand this. First, let us look at Get-Process output in a local session and see what all methods we see.</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-3.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-3.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-3.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-3.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>Here, you can see a list of methods you can use against a process object. Now, let us take a look at how this looks when we execute the same command in a remote session.</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-4.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-4.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-4.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-4.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>If you observe in the above screenshot, TypeName represents a deserialized object and there are no methods that you can use against a process object. A deserialized object represents a snapshot of get-process at the time of command execution in the remote session. This also means that you can’t execute methods such as Kill() against a deserialized process object. Also, no methods to modify the property set will work in the local session.</p>
@@ -1010,15 +1010,15 @@
 <p><strong>What about output formatting?</strong></p>
 <p>Most deserialized objects are automatically formatted for display by entries in the Types.ps1xml or Format.ps1xml files. However, the local computer might not have formatting files for all of the deserialized objects that were generated on a remote computer. When objects are not formatted, all of the properties of each object appear in the console in a streaming list. To get formatting data from another computer, use the Get-FormatData and Export-FormatData cmdlets. Again, let us take an example to understand this.</p>
 <p>Take an example of a SharePoint 2010 farm and you want to access /run SharePoint 2010 cmdlets from a Windows 7 machine using Invoke-Command. First, if we run Get-SPSite on SharePoint 2010 web frontend, you will see</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-5.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-5.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-5.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-5.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>Now, if we try to run the same in a remote session using Invoke-Command, you will see</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-6.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-6.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-6.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-6.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>As you see in the above screenshot, the output from a remote session is quite different from the one you saw in a local session. This is because we don’t have the formatting data available on the Windows 7 computer.</p>
@@ -1039,9 +1039,9 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above code snippet will let you import the formatting data for all SharePoint cmdlets in to the local session. Now, if we run Get-SPSite in the remote session using Invoke-Command, you will see</p>
-<figure class="figure " style="max-width: 100%; margin: 1.5rem auto;">
-  <a href="/images/remoting11-7.png" class="glightbox" data-gallery="post-images" data-glightbox="description: ">
-    <img src="/images/remoting11-7.png" alt="" loading="lazy" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+<figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/remoting11-7.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/remoting11-7.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a></figure>
 
 <p>Now, with the formatting information in the local session, you can see that Get-SPSite output is formatted similar to the one we saw when we ran the cmdlet in a local session. However, make a note that this applies only to the current session. If you close and re-open the PowerShell console, the formatting data will be lost. You can add the Update-FormatData cmdlet to your PowerShell profile to make the format data across all PowerShell sessions.</p>
