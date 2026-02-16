@@ -7,7 +7,7 @@ In this post, I'll show you how I extended my Hugo-based blog to generate an `ll
 
 ## The Challenge
 
-I have been a big fan of [Hugo static site generator](https://gohugo.io/) ever since I discovered it. I have my own technical blog (this site you are on), the [learning platform](https://learn.ravichaganti.com/) I built recently, and a few other sites for non-profits. By default, Hugo is excellent at transforming Markdown source files into HTML. However, the source Markdown files aren't included in the final `public/` build folder. If you want an AI agent to read a clean version of your post, you have two choices:
+I have been a big fan of [Hugo static site generator](https://gohugo.io/) ever since I discovered it. I have used Hugo for my own technical blog (this site you are on), the [learning platform](https://learn.ravichaganti.com/) I built recently, and a few other sites for non-profits. By default, Hugo is excellent at transforming Markdown source files into HTML. However, the source Markdown files aren't included in the final `public/` build folder. If you want an AI agent to read a clean version of your post, you have two choices:
 1. Point it to your GitHub repository (if it's public).
 2. Generate a Markdown version during the site build.
 
