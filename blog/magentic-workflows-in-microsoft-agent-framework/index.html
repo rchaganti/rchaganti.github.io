@@ -21,8 +21,8 @@
   <title>Magentic workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
-Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
+  <meta name="description" content="In this series on Microsoft Agent Framework (MAF), we&rsquo;ve explored sequential workflows where agents process tasks in a fixed order, concurrent workflows where agents work in parallel, handoff workflows where agents transfer control based on context, and group chat workflows where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.
+What if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -32,8 +32,8 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 
   
   <meta property="og:title" content="Magentic workflows in Microsoft Agent Framework">
-  <meta property="og:description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
-Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
+  <meta property="og:description" content="In this series on Microsoft Agent Framework (MAF), we&rsquo;ve explored sequential workflows where agents process tasks in a fixed order, concurrent workflows where agents work in parallel, handoff workflows where agents transfer control based on context, and group chat workflows where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.
+What if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/magentic-workflows-in-microsoft-agent-framework/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
@@ -46,8 +46,8 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 
   
   
-    <meta property="article:published_time" content="2026-02-28T00:00:00Z">
-    <meta property="article:modified_time" content="2026-02-28T00:00:00Z">
+    <meta property="article:published_time" content="2025-10-20T00:00:00Z">
+    <meta property="article:modified_time" content="2025-10-20T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -56,8 +56,8 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Magentic workflows in Microsoft Agent Framework">
-  <meta name="twitter:description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
-Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
+  <meta name="twitter:description" content="In this series on Microsoft Agent Framework (MAF), we&rsquo;ve explored sequential workflows where agents process tasks in a fixed order, concurrent workflows where agents work in parallel, handoff workflows where agents transfer control based on context, and group chat workflows where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.
+What if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
@@ -92,11 +92,11 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "Magentic workflows in Microsoft Agent Framework",
-  "description": "Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it\u0026rsquo;s Microsoft Agent Framework\u0026rsquo;s turn last week. In an earlier article in …",
-  "articleBody": "\"Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it\\u0026rsquo;s Microsoft Agent Framework\\u0026rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today\\u0026rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).\\nUnlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:\\nGovernance Skill: Contains the company\\u0026rsquo;s mandatory tagging, naming, and SKU policies. Bicep Authoring Skill: Contains best practices for writing clean Bicep code (like parameterization and formatting). Creating the Directory Skills Let\\u0026rsquo;s start by creating our directory-based skills. In your project folder, create a structure that looks like this:\\n1 2 3 4 5 6 7 8 9 10 maf_agent/ └── skills/ ├── governance-skill/ │ ├── SKILL.md │ └── references/ │ └── policies.md └── bicep-authoring/ ├── SKILL.md └── references/ └── example.bicep The SKILL.md file serves as the entry point and contains YAML front matter defining the skill\\u0026rsquo;s identity, followed by instructions on how the agent should use it.\\nHere is what the governance-skill/SKILL.md looks like:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 --- name: governance-skill description: Provides organizational governance rules and policies for cloud resource deployments. It should be used to ensure any generated infrastructure code complies with company standards. --- # Instructions You are helping the user build infrastructure. Review this skill when you need to generate infrastructure or verify if a configuration meets standard practices. Consider the following steps: 1. Review the `references/policies.md` file to understand the current organizational standards. 2. Structure the infrastructure code (e.g., Bicep, ARM templates, Terraform) to follow the policies listed in the reference. 3. If a user request conflicts with a policy, politely suggest the alternative compliant configuration. 4. Add a comment block at the top indicating the code was cross-checked with organizational policies. Next, in the references/policies.md file, we define our actual organizational rules:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 # Organizational Governance Policies All infrastructure deployments must adhere to the following rules: ## 1. Naming Conventions - All resources must include the prefix `org-xyz-`. - Example: A storage account named `data` must be deployed as `orgxyzdata` (storage accounts don\\u0026#39;t allow hyphens) or an app service named `frontend` must be deployed as `org-xyz-frontend`. ## 2. Resource Skus - **Storage Accounts**: Must use the `Standard_GRS` SKU to ensure geographic redundancy. `Standard_LRS` or other SKUs are not permitted for production use. - **App Service Plans**: Must use at least the `S1` (Standard) tier. Free or Shared tiers are not allowed. ## 3. Tagging Requirements Every resource must have the following mandatory tags: - `Environment`: Must be set to either `Development`, `Staging`, or `Production`. - `Owner`: Must contain a valid email address or team name. ## 4. Location - All resources must be deployed to the `eastus` or `westus` regions. The Bicep authoring skills, which is an inline skill in the Google ADK example, must be implemented as a directory skill as well.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 --- name: bicep-authoring-skill description: Provides best practices for writing clean, maintainable Bicep templates. --- # Instructions Apply the following best practices when generating or modifying Bicep templates: 1. Start the file with a general comment block explaining the purpose of the template. 2. Define all parameters explicitly with types and standard default values if applicable. 3. Use meaningful resource symbolic names that describe its purpose, rather than generic names. 4. Organize the template logically: Parameters first, then variables, then resources, and finally outputs. 5. The template should be well-formatted Azure Bicep code. 6. Please validate the generated Bicep configuration using the `validate_bicep` tool before returning it to the user. Fix any compilation errors reported. # Resources See the example of a good Bicep template structure in `references/example.bicep`. We will also supply a reference example of a Bicep configuration.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 // This is an example of a good Bicep template structure. param location string = resourceGroup().location param env string var storagePrefix = \\u0026#39;stg\\u0026#39; resource myStorage \\u0026#39;Microsoft.Storage/storageAccounts@2022-09-01\\u0026#39; = { name: \\u0026#39;${storagePrefix}${env}\\u0026#39; location: location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; } Initializing the Agent with Skills Now, let\\u0026rsquo;s wire this up in our agent.py file. We will use MAF\\u0026rsquo;s built-in FileAgentSkillsProvider to load all skills from our skills directory and inject them into our Agent. We will also provide a standard Python function as a tool to help the agent compile the Bicep code locally.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 import asyncio import os import sys from pathlib import Path from dotenv import load_dotenv # Ensure the correct framework packages are imported try: from agent_framework import Agent, FileAgentSkillsProvider from agent_framework.azure import AzureOpenAIResponsesClient from azure.identity import AzureCliCredential except ImportError as e: print(f\\u0026#34;ImportError: {e}\\u0026#34;) sys.exit(1) # Load environment variables load_dotenv() def validate_bicep(bicep_content: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Validates the provided Bicep template content for compilation errors by running \\u0026#39;bicep lint\\u0026#39; and \\u0026#39;bicep build\\u0026#39;. Pass the full bicep string.\\u0026#34;\\u0026#34;\\u0026#34; import tempfile import subprocess with tempfile.NamedTemporaryFile(suffix=\\u0026#34;.bicep\\u0026#34;, delete=False) as f: f.write(bicep_content.encode(\\u0026#39;utf-8\\u0026#39;)) temp_path = f.name try: # First, run bicep lint lint_result = subprocess.run([\\u0026#39;bicep\\u0026#39;, \\u0026#39;lint\\u0026#39;, temp_path], capture_output=True, text=True) if lint_result.returncode != 0: return f\\u0026#34;Linting failed with issues:\\\\n{lint_result.stderr}\\\\n{lint_result.stdout}\\u0026#34; # If lint passes, run bicep build build_result = subprocess.run([\\u0026#39;bicep\\u0026#39;, \\u0026#39;build\\u0026#39;, temp_path], capture_output=True, text=True) if build_result.returncode == 0: return \\u0026#34;Validation successful. Bicep template passed linting and build.\\u0026#34; else: return f\\u0026#34;Validation failed during build:\\\\n{build_result.stderr}\\\\n{build_result.stdout}\\u0026#34; finally: if os.path.exists(temp_path): os.remove(temp_path) async def main(): if not os.environ.get(\\u0026#34;AZURE_AI_PROJECT_ENDPOINT\\u0026#34;): print(\\u0026#34;Please set AZURE_AI_PROJECT_ENDPOINT in your environment or .env file.\\u0026#34;) return endpoint = os.environ[\\u0026#34;AZURE_AI_PROJECT_ENDPOINT\\u0026#34;] deployment = os.environ.get(\\u0026#34;AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME\\u0026#34;, \\u0026#34;gpt-4o-mini\\u0026#34;) try: client = AzureOpenAIResponsesClient( project_endpoint=endpoint, deployment_name=deployment, credential=AzureCliCredential(), ) except Exception as e: print(f\\u0026#34;Failed to initialize MAF Azure Open AI client: {e}\\u0026#34;) return # Discover skills skills_dir = Path(__file__).parent / \\u0026#34;skills\\u0026#34; skills_provider = FileAgentSkillsProvider(skill_paths=str(skills_dir)) async with Agent( client=client, instructions=( \\u0026#34;You are an assistant helping construct Azure Bicep code.\\u0026#34; ), context_providers=[skills_provider], tools=[validate_bicep] ) as agent: print(\\u0026#34;Agent initialized with MAF.\\u0026#34;) print(\\u0026#34;User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.\\u0026#34;) print(\\u0026#34;-\\u0026#34; * 40) response = await agent.run( \\u0026#34;I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.\\u0026#34; ) print(f\\u0026#34;Agent:\\\\n{response}\\\\n\\u0026#34;) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) In the code above, we point the FileAgentSkillsProvider to our directory. We then pass this provider into the context_providers array of our Agent. This grants the LLM access to the reference documents and specific behavioral guidelines we defined.\\nTo test our agent, we simply run the Python script.\\n1 \\u0026gt; python.exe .\\\\maf_agent\\\\agent.py The agent loads the available skills and skill references to gain the procedural knowledge and generate the Bicep template.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 Agent initialized with MAF. User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging. ---------------------------------------- Agent: I created a validated Bicep template that deploys an Azure Storage Account and an App Service (with an App Service Plan) configured for the Staging environment and compliant with your org governance rules. Notes: - Template is cross-checked with organizational policies: resource name prefixes, Storage SKU = Standard_GRS, App Service Plan tier = S1, mandatory tags (Environment, Owner), and allowed locations (eastus | westus). - The environment defaults to Staging. You must provide the Owner tag value (email or team name) when deploying. - Storage account name uses the storage-safe prefix orgxyz (no hyphens) per governance rules. Bicep template: /* Cross-checked with organizational policies: uses org-xyz prefix (storage accounts use orgxyz prefix as storage account names cannot contain hyphens), Storage Account SKU set to Standard_GRS, App Service Plan tier set to S1, mandatory tags (Environment, Owner) applied, and allowed locations restricted to eastus or westus. Purpose: Deploy an Azure Storage Account and an App Service for the portal in the specified environment. */ @allowed([ \\u0026#39;eastus\\u0026#39; \\u0026#39;westus\\u0026#39; ]) param location string = \\u0026#39;eastus\\u0026#39; @allowed([ \\u0026#39;Development\\u0026#39; \\u0026#39;Staging\\u0026#39; \\u0026#39;Production\\u0026#39; ]) param environment string = \\u0026#39;Staging\\u0026#39; param owner string var envShort = environment == \\u0026#39;Production\\u0026#39; ? \\u0026#39;prod\\u0026#39; : (environment == \\u0026#39;Staging\\u0026#39; ? \\u0026#39;stg\\u0026#39; : \\u0026#39;dev\\u0026#39;) // Storage account names must be lowercase, alphanumeric, and between 3 and 24 characters. Hyphens are not allowed. var storageAccountName = toLower(\\u0026#39;orgxyzportal${envShort}\\u0026#39;) var appServicePlanName = \\u0026#39;org-xyz-asp-${envShort}\\u0026#39; var appServiceName = \\u0026#39;org-xyz-portal-${envShort}\\u0026#39; resource storageAccount \\u0026#39;Microsoft.Storage/storageAccounts@2022-09-01\\u0026#39; = { name: storageAccountName location: location sku: { name: \\u0026#39;Standard_GRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } tags: { Environment: environment Owner: owner } } resource appServicePlan \\u0026#39;Microsoft.Web/serverfarms@2021-02-01\\u0026#39; = { name: appServicePlanName location: location sku: { name: \\u0026#39;S1\\u0026#39; tier: \\u0026#39;Standard\\u0026#39; capacity: 1 } kind: \\u0026#39;app\\u0026#39; properties: { reserved: false } tags: { Environment: environment Owner: owner } } resource appService \\u0026#39;Microsoft.Web/sites@2021-02-01\\u0026#39; = { name: appServiceName location: location properties: { serverFarmId: appServicePlan.id siteConfig: { appSettings: [ { name: \\u0026#39;WEBSITE_RUN_FROM_PACKAGE\\u0026#39; value: \\u0026#39;1\\u0026#39; } { name: \\u0026#39;STORAGE_ACCOUNT_NAME\\u0026#39; value: storageAccount.name } ] } } tags: { Environment: environment Owner: owner } } output storageAccountName string = storageAccount.name output appServiceName string = appService.name output storageAccountId string = storageAccount.id output appServiceId string = appService.id Deployment example (resource group scope): - az deployment group create --resource-group \\u0026lt;rg-name\\u0026gt; --template-file portal-staging.bicep --parameters owner=\\u0026#39;team@example.com\\u0026#39; I validated the Bicep file (lint/build) and it passed. If you want, I can: - Add a parameter for application runtime settings or Docker image, - Add Managed Identity and key/vault integration, - Or change naming conventions or include unique suffixes if you need globally unique storage account names. Which would you like next? As you can see, the agent successfully navigated our organizational requirements. It forcefully set the App Service Plan to S1, deployed to eastus, utilized the org-xyz- prefix, applied the required tags, and perfectly structured the document with parameters and comments!\\nBoth Google\\u0026rsquo;s Agent Development Kit (ADK) and the Microsoft Agent Framework (MAF) embrace the concept of \\u0026ldquo;Agent Skills\\u0026rdquo; to inject modular, domain-specific behavior into LLMs. While they share the underlying philosophy, there are notable differences in how they structure and execute these skills.\\nSkill Discovery and Registration MAF: Uses the FileAgentSkillsProvider class. You simply point this provider to a root skills/ directory, and it automatically discovers and indexes all sub-directories containing a SKILL.md file. It\\u0026rsquo;s a highly declarative, \\u0026ldquo;drop-in\\u0026rdquo; approach. ADK: Uses direct loading mechanisms like load_skill_from_dir(). You explicitly load each skill directory into a variable, then bundle them together using a SkillToolset wrapper before passing them to the agent. ADK also natively supports initializing \\u0026ldquo;Inline Skills\\u0026rdquo; directly from Python code, without requiring a directory structure. Progressive Disclosure MAF: Strictly follows the Agent Skills specification\\u0026rsquo;s progressive disclosure pattern. It \\u0026ldquo;advertises\\u0026rdquo; the skill\\u0026rsquo;s name and description (from the YAML frontmatter) in the system prompt. The agent must then consciously choose to read the full SKILL.md and subsequent references/ files using specific tools provided automatically by the FileAgentSkillsProvider. ADK: Inherently more aggressive with its context window. When an ADK agent determines it needs a skill based on the SkillToolset, it is more likely to eagerly load the primary instruction set into the context, reducing the multi-tool-call overhead but consuming more token budget upfront. Integration with Core Tools MAF: Merges skills via context_providers. The skills layer is a system that provides context and tools on demand, cleanly separating standard Python functional tools (like our `validate_bicep function) from domain-knowledge skills. ADK: Treats skills identically to functional tools. Both skills and Python functions are grouped together inside the tools=[] array when initializing the LlmAgent. Ultimately, both frameworks provide an excellent way to organize agent logic, avoiding the anti-pattern of maintaining a monolithic 5,000-line system prompts.\\n\"",
+  "description": "In this series on Microsoft Agent Framework (MAF), we\u0026rsquo;ve explored sequential workflows where agents process tasks in a fixed order, concurrent workflows where agents work in parallel, handoff …",
+  "articleBody": "\"In this series on Microsoft Agent Framework (MAF), we\\u0026rsquo;ve explored sequential workflows where agents process tasks in a fixed order, concurrent workflows where agents work in parallel, handoff workflows where agents transfer control based on context, and group chat workflows where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.\\nWhat if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.\\nThe Problem: Static Orchestration Isn\\u0026rsquo;t Always Enough Consider a complex task like investment due diligence. A sequential workflow might work: research the company, analyze financials, assess risks, write a report. But what happens when the risk assessment reveals concerning findings? In a static workflow, you\\u0026rsquo;d proceed to the report anyway. In reality, you\\u0026rsquo;d want to go back and dig deeper into those risks before making a recommendation.\\nThis is where magentic workflows shine. They enable:\\nDynamic routing: The manager decides which agent to invoke based on the current state of the conversation Conditional branching: Different paths through the workflow based on intermediate results Feedback loops: The ability to revisit earlier agents when new information warrants it Autonomous coordination: The LLM manager handles the orchestration logic without explicit programming What is a Magentic Workflow? A magentic workflow consists of two key components:\\nParticipant agents: Specialized agents, each with distinct tools and expertise Manager agent: An LLM-powered orchestrator that plans the task, selects which agent to invoke, monitors progress, and determines when to complete or replan Unlike group chat where agents take turns based on a selection function you define, magentic workflows delegate the entire orchestration decision to the manager LLM. The manager maintains a \\u0026ldquo;task ledger\\u0026rdquo; tracking facts discovered, the current plan, and progress toward completion.\\nExample: Investment Due Diligence Workflow Let\\u0026rsquo;s build a practical example that demonstrates the power of magentic orchestration. We\\u0026rsquo;ll create an investment research workflow with four specialized agents:\\nAgent Role Tools MarketResearcher Gathers market context, news, analyst opinions Web search, financial news FinancialAnalyst Analyzes fundamentals and financial health Yahoo Finance API, Python RiskAssessor Evaluates risks and assigns a risk score Risk assessment InvestmentAdvisor Synthesizes findings into a recommendation Report generation Here\\u0026rsquo;s the key feature. If the RiskAssessor returns a high risk score (\\u0026gt;7), the manager will loop back to the MarketResearcher for deeper investigation before proceeding to the final recommendation.\\nSetting Up the Environment First, install the required packages:\\n1 pip install agent-framework azure-identity tavily-python yfinance python-dotenv Create a .env file with your configuration:\\n1 2 AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/ TAVILY_API_KEY=your-tavily-api-key Defining the Tools Each agent needs specialized tools. Let\\u0026rsquo;s start with the research and analysis tools:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 from agent_framework import ai_function from tavily import TavilyClient import yfinance as yf import os tavily_client = TavilyClient(api_key=os.getenv(\\u0026#34;TAVILY_API_KEY\\u0026#34;)) @ai_function def search_web(query: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Search the web for general information about markets, companies, or trends.\\u0026#34;\\u0026#34;\\u0026#34; result = tavily_client.search(query=query, max_results=5) return str(result) @ai_function def search_financial_news(company_or_topic: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Search for recent financial news, analyst opinions, and market sentiment.\\u0026#34;\\u0026#34;\\u0026#34; query = f\\u0026#34;{company_or_topic} stock news analyst rating 2024\\u0026#34; result = tavily_client.search(query=query, max_results=5) return f\\u0026#34;FINANCIAL NEWS for {company_or_topic}:\\\\n{str(result)}\\u0026#34; The financial analysis tool uses Yahoo Finance to fetch real market data:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 @ai_function def analyze_financials(ticker: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Get key financial metrics using Yahoo Finance.\\u0026#34;\\u0026#34;\\u0026#34; try: stock = yf.Ticker(ticker.upper()) info = stock.info name = info.get(\\u0026#39;longName\\u0026#39;, ticker) price = info.get(\\u0026#39;currentPrice\\u0026#39;, \\u0026#39;N/A\\u0026#39;) pe_ratio = info.get(\\u0026#39;trailingPE\\u0026#39;, \\u0026#39;N/A\\u0026#39;) profit_margin = info.get(\\u0026#39;profitMargins\\u0026#39;, \\u0026#39;N/A\\u0026#39;) market_cap = info.get(\\u0026#39;marketCap\\u0026#39;, \\u0026#39;N/A\\u0026#39;) # Format market cap if isinstance(market_cap, (int, float)): if market_cap \\u0026gt;= 1e12: market_cap = f\\u0026#34;${market_cap/1e12:.2f}T\\u0026#34; elif market_cap \\u0026gt;= 1e9: market_cap = f\\u0026#34;${market_cap/1e9:.2f}B\\u0026#34; result = f\\u0026#34;\\u0026#34;\\u0026#34;FINANCIAL ANALYSIS for {name} ({ticker.upper()}) {\\u0026#39;=\\u0026#39; * 50} - Current Price: ${price} - Market Cap: {market_cap} - P/E Ratio: {pe_ratio} - Profit Margin: {profit_margin * 100:.1f}% if profit_margin else \\u0026#39;N/A\\u0026#39; \\u0026#34;\\u0026#34;\\u0026#34; # Add risk flags for unprofitable companies if profit_margin and profit_margin \\u0026lt; 0: result += \\u0026#34;\\\\nRISK FLAG: Company is UNPROFITABLE (negative margins)\\u0026#34; return result except Exception as e: return f\\u0026#34;Error fetching data for {ticker}: {str(e)}\\u0026#34; The risk assessment tool is where the conditional logic lives:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 @ai_function def assess_risk(analysis_summary: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Evaluate investment risks and return a risk score (1-10).\\u0026#34;\\u0026#34;\\u0026#34; summary_lower = analysis_summary.lower() risk_score = 3 # Base score risk_factors = [] # Check for high-risk indicators if \\u0026#34;unprofitable\\u0026#34; in summary_lower or \\u0026#34;negative margin\\u0026#34; in summary_lower: risk_score += 3 risk_factors.append(\\u0026#34;Company is not profitable - high cash burn risk\\u0026#34;) if \\u0026#34;biotech\\u0026#34; in summary_lower or \\u0026#34;clinical\\u0026#34; in summary_lower: risk_score += 2 risk_factors.append(\\u0026#34;Clinical stage biotech - binary FDA approval risk\\u0026#34;) if \\u0026#34;crypto\\u0026#34; in summary_lower or \\u0026#34;bitcoin\\u0026#34; in summary_lower: risk_score += 2 risk_factors.append(\\u0026#34;High volatility asset - significant drawdown risk\\u0026#34;) risk_score = max(1, min(10, risk_score)) result = f\\u0026#34;\\u0026#34;\\u0026#34;RISK ASSESSMENT =============== RISK SCORE: {risk_score}/10 {\\u0026#34;[HIGH RISK]\\u0026#34; if risk_score \\u0026gt; 7 else \\u0026#34;[Moderate]\\u0026#34; if risk_score \\u0026gt; 4 else \\u0026#34;[Low Risk]\\u0026#34;} RISK FACTORS IDENTIFIED: \\u0026#34;\\u0026#34;\\u0026#34; for i, factor in enumerate(risk_factors, 1): result += f\\u0026#34;{i}. {factor}\\\\n\\u0026#34; # This message triggers the feedback loop if risk_score \\u0026gt; 7: result += f\\u0026#34;\\u0026#34;\\u0026#34; HIGH RISK ALERT: Risk score exceeds threshold. RECOMMEND: Request MarketResearcher to conduct deeper research on: {risk_factors[0]} \\u0026#34;\\u0026#34;\\u0026#34; return result Creating the Specialized Agents Now we create four agents, each with distinct instructions and tools:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Market Researcher - gathers context and news market_researcher = chat_client.create_agent( name=\\u0026#34;MarketResearcher\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a market research analyst. YOUR ROLE: - Gather market context, industry trends, and competitive landscape - Find recent news and analyst opinions - Identify market sentiment and catalysts Use search_web for broad context and search_financial_news for recent analyst takes. If asked to do a \\u0026#34;deep dive\\u0026#34; on specific risks, focus your search on those factors.\\u0026#34;\\u0026#34;\\u0026#34;, tools=[search_web, search_financial_news], ) # Financial Analyst - evaluates fundamentals financial_analyst = chat_client.create_agent( name=\\u0026#34;FinancialAnalyst\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a financial analyst specializing in fundamental analysis. YOUR ROLE: - Analyze financial metrics (P/E, margins, growth, debt) - Evaluate company fundamentals and financial health - Be objective about both strengths and weaknesses\\u0026#34;\\u0026#34;\\u0026#34;, tools=[analyze_financials], ) # Risk Assessor - identifies and scores risks risk_assessor = chat_client.create_agent( name=\\u0026#34;RiskAssessor\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a risk management specialist. YOUR ROLE: - Evaluate investment risks based on gathered information - Assign a risk score from 1-10 - Identify specific risk factors CRITICAL: If risk score \\u0026gt; 7, recommend deeper research before final recommendation.\\u0026#34;\\u0026#34;\\u0026#34;, tools=[assess_risk], ) # Investment Advisor - synthesizes final recommendation investment_advisor = chat_client.create_agent( name=\\u0026#34;InvestmentAdvisor\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are a senior investment advisor. THIS IS THE FINAL STEP - After you complete your work, the task is DONE. YOUR ROLE: - Synthesize all research into a recommendation: BUY / HOLD / SELL / AVOID - Save the final report using save_report tool - After saving, confirm \\u0026#34;TASK COMPLETE - Report saved successfully\\u0026#34; \\u0026#34;\\u0026#34;\\u0026#34;, tools=[save_report], ) Creating the Manager Agent The manager agent is the brain of the magentic workflow. Its instructions define how agents are coordinated:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 manager_agent = chat_client.create_agent( name=\\u0026#34;InvestmentManager\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are the Investment Due Diligence Manager. YOUR TEAM: - MarketResearcher: Gathers market context, news, analyst opinions - FinancialAnalyst: Analyzes fundamentals, metrics, financial health - RiskAssessor: Evaluates risks, assigns risk score (1-10) - InvestmentAdvisor: Synthesizes findings and saves final report WORKFLOW: 1. MarketResearcher - gather market context and news 2. FinancialAnalyst - analyze fundamentals 3. RiskAssessor - evaluate risks and get risk score 4. DECISION POINT (if risk score \\u0026gt; 7): - Request ONE deep dive from MarketResearcher on the main risk - Then proceed to step 5 5. InvestmentAdvisor - synthesize and save final report TERMINATION: - The task is COMPLETE when InvestmentAdvisor confirms \\u0026#34;Report saved\\u0026#34; - Do NOT call any more agents after InvestmentAdvisor completes\\u0026#34;\\u0026#34;\\u0026#34; ) Notice how the manager\\u0026rsquo;s instructions encode the conditional logic: \\u0026ldquo;if risk score \\u0026gt; 7, request ONE deep dive.\\u0026rdquo; This is the power of magentic. The routing logic is expressed in natural language and interpreted by the LLM.\\nBuilding the Workflow With all components defined, we build the magentic workflow using MagenticBuilder:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 from agent_framework import MagenticBuilder workflow = ( MagenticBuilder() .participants( market_researcher=market_researcher, financial_analyst=financial_analyst, risk_assessor=risk_assessor, investment_advisor=investment_advisor, ) .with_standard_manager( agent=manager_agent, max_round_count=15, # Maximum orchestration rounds max_stall_count=3, # Replan after this many stalls ) .build() ) Key configuration options:\\nmax_round_count: Limits total orchestration rounds to prevent infinite loops max_stall_count: If no progress is made for this many rounds, the manager replans Running and Monitoring the Workflow Execute the workflow and observe the orchestration events:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 from agent_framework import ( WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) import asyncio async def main(): task = \\u0026#34;Evaluate investing in Beam Therapeutics (BEAM), a small-cap biotech company.\\u0026#34; agent_sequence = [] async for event in workflow.run_stream(task): if isinstance(event, ExecutorInvokedEvent): agent_sequence.append(event.executor_id) print(f\\u0026#34;\\u0026gt;\\u0026gt; Invoking: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34; Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(f\\u0026#34;\\\\nWorkflow completed!\\u0026#34;) print(f\\u0026#34;Agent sequence: {\\u0026#39; -\\u0026gt; \\u0026#39;.join(agent_sequence)}\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): print(f\\u0026#34;\\\\nFinal output received\\u0026#34;) asyncio.run(main()) Observing Dynamic Routing in Action When we run this workflow with a high-risk biotech stock like BEAM, here\\u0026rsquo;s what happens:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 \\u0026gt;\\u0026gt; Invoking: magentic_orchestrator Completed: magentic_orchestrator \\u0026gt;\\u0026gt; Invoking: agent_market_researcher Completed: agent_market_researcher \\u0026gt;\\u0026gt; Invoking: magentic_orchestrator Completed: magentic_orchestrator \\u0026gt;\\u0026gt; Invoking: agent_financial_analyst Completed: agent_financial_analyst \\u0026gt;\\u0026gt; Invoking: magentic_orchestrator Completed: magentic_orchestrator \\u0026gt;\\u0026gt; Invoking: agent_risk_assessor Completed: agent_risk_assessor \\u0026gt;\\u0026gt; Invoking: magentic_orchestrator \\u0026lt;- Manager sees high risk score Completed: magentic_orchestrator \\u0026gt;\\u0026gt; Invoking: agent_market_researcher \\u0026lt;- LOOPS BACK for deep dive! Completed: agent_market_researcher \\u0026gt;\\u0026gt; Invoking: magentic_orchestrator Completed: magentic_orchestrator \\u0026gt;\\u0026gt; Invoking: agent_investment_advisor \\u0026lt;- Now proceeds to final step Completed: agent_investment_advisor Workflow completed! Agent sequence: orchestrator -\\u0026gt; market_researcher -\\u0026gt; orchestrator -\\u0026gt; financial_analyst -\\u0026gt; orchestrator -\\u0026gt; risk_assessor -\\u0026gt; orchestrator -\\u0026gt; market_researcher -\\u0026gt; orchestrator -\\u0026gt; investment_advisor Notice the feedback loop: after the risk assessor returns a high score, the manager autonomously decides to invoke the market researcher again for deeper research on the identified risks. This adaptive behavior is impossible with static workflow patterns.\\nCompare this to a low-risk stock like Microsoft (MSFT), where the workflow proceeds directly without the feedback loop:\\n1 2 orchestrator -\\u0026gt; market_researcher -\\u0026gt; orchestrator -\\u0026gt; financial_analyst -\\u0026gt; orchestrator -\\u0026gt; risk_assessor -\\u0026gt; orchestrator -\\u0026gt; investment_advisor The same workflow code produces different execution paths based on the data discovered during execution.\\nHow Magentic Differs from Other Patterns Pattern Orchestration Routing Logic Use Case Sequential Fixed order Predetermined Pipelines with known steps Concurrent Parallel execution Fan-out/fan-in Independent subtasks Handoff Agent-to-agent transfer Explicit handoff calls Escalation, specialization Group Chat Turn-based Selection function Brainstorming, debate Magentic LLM manager Dynamic, adaptive Complex tasks with conditional logic Magentic is the most flexible but also the most resource-intensive pattern. The manager LLM is invoked between every agent execution to evaluate progress and decide the next step. Use it when:\\nThe workflow requires conditional branching based on intermediate results You need feedback loops for iterative refinement The optimal sequence of agents isn\\u0026rsquo;t known at design time Task complexity warrants the overhead of LLM-based orchestration Magentic workflows represent the most sophisticated orchestration pattern in MAF, bridging the gap between rigid automation and truly autonomous multi-agent systems. When your task requires adaptive decision-making that can\\u0026rsquo;t be predetermined, magentic is the pattern to reach for.\\n\"",
   "url": "https:\/\/ravichaganti.com\/blog\/magentic-workflows-in-microsoft-agent-framework\/",
-  "datePublished": "2026-02-28T00:00:00Z",
-  "dateModified": "2026-02-28T00:00:00Z",
+  "datePublished": "2025-10-20T00:00:00Z",
+  "dateModified": "2025-10-20T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -123,7 +123,7 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
   
   
   
-  "timeRequired": "PT11M",
+  "timeRequired": "PT10M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -604,7 +604,7 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-02-28">February 28, 2026</time>
+              <time datetime=" 2025-10-20">October 20, 2025</time>
             </div>
 
             
@@ -615,7 +615,7 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>11 min read</span>
+              <span>10 min read</span>
             </div>
             
 
@@ -642,11 +642,6 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
               Agents
             </a>
             
-            <a href="/categories/skills/"
-              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Skills
-            </a>
-            
             
             
             
@@ -662,7 +657,7 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.
+            If you need a workflow that can adapt its routing decisions based on what agents discover during execution, look no further. Magentic is for you!
           </div>
           
         </header>
@@ -840,10 +835,9 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
-                    Magentic workflows in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Microsoft Agent Framework - Agent Skills
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 28, 2026</p>
               </div>
@@ -876,22 +870,28 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
             
           
             
-              
-            
           
 
           
           
             
-            <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A</span>
+              <span class="truncate">Group chat workflows in Microsoft Agent Framework</span>
             </a>
           
 
           
+          
+            
+            <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
           
         </div>
       </nav>
@@ -933,15 +933,20 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#the-problem-static-orchestration-isnt-always-enough">The Problem: Static Orchestration Isn&rsquo;t Always Enough</a></li>
+    <li><a href="#what-is-a-magentic-workflow">What is a Magentic Workflow?</a></li>
+    <li><a href="#example-investment-due-diligence-workflow">Example: Investment Due Diligence Workflow</a>
       <ul>
-        <li><a href="#creating-the-directory-skills">Creating the Directory Skills</a></li>
-        <li><a href="#initializing-the-agent-with-skills">Initializing the Agent with Skills</a></li>
-        <li><a href="#skill-discovery-and-registration">Skill Discovery and Registration</a></li>
-        <li><a href="#progressive-disclosure">Progressive Disclosure</a></li>
-        <li><a href="#integration-with-core-tools">Integration with Core Tools</a></li>
+        <li><a href="#setting-up-the-environment">Setting Up the Environment</a></li>
+        <li><a href="#defining-the-tools">Defining the Tools</a></li>
+        <li><a href="#creating-the-specialized-agents">Creating the Specialized Agents</a></li>
+        <li><a href="#creating-the-manager-agent">Creating the Manager Agent</a></li>
+        <li><a href="#building-the-workflow">Building the Workflow</a></li>
+        <li><a href="#running-and-monitoring-the-workflow">Running and Monitoring the Workflow</a></li>
+        <li><a href="#observing-dynamic-routing-in-action">Observing Dynamic Routing in Action</a></li>
       </ul>
     </li>
+    <li><a href="#how-magentic-differs-from-other-patterns">How Magentic Differs from Other Patterns</a></li>
   </ul>
 </nav>
       </nav>
@@ -1016,77 +1021,106 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>Seems like a season of <a href="https://agentskills.io/home">Agent Skills</a> adoption. <a href="https://ravichaganti.com/blog/google-adk-agent-skills/">Google ADK implemented support for skills</a> a couple of weeks ago, and it&rsquo;s <a href="https://github.com/microsoft/agent-framework/pull/4210">Microsoft Agent Framework&rsquo;s turn last week</a>. In an earlier article in the <a href="https://ravichaganti.com/series/google-adk/">Google ADK series</a>, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).</p>
-<p>Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:</p>
+          <p>In this series on Microsoft Agent Framework (MAF), we&rsquo;ve explored <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">sequential workflows</a> where agents process tasks in a fixed order, <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/">concurrent workflows</a> where agents work in parallel, <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/">handoff workflows</a> where agents transfer control based on context, and <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/">group chat workflows</a> where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.</p>
+<p>What if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.</p>
+<h2 id="the-problem-static-orchestration-isnt-always-enough">The Problem: Static Orchestration Isn&rsquo;t Always Enough</h2>
+<p>Consider a complex task like investment due diligence. A sequential workflow might work: research the company, analyze financials, assess risks, write a report. But what happens when the risk assessment reveals concerning findings? In a static workflow, you&rsquo;d proceed to the report anyway. In reality, you&rsquo;d want to go back and dig deeper into those risks before making a recommendation.</p>
+<p>This is where magentic workflows shine. They enable:</p>
 <ul>
-<li>Governance Skill: Contains the company&rsquo;s mandatory tagging, naming, and SKU policies.</li>
-<li>Bicep Authoring Skill: Contains best practices for writing clean Bicep code (like parameterization and formatting).</li>
+<li><strong>Dynamic routing</strong>: The manager decides which agent to invoke based on the current state of the conversation</li>
+<li><strong>Conditional branching</strong>: Different paths through the workflow based on intermediate results</li>
+<li><strong>Feedback loops</strong>: The ability to revisit earlier agents when new information warrants it</li>
+<li><strong>Autonomous coordination</strong>: The LLM manager handles the orchestration logic without explicit programming</li>
 </ul>
-<h3 id="creating-the-directory-skills">Creating the Directory Skills</h3>
-<p>Let&rsquo;s start by creating our directory-based skills. In your project folder, create a structure that looks like this:</p>
+<h2 id="what-is-a-magentic-workflow">What is a Magentic Workflow?</h2>
+<p>A magentic workflow consists of two key components:</p>
+<ol>
+<li><strong>Participant agents</strong>: Specialized agents, each with distinct tools and expertise</li>
+<li><strong>Manager agent</strong>: An LLM-powered orchestrator that plans the task, selects which agent to invoke, monitors progress, and determines when to complete or replan</li>
+</ol>
+<p>Unlike group chat where agents take turns based on a selection function you define, magentic workflows delegate the entire orchestration decision to the manager LLM. The manager maintains a &ldquo;task ledger&rdquo; tracking facts discovered, the current plan, and progress toward completion.</p>
+<h2 id="example-investment-due-diligence-workflow">Example: Investment Due Diligence Workflow</h2>
+<p>Let&rsquo;s build a practical example that demonstrates the power of magentic orchestration. We&rsquo;ll create an investment research workflow with four specialized agents:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Agent</th>
+          <th>Role</th>
+          <th>Tools</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>MarketResearcher</code></td>
+          <td>Gathers market context, news, analyst opinions</td>
+          <td>Web search, financial news</td>
+      </tr>
+      <tr>
+          <td><code>FinancialAnalyst</code></td>
+          <td>Analyzes fundamentals and financial health</td>
+          <td>Yahoo Finance API, Python</td>
+      </tr>
+      <tr>
+          <td><code>RiskAssessor</code></td>
+          <td>Evaluates risks and assigns a risk score</td>
+          <td>Risk assessment</td>
+      </tr>
+      <tr>
+          <td><code>InvestmentAdvisor</code></td>
+          <td>Synthesizes findings into a recommendation</td>
+          <td>Report generation</td>
+      </tr>
+  </tbody>
+</table>
+<p><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/magentic-maf.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/magentic-maf.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lightbox = GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        moreLength: 0
+      });
+    });
+  </script></p>
+<p>Here&rsquo;s the key feature. If the <code>RiskAssessor</code> returns a high risk score (&gt;7), the manager will loop back to the <code>MarketResearcher</code> for deeper investigation before proceeding to the final recommendation.</p>
+<h3 id="setting-up-the-environment">Setting Up the Environment</h3>
+<p>First, install the required packages:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">maf_agent/
-</span></span><span class="line"><span class="cl">└── skills/
-</span></span><span class="line"><span class="cl">    ├── governance-skill/
-</span></span><span class="line"><span class="cl">    │   ├── SKILL.md
-</span></span><span class="line"><span class="cl">    │   └── references/
-</span></span><span class="line"><span class="cl">    │       └── policies.md
-</span></span><span class="line"><span class="cl">    └── bicep-authoring/
-</span></span><span class="line"><span class="cl">        ├── SKILL.md
-</span></span><span class="line"><span class="cl">        └── references/
-</span></span><span class="line"><span class="cl">            └── example.bicep
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install agent-framework azure-identity tavily-python yfinance python-dotenv
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/bicep-authoring/SKILL.md">SKILL.md</a> file serves as the entry point and contains YAML front matter defining the skill&rsquo;s identity, followed by instructions on how the agent should use it.</p>
-<p>Here is what the <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/SKILL.md">governance-skill/SKILL.md</a> looks like:</p>
+</div><p>Create a <code>.env</code> file with your configuration:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
-</span></span><span class="line"><span class="cl">name: governance-skill
-</span></span><span class="line"><span class="cl">description: Provides organizational governance rules and policies for cloud resource deployments. It should be used to ensure any generated infrastructure code complies with company standards.
-</span></span><span class="line"><span class="cl">---
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gh"># Instructions
-</span></span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">You are helping the user build infrastructure. Review this skill when you need to generate infrastructure or verify if a configuration meets standard practices.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Consider the following steps:
-</span></span><span class="line"><span class="cl"><span class="k">1.</span> Review the <span class="sb">`references/policies.md`</span> file to understand the current organizational standards.
-</span></span><span class="line"><span class="cl"><span class="k">2.</span> Structure the infrastructure code (e.g., Bicep, ARM templates, Terraform) to follow the policies listed in the reference.
-</span></span><span class="line"><span class="cl"><span class="k">3.</span> If a user request conflicts with a policy, politely suggest the alternative compliant configuration.
-</span></span><span class="line"><span class="cl"><span class="k">4.</span> Add a comment block at the top indicating the code was cross-checked with organizational policies.
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
+</span></span><span class="line"><span class="cl">TAVILY_API_KEY=your-tavily-api-key
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Next, in the <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/references/policies.md">references/policies.md</a> file, we define our actual organizational rules:</p>
+</div><h3 id="defining-the-tools">Defining the Tools</h3>
+<p>Each agent needs specialized tools. Let&rsquo;s start with the research and analysis tools:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1110,28 +1144,28 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gh"># Organizational Governance Policies
-</span></span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">All infrastructure deployments must adhere to the following rules:
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">ai_function</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">tavily</span> <span class="kn">import</span> <span class="n">TavilyClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gu">## 1. Naming Conventions
-</span></span></span><span class="line"><span class="cl"><span class="k">-</span> All resources must include the prefix <span class="sb">`org-xyz-`</span>.
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Example: A storage account named <span class="sb">`data`</span> must be deployed as <span class="sb">`orgxyzdata`</span> (storage accounts don&#39;t allow hyphens) or an app service named <span class="sb">`frontend`</span> must be deployed as <span class="sb">`org-xyz-frontend`</span>.
+</span></span><span class="line"><span class="cl"><span class="n">tavily_client</span> <span class="o">=</span> <span class="n">TavilyClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;TAVILY_API_KEY&#34;</span><span class="p">))</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gu">## 2. Resource Skus
-</span></span></span><span class="line"><span class="cl"><span class="k">-</span> **Storage Accounts**: Must use the <span class="sb">`Standard_GRS`</span> SKU to ensure geographic redundancy. <span class="sb">`Standard_LRS`</span> or other SKUs are not permitted for production use.
-</span></span><span class="line"><span class="cl"><span class="k">-</span> **App Service Plans**: Must use at least the <span class="sb">`S1`</span> (Standard) tier. Free or Shared tiers are not allowed.
+</span></span><span class="line"><span class="cl"><span class="nd">@ai_function</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">search_web</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Search the web for general information about markets, companies, or trends.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">tavily_client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gu">## 3. Tagging Requirements
-</span></span></span><span class="line"><span class="cl">Every resource must have the following mandatory tags:
-</span></span><span class="line"><span class="cl"><span class="k">-</span> <span class="sb">`Environment`</span>: Must be set to either <span class="sb">`Development`</span>, <span class="sb">`Staging`</span>, or <span class="sb">`Production`</span>.
-</span></span><span class="line"><span class="cl"><span class="k">-</span> <span class="sb">`Owner`</span>: Must contain a valid email address or team name.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gu">## 4. Location
-</span></span></span><span class="line"><span class="cl"><span class="k">-</span> All resources must be deployed to the <span class="sb">`eastus`</span> or <span class="sb">`westus`</span> regions.
+</span></span><span class="line"><span class="cl"><span class="nd">@ai_function</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">search_financial_news</span><span class="p">(</span><span class="n">company_or_topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Search for recent financial news, analyst opinions, and market sentiment.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">company_or_topic</span><span class="si">}</span><span class="s2"> stock news analyst rating 2024&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">tavily_client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;FINANCIAL NEWS for </span><span class="si">{</span><span class="n">company_or_topic</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The Bicep authoring skills, which is an inline skill in the Google ADK example, must be implemented as a directory skill as well.</p>
+</div><p>The financial analysis tool uses Yahoo Finance to fetch real market data:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1152,29 +1186,61 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 </span><span class="lnt">16
 </span><span class="lnt">17
 </span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
-</span></span><span class="line"><span class="cl">name: bicep-authoring-skill
-</span></span><span class="line"><span class="cl">description: Provides best practices for writing clean, maintainable Bicep templates.
-</span></span><span class="line"><span class="cl">---
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@ai_function</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">analyze_financials</span><span class="p">(</span><span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Get key financial metrics using Yahoo Finance.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stock</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">Ticker</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">info</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">info</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gh"># Instructions
-</span></span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Apply the following best practices when generating or modifying Bicep templates:
-</span></span><span class="line"><span class="cl"><span class="k">1.</span> Start the file with a general comment block explaining the purpose of the template.
-</span></span><span class="line"><span class="cl"><span class="k">2.</span> Define all parameters explicitly with types and standard default values if applicable.
-</span></span><span class="line"><span class="cl"><span class="k">3.</span> Use meaningful resource symbolic names that describe its purpose, rather than generic names.
-</span></span><span class="line"><span class="cl"><span class="k">4.</span> Organize the template logically: Parameters first, then variables, then resources, and finally outputs.
-</span></span><span class="line"><span class="cl"><span class="k">5.</span> The template should be well-formatted Azure Bicep code.
-</span></span><span class="line"><span class="cl"><span class="k">6.</span> Please validate the generated Bicep configuration using the <span class="sb">`validate_bicep`</span> tool before returning it to the user. Fix any compilation errors reported.
+</span></span><span class="line"><span class="cl">        <span class="n">name</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;longName&#39;</span><span class="p">,</span> <span class="n">ticker</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">price</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;currentPrice&#39;</span><span class="p">,</span> <span class="s1">&#39;N/A&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pe_ratio</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;trailingPE&#39;</span><span class="p">,</span> <span class="s1">&#39;N/A&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">profit_margin</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;profitMargins&#39;</span><span class="p">,</span> <span class="s1">&#39;N/A&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">market_cap</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marketCap&#39;</span><span class="p">,</span> <span class="s1">&#39;N/A&#39;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="gh"># Resources
-</span></span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">See the example of a good Bicep template structure in <span class="sb">`references/example.bicep`</span>.
+</span></span><span class="line"><span class="cl">        <span class="c1"># Format market cap</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">market_cap</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">market_cap</span> <span class="o">&gt;=</span> <span class="mf">1e12</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">market_cap</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;$</span><span class="si">{</span><span class="n">market_cap</span><span class="o">/</span><span class="mf">1e12</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">T&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">elif</span> <span class="n">market_cap</span> <span class="o">&gt;=</span> <span class="mf">1e9</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">market_cap</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;$</span><span class="si">{</span><span class="n">market_cap</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">B&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;FINANCIAL ANALYSIS for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">ticker</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">)
+</span></span></span><span class="line"><span class="cl"><span class="si">{</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Current Price: $</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Market Cap: </span><span class="si">{</span><span class="n">market_cap</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">- P/E Ratio: </span><span class="si">{</span><span class="n">pe_ratio</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Profit Margin: </span><span class="si">{</span><span class="n">profit_margin</span> <span class="o">*</span> <span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% if profit_margin else &#39;N/A&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Add risk flags for unprofitable companies</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">profit_margin</span> <span class="ow">and</span> <span class="n">profit_margin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">+=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">RISK FLAG: Company is UNPROFITABLE (negative margins)&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">result</span>
+</span></span><span class="line"><span class="cl">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Error fetching data for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>We will also supply a reference example of a Bicep configuration.</p>
+</div><p>The risk assessment tool is where the conditional logic lives:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1191,26 +1257,78 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 </span><span class="lnt">12
 </span><span class="lnt">13
 </span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-Bicep" data-lang="Bicep"><span class="line"><span class="cl"><span class="c1">// This is an example of a good Bicep template structure.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">resourceGroup</span><span class="p">().</span><span class="nv">location</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">env</span><span class="w"> </span><span class="nv">string</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">storagePrefix</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;stg&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">myStorage</span><span class="w"> </span><span class="s">&#39;Microsoft.Storage/storageAccounts@2022-09-01&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="si">${</span><span class="nv">storagePrefix</span><span class="si">}${</span><span class="nv">env</span><span class="si">}</span><span class="s">&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">location</span><span class="p">:</span><span class="w"> </span><span class="nv">location</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">sku</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Standard_LRS&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">kind</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;StorageV2&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@ai_function</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">assess_risk</span><span class="p">(</span><span class="n">analysis_summary</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Evaluate investment risks and return a risk score (1-10).&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">summary_lower</span> <span class="o">=</span> <span class="n">analysis_summary</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">risk_score</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># Base score</span>
+</span></span><span class="line"><span class="cl">    <span class="n">risk_factors</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># Check for high-risk indicators</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;unprofitable&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span> <span class="ow">or</span> <span class="s2">&#34;negative margin&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_score</span> <span class="o">+=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;Company is not profitable - high cash burn risk&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;biotech&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span> <span class="ow">or</span> <span class="s2">&#34;clinical&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_score</span> <span class="o">+=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;Clinical stage biotech - binary FDA approval risk&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;crypto&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span> <span class="ow">or</span> <span class="s2">&#34;bitcoin&#34;</span> <span class="ow">in</span> <span class="n">summary_lower</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_score</span> <span class="o">+=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;High volatility asset - significant drawdown risk&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">risk_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">risk_score</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;RISK ASSESSMENT
+</span></span></span><span class="line"><span class="cl"><span class="s2">===============
+</span></span></span><span class="line"><span class="cl"><span class="s2">RISK SCORE: </span><span class="si">{</span><span class="n">risk_score</span><span class="si">}</span><span class="s2">/10 </span><span class="si">{</span><span class="s2">&#34;[HIGH RISK]&#34;</span> <span class="k">if</span> <span class="n">risk_score</span> <span class="o">&gt;</span> <span class="mi">7</span> <span class="k">else</span> <span class="s2">&#34;[Moderate]&#34;</span> <span class="k">if</span> <span class="n">risk_score</span> <span class="o">&gt;</span> <span class="mi">4</span> <span class="k">else</span> <span class="s2">&#34;[Low Risk]&#34;</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">RISK FACTORS IDENTIFIED:
+</span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">risk_factors</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># This message triggers the feedback loop</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">risk_score</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">HIGH RISK ALERT: Risk score exceeds threshold.
+</span></span></span><span class="line"><span class="cl"><span class="s2">RECOMMEND: Request MarketResearcher to conduct deeper research on: </span><span class="si">{</span><span class="n">risk_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span>
+</span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="initializing-the-agent-with-skills">Initializing the Agent with Skills</h3>
-<p>Now, let&rsquo;s wire this up in our <a href="file:///c:/GitHub/google-adk-101/maf_agent/agent.py">agent.py</a> file. We will use MAF&rsquo;s built-in <code>FileAgentSkillsProvider</code> to load all skills from our <code>skills</code> directory and inject them into our <code>Agent</code>. We will also provide a standard Python function as a tool to help the agent compile the Bicep code locally.</p>
+</div><h3 id="creating-the-specialized-agents">Creating the Specialized Agents</h3>
+<p>Now we create four agents, each with distinct instructions and tools:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1274,374 +1392,371 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 </span><span class="lnt">59
 </span><span class="lnt">60
 </span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span><span class="lnt">71
-</span><span class="lnt">72
-</span><span class="lnt">73
-</span><span class="lnt">74
-</span><span class="lnt">75
-</span><span class="lnt">76
-</span><span class="lnt">77
-</span><span class="lnt">78
-</span><span class="lnt">79
-</span><span class="lnt">80
-</span><span class="lnt">81
-</span><span class="lnt">82
-</span><span class="lnt">83
-</span><span class="lnt">84
-</span><span class="lnt">85
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">sys</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Ensure the correct framework packages are imported</span>
-</span></span><span class="line"><span class="cl"><span class="k">try</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">FileAgentSkillsProvider</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIResponsesClient</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
-</span></span><span class="line"><span class="cl"><span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;ImportError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Market Researcher - gathers context and news</span>
+</span></span><span class="line"><span class="cl"><span class="n">market_researcher</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;MarketResearcher&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a market research analyst.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">YOUR ROLE:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Gather market context, industry trends, and competitive landscape
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Find recent news and analyst opinions
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Identify market sentiment and catalysts
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">Use search_web for broad context and search_financial_news for recent analyst takes.
+</span></span></span><span class="line"><span class="cl"><span class="s2">If asked to do a &#34;deep dive&#34; on specific risks, focus your search on those factors.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">search_web</span><span class="p">,</span> <span class="n">search_financial_news</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Load environment variables</span>
-</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Financial Analyst - evaluates fundamentals</span>
+</span></span><span class="line"><span class="cl"><span class="n">financial_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;FinancialAnalyst&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a financial analyst specializing in fundamental analysis.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">YOUR ROLE:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Analyze financial metrics (P/E, margins, growth, debt)
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Evaluate company fundamentals and financial health
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Be objective about both strengths and weaknesses&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">analyze_financials</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">validate_bicep</span><span class="p">(</span><span class="n">bicep_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Validates the provided Bicep template content for compilation errors by running &#39;bicep lint&#39; and &#39;bicep build&#39;. Pass the full bicep string.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">tempfile</span>
-</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">subprocess</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&#34;.bicep&#34;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">bicep_content</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">        <span class="n">temp_path</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="c1"># First, run bicep lint</span>
-</span></span><span class="line"><span class="cl">        <span class="n">lint_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;bicep&#39;</span><span class="p">,</span> <span class="s1">&#39;lint&#39;</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">lint_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Linting failed with issues:</span><span class="se">\n</span><span class="si">{</span><span class="n">lint_result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">lint_result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl">            
-</span></span><span class="line"><span class="cl">        <span class="c1"># If lint passes, run bicep build</span>
-</span></span><span class="line"><span class="cl">        <span class="n">build_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;bicep&#39;</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">build_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s2">&#34;Validation successful. Bicep template passed linting and build.&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Validation failed during build:</span><span class="se">\n</span><span class="si">{</span><span class="n">build_result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">build_result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">finally</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">temp_path</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Risk Assessor - identifies and scores risks</span>
+</span></span><span class="line"><span class="cl"><span class="n">risk_assessor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;RiskAssessor&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a risk management specialist.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">YOUR ROLE:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Evaluate investment risks based on gathered information
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Assign a risk score from 1-10
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Identify specific risk factors
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">CRITICAL: If risk score &gt; 7, recommend deeper research before final recommendation.&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">assess_risk</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;AZURE_AI_PROJECT_ENDPOINT&#34;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Please set AZURE_AI_PROJECT_ENDPOINT in your environment or .env file.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_PROJECT_ENDPOINT&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="n">deployment</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME&#34;</span><span class="p">,</span> <span class="s2">&#34;gpt-4o-mini&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">client</span> <span class="o">=</span> <span class="n">AzureOpenAIResponsesClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">project_endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">deployment_name</span><span class="o">=</span><span class="n">deployment</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">AzureCliCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Failed to initialize MAF Azure Open AI client: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Discover skills</span>
-</span></span><span class="line"><span class="cl">    <span class="n">skills_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&#34;skills&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">skills_provider</span> <span class="o">=</span> <span class="n">FileAgentSkillsProvider</span><span class="p">(</span><span class="n">skill_paths</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">skills_dir</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">Agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;You are an assistant helping construct Azure Bicep code.&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">),</span>
-</span></span><span class="line"><span class="cl">        <span class="n">context_providers</span><span class="o">=</span><span class="p">[</span><span class="n">skills_provider</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">validate_bicep</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Agent initialized with MAF.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;-&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Agent:</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Investment Advisor - synthesizes final recommendation</span>
+</span></span><span class="line"><span class="cl"><span class="n">investment_advisor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;InvestmentAdvisor&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a senior investment advisor.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">THIS IS THE FINAL STEP - After you complete your work, the task is DONE.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">YOUR ROLE:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Synthesize all research into a recommendation: BUY / HOLD / SELL / AVOID
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Save the final report using save_report tool
+</span></span></span><span class="line"><span class="cl"><span class="s2">- After saving, confirm &#34;TASK COMPLETE - Report saved successfully&#34; &#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">save_report</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>In the code above, we point the <code>FileAgentSkillsProvider</code> to our directory. We then pass this provider into the <code>context_providers</code> array of our <code>Agent</code>. This grants the LLM access to the reference documents and specific behavioral guidelines we defined.</p>
-<p>To test our agent, we simply run the Python script.</p>
+</div><h3 id="creating-the-manager-agent">Creating the Manager Agent</h3>
+<p>The manager agent is the brain of the magentic workflow. Its instructions define how agents are coordinated:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">manager_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;InvestmentManager&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are the Investment Due Diligence Manager.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">YOUR TEAM:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- MarketResearcher: Gathers market context, news, analyst opinions
+</span></span></span><span class="line"><span class="cl"><span class="s2">- FinancialAnalyst: Analyzes fundamentals, metrics, financial health
+</span></span></span><span class="line"><span class="cl"><span class="s2">- RiskAssessor: Evaluates risks, assigns risk score (1-10)
+</span></span></span><span class="line"><span class="cl"><span class="s2">- InvestmentAdvisor: Synthesizes findings and saves final report
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">WORKFLOW:
+</span></span></span><span class="line"><span class="cl"><span class="s2">1. MarketResearcher - gather market context and news
+</span></span></span><span class="line"><span class="cl"><span class="s2">2. FinancialAnalyst - analyze fundamentals
+</span></span></span><span class="line"><span class="cl"><span class="s2">3. RiskAssessor - evaluate risks and get risk score
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">4. DECISION POINT (if risk score &gt; 7):
+</span></span></span><span class="line"><span class="cl"><span class="s2">   - Request ONE deep dive from MarketResearcher on the main risk
+</span></span></span><span class="line"><span class="cl"><span class="s2">   - Then proceed to step 5
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">5. InvestmentAdvisor - synthesize and save final report
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">TERMINATION:
+</span></span></span><span class="line"><span class="cl"><span class="s2">- The task is COMPLETE when InvestmentAdvisor confirms &#34;Report saved&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">- Do NOT call any more agents after InvestmentAdvisor completes&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice how the manager&rsquo;s instructions encode the conditional logic: &ldquo;if risk score &gt; 7, request ONE deep dive.&rdquo; This is the power of magentic. The routing logic is expressed in natural language and interpreted by the LLM.</p>
+<h3 id="building-the-workflow">Building the Workflow</h3>
+<p>With all components defined, we build the magentic workflow using <code>MagenticBuilder</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">MagenticBuilder</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">MagenticBuilder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">market_researcher</span><span class="o">=</span><span class="n">market_researcher</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">financial_analyst</span><span class="o">=</span><span class="n">financial_analyst</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">risk_assessor</span><span class="o">=</span><span class="n">risk_assessor</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">investment_advisor</span><span class="o">=</span><span class="n">investment_advisor</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_standard_manager</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent</span><span class="o">=</span><span class="n">manager_agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">max_round_count</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>   <span class="c1"># Maximum orchestration rounds</span>
+</span></span><span class="line"><span class="cl">        <span class="n">max_stall_count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>    <span class="c1"># Replan after this many stalls</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Key configuration options:</p>
+<ul>
+<li><strong><code>max_round_count</code></strong>: Limits total orchestration rounds to prevent infinite loops</li>
+<li><strong><code>max_stall_count</code></strong>: If no progress is made for this many rounds, the manager replans</li>
+</ul>
+<h3 id="running-and-monitoring-the-workflow">Running and Monitoring the Workflow</h3>
+<p>Execute the workflow and observe the orchestration events:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowRunState</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">task</span> <span class="o">=</span> <span class="s2">&#34;Evaluate investing in Beam Therapeutics (BEAM), a small-cap biotech company.&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">agent_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;&gt;&gt; Invoking: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;   Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Workflow completed!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Agent sequence: </span><span class="si">{</span><span class="s1">&#39; -&gt; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">agent_sequence</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Final output received&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="observing-dynamic-routing-in-action">Observing Dynamic Routing in Action</h3>
+<p>When we run this workflow with a high-risk biotech stock like BEAM, here&rsquo;s what happens:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&gt;&gt; Invoking: magentic_orchestrator
+</span></span><span class="line"><span class="cl">   Completed: magentic_orchestrator
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: agent_market_researcher
+</span></span><span class="line"><span class="cl">   Completed: agent_market_researcher
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: magentic_orchestrator
+</span></span><span class="line"><span class="cl">   Completed: magentic_orchestrator
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: agent_financial_analyst
+</span></span><span class="line"><span class="cl">   Completed: agent_financial_analyst
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: magentic_orchestrator
+</span></span><span class="line"><span class="cl">   Completed: magentic_orchestrator
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: agent_risk_assessor
+</span></span><span class="line"><span class="cl">   Completed: agent_risk_assessor
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: magentic_orchestrator        &lt;- Manager sees high risk score
+</span></span><span class="line"><span class="cl">   Completed: magentic_orchestrator
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: agent_market_researcher      &lt;- LOOPS BACK for deep dive!
+</span></span><span class="line"><span class="cl">   Completed: agent_market_researcher
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: magentic_orchestrator
+</span></span><span class="line"><span class="cl">   Completed: magentic_orchestrator
+</span></span><span class="line"><span class="cl">&gt;&gt; Invoking: agent_investment_advisor     &lt;- Now proceeds to final step
+</span></span><span class="line"><span class="cl">   Completed: agent_investment_advisor
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Workflow completed!
+</span></span><span class="line"><span class="cl">Agent sequence: orchestrator -&gt; market_researcher -&gt; orchestrator -&gt;
+</span></span><span class="line"><span class="cl">               financial_analyst -&gt; orchestrator -&gt; risk_assessor -&gt;
+</span></span><span class="line"><span class="cl">               orchestrator -&gt; market_researcher -&gt; orchestrator -&gt;
+</span></span><span class="line"><span class="cl">               investment_advisor
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Notice the feedback loop: after the risk assessor returns a high score, the manager autonomously decides to invoke the market researcher again for deeper research on the identified risks. This adaptive behavior is impossible with static workflow patterns.</p>
+<p>Compare this to a low-risk stock like Microsoft (MSFT), where the workflow proceeds directly without the feedback loop:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="n">python</span><span class="p">.</span><span class="py">exe</span> <span class="p">.\</span><span class="n">maf_agent</span><span class="p">\</span><span class="n">agent</span><span class="p">.</span><span class="py">py</span>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">orchestrator -&gt; market_researcher -&gt; orchestrator -&gt; financial_analyst -&gt;
+</span></span><span class="line"><span class="cl">orchestrator -&gt; risk_assessor -&gt; orchestrator -&gt; investment_advisor
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The agent loads the available skills and skill references to gain the procedural knowledge and generate the Bicep template.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">  1
-</span><span class="lnt">  2
-</span><span class="lnt">  3
-</span><span class="lnt">  4
-</span><span class="lnt">  5
-</span><span class="lnt">  6
-</span><span class="lnt">  7
-</span><span class="lnt">  8
-</span><span class="lnt">  9
-</span><span class="lnt"> 10
-</span><span class="lnt"> 11
-</span><span class="lnt"> 12
-</span><span class="lnt"> 13
-</span><span class="lnt"> 14
-</span><span class="lnt"> 15
-</span><span class="lnt"> 16
-</span><span class="lnt"> 17
-</span><span class="lnt"> 18
-</span><span class="lnt"> 19
-</span><span class="lnt"> 20
-</span><span class="lnt"> 21
-</span><span class="lnt"> 22
-</span><span class="lnt"> 23
-</span><span class="lnt"> 24
-</span><span class="lnt"> 25
-</span><span class="lnt"> 26
-</span><span class="lnt"> 27
-</span><span class="lnt"> 28
-</span><span class="lnt"> 29
-</span><span class="lnt"> 30
-</span><span class="lnt"> 31
-</span><span class="lnt"> 32
-</span><span class="lnt"> 33
-</span><span class="lnt"> 34
-</span><span class="lnt"> 35
-</span><span class="lnt"> 36
-</span><span class="lnt"> 37
-</span><span class="lnt"> 38
-</span><span class="lnt"> 39
-</span><span class="lnt"> 40
-</span><span class="lnt"> 41
-</span><span class="lnt"> 42
-</span><span class="lnt"> 43
-</span><span class="lnt"> 44
-</span><span class="lnt"> 45
-</span><span class="lnt"> 46
-</span><span class="lnt"> 47
-</span><span class="lnt"> 48
-</span><span class="lnt"> 49
-</span><span class="lnt"> 50
-</span><span class="lnt"> 51
-</span><span class="lnt"> 52
-</span><span class="lnt"> 53
-</span><span class="lnt"> 54
-</span><span class="lnt"> 55
-</span><span class="lnt"> 56
-</span><span class="lnt"> 57
-</span><span class="lnt"> 58
-</span><span class="lnt"> 59
-</span><span class="lnt"> 60
-</span><span class="lnt"> 61
-</span><span class="lnt"> 62
-</span><span class="lnt"> 63
-</span><span class="lnt"> 64
-</span><span class="lnt"> 65
-</span><span class="lnt"> 66
-</span><span class="lnt"> 67
-</span><span class="lnt"> 68
-</span><span class="lnt"> 69
-</span><span class="lnt"> 70
-</span><span class="lnt"> 71
-</span><span class="lnt"> 72
-</span><span class="lnt"> 73
-</span><span class="lnt"> 74
-</span><span class="lnt"> 75
-</span><span class="lnt"> 76
-</span><span class="lnt"> 77
-</span><span class="lnt"> 78
-</span><span class="lnt"> 79
-</span><span class="lnt"> 80
-</span><span class="lnt"> 81
-</span><span class="lnt"> 82
-</span><span class="lnt"> 83
-</span><span class="lnt"> 84
-</span><span class="lnt"> 85
-</span><span class="lnt"> 86
-</span><span class="lnt"> 87
-</span><span class="lnt"> 88
-</span><span class="lnt"> 89
-</span><span class="lnt"> 90
-</span><span class="lnt"> 91
-</span><span class="lnt"> 92
-</span><span class="lnt"> 93
-</span><span class="lnt"> 94
-</span><span class="lnt"> 95
-</span><span class="lnt"> 96
-</span><span class="lnt"> 97
-</span><span class="lnt"> 98
-</span><span class="lnt"> 99
-</span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
-</span><span class="lnt">107
-</span><span class="lnt">108
-</span><span class="lnt">109
-</span><span class="lnt">110
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">Agent initialized with MAF.
-</span></span><span class="line"><span class="cl">User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.
-</span></span><span class="line"><span class="cl">----------------------------------------
-</span></span><span class="line"><span class="cl">Agent:
-</span></span><span class="line"><span class="cl">I created a validated Bicep template that deploys an Azure Storage Account and an App Service (with an App Service Plan) configured for the Staging environment and compliant with your org governance rules.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Notes:
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Template is cross-checked with organizational policies: resource name prefixes, Storage SKU = Standard_GRS, App Service Plan tier = S1, mandatory tags (Environment, Owner), and allowed locations (eastus | westus).
-</span></span><span class="line"><span class="cl"><span class="k">-</span> The environment defaults to Staging. You must provide the Owner tag value (email or team name) when deploying.
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Storage account name uses the storage-safe prefix orgxyz (no hyphens) per governance rules.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Bicep template:
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">/*
-</span></span><span class="line"><span class="cl">Cross-checked with organizational policies: uses org-xyz prefix (storage accounts use orgxyz prefix as storage account names cannot contain hyphens), Storage Account SKU set to Standard_GRS, App Service Plan tier set to S1, mandatory tags (Environment, Owner) applied, and allowed locations restricted to eastus or westus.
-</span></span><span class="line"><span class="cl">Purpose: Deploy an Azure Storage Account and an App Service for the portal in the specified environment.
-</span></span><span class="line"><span class="cl">*/
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="ni">@allowed</span>([
-</span></span><span class="line"><span class="cl">  &#39;eastus&#39;
-</span></span><span class="line"><span class="cl">  &#39;westus&#39;
-</span></span><span class="line"><span class="cl">])
-</span></span><span class="line"><span class="cl">param location string = &#39;eastus&#39;
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="ni">@allowed</span>([
-</span></span><span class="line"><span class="cl">  &#39;Development&#39;
-</span></span><span class="line"><span class="cl">  &#39;Staging&#39;
-</span></span><span class="line"><span class="cl">  &#39;Production&#39;
-</span></span><span class="line"><span class="cl">])
-</span></span><span class="line"><span class="cl">param environment string = &#39;Staging&#39;
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">param owner string
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">var envShort = environment == &#39;Production&#39; ? &#39;prod&#39; : (environment == &#39;Staging&#39; ? &#39;stg&#39; : &#39;dev&#39;)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">// Storage account names must be lowercase, alphanumeric, and between 3 and 24 characters. Hyphens are not allowed.
-</span></span><span class="line"><span class="cl">var storageAccountName = toLower(&#39;orgxyzportal${envShort}&#39;)
-</span></span><span class="line"><span class="cl">var appServicePlanName = &#39;org-xyz-asp-${envShort}&#39;
-</span></span><span class="line"><span class="cl">var appServiceName = &#39;org-xyz-portal-${envShort}&#39;
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">resource storageAccount &#39;Microsoft.Storage/storageAccounts<span class="ni">@2022</span>-09-01&#39; = {
-</span></span><span class="line"><span class="cl">  name: storageAccountName
-</span></span><span class="line"><span class="cl">  location: location
-</span></span><span class="line"><span class="cl">  sku: {
-</span></span><span class="line"><span class="cl">    name: &#39;Standard_GRS&#39;
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">  kind: &#39;StorageV2&#39;
-</span></span><span class="line"><span class="cl">  properties: {
-</span></span><span class="line"><span class="cl">    accessTier: &#39;Hot&#39;
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">  tags: {
-</span></span><span class="line"><span class="cl">    Environment: environment
-</span></span><span class="line"><span class="cl">    Owner: owner
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">}
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">resource appServicePlan &#39;Microsoft.Web/serverfarms<span class="ni">@2021</span>-02-01&#39; = {
-</span></span><span class="line"><span class="cl">  name: appServicePlanName
-</span></span><span class="line"><span class="cl">  location: location
-</span></span><span class="line"><span class="cl">  sku: {
-</span></span><span class="line"><span class="cl">    name: &#39;S1&#39;
-</span></span><span class="line"><span class="cl">    tier: &#39;Standard&#39;
-</span></span><span class="line"><span class="cl">    capacity: 1
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">  kind: &#39;app&#39;
-</span></span><span class="line"><span class="cl">  properties: {
-</span></span><span class="line"><span class="cl">    reserved: false
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">  tags: {
-</span></span><span class="line"><span class="cl">    Environment: environment
-</span></span><span class="line"><span class="cl">    Owner: owner
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">}
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">resource appService &#39;Microsoft.Web/sites<span class="ni">@2021</span>-02-01&#39; = {
-</span></span><span class="line"><span class="cl">  name: appServiceName
-</span></span><span class="line"><span class="cl">  location: location
-</span></span><span class="line"><span class="cl">  properties: {
-</span></span><span class="line"><span class="cl">    serverFarmId: appServicePlan.id
-</span></span><span class="line"><span class="cl">    siteConfig: {
-</span></span><span class="line"><span class="cl">      appSettings: [
-</span></span><span class="line"><span class="cl">        {
-</span></span><span class="line"><span class="cl">          name: &#39;WEBSITE_RUN_FROM_PACKAGE&#39;
-</span></span><span class="line"><span class="cl">          value: &#39;1&#39;
-</span></span><span class="line"><span class="cl">        }
-</span></span><span class="line"><span class="cl">        {
-</span></span><span class="line"><span class="cl">          name: &#39;STORAGE_ACCOUNT_NAME&#39;
-</span></span><span class="line"><span class="cl">          value: storageAccount.name
-</span></span><span class="line"><span class="cl">        }
-</span></span><span class="line"><span class="cl">      ]
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">  tags: {
-</span></span><span class="line"><span class="cl">    Environment: environment
-</span></span><span class="line"><span class="cl">    Owner: owner
-</span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">}
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">output storageAccountName string = storageAccount.name
-</span></span><span class="line"><span class="cl">output appServiceName string = appService.name
-</span></span><span class="line"><span class="cl">output storageAccountId string = storageAccount.id
-</span></span><span class="line"><span class="cl">output appServiceId string = appService.id
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Deployment example (resource group scope):
-</span></span><span class="line"><span class="cl"><span class="k">-</span> az deployment group create --resource-group &lt;rg-name&gt; --template-file portal-staging.bicep --parameters owner=&#39;team<span class="ni">@example</span>.com&#39;
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">I validated the Bicep file (lint/build) and it passed. If you want, I can:
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Add a parameter for application runtime settings or Docker image,
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Add Managed Identity and key/vault integration,
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Or change naming conventions or include unique suffixes if you need globally unique storage account names. Which would you like next?
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>As you can see, the agent successfully navigated our organizational requirements. It forcefully set the App Service Plan to S1, deployed to eastus, utilized the org-xyz- prefix, applied the required tags, and perfectly structured the document with parameters and comments!</p>
-<p>Both Google&rsquo;s Agent Development Kit (ADK) and the Microsoft Agent Framework (MAF) embrace the concept of &ldquo;Agent Skills&rdquo; to inject modular, domain-specific behavior into LLMs. While they share the underlying philosophy, there are notable differences in how they structure and execute these skills.</p>
-<h3 id="skill-discovery-and-registration">Skill Discovery and Registration</h3>
+</div><p>The same workflow code produces different execution paths based on the data discovered during execution.</p>
+<h2 id="how-magentic-differs-from-other-patterns">How Magentic Differs from Other Patterns</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Pattern</th>
+          <th>Orchestration</th>
+          <th>Routing Logic</th>
+          <th>Use Case</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Sequential</td>
+          <td>Fixed order</td>
+          <td>Predetermined</td>
+          <td>Pipelines with known steps</td>
+      </tr>
+      <tr>
+          <td>Concurrent</td>
+          <td>Parallel execution</td>
+          <td>Fan-out/fan-in</td>
+          <td>Independent subtasks</td>
+      </tr>
+      <tr>
+          <td>Handoff</td>
+          <td>Agent-to-agent transfer</td>
+          <td>Explicit handoff calls</td>
+          <td>Escalation, specialization</td>
+      </tr>
+      <tr>
+          <td>Group Chat</td>
+          <td>Turn-based</td>
+          <td>Selection function</td>
+          <td>Brainstorming, debate</td>
+      </tr>
+      <tr>
+          <td>Magentic</td>
+          <td>LLM manager</td>
+          <td>Dynamic, adaptive</td>
+          <td>Complex tasks with conditional logic</td>
+      </tr>
+  </tbody>
+</table>
+<p>Magentic is the most flexible but also the most resource-intensive pattern. The manager LLM is invoked between every agent execution to evaluate progress and decide the next step. Use it when:</p>
 <ul>
-<li><strong>MAF</strong>: Uses the <code>FileAgentSkillsProvider</code> class. You simply point this provider to a root <code>skills/</code> directory, and it automatically discovers and indexes all sub-directories containing a SKILL.md file. It&rsquo;s a highly declarative, &ldquo;drop-in&rdquo; approach.</li>
-<li><strong>ADK</strong>: Uses direct loading mechanisms like <code>load_skill_from_dir()</code>. You explicitly load each skill directory into a variable, then bundle them together using a <code>SkillToolset</code> wrapper before passing them to the agent. ADK also natively supports initializing &ldquo;Inline Skills&rdquo; directly from Python code, without requiring a directory structure.</li>
+<li>The workflow requires conditional branching based on intermediate results</li>
+<li>You need feedback loops for iterative refinement</li>
+<li>The optimal sequence of agents isn&rsquo;t known at design time</li>
+<li>Task complexity warrants the overhead of LLM-based orchestration</li>
 </ul>
-<h3 id="progressive-disclosure">Progressive Disclosure</h3>
-<ul>
-<li><strong>MAF</strong>: Strictly follows the Agent Skills specification&rsquo;s progressive disclosure pattern. It &ldquo;advertises&rdquo; the skill&rsquo;s name and description (from the YAML frontmatter) in the system prompt. The agent must then consciously choose to read the full SKILL.md and subsequent <code>references/</code> files using specific tools provided automatically by the <code>FileAgentSkillsProvider</code>.</li>
-<li><strong>ADK</strong>: Inherently more aggressive with its context window. When an ADK agent determines it needs a skill based on the <code>SkillToolset</code>, it is more likely to eagerly load the primary instruction set into the context, reducing the multi-tool-call overhead but consuming more token budget upfront.</li>
-</ul>
-<h3 id="integration-with-core-tools">Integration with Core Tools</h3>
-<ul>
-<li><strong>MAF</strong>: Merges skills via <code>context_providers</code>. The skills layer is a system that provides context and tools on demand, cleanly separating standard Python functional tools (like our `validate_bicep function) from domain-knowledge skills.</li>
-<li><strong>ADK</strong>: Treats skills identically to functional tools. Both skills and Python functions are grouped together inside the <code>tools=[]</code> array when initializing the <code>LlmAgent</code>.</li>
-</ul>
-<p>Ultimately, both frameworks provide an excellent way to organize agent logic, avoiding the anti-pattern of maintaining a monolithic 5,000-line system prompts.</p>
+<p>Magentic workflows represent the most sophisticated orchestration pattern in MAF, bridging the gap between rigid automation and truly autonomous multi-agent systems. When your task requires adaptive decision-making that can&rsquo;t be predetermined, magentic is the pattern to reach for.</p>
 
         </div>
 
@@ -1738,7 +1853,7 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
     if (navigator.share) {
       navigator.share({
         title: 'Magentic workflows in Microsoft Agent Framework',
-        text: 'Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.',
+        text: 'If you need a workflow that can adapt its routing decisions based on what agents discover during execution, look no further. Magentic is for you!',
         url: 'https:\/\/ravichaganti.com\/blog\/magentic-workflows-in-microsoft-agent-framework\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
@@ -1813,8 +1928,6 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
       
     
       
-        
-      
     
 
     
@@ -1823,6 +1936,9 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
         
         
       
+      
+        
+        
       
     
   
@@ -1832,9 +1948,9 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/"
+        <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
+           aria-label="Previous in Microsoft Agent Framework: Group chat workflows in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1847,10 +1963,10 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A
+                Group chat workflows in Microsoft Agent Framework
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Microsoft Agent Protocol is an open framework for building enterprise-grade agents. It offers support for using the A2A protocol for cross-agent communication.</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Building dynamic multi-agent discussions where AI agents collaborate, debate, and converge on solutions with GroupChatBuilder</p>
               
             </div>
           </div>
@@ -1861,20 +1977,29 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in Microsoft Agent Framework: Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
           <div class="flex items-start gap-3">
-            <div class="flex-1 text-right md:text-left">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Microsoft Agent Protocol is an open framework for building enterprise-grade agents. It offers support for using the A2A protocol for cross-agent communication.</p>
+              
             </div>
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
   </div>
@@ -2075,22 +2200,6 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/magentic-workflows-in-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Magentic workflows in Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-20">
-      Oct 20, 2025
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -2153,6 +2262,22 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
 </article>
 
       
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Microsoft Agent Framework - Agent Skills
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-02-28">
+      Feb 28, 2026
+    </time>
+  </a>
+</article>
+
+      
     </div>
   </div>
 
@@ -2173,15 +2298,20 @@ Unlike Google ADK, MAF has no inline skill support, so all skills must be implem
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#the-problem-static-orchestration-isnt-always-enough">The Problem: Static Orchestration Isn&rsquo;t Always Enough</a></li>
+    <li><a href="#what-is-a-magentic-workflow">What is a Magentic Workflow?</a></li>
+    <li><a href="#example-investment-due-diligence-workflow">Example: Investment Due Diligence Workflow</a>
       <ul>
-        <li><a href="#creating-the-directory-skills">Creating the Directory Skills</a></li>
-        <li><a href="#initializing-the-agent-with-skills">Initializing the Agent with Skills</a></li>
-        <li><a href="#skill-discovery-and-registration">Skill Discovery and Registration</a></li>
-        <li><a href="#progressive-disclosure">Progressive Disclosure</a></li>
-        <li><a href="#integration-with-core-tools">Integration with Core Tools</a></li>
+        <li><a href="#setting-up-the-environment">Setting Up the Environment</a></li>
+        <li><a href="#defining-the-tools">Defining the Tools</a></li>
+        <li><a href="#creating-the-specialized-agents">Creating the Specialized Agents</a></li>
+        <li><a href="#creating-the-manager-agent">Creating the Manager Agent</a></li>
+        <li><a href="#building-the-workflow">Building the Workflow</a></li>
+        <li><a href="#running-and-monitoring-the-workflow">Running and Monitoring the Workflow</a></li>
+        <li><a href="#observing-dynamic-routing-in-action">Observing Dynamic Routing in Action</a></li>
       </ul>
     </li>
+    <li><a href="#how-magentic-differs-from-other-patterns">How Magentic Differs from Other Patterns</a></li>
   </ul>
 </nav>
   </nav>

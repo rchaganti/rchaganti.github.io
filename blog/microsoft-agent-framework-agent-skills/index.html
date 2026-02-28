@@ -18,10 +18,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
+  <title>Microsoft Agent Framework - Agent Skills | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta name="description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
+Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,22 +31,23 @@
   
 
   
-  <meta property="og:title" content="Sequential workflows in Microsoft Agent Framework">
-  <meta property="og:description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta property="og:title" content="Microsoft Agent Framework - Agent Skills">
+  <meta property="og:description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
+Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Sequential workflows in Microsoft Agent Framework">
+  <meta property="og:image:alt" content="Microsoft Agent Framework - Agent Skills">
 
   
   
-    <meta property="article:published_time" content="2025-10-12T00:00:00Z">
-    <meta property="article:modified_time" content="2025-10-12T00:00:00Z">
+    <meta property="article:published_time" content="2026-02-28T00:00:00Z">
+    <meta property="article:modified_time" content="2026-02-28T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -53,13 +55,14 @@
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Sequential workflows in Microsoft Agent Framework">
-  <meta name="twitter:description" content="A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.">
+  <meta name="twitter:title" content="Microsoft Agent Framework - Agent Skills">
+  <meta name="twitter:description" content="Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it&rsquo;s Microsoft Agent Framework&rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
+Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +91,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Sequential workflows in Microsoft Agent Framework",
-  "description": "A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing …",
-  "articleBody": "\"A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another\\u0026rsquo;s work and handle complex tool invocation.\\nTrying to cram all of this into one agent leads to:\\nConfused outputs (the agent doesn\\u0026rsquo;t know which \\u0026ldquo;hat\\u0026rdquo; to wear) Context overload (too many tools and instructions) Difficult debugging (hard to know what went wrong) Microsoft Agent Framework (MAF) makes this orchestration simple with its workflow patterns. Workflows in MAF connect multiple agents (and other executors) into a graph that defines how data flows between them. Think of it as the \\u0026ldquo;plumbing\\u0026rdquo; that connects your agents together. In this article, we\\u0026rsquo;ll focus on the most fundamental pattern: Sequential Workflows.\\nSequential Workflows The Sequential Pattern is the simplest and most intuitive workflow pattern. Agents process data sequentially, each building on the previous agent\\u0026rsquo;s output.\\nIn a sequential flow, each agent receives the accumulated conversation history (including all previous messages), processes the input, generates a response, appends it to the conversation, and passes the updated conversation to the next agent. These workflows are perfect for content pipelines (research → write → edit → publish), data transformation chains (extract → transform → load), review processes (draft → review → approve), and step-by-step analysis (collect data → analyze → summarize).\\nBuilding a Sequential Workflow: Step by Step Let\\u0026rsquo;s build a content creation pipeline that demonstrates the sequential pattern. We\\u0026rsquo;ll start simple and gradually add complexity.\\nFirst, install the required packages:\\n1 2 $ pip install agent-framework-azure-ai --pre $ pip install python-dotenv azure-identity Set up your environment variables (create a .env file):\\n1 2 AZURE_OPENAI_ENDPOINT=\\u0026#34;https://your-resource.openai.azure.com/\\u0026#34; AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=\\u0026#34;gpt-4o\\u0026#34; Let\\u0026rsquo;s start by importing everything we need:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 from agent_framework import ( SequentialBuilder, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from typing import Any from dotenv import load_dotenv load_dotenv() SequentialBuilder in the MAF package agent_framework is used to build a sequential workflow. We will discuss other imports as we progress further.\\nWe need a chat client for the workflow.\\n1 2 3 chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) The DefaultAzureCredential handles authentication automatically. It tries multiple authentication methods in order:\\nEnvironment variables Managed Identity Azure CLI (az login) Now let\\u0026rsquo;s create three specialized agents for our content pipeline:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 researcher = chat_client.create_agent( name=\\u0026#34;Researcher\\u0026#34;, instructions=\\u0026#34;Research the given topic and provide key facts and statistics.\\u0026#34;, ) writer = chat_client.create_agent( name=\\u0026#34;Writer\\u0026#34;, instructions=\\u0026#34;Take the research and write an engaging article draft.\\u0026#34;, ) editor = chat_client.create_agent( name=\\u0026#34;Editor\\u0026#34;, instructions=\\u0026#34;Review the draft for clarity, grammar, and engagement. Provide the final version.\\u0026#34;, ) A sequential workflow is created using the SequentialBuilder().\\n1 2 3 4 5 workflow = ( SequentialBuilder() .participants([researcher, writer, editor]) .build() ) That\\u0026rsquo;s it! Just two method calls:\\n.participants([...])- List your agents in the order they should execute. .build()- Construct the workflow. Under the hood, this creates:\\nAn executor for each agent Edges connecting them in sequence A start point (first agent) and an end point (last agent) Running the Workflow with Streaming MAF supports real-time event streaming during workflow execution. This gives you visibility into what\\u0026rsquo;s happening:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 async def main(): # Run the workflow with streaming events print(\\u0026#34;Running sequential workflow: Researcher → Writer → Editor\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Write about the future of AI agents\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event Let\\u0026rsquo;s understand each event type:\\nEvent When It Fires What It Contains ExecutorInvokedEvent When an agent starts processing executor_id - the agent\\u0026rsquo;s name ExecutorCompletedEvent When an agent finishes executor_id WorkflowStatusEvent When the workflow state changes state - RUNNING, IDLE, ERROR WorkflowOutputEvent When the workflow produces output data - the final result The final output contains the complete conversation history.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;FINAL CONVERSATION\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages: list[ChatMessage] | Any = output_evt.data for i, msg in enumerate(messages, start=1): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The WorkflowOutputEvent.data contains a list of ChatMessage objects with:\\nrole: USER or ASSISTANT author_name: The agent\\u0026rsquo;s name (for assistant messages) text: The message content Here is the complete example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 from agent_framework import ( SequentialBuilder, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from typing import Any from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create specialized agents researcher = chat_client.create_agent( name=\\u0026#34;Researcher\\u0026#34;, instructions=\\u0026#34;Research the given topic and provide key facts and statistics.\\u0026#34;, ) writer = chat_client.create_agent( name=\\u0026#34;Writer\\u0026#34;, instructions=\\u0026#34;Take the research and write an engaging article draft.\\u0026#34;, ) editor = chat_client.create_agent( name=\\u0026#34;Editor\\u0026#34;, instructions=\\u0026#34;Review the draft for clarity, grammar, and engagement. Provide the final version.\\u0026#34;, ) async def main(): # Build sequential workflow workflow = ( SequentialBuilder() .participants([researcher, writer, editor]) .build() ) # Run the workflow with streaming events print(\\u0026#34;Running sequential workflow: Researcher → Writer → Editor\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Write about the future of AI agents\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the final conversation if output_evt: print(\\u0026#34;\\\\n\\u0026#34; + \\u0026#34;=\\u0026#34; * 60) print(\\u0026#34;FINAL CONVERSATION\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) messages: list[ChatMessage] | Any = output_evt.data for i, msg in enumerate(messages, start=1): name = msg.author_name or (\\u0026#34;assistant\\u0026#34; if msg.role == Role.ASSISTANT else \\u0026#34;user\\u0026#34;) print(f\\u0026#34;\\\\n{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(f\\u0026#34;{i:02d} [{name}]\\u0026#34;) print(f\\u0026#34;{\\u0026#39;-\\u0026#39; * 60}\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) When you run this workflow, you\\u0026rsquo;ll see something like:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 Running sequential workflow: Researcher → Writer → Editor ============================================================ ⚡ Starting: Researcher ✓ Completed: Researcher ⚡ Starting: Writer ✓ Completed: Writer ⚡ Starting: Editor ✓ Completed: Editor ✅ Workflow completed! ============================================================ FINAL CONVERSATION ============================================================ ------------------------------------------------------------ 01 [user] ------------------------------------------------------------ Write about the future of AI agents ------------------------------------------------------------ 02 [Researcher] ------------------------------------------------------------ # Key Facts and Statistics on AI Agents ## Market Growth - The AI agent market is projected to reach $47.1 billion by 2030 - Autonomous AI systems are expected to handle 85% of customer interactions by 2027 ... ------------------------------------------------------------ 03 [Writer] ------------------------------------------------------------ # The Future of AI Agents: A New Era of Intelligent Automation The rise of AI agents represents one of the most transformative shifts... [Engaging article draft based on the research] ------------------------------------------------------------ 04 [Editor] ------------------------------------------------------------ # The Future of AI Agents: Reshaping How We Work and Live .... Sequential workflows in MAF provide a simple yet powerful way to orchestrate multiple AI agents. With just a few lines of code, you can create sophisticated pipelines where:\\nEach agent specializes in one task Data flows naturally from one agent to the next You have full visibility through event streaming The framework handles all the orchestration complexity The SequentialBuilder makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/",
-  "datePublished": "2025-10-12T00:00:00Z",
-  "dateModified": "2025-10-12T00:00:00Z",
+  "headline": "Microsoft Agent Framework - Agent Skills",
+  "description": "Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it\u0026rsquo;s Microsoft Agent Framework\u0026rsquo;s turn last week. In an earlier article in …",
+  "articleBody": "\"Seems like a season of Agent Skills adoption. Google ADK implemented support for skills a couple of weeks ago, and it\\u0026rsquo;s Microsoft Agent Framework\\u0026rsquo;s turn last week. In an earlier article in the Google ADK series, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today\\u0026rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).\\nUnlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:\\nGovernance Skill: Contains the company\\u0026rsquo;s mandatory tagging, naming, and SKU policies. Bicep Authoring Skill: Contains best practices for writing clean Bicep code (like parameterization and formatting). Creating the Directory Skills Let\\u0026rsquo;s start by creating our directory-based skills. In your project folder, create a structure that looks like this:\\n1 2 3 4 5 6 7 8 9 10 maf_agent/ └── skills/ ├── governance-skill/ │ ├── SKILL.md │ └── references/ │ └── policies.md └── bicep-authoring/ ├── SKILL.md └── references/ └── example.bicep The SKILL.md file serves as the entry point and contains YAML front matter defining the skill\\u0026rsquo;s identity, followed by instructions on how the agent should use it.\\nHere is what the governance-skill/SKILL.md looks like:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 --- name: governance-skill description: Provides organizational governance rules and policies for cloud resource deployments. It should be used to ensure any generated infrastructure code complies with company standards. --- # Instructions You are helping the user build infrastructure. Review this skill when you need to generate infrastructure or verify if a configuration meets standard practices. Consider the following steps: 1. Review the `references/policies.md` file to understand the current organizational standards. 2. Structure the infrastructure code (e.g., Bicep, ARM templates, Terraform) to follow the policies listed in the reference. 3. If a user request conflicts with a policy, politely suggest the alternative compliant configuration. 4. Add a comment block at the top indicating the code was cross-checked with organizational policies. Next, in the references/policies.md file, we define our actual organizational rules:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 # Organizational Governance Policies All infrastructure deployments must adhere to the following rules: ## 1. Naming Conventions - All resources must include the prefix `org-xyz-`. - Example: A storage account named `data` must be deployed as `orgxyzdata` (storage accounts don\\u0026#39;t allow hyphens) or an app service named `frontend` must be deployed as `org-xyz-frontend`. ## 2. Resource Skus - **Storage Accounts**: Must use the `Standard_GRS` SKU to ensure geographic redundancy. `Standard_LRS` or other SKUs are not permitted for production use. - **App Service Plans**: Must use at least the `S1` (Standard) tier. Free or Shared tiers are not allowed. ## 3. Tagging Requirements Every resource must have the following mandatory tags: - `Environment`: Must be set to either `Development`, `Staging`, or `Production`. - `Owner`: Must contain a valid email address or team name. ## 4. Location - All resources must be deployed to the `eastus` or `westus` regions. The Bicep authoring skills, which is an inline skill in the Google ADK example, must be implemented as a directory skill as well.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 --- name: bicep-authoring-skill description: Provides best practices for writing clean, maintainable Bicep templates. --- # Instructions Apply the following best practices when generating or modifying Bicep templates: 1. Start the file with a general comment block explaining the purpose of the template. 2. Define all parameters explicitly with types and standard default values if applicable. 3. Use meaningful resource symbolic names that describe its purpose, rather than generic names. 4. Organize the template logically: Parameters first, then variables, then resources, and finally outputs. 5. The template should be well-formatted Azure Bicep code. 6. Please validate the generated Bicep configuration using the `validate_bicep` tool before returning it to the user. Fix any compilation errors reported. # Resources See the example of a good Bicep template structure in `references/example.bicep`. We will also supply a reference example of a Bicep configuration.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 // This is an example of a good Bicep template structure. param location string = resourceGroup().location param env string var storagePrefix = \\u0026#39;stg\\u0026#39; resource myStorage \\u0026#39;Microsoft.Storage/storageAccounts@2022-09-01\\u0026#39; = { name: \\u0026#39;${storagePrefix}${env}\\u0026#39; location: location sku: { name: \\u0026#39;Standard_LRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; } Initializing the Agent with Skills Now, let\\u0026rsquo;s wire this up in our agent.py file. We will use MAF\\u0026rsquo;s built-in FileAgentSkillsProvider to load all skills from our skills directory and inject them into our Agent. We will also provide a standard Python function as a tool to help the agent compile the Bicep code locally.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 import asyncio import os import sys from pathlib import Path from dotenv import load_dotenv # Ensure the correct framework packages are imported try: from agent_framework import Agent, FileAgentSkillsProvider from agent_framework.azure import AzureOpenAIResponsesClient from azure.identity import AzureCliCredential except ImportError as e: print(f\\u0026#34;ImportError: {e}\\u0026#34;) sys.exit(1) # Load environment variables load_dotenv() def validate_bicep(bicep_content: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Validates the provided Bicep template content for compilation errors by running \\u0026#39;bicep lint\\u0026#39; and \\u0026#39;bicep build\\u0026#39;. Pass the full bicep string.\\u0026#34;\\u0026#34;\\u0026#34; import tempfile import subprocess with tempfile.NamedTemporaryFile(suffix=\\u0026#34;.bicep\\u0026#34;, delete=False) as f: f.write(bicep_content.encode(\\u0026#39;utf-8\\u0026#39;)) temp_path = f.name try: # First, run bicep lint lint_result = subprocess.run([\\u0026#39;bicep\\u0026#39;, \\u0026#39;lint\\u0026#39;, temp_path], capture_output=True, text=True) if lint_result.returncode != 0: return f\\u0026#34;Linting failed with issues:\\\\n{lint_result.stderr}\\\\n{lint_result.stdout}\\u0026#34; # If lint passes, run bicep build build_result = subprocess.run([\\u0026#39;bicep\\u0026#39;, \\u0026#39;build\\u0026#39;, temp_path], capture_output=True, text=True) if build_result.returncode == 0: return \\u0026#34;Validation successful. Bicep template passed linting and build.\\u0026#34; else: return f\\u0026#34;Validation failed during build:\\\\n{build_result.stderr}\\\\n{build_result.stdout}\\u0026#34; finally: if os.path.exists(temp_path): os.remove(temp_path) async def main(): if not os.environ.get(\\u0026#34;AZURE_AI_PROJECT_ENDPOINT\\u0026#34;): print(\\u0026#34;Please set AZURE_AI_PROJECT_ENDPOINT in your environment or .env file.\\u0026#34;) return endpoint = os.environ[\\u0026#34;AZURE_AI_PROJECT_ENDPOINT\\u0026#34;] deployment = os.environ.get(\\u0026#34;AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME\\u0026#34;, \\u0026#34;gpt-4o-mini\\u0026#34;) try: client = AzureOpenAIResponsesClient( project_endpoint=endpoint, deployment_name=deployment, credential=AzureCliCredential(), ) except Exception as e: print(f\\u0026#34;Failed to initialize MAF Azure Open AI client: {e}\\u0026#34;) return # Discover skills skills_dir = Path(__file__).parent / \\u0026#34;skills\\u0026#34; skills_provider = FileAgentSkillsProvider(skill_paths=str(skills_dir)) async with Agent( client=client, instructions=( \\u0026#34;You are an assistant helping construct Azure Bicep code.\\u0026#34; ), context_providers=[skills_provider], tools=[validate_bicep] ) as agent: print(\\u0026#34;Agent initialized with MAF.\\u0026#34;) print(\\u0026#34;User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.\\u0026#34;) print(\\u0026#34;-\\u0026#34; * 40) response = await agent.run( \\u0026#34;I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.\\u0026#34; ) print(f\\u0026#34;Agent:\\\\n{response}\\\\n\\u0026#34;) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) In the code above, we point the FileAgentSkillsProvider to our directory. We then pass this provider into the context_providers array of our Agent. This grants the LLM access to the reference documents and specific behavioral guidelines we defined.\\nTo test our agent, we simply run the Python script.\\n1 \\u0026gt; python.exe .\\\\maf_agent\\\\agent.py The agent loads the available skills and skill references to gain the procedural knowledge and generate the Bicep template.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 Agent initialized with MAF. User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging. ---------------------------------------- Agent: I created a validated Bicep template that deploys an Azure Storage Account and an App Service (with an App Service Plan) configured for the Staging environment and compliant with your org governance rules. Notes: - Template is cross-checked with organizational policies: resource name prefixes, Storage SKU = Standard_GRS, App Service Plan tier = S1, mandatory tags (Environment, Owner), and allowed locations (eastus | westus). - The environment defaults to Staging. You must provide the Owner tag value (email or team name) when deploying. - Storage account name uses the storage-safe prefix orgxyz (no hyphens) per governance rules. Bicep template: /* Cross-checked with organizational policies: uses org-xyz prefix (storage accounts use orgxyz prefix as storage account names cannot contain hyphens), Storage Account SKU set to Standard_GRS, App Service Plan tier set to S1, mandatory tags (Environment, Owner) applied, and allowed locations restricted to eastus or westus. Purpose: Deploy an Azure Storage Account and an App Service for the portal in the specified environment. */ @allowed([ \\u0026#39;eastus\\u0026#39; \\u0026#39;westus\\u0026#39; ]) param location string = \\u0026#39;eastus\\u0026#39; @allowed([ \\u0026#39;Development\\u0026#39; \\u0026#39;Staging\\u0026#39; \\u0026#39;Production\\u0026#39; ]) param environment string = \\u0026#39;Staging\\u0026#39; param owner string var envShort = environment == \\u0026#39;Production\\u0026#39; ? \\u0026#39;prod\\u0026#39; : (environment == \\u0026#39;Staging\\u0026#39; ? \\u0026#39;stg\\u0026#39; : \\u0026#39;dev\\u0026#39;) // Storage account names must be lowercase, alphanumeric, and between 3 and 24 characters. Hyphens are not allowed. var storageAccountName = toLower(\\u0026#39;orgxyzportal${envShort}\\u0026#39;) var appServicePlanName = \\u0026#39;org-xyz-asp-${envShort}\\u0026#39; var appServiceName = \\u0026#39;org-xyz-portal-${envShort}\\u0026#39; resource storageAccount \\u0026#39;Microsoft.Storage/storageAccounts@2022-09-01\\u0026#39; = { name: storageAccountName location: location sku: { name: \\u0026#39;Standard_GRS\\u0026#39; } kind: \\u0026#39;StorageV2\\u0026#39; properties: { accessTier: \\u0026#39;Hot\\u0026#39; } tags: { Environment: environment Owner: owner } } resource appServicePlan \\u0026#39;Microsoft.Web/serverfarms@2021-02-01\\u0026#39; = { name: appServicePlanName location: location sku: { name: \\u0026#39;S1\\u0026#39; tier: \\u0026#39;Standard\\u0026#39; capacity: 1 } kind: \\u0026#39;app\\u0026#39; properties: { reserved: false } tags: { Environment: environment Owner: owner } } resource appService \\u0026#39;Microsoft.Web/sites@2021-02-01\\u0026#39; = { name: appServiceName location: location properties: { serverFarmId: appServicePlan.id siteConfig: { appSettings: [ { name: \\u0026#39;WEBSITE_RUN_FROM_PACKAGE\\u0026#39; value: \\u0026#39;1\\u0026#39; } { name: \\u0026#39;STORAGE_ACCOUNT_NAME\\u0026#39; value: storageAccount.name } ] } } tags: { Environment: environment Owner: owner } } output storageAccountName string = storageAccount.name output appServiceName string = appService.name output storageAccountId string = storageAccount.id output appServiceId string = appService.id Deployment example (resource group scope): - az deployment group create --resource-group \\u0026lt;rg-name\\u0026gt; --template-file portal-staging.bicep --parameters owner=\\u0026#39;team@example.com\\u0026#39; I validated the Bicep file (lint/build) and it passed. If you want, I can: - Add a parameter for application runtime settings or Docker image, - Add Managed Identity and key/vault integration, - Or change naming conventions or include unique suffixes if you need globally unique storage account names. Which would you like next? As you can see, the agent successfully navigated our organizational requirements. It forcefully set the App Service Plan to S1, deployed to eastus, utilized the org-xyz- prefix, applied the required tags, and perfectly structured the document with parameters and comments!\\nBoth Google\\u0026rsquo;s Agent Development Kit (ADK) and the Microsoft Agent Framework (MAF) embrace the concept of \\u0026ldquo;Agent Skills\\u0026rdquo; to inject modular, domain-specific behavior into LLMs. While they share the underlying philosophy, there are notable differences in how they structure and execute these skills.\\nSkill Discovery and Registration MAF: Uses the FileAgentSkillsProvider class. You simply point this provider to a root skills/ directory, and it automatically discovers and indexes all sub-directories containing a SKILL.md file. It\\u0026rsquo;s a highly declarative, \\u0026ldquo;drop-in\\u0026rdquo; approach. ADK: Uses direct loading mechanisms like load_skill_from_dir(). You explicitly load each skill directory into a variable, then bundle them together using a SkillToolset wrapper before passing them to the agent. ADK also natively supports initializing \\u0026ldquo;Inline Skills\\u0026rdquo; directly from Python code, without requiring a directory structure. Progressive Disclosure MAF: Strictly follows the Agent Skills specification\\u0026rsquo;s progressive disclosure pattern. It \\u0026ldquo;advertises\\u0026rdquo; the skill\\u0026rsquo;s name and description (from the YAML frontmatter) in the system prompt. The agent must then consciously choose to read the full SKILL.md and subsequent references/ files using specific tools provided automatically by the FileAgentSkillsProvider. ADK: Inherently more aggressive with its context window. When an ADK agent determines it needs a skill based on the SkillToolset, it is more likely to eagerly load the primary instruction set into the context, reducing the multi-tool-call overhead but consuming more token budget upfront. Integration with Core Tools MAF: Merges skills via context_providers. The skills layer is a system that provides context and tools on demand, cleanly separating standard Python functional tools (like our `validate_bicep function) from domain-knowledge skills. ADK: Treats skills identically to functional tools. Both skills and Python functions are grouped together inside the tools=[] array when initializing the LlmAgent. Ultimately, both frameworks provide an excellent way to organize agent logic, avoiding the anti-pattern of maintaining a monolithic 5,000-line system prompts.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-agent-skills\/",
+  "datePublished": "2026-02-28T00:00:00Z",
+  "dateModified": "2026-02-28T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -113,14 +116,14 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-agent-skills\/"
   },
   
   "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT7M",
+  "timeRequired": "PT11M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -159,8 +162,8 @@
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Sequential workflows in Microsoft Agent Framework",
-      "item": "https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/"
+      "name": "Microsoft Agent Framework - Agent Skills",
+      "item": "https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-agent-skills\/"
     }
     
     
@@ -589,7 +592,7 @@
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Sequential workflows in Microsoft Agent Framework
+            Microsoft Agent Framework - Agent Skills
           </h1>
 
           
@@ -601,7 +604,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2025-10-12">October 12, 2025</time>
+              <time datetime=" 2026-02-28">February 28, 2026</time>
             </div>
 
             
@@ -612,7 +615,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>7 min read</span>
+              <span>11 min read</span>
             </div>
             
 
@@ -639,6 +642,11 @@
               Agents
             </a>
             
+            <a href="/categories/skills/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Skills
+            </a>
+            
             
             
             
@@ -654,7 +662,7 @@
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Learn how to orchestrate AI agents in a step-by-step pipeline using Microsoft Agent Framework&#39;s SequentialBuilder
+            Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.
           </div>
           
         </header>
@@ -747,10 +755,9 @@
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Sequential workflows in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Oct 12, 2025</p>
               </div>
@@ -832,9 +839,10 @@
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Microsoft Agent Framework - Agent Skills
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 28, 2026</p>
               </div>
@@ -853,42 +861,34 @@
             
           
             
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
               
             
           
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry</span>
+              <span class="truncate">Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A</span>
             </a>
           
 
           
-          
-            
-            <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Concurrent workflows in Microsoft Agent Framework</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
           
         </div>
       </nav>
@@ -930,10 +930,13 @@
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#sequential-workflows">Sequential Workflows</a>
+    <li>
       <ul>
-        <li><a href="#building-a-sequential-workflow-step-by-step">Building a Sequential Workflow: Step by Step</a></li>
-        <li><a href="#running-the-workflow-with-streaming">Running the Workflow with Streaming</a></li>
+        <li><a href="#creating-the-directory-skills">Creating the Directory Skills</a></li>
+        <li><a href="#initializing-the-agent-with-skills">Initializing the Agent with Skills</a></li>
+        <li><a href="#skill-discovery-and-registration">Skill Discovery and Registration</a></li>
+        <li><a href="#progressive-disclosure">Progressive Disclosure</a></li>
+        <li><a href="#integration-with-core-tools">Integration with Core Tools</a></li>
       </ul>
     </li>
   </ul>
@@ -1010,67 +1013,122 @@
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>A single AI agent is powerful and can do impressive things. But real-world applications often need multiple specialists working together, with each agent handling a specific task before passing results to the next. As with humans, in the agentic world we also need to break complex problems into manageable pieces and have specialized agents handle each task. We need one agent to review another&rsquo;s work and handle complex tool invocation.</p>
-<p>Trying to cram all of this into one agent leads to:</p>
+          <p>Seems like a season of <a href="https://agentskills.io/home">Agent Skills</a> adoption. <a href="https://ravichaganti.com/blog/google-adk-agent-skills/">Google ADK implemented support for skills</a> a couple of weeks ago, and it&rsquo;s <a href="https://github.com/microsoft/agent-framework/pull/4210">Microsoft Agent Framework&rsquo;s turn last week</a>. In an earlier article in the <a href="https://ravichaganti.com/series/google-adk/">Google ADK series</a>, we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today&rsquo;s article, we will explore how to implement the same in Microsoft Agent Framework (MAF).</p>
+<p>Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:</p>
 <ul>
-<li>Confused outputs (the agent doesn&rsquo;t know which &ldquo;hat&rdquo; to wear)</li>
-<li>Context overload (too many tools and instructions)</li>
-<li>Difficult debugging (hard to know what went wrong)</li>
+<li>Governance Skill: Contains the company&rsquo;s mandatory tagging, naming, and SKU policies.</li>
+<li>Bicep Authoring Skill: Contains best practices for writing clean Bicep code (like parameterization and formatting).</li>
 </ul>
-<p>Microsoft Agent Framework (MAF) makes this orchestration simple with its workflow patterns. Workflows in MAF connect multiple agents (and other executors) into a graph that defines how data flows between them. Think of it as the &ldquo;plumbing&rdquo; that connects your agents together.  In this article, we&rsquo;ll focus on the most fundamental pattern: <a href="https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/orchestrations/sequential?pivots=programming-language-python">Sequential Workflows</a>.</p>
-<h2 id="sequential-workflows">Sequential Workflows</h2>
-<p>The Sequential Pattern is the simplest and most intuitive workflow pattern. Agents process data sequentially, each building on the previous agent&rsquo;s output.</p>
-<p><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
-  <a href="/images/maf-sequential.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
-    <img src="/images/maf-sequential.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a></figure>
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
-  
-  
-  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
-  
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const lightbox = GLightbox({
-        selector: '.glightbox',
-        touchNavigation: true,
-        loop: true,
-        autoplayVideos: true,
-        zoomable: true,
-        draggable: true,
-        closeButton: true,
-        moreLength: 0
-      });
-    });
-  </script></p>
-<p>In a sequential flow, each agent receives the accumulated conversation history (including all previous messages), processes the input, generates a response, appends it to the conversation, and passes the updated conversation to the next agent. These workflows are perfect for content pipelines (research → write → edit → publish), data transformation chains (extract → transform → load), review processes (draft → review → approve), and step-by-step analysis (collect data → analyze → summarize).</p>
-<h3 id="building-a-sequential-workflow-step-by-step">Building a Sequential Workflow: Step by Step</h3>
-<p>Let&rsquo;s build a content creation pipeline that demonstrates the sequential pattern. We&rsquo;ll start simple and gradually add complexity.</p>
-<p>First, install the required packages:</p>
+<h3 id="creating-the-directory-skills">Creating the Directory Skills</h3>
+<p>Let&rsquo;s start by creating our directory-based skills. In your project folder, create a structure that looks like this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ pip install agent-framework-azure-ai --pre
-</span></span><span class="line"><span class="cl">$ pip install python-dotenv azure-identity
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">maf_agent/
+</span></span><span class="line"><span class="cl">└── skills/
+</span></span><span class="line"><span class="cl">    ├── governance-skill/
+</span></span><span class="line"><span class="cl">    │   ├── SKILL.md
+</span></span><span class="line"><span class="cl">    │   └── references/
+</span></span><span class="line"><span class="cl">    │       └── policies.md
+</span></span><span class="line"><span class="cl">    └── bicep-authoring/
+</span></span><span class="line"><span class="cl">        ├── SKILL.md
+</span></span><span class="line"><span class="cl">        └── references/
+</span></span><span class="line"><span class="cl">            └── example.bicep
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Set up your environment variables (create a <code>.env</code> file):</p>
+</div><p>The <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/bicep-authoring/SKILL.md">SKILL.md</a> file serves as the entry point and contains YAML front matter defining the skill&rsquo;s identity, followed by instructions on how the agent should use it.</p>
+<p>Here is what the <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/SKILL.md">governance-skill/SKILL.md</a> looks like:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">AZURE_OPENAI_ENDPOINT</span><span class="o">=</span><span class="s2">&#34;https://your-resource.openai.azure.com/&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nv">AZURE_OPENAI_CHAT_DEPLOYMENT_NAME</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span>
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: governance-skill
+</span></span><span class="line"><span class="cl">description: Provides organizational governance rules and policies for cloud resource deployments. It should be used to ensure any generated infrastructure code complies with company standards.
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gh"># Instructions
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">You are helping the user build infrastructure. Review this skill when you need to generate infrastructure or verify if a configuration meets standard practices.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Consider the following steps:
+</span></span><span class="line"><span class="cl"><span class="k">1.</span> Review the <span class="sb">`references/policies.md`</span> file to understand the current organizational standards.
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> Structure the infrastructure code (e.g., Bicep, ARM templates, Terraform) to follow the policies listed in the reference.
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> If a user request conflicts with a policy, politely suggest the alternative compliant configuration.
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> Add a comment block at the top indicating the code was cross-checked with organizational policies.
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Let&rsquo;s start by importing everything we need:</p>
+</div><p>Next, in the <a href="file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/references/policies.md">references/policies.md</a> file, we define our actual organizational rules:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gh"># Organizational Governance Policies
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">All infrastructure deployments must adhere to the following rules:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 1. Naming Conventions
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> All resources must include the prefix <span class="sb">`org-xyz-`</span>.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Example: A storage account named <span class="sb">`data`</span> must be deployed as <span class="sb">`orgxyzdata`</span> (storage accounts don&#39;t allow hyphens) or an app service named <span class="sb">`frontend`</span> must be deployed as <span class="sb">`org-xyz-frontend`</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 2. Resource Skus
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> **Storage Accounts**: Must use the <span class="sb">`Standard_GRS`</span> SKU to ensure geographic redundancy. <span class="sb">`Standard_LRS`</span> or other SKUs are not permitted for production use.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **App Service Plans**: Must use at least the <span class="sb">`S1`</span> (Standard) tier. Free or Shared tiers are not allowed.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 3. Tagging Requirements
+</span></span></span><span class="line"><span class="cl">Every resource must have the following mandatory tags:
+</span></span><span class="line"><span class="cl"><span class="k">-</span> <span class="sb">`Environment`</span>: Must be set to either <span class="sb">`Development`</span>, <span class="sb">`Staging`</span>, or <span class="sb">`Production`</span>.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> <span class="sb">`Owner`</span>: Must contain a valid email address or team name.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 4. Location
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> All resources must be deployed to the <span class="sb">`eastus`</span> or <span class="sb">`westus`</span> regions.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The Bicep authoring skills, which is an inline skill in the Google ADK example, must be implemented as a directory skill as well.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1093,47 +1151,27 @@
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="n">SequentialBuilder</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ChatMessage</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">Role</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="n">WorkflowRunState</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: bicep-authoring-skill
+</span></span><span class="line"><span class="cl">description: Provides best practices for writing clean, maintainable Bicep templates.
+</span></span><span class="line"><span class="cl">---
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="gh"># Instructions
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Apply the following best practices when generating or modifying Bicep templates:
+</span></span><span class="line"><span class="cl"><span class="k">1.</span> Start the file with a general comment block explaining the purpose of the template.
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> Define all parameters explicitly with types and standard default values if applicable.
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> Use meaningful resource symbolic names that describe its purpose, rather than generic names.
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> Organize the template logically: Parameters first, then variables, then resources, and finally outputs.
+</span></span><span class="line"><span class="cl"><span class="k">5.</span> The template should be well-formatted Azure Bicep code.
+</span></span><span class="line"><span class="cl"><span class="k">6.</span> Please validate the generated Bicep configuration using the <span class="sb">`validate_bicep`</span> tool before returning it to the user. Fix any compilation errors reported.
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="gh"># Resources
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">See the example of a good Bicep template structure in <span class="sb">`references/example.bicep`</span>.
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><code>SequentialBuilder</code> in the MAF package <code>agent_framework</code> is used to build a sequential workflow. We will discuss other imports as we progress further.</p>
-<p>We need a chat client for the workflow.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>DefaultAzureCredential</code> handles authentication automatically. It tries multiple authentication methods in order:</p>
-<ul>
-<li>Environment variables</li>
-<li>Managed Identity</li>
-<li>Azure CLI (<code>az login</code>)</li>
-</ul>
-<p>Now let&rsquo;s create three specialized agents for our content pipeline:</p>
+</div><p>We will also supply a reference example of a Bicep configuration.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1152,168 +1190,24 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">researcher</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Researcher&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Research the given topic and provide key facts and statistics.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Writer&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Take the research and write an engaging article draft.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">editor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Editor&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Review the draft for clarity, grammar, and engagement. Provide the final version.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-Bicep" data-lang="Bicep"><span class="line"><span class="cl"><span class="c1">// This is an example of a good Bicep template structure.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">location</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">resourceGroup</span><span class="p">().</span><span class="nv">location</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">env</span><span class="w"> </span><span class="nv">string</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">storagePrefix</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;stg&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">resource</span><span class="w"> </span><span class="nv">myStorage</span><span class="w"> </span><span class="s">&#39;Microsoft.Storage/storageAccounts@2022-09-01&#39;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;</span><span class="si">${</span><span class="nv">storagePrefix</span><span class="si">}${</span><span class="nv">env</span><span class="si">}</span><span class="s">&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">location</span><span class="p">:</span><span class="w"> </span><span class="nv">location</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">sku</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Standard_LRS&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">kind</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;StorageV2&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>A sequential workflow is created using the <code>SequentialBuilder()</code>.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">SequentialBuilder</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">researcher</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">editor</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>That&rsquo;s it! Just two method calls:</p>
-<ul>
-<li><code>.participants([...])</code>- List your agents in the order they should execute.</li>
-<li><code>.build()</code>- Construct the workflow.</li>
-</ul>
-<p>Under the hood, this creates:</p>
-<ul>
-<li>An executor for each agent</li>
-<li>Edges connecting them in sequence</li>
-<li>A start point (first agent) and an end point (last agent)</li>
-</ul>
-<h3 id="running-the-workflow-with-streaming">Running the Workflow with Streaming</h3>
-<p>MAF supports real-time event streaming during workflow execution. This gives you visibility into what&rsquo;s happening:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>        
-</span></span><span class="line"><span class="cl">    <span class="c1"># Run the workflow with streaming events</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running sequential workflow: Researcher → Writer → Editor&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Write about the future of AI agents&#34;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Let&rsquo;s understand each event type:</p>
-<table>
-  <thead>
-      <tr>
-          <th>Event</th>
-          <th>When It Fires</th>
-          <th>What It Contains</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>ExecutorInvokedEvent</code></td>
-          <td>When an agent starts processing</td>
-          <td><code>executor_id</code> - the agent&rsquo;s name</td>
-      </tr>
-      <tr>
-          <td><code>ExecutorCompletedEvent</code></td>
-          <td>When an agent finishes</td>
-          <td><code>executor_id</code></td>
-      </tr>
-      <tr>
-          <td><code>WorkflowStatusEvent</code></td>
-          <td>When the workflow state changes</td>
-          <td><code>state</code> - RUNNING, IDLE, ERROR</td>
-      </tr>
-      <tr>
-          <td><code>WorkflowOutputEvent</code></td>
-          <td>When the workflow produces output</td>
-          <td><code>data</code> - the final result</td>
-      </tr>
-  </tbody>
-</table>
-<p>The final output contains the complete conversation history.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="c1"># Display the final conversation</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;FINAL CONVERSATION&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&#34;assistant&#34;</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">ASSISTANT</span> <span class="k">else</span> <span class="s2">&#34;user&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>WorkflowOutputEvent.data</code> contains a list of <code>ChatMessage</code> objects with:</p>
-<ul>
-<li><code>role</code>: USER or ASSISTANT</li>
-<li><code>author_name</code>: The agent&rsquo;s name (for assistant messages)</li>
-<li><code>text</code>: The message content</li>
-</ul>
-<p>Here is the complete example.</p>
+</div><h3 id="initializing-the-agent-with-skills">Initializing the Agent with Skills</h3>
+<p>Now, let&rsquo;s wire this up in our <a href="file:///c:/GitHub/google-adk-101/maf_agent/agent.py">agent.py</a> file. We will use MAF&rsquo;s built-in <code>FileAgentSkillsProvider</code> to load all skills from our <code>skills</code> directory and inject them into our <code>Agent</code>. We will also provide a standard Python function as a tool to help the agent compile the Bicep code locally.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1396,191 +1290,355 @@
 </span><span class="lnt">78
 </span><span class="lnt">79
 </span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">SequentialBuilder</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ChatMessage</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">Role</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">WorkflowOutputEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ExecutorInvokedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ExecutorCompletedEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">WorkflowRunState</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">sys</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Ensure the correct framework packages are imported</span>
+</span></span><span class="line"><span class="cl"><span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">FileAgentSkillsProvider</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIResponsesClient</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
+</span></span><span class="line"><span class="cl"><span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;ImportError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Load environment variables</span>
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
-</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Create specialized agents</span>
-</span></span><span class="line"><span class="cl"><span class="n">researcher</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Researcher&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Research the given topic and provide key facts and statistics.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Writer&#34;</span><span class="p">,</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Take the research and write an engaging article draft.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">editor</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Editor&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Review the draft for clarity, grammar, and engagement. Provide the final version.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>        
-</span></span><span class="line"><span class="cl">    <span class="c1"># Build sequential workflow</span>
-</span></span><span class="line"><span class="cl">    <span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">SequentialBuilder</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">researcher</span><span class="p">,</span> <span class="n">writer</span><span class="p">,</span> <span class="n">editor</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Run the workflow with streaming events</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running sequential workflow: Researcher → Writer → Editor&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">validate_bicep</span><span class="p">(</span><span class="n">bicep_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Validates the provided Bicep template content for compilation errors by running &#39;bicep lint&#39; and &#39;bicep build&#39;. Pass the full bicep string.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">tempfile</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">subprocess</span>
 </span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="n">output_evt</span><span class="p">:</span> <span class="n">WorkflowOutputEvent</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Write about the future of AI agents&#34;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorInvokedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;⚡ Starting: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ExecutorCompletedEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✓ Completed: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">executor_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowStatusEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Workflow completed!&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkflowOutputEvent</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">output_evt</span> <span class="o">=</span> <span class="n">event</span>
+</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&#34;.bicep&#34;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">bicep_content</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">temp_path</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># First, run bicep lint</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lint_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;bicep&#39;</span><span class="p">,</span> <span class="s1">&#39;lint&#39;</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">lint_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Linting failed with issues:</span><span class="se">\n</span><span class="si">{</span><span class="n">lint_result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">lint_result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">        <span class="c1"># If lint passes, run bicep build</span>
+</span></span><span class="line"><span class="cl">        <span class="n">build_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;bicep&#39;</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">build_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s2">&#34;Validation successful. Bicep template passed linting and build.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Validation failed during build:</span><span class="se">\n</span><span class="si">{</span><span class="n">build_result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">build_result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">finally</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">temp_path</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Display the final conversation</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">output_evt</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;FINAL CONVERSATION&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChatMessage</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">output_evt</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">author_name</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&#34;assistant&#34;</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">ASSISTANT</span> <span class="k">else</span> <span class="s2">&#34;user&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;AZURE_AI_PROJECT_ENDPOINT&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Please set AZURE_AI_PROJECT_ENDPOINT in your environment or .env file.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_PROJECT_ENDPOINT&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deployment</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME&#34;</span><span class="p">,</span> <span class="s2">&#34;gpt-4o-mini&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">client</span> <span class="o">=</span> <span class="n">AzureOpenAIResponsesClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">project_endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">deployment_name</span><span class="o">=</span><span class="n">deployment</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">AzureCliCredential</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Failed to initialize MAF Azure Open AI client: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># Discover skills</span>
+</span></span><span class="line"><span class="cl">    <span class="n">skills_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&#34;skills&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">skills_provider</span> <span class="o">=</span> <span class="n">FileAgentSkillsProvider</span><span class="p">(</span><span class="n">skill_paths</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">skills_dir</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">Agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;You are an assistant helping construct Azure Bicep code.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">context_providers</span><span class="o">=</span><span class="p">[</span><span class="n">skills_provider</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">validate_bicep</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Agent initialized with MAF.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;-&#34;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Agent:</span><span class="se">\n</span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>When you run this workflow, you&rsquo;ll see something like:</p>
+</div><p>In the code above, we point the <code>FileAgentSkillsProvider</code> to our directory. We then pass this provider into the <code>context_providers</code> array of our <code>Agent</code>. This grants the LLM access to the reference documents and specific behavioral guidelines we defined.</p>
+<p>To test our agent, we simply run the Python script.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">Running sequential workflow: Researcher → Writer → <span class="nv">Editor</span>
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">⚡ Starting: Researcher
-</span></span><span class="line"><span class="cl">✓ Completed: Researcher
-</span></span><span class="line"><span class="cl">⚡ Starting: Writer
-</span></span><span class="line"><span class="cl">✓ Completed: Writer
-</span></span><span class="line"><span class="cl">⚡ Starting: Editor
-</span></span><span class="line"><span class="cl">✓ Completed: Editor
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">✅ Workflow completed!
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">FINAL <span class="nv">CONVERSATION</span>
-</span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">01</span> <span class="o">[</span>user<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl">Write about the future of AI agents
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">02</span> <span class="o">[</span>Researcher<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># Key Facts and Statistics on AI Agents</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">## Market Growth</span>
-</span></span><span class="line"><span class="cl">- The AI agent market is projected to reach <span class="nv">$47</span>.1 billion by <span class="m">2030</span>
-</span></span><span class="line"><span class="cl">- Autonomous AI systems are expected to handle 85% of customer interactions by <span class="m">2027</span>
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">03</span> <span class="o">[</span>Writer<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># The Future of AI Agents: A New Era of Intelligent Automation</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">The rise of AI agents represents one of the most transformative shifts...
-</span></span><span class="line"><span class="cl"><span class="o">[</span>Engaging article draft based on the research<span class="o">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="m">04</span> <span class="o">[</span>Editor<span class="o">]</span>
-</span></span><span class="line"><span class="cl">------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="c1"># The Future of AI Agents: Reshaping How We Work and Live</span>
-</span></span><span class="line"><span class="cl">....
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="n">python</span><span class="p">.</span><span class="py">exe</span> <span class="p">.\</span><span class="n">maf_agent</span><span class="p">\</span><span class="n">agent</span><span class="p">.</span><span class="py">py</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Sequential workflows in MAF provide a simple yet powerful way to orchestrate multiple AI agents. With just a few lines of code, you can create sophisticated pipelines where:</p>
+</div><p>The agent loads the available skills and skill references to gain the procedural knowledge and generate the Bicep template.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">Agent initialized with MAF.
+</span></span><span class="line"><span class="cl">User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.
+</span></span><span class="line"><span class="cl">----------------------------------------
+</span></span><span class="line"><span class="cl">Agent:
+</span></span><span class="line"><span class="cl">I created a validated Bicep template that deploys an Azure Storage Account and an App Service (with an App Service Plan) configured for the Staging environment and compliant with your org governance rules.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Notes:
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Template is cross-checked with organizational policies: resource name prefixes, Storage SKU = Standard_GRS, App Service Plan tier = S1, mandatory tags (Environment, Owner), and allowed locations (eastus | westus).
+</span></span><span class="line"><span class="cl"><span class="k">-</span> The environment defaults to Staging. You must provide the Owner tag value (email or team name) when deploying.
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Storage account name uses the storage-safe prefix orgxyz (no hyphens) per governance rules.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Bicep template:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">/*
+</span></span><span class="line"><span class="cl">Cross-checked with organizational policies: uses org-xyz prefix (storage accounts use orgxyz prefix as storage account names cannot contain hyphens), Storage Account SKU set to Standard_GRS, App Service Plan tier set to S1, mandatory tags (Environment, Owner) applied, and allowed locations restricted to eastus or westus.
+</span></span><span class="line"><span class="cl">Purpose: Deploy an Azure Storage Account and an App Service for the portal in the specified environment.
+</span></span><span class="line"><span class="cl">*/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="ni">@allowed</span>([
+</span></span><span class="line"><span class="cl">  &#39;eastus&#39;
+</span></span><span class="line"><span class="cl">  &#39;westus&#39;
+</span></span><span class="line"><span class="cl">])
+</span></span><span class="line"><span class="cl">param location string = &#39;eastus&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="ni">@allowed</span>([
+</span></span><span class="line"><span class="cl">  &#39;Development&#39;
+</span></span><span class="line"><span class="cl">  &#39;Staging&#39;
+</span></span><span class="line"><span class="cl">  &#39;Production&#39;
+</span></span><span class="line"><span class="cl">])
+</span></span><span class="line"><span class="cl">param environment string = &#39;Staging&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">param owner string
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">var envShort = environment == &#39;Production&#39; ? &#39;prod&#39; : (environment == &#39;Staging&#39; ? &#39;stg&#39; : &#39;dev&#39;)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// Storage account names must be lowercase, alphanumeric, and between 3 and 24 characters. Hyphens are not allowed.
+</span></span><span class="line"><span class="cl">var storageAccountName = toLower(&#39;orgxyzportal${envShort}&#39;)
+</span></span><span class="line"><span class="cl">var appServicePlanName = &#39;org-xyz-asp-${envShort}&#39;
+</span></span><span class="line"><span class="cl">var appServiceName = &#39;org-xyz-portal-${envShort}&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">resource storageAccount &#39;Microsoft.Storage/storageAccounts<span class="ni">@2022</span>-09-01&#39; = {
+</span></span><span class="line"><span class="cl">  name: storageAccountName
+</span></span><span class="line"><span class="cl">  location: location
+</span></span><span class="line"><span class="cl">  sku: {
+</span></span><span class="line"><span class="cl">    name: &#39;Standard_GRS&#39;
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">  kind: &#39;StorageV2&#39;
+</span></span><span class="line"><span class="cl">  properties: {
+</span></span><span class="line"><span class="cl">    accessTier: &#39;Hot&#39;
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">  tags: {
+</span></span><span class="line"><span class="cl">    Environment: environment
+</span></span><span class="line"><span class="cl">    Owner: owner
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">resource appServicePlan &#39;Microsoft.Web/serverfarms<span class="ni">@2021</span>-02-01&#39; = {
+</span></span><span class="line"><span class="cl">  name: appServicePlanName
+</span></span><span class="line"><span class="cl">  location: location
+</span></span><span class="line"><span class="cl">  sku: {
+</span></span><span class="line"><span class="cl">    name: &#39;S1&#39;
+</span></span><span class="line"><span class="cl">    tier: &#39;Standard&#39;
+</span></span><span class="line"><span class="cl">    capacity: 1
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">  kind: &#39;app&#39;
+</span></span><span class="line"><span class="cl">  properties: {
+</span></span><span class="line"><span class="cl">    reserved: false
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">  tags: {
+</span></span><span class="line"><span class="cl">    Environment: environment
+</span></span><span class="line"><span class="cl">    Owner: owner
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">resource appService &#39;Microsoft.Web/sites<span class="ni">@2021</span>-02-01&#39; = {
+</span></span><span class="line"><span class="cl">  name: appServiceName
+</span></span><span class="line"><span class="cl">  location: location
+</span></span><span class="line"><span class="cl">  properties: {
+</span></span><span class="line"><span class="cl">    serverFarmId: appServicePlan.id
+</span></span><span class="line"><span class="cl">    siteConfig: {
+</span></span><span class="line"><span class="cl">      appSettings: [
+</span></span><span class="line"><span class="cl">        {
+</span></span><span class="line"><span class="cl">          name: &#39;WEBSITE_RUN_FROM_PACKAGE&#39;
+</span></span><span class="line"><span class="cl">          value: &#39;1&#39;
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">        {
+</span></span><span class="line"><span class="cl">          name: &#39;STORAGE_ACCOUNT_NAME&#39;
+</span></span><span class="line"><span class="cl">          value: storageAccount.name
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">      ]
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">  tags: {
+</span></span><span class="line"><span class="cl">    Environment: environment
+</span></span><span class="line"><span class="cl">    Owner: owner
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">output storageAccountName string = storageAccount.name
+</span></span><span class="line"><span class="cl">output appServiceName string = appService.name
+</span></span><span class="line"><span class="cl">output storageAccountId string = storageAccount.id
+</span></span><span class="line"><span class="cl">output appServiceId string = appService.id
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Deployment example (resource group scope):
+</span></span><span class="line"><span class="cl"><span class="k">-</span> az deployment group create --resource-group &lt;rg-name&gt; --template-file portal-staging.bicep --parameters owner=&#39;team<span class="ni">@example</span>.com&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">I validated the Bicep file (lint/build) and it passed. If you want, I can:
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Add a parameter for application runtime settings or Docker image,
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Add Managed Identity and key/vault integration,
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Or change naming conventions or include unique suffixes if you need globally unique storage account names. Which would you like next?
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>As you can see, the agent successfully navigated our organizational requirements. It forcefully set the App Service Plan to S1, deployed to eastus, utilized the org-xyz- prefix, applied the required tags, and perfectly structured the document with parameters and comments!</p>
+<p>Both Google&rsquo;s Agent Development Kit (ADK) and the Microsoft Agent Framework (MAF) embrace the concept of &ldquo;Agent Skills&rdquo; to inject modular, domain-specific behavior into LLMs. While they share the underlying philosophy, there are notable differences in how they structure and execute these skills.</p>
+<h3 id="skill-discovery-and-registration">Skill Discovery and Registration</h3>
 <ul>
-<li>Each agent specializes in one task</li>
-<li>Data flows naturally from one agent to the next</li>
-<li>You have full visibility through event streaming</li>
-<li>The framework handles all the orchestration complexity</li>
+<li><strong>MAF</strong>: Uses the <code>FileAgentSkillsProvider</code> class. You simply point this provider to a root <code>skills/</code> directory, and it automatically discovers and indexes all sub-directories containing a SKILL.md file. It&rsquo;s a highly declarative, &ldquo;drop-in&rdquo; approach.</li>
+<li><strong>ADK</strong>: Uses direct loading mechanisms like <code>load_skill_from_dir()</code>. You explicitly load each skill directory into a variable, then bundle them together using a <code>SkillToolset</code> wrapper before passing them to the agent. ADK also natively supports initializing &ldquo;Inline Skills&rdquo; directly from Python code, without requiring a directory structure.</li>
 </ul>
-<p>The <code>SequentialBuilder</code> makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.</p>
+<h3 id="progressive-disclosure">Progressive Disclosure</h3>
+<ul>
+<li><strong>MAF</strong>: Strictly follows the Agent Skills specification&rsquo;s progressive disclosure pattern. It &ldquo;advertises&rdquo; the skill&rsquo;s name and description (from the YAML frontmatter) in the system prompt. The agent must then consciously choose to read the full SKILL.md and subsequent <code>references/</code> files using specific tools provided automatically by the <code>FileAgentSkillsProvider</code>.</li>
+<li><strong>ADK</strong>: Inherently more aggressive with its context window. When an ADK agent determines it needs a skill based on the <code>SkillToolset</code>, it is more likely to eagerly load the primary instruction set into the context, reducing the multi-tool-call overhead but consuming more token budget upfront.</li>
+</ul>
+<h3 id="integration-with-core-tools">Integration with Core Tools</h3>
+<ul>
+<li><strong>MAF</strong>: Merges skills via <code>context_providers</code>. The skills layer is a system that provides context and tools on demand, cleanly separating standard Python functional tools (like our `validate_bicep function) from domain-knowledge skills.</li>
+<li><strong>ADK</strong>: Treats skills identically to functional tools. Both skills and Python functions are grouped together inside the <code>tools=[]</code> array when initializing the <code>LlmAgent</code>.</li>
+</ul>
+<p>Ultimately, both frameworks provide an excellent way to organize agent logic, avoiding the anti-pattern of maintaining a monolithic 5,000-line system prompts.</p>
 
         </div>
 
@@ -1605,7 +1663,7 @@
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F&text=Sequential&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-agent-skills%2F&text=Microsoft&#43;Agent&#43;Framework&#43;-&#43;Agent&#43;Skills"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -1616,7 +1674,7 @@
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-agent-skills%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -1627,7 +1685,7 @@
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-agent-skills%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -1638,7 +1696,7 @@
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F&title=Sequential&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-agent-skills%2F&title=Microsoft&#43;Agent&#43;Framework&#43;-&#43;Agent&#43;Skills"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1649,7 +1707,7 @@
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fsequential-workflows-in-microsoft-agent-framework%2F&t=Sequential&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fmicrosoft-agent-framework-agent-skills%2F&t=Microsoft&#43;Agent&#43;Framework&#43;-&#43;Agent&#43;Skills"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1659,7 +1717,7 @@
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-agent-skills\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1676,9 +1734,9 @@
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Sequential workflows in Microsoft Agent Framework',
-        text: 'Learn how to orchestrate AI agents in a step-by-step pipeline using Microsoft Agent Framework\u0027s SequentialBuilder',
-        url: 'https:\/\/ravichaganti.com\/blog\/sequential-workflows-in-microsoft-agent-framework\/'
+        title: 'Microsoft Agent Framework - Agent Skills',
+        text: 'Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.',
+        url: 'https:\/\/ravichaganti.com\/blog\/microsoft-agent-framework-agent-skills\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1738,19 +1796,19 @@
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
       
     
 
@@ -1760,9 +1818,6 @@
         
         
       
-      
-        
-        
       
     
   
@@ -1772,9 +1827,9 @@
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/"
+        <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry">
+           aria-label="Previous in Microsoft Agent Framework: Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1787,10 +1842,10 @@
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry
+                Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">The Microsoft Agent Framework represents a significant improvement in developer experience over the raw Foundry SDK. While the native SDK gives you complete control, the Agent Framework provides less boilerplate, type-safe tools, consistent patterns, and resource safety.</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Microsoft Agent Protocol is an open framework for building enterprise-grade agents. It offers support for using the A2A protocol for cross-agent communication.</p>
               
             </div>
           </div>
@@ -1801,29 +1856,20 @@
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Concurrent workflows in Microsoft Agent Framework">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Concurrent workflows in Microsoft Agent Framework
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Learn how to orchestrate AI agents in a concurrent workflow using Microsoft Agent Framework&#39;s ConcurrentBuilder</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -2088,15 +2134,15 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Microsoft Agent Framework - Agent Skills
+      Sequential workflows in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-02-28">
-      Feb 28, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-12">
+      Oct 12, 2025
     </time>
   </a>
 </article>
@@ -2122,10 +2168,13 @@
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#sequential-workflows">Sequential Workflows</a>
+    <li>
       <ul>
-        <li><a href="#building-a-sequential-workflow-step-by-step">Building a Sequential Workflow: Step by Step</a></li>
-        <li><a href="#running-the-workflow-with-streaming">Running the Workflow with Streaming</a></li>
+        <li><a href="#creating-the-directory-skills">Creating the Directory Skills</a></li>
+        <li><a href="#initializing-the-agent-with-skills">Initializing the Agent with Skills</a></li>
+        <li><a href="#skill-discovery-and-registration">Skill Discovery and Registration</a></li>
+        <li><a href="#progressive-disclosure">Progressive Disclosure</a></li>
+        <li><a href="#integration-with-core-tools">Integration with Core Tools</a></li>
       </ul>
     </li>
   </ul>

@@ -1,348 +1,399 @@
 # Magentic workflows in Microsoft Agent Framework
 
 
-Seems like a season of [Agent Skills](https://agentskills.io/home) adoption. [Google ADK implemented support for skills](https://ravichaganti.com/blog/google-adk-agent-skills/) a couple of weeks ago, and it's [Microsoft Agent Framework's turn last week](https://github.com/microsoft/agent-framework/pull/4210). In an earlier article in the [Google ADK series](https://ravichaganti.com/series/google-adk/), we implemented an IaC agent that leverages skills for generating Bicep templates that comply with organizational policies. In today's article, we will explore how to implement the same in Microsoft Agent Framework (MAF).
+In this series on Microsoft Agent Framework (MAF), we've explored [sequential workflows](https://ravichaganti.com/blog/sequential-workflows-in-microsoft-agent-framework/) where agents process tasks in a fixed order, [concurrent workflows](https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/) where agents work in parallel, [handoff workflows](https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/) where agents transfer control based on context, and [group chat workflows](https://ravichaganti.com/blog/group-chat-workflows-in-microsoft-agent-framework/) where agents engage in turn-based discussions. Each pattern has its strengths, but they all share one limitation: the orchestration logic is predetermined at design time.
 
-Unlike Google ADK, MAF has no inline skill support, so all skills must be implemented as directory skills. We will equip our agent with two skills:
+What if you need a workflow that can adapt its routing decisions based on what agents discover during execution? Enter Magentic workflows, the most sophisticated orchestration pattern in MAF, where an LLM-powered manager autonomously coordinates specialized agents, making real-time decisions about who to invoke next based on intermediate results.
 
-- Governance Skill: Contains the company's mandatory tagging, naming, and SKU policies.
-- Bicep Authoring Skill: Contains best practices for writing clean Bicep code (like parameterization and formatting).
+## The Problem: Static Orchestration Isn't Always Enough
 
-### Creating the Directory Skills
+Consider a complex task like investment due diligence. A sequential workflow might work: research the company, analyze financials, assess risks, write a report. But what happens when the risk assessment reveals concerning findings? In a static workflow, you'd proceed to the report anyway. In reality, you'd want to go back and dig deeper into those risks before making a recommendation.
 
-Let's start by creating our directory-based skills. In your project folder, create a structure that looks like this:
+This is where magentic workflows shine. They enable:
 
-```text
-maf_agent/
-└── skills/
-    ├── governance-skill/
-    │   ├── SKILL.md
-    │   └── references/
-    │       └── policies.md
-    └── bicep-authoring/
-        ├── SKILL.md
-        └── references/
-            └── example.bicep
+- **Dynamic routing**: The manager decides which agent to invoke based on the current state of the conversation
+- **Conditional branching**: Different paths through the workflow based on intermediate results
+- **Feedback loops**: The ability to revisit earlier agents when new information warrants it
+- **Autonomous coordination**: The LLM manager handles the orchestration logic without explicit programming
+
+## What is a Magentic Workflow?
+
+A magentic workflow consists of two key components:
+
+1. **Participant agents**: Specialized agents, each with distinct tools and expertise
+2. **Manager agent**: An LLM-powered orchestrator that plans the task, selects which agent to invoke, monitors progress, and determines when to complete or replan
+
+Unlike group chat where agents take turns based on a selection function you define, magentic workflows delegate the entire orchestration decision to the manager LLM. The manager maintains a "task ledger" tracking facts discovered, the current plan, and progress toward completion.
+
+## Example: Investment Due Diligence Workflow
+
+Let's build a practical example that demonstrates the power of magentic orchestration. We'll create an investment research workflow with four specialized agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `MarketResearcher` | Gathers market context, news, analyst opinions | Web search, financial news |
+| `FinancialAnalyst` | Analyzes fundamentals and financial health | Yahoo Finance API, Python |
+| `RiskAssessor` | Evaluates risks and assigns a risk score | Risk assessment |
+| `InvestmentAdvisor` | Synthesizes findings into a recommendation | Report generation |
+
+{{< figure src="/images/magentic-maf.png" >}}  {{< load-photoswipe >}}
+
+Here's the key feature. If the `RiskAssessor` returns a high risk score (>7), the manager will loop back to the `MarketResearcher` for deeper investigation before proceeding to the final recommendation.
+
+### Setting Up the Environment
+
+First, install the required packages:
+
+```bash
+pip install agent-framework azure-identity tavily-python yfinance python-dotenv
 ```
 
-The [SKILL.md](file:///c:/GitHub/google-adk-101/maf_agent/skills/bicep-authoring/SKILL.md) file serves as the entry point and contains YAML front matter defining the skill's identity, followed by instructions on how the agent should use it.
+Create a `.env` file with your configuration:
 
-Here is what the [governance-skill/SKILL.md](file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/SKILL.md) looks like:
-
-```markdown
----
-name: governance-skill
-description: Provides organizational governance rules and policies for cloud resource deployments. It should be used to ensure any generated infrastructure code complies with company standards.
----
-
-# Instructions
-
-You are helping the user build infrastructure. Review this skill when you need to generate infrastructure or verify if a configuration meets standard practices.
-
-Consider the following steps:
-1. Review the `references/policies.md` file to understand the current organizational standards.
-2. Structure the infrastructure code (e.g., Bicep, ARM templates, Terraform) to follow the policies listed in the reference.
-3. If a user request conflicts with a policy, politely suggest the alternative compliant configuration.
-4. Add a comment block at the top indicating the code was cross-checked with organizational policies.
+```
+AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
+TAVILY_API_KEY=your-tavily-api-key
 ```
 
-Next, in the [references/policies.md](file:///c:/GitHub/google-adk-101/maf_agent/skills/governance-skill/references/policies.md) file, we define our actual organizational rules:
+### Defining the Tools
 
-```markdown
-# Organizational Governance Policies
-
-All infrastructure deployments must adhere to the following rules:
-
-## 1. Naming Conventions
-- All resources must include the prefix `org-xyz-`.
-- Example: A storage account named `data` must be deployed as `orgxyzdata` (storage accounts don't allow hyphens) or an app service named `frontend` must be deployed as `org-xyz-frontend`.
-
-## 2. Resource Skus
-- **Storage Accounts**: Must use the `Standard_GRS` SKU to ensure geographic redundancy. `Standard_LRS` or other SKUs are not permitted for production use.
-- **App Service Plans**: Must use at least the `S1` (Standard) tier. Free or Shared tiers are not allowed.
-
-## 3. Tagging Requirements
-Every resource must have the following mandatory tags:
-- `Environment`: Must be set to either `Development`, `Staging`, or `Production`.
-- `Owner`: Must contain a valid email address or team name.
-
-## 4. Location
-- All resources must be deployed to the `eastus` or `westus` regions.
-```
-
-The Bicep authoring skills, which is an inline skill in the Google ADK example, must be implemented as a directory skill as well. 
-
-```markdown
----
-name: bicep-authoring-skill
-description: Provides best practices for writing clean, maintainable Bicep templates.
----
-
-# Instructions
-
-Apply the following best practices when generating or modifying Bicep templates:
-1. Start the file with a general comment block explaining the purpose of the template.
-2. Define all parameters explicitly with types and standard default values if applicable.
-3. Use meaningful resource symbolic names that describe its purpose, rather than generic names.
-4. Organize the template logically: Parameters first, then variables, then resources, and finally outputs.
-5. The template should be well-formatted Azure Bicep code.
-6. Please validate the generated Bicep configuration using the `validate_bicep` tool before returning it to the user. Fix any compilation errors reported.
-
-# Resources
-
-See the example of a good Bicep template structure in `references/example.bicep`.
-```
-
-We will also supply a reference example of a Bicep configuration.
-
-```Bicep
-// This is an example of a good Bicep template structure.
-param location string = resourceGroup().location
-param env string
-
-var storagePrefix = 'stg'
-
-resource myStorage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${storagePrefix}${env}'
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-}
-```
-
-### Initializing the Agent with Skills
-
-Now, let's wire this up in our [agent.py](file:///c:/GitHub/google-adk-101/maf_agent/agent.py) file. We will use MAF's built-in `FileAgentSkillsProvider` to load all skills from our `skills` directory and inject them into our `Agent`. We will also provide a standard Python function as a tool to help the agent compile the Bicep code locally.
+Each agent needs specialized tools. Let's start with the research and analysis tools:
 
 ```python
-import asyncio
+from agent_framework import ai_function
+from tavily import TavilyClient
+import yfinance as yf
 import os
-import sys
-from pathlib import Path
 
-from dotenv import load_dotenv
+tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
-# Ensure the correct framework packages are imported
-try:
-    from agent_framework import Agent, FileAgentSkillsProvider
-    from agent_framework.azure import AzureOpenAIResponsesClient
-    from azure.identity import AzureCliCredential
-except ImportError as e:
-    print(f"ImportError: {e}")
-    sys.exit(1)
+@ai_function
+def search_web(query: str) -> str:
+    """Search the web for general information about markets, companies, or trends."""
+    result = tavily_client.search(query=query, max_results=5)
+    return str(result)
 
-# Load environment variables
-load_dotenv()
+@ai_function
+def search_financial_news(company_or_topic: str) -> str:
+    """Search for recent financial news, analyst opinions, and market sentiment."""
+    query = f"{company_or_topic} stock news analyst rating 2024"
+    result = tavily_client.search(query=query, max_results=5)
+    return f"FINANCIAL NEWS for {company_or_topic}:\n{str(result)}"
+```
 
-def validate_bicep(bicep_content: str) -> str:
-    """Validates the provided Bicep template content for compilation errors by running 'bicep lint' and 'bicep build'. Pass the full bicep string."""
-    import tempfile
-    import subprocess
-    
-    with tempfile.NamedTemporaryFile(suffix=".bicep", delete=False) as f:
-        f.write(bicep_content.encode('utf-8'))
-        temp_path = f.name
-        
+The financial analysis tool uses Yahoo Finance to fetch real market data:
+
+```python
+@ai_function
+def analyze_financials(ticker: str) -> str:
+    """Get key financial metrics using Yahoo Finance."""
     try:
-        # First, run bicep lint
-        lint_result = subprocess.run(['bicep', 'lint', temp_path], capture_output=True, text=True)
-        if lint_result.returncode != 0:
-            return f"Linting failed with issues:\n{lint_result.stderr}\n{lint_result.stdout}"
-            
-        # If lint passes, run bicep build
-        build_result = subprocess.run(['bicep', 'build', temp_path], capture_output=True, text=True)
-        if build_result.returncode == 0:
-            return "Validation successful. Bicep template passed linting and build."
-        else:
-            return f"Validation failed during build:\n{build_result.stderr}\n{build_result.stdout}"
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        stock = yf.Ticker(ticker.upper())
+        info = stock.info
+
+        name = info.get('longName', ticker)
+        price = info.get('currentPrice', 'N/A')
+        pe_ratio = info.get('trailingPE', 'N/A')
+        profit_margin = info.get('profitMargins', 'N/A')
+        market_cap = info.get('marketCap', 'N/A')
+
+        # Format market cap
+        if isinstance(market_cap, (int, float)):
+            if market_cap >= 1e12:
+                market_cap = f"${market_cap/1e12:.2f}T"
+            elif market_cap >= 1e9:
+                market_cap = f"${market_cap/1e9:.2f}B"
+
+        result = f"""FINANCIAL ANALYSIS for {name} ({ticker.upper()})
+{'=' * 50}
+- Current Price: ${price}
+- Market Cap: {market_cap}
+- P/E Ratio: {pe_ratio}
+- Profit Margin: {profit_margin * 100:.1f}% if profit_margin else 'N/A'
+"""
+        # Add risk flags for unprofitable companies
+        if profit_margin and profit_margin < 0:
+            result += "\nRISK FLAG: Company is UNPROFITABLE (negative margins)"
+
+        return result
+    except Exception as e:
+        return f"Error fetching data for {ticker}: {str(e)}"
+```
+
+The risk assessment tool is where the conditional logic lives:
+
+```python
+@ai_function
+def assess_risk(analysis_summary: str) -> str:
+    """Evaluate investment risks and return a risk score (1-10)."""
+    summary_lower = analysis_summary.lower()
+
+    risk_score = 3  # Base score
+    risk_factors = []
+
+    # Check for high-risk indicators
+    if "unprofitable" in summary_lower or "negative margin" in summary_lower:
+        risk_score += 3
+        risk_factors.append("Company is not profitable - high cash burn risk")
+
+    if "biotech" in summary_lower or "clinical" in summary_lower:
+        risk_score += 2
+        risk_factors.append("Clinical stage biotech - binary FDA approval risk")
+
+    if "crypto" in summary_lower or "bitcoin" in summary_lower:
+        risk_score += 2
+        risk_factors.append("High volatility asset - significant drawdown risk")
+
+    risk_score = max(1, min(10, risk_score))
+
+    result = f"""RISK ASSESSMENT
+===============
+RISK SCORE: {risk_score}/10 {"[HIGH RISK]" if risk_score > 7 else "[Moderate]" if risk_score > 4 else "[Low Risk]"}
+
+RISK FACTORS IDENTIFIED:
+"""
+    for i, factor in enumerate(risk_factors, 1):
+        result += f"{i}. {factor}\n"
+
+    # This message triggers the feedback loop
+    if risk_score > 7:
+        result += f"""
+HIGH RISK ALERT: Risk score exceeds threshold.
+RECOMMEND: Request MarketResearcher to conduct deeper research on: {risk_factors[0]}
+"""
+
+    return result
+```
+
+### Creating the Specialized Agents
+
+Now we create four agents, each with distinct instructions and tools:
+
+```python
+from agent_framework.azure import AzureOpenAIChatClient
+from azure.identity import DefaultAzureCredential
+
+chat_client = AzureOpenAIChatClient(
+    credential=DefaultAzureCredential(),
+)
+
+# Market Researcher - gathers context and news
+market_researcher = chat_client.create_agent(
+    name="MarketResearcher",
+    instructions="""You are a market research analyst.
+
+YOUR ROLE:
+- Gather market context, industry trends, and competitive landscape
+- Find recent news and analyst opinions
+- Identify market sentiment and catalysts
+
+Use search_web for broad context and search_financial_news for recent analyst takes.
+If asked to do a "deep dive" on specific risks, focus your search on those factors.""",
+    tools=[search_web, search_financial_news],
+)
+
+# Financial Analyst - evaluates fundamentals
+financial_analyst = chat_client.create_agent(
+    name="FinancialAnalyst",
+    instructions="""You are a financial analyst specializing in fundamental analysis.
+
+YOUR ROLE:
+- Analyze financial metrics (P/E, margins, growth, debt)
+- Evaluate company fundamentals and financial health
+- Be objective about both strengths and weaknesses""",
+    tools=[analyze_financials],
+)
+
+# Risk Assessor - identifies and scores risks
+risk_assessor = chat_client.create_agent(
+    name="RiskAssessor",
+    instructions="""You are a risk management specialist.
+
+YOUR ROLE:
+- Evaluate investment risks based on gathered information
+- Assign a risk score from 1-10
+- Identify specific risk factors
+
+CRITICAL: If risk score > 7, recommend deeper research before final recommendation.""",
+    tools=[assess_risk],
+)
+
+# Investment Advisor - synthesizes final recommendation
+investment_advisor = chat_client.create_agent(
+    name="InvestmentAdvisor",
+    instructions="""You are a senior investment advisor.
+
+THIS IS THE FINAL STEP - After you complete your work, the task is DONE.
+
+YOUR ROLE:
+- Synthesize all research into a recommendation: BUY / HOLD / SELL / AVOID
+- Save the final report using save_report tool
+- After saving, confirm "TASK COMPLETE - Report saved successfully" """,
+    tools=[save_report],
+)
+```
+
+### Creating the Manager Agent
+
+The manager agent is the brain of the magentic workflow. Its instructions define how agents are coordinated:
+
+```python
+manager_agent = chat_client.create_agent(
+    name="InvestmentManager",
+    instructions="""You are the Investment Due Diligence Manager.
+
+YOUR TEAM:
+- MarketResearcher: Gathers market context, news, analyst opinions
+- FinancialAnalyst: Analyzes fundamentals, metrics, financial health
+- RiskAssessor: Evaluates risks, assigns risk score (1-10)
+- InvestmentAdvisor: Synthesizes findings and saves final report
+
+WORKFLOW:
+1. MarketResearcher - gather market context and news
+2. FinancialAnalyst - analyze fundamentals
+3. RiskAssessor - evaluate risks and get risk score
+
+4. DECISION POINT (if risk score > 7):
+   - Request ONE deep dive from MarketResearcher on the main risk
+   - Then proceed to step 5
+
+5. InvestmentAdvisor - synthesize and save final report
+
+TERMINATION:
+- The task is COMPLETE when InvestmentAdvisor confirms "Report saved"
+- Do NOT call any more agents after InvestmentAdvisor completes"""
+)
+```
+
+Notice how the manager's instructions encode the conditional logic: "if risk score > 7, request ONE deep dive." This is the power of magentic. The routing logic is expressed in natural language and interpreted by the LLM.
+
+### Building the Workflow
+
+With all components defined, we build the magentic workflow using `MagenticBuilder`:
+
+```python
+from agent_framework import MagenticBuilder
+
+workflow = (
+    MagenticBuilder()
+    .participants(
+        market_researcher=market_researcher,
+        financial_analyst=financial_analyst,
+        risk_assessor=risk_assessor,
+        investment_advisor=investment_advisor,
+    )
+    .with_standard_manager(
+        agent=manager_agent,
+        max_round_count=15,   # Maximum orchestration rounds
+        max_stall_count=3,    # Replan after this many stalls
+    )
+    .build()
+)
+```
+
+Key configuration options:
+
+- **`max_round_count`**: Limits total orchestration rounds to prevent infinite loops
+- **`max_stall_count`**: If no progress is made for this many rounds, the manager replans
+
+### Running and Monitoring the Workflow
+
+Execute the workflow and observe the orchestration events:
+
+```python
+from agent_framework import (
+    WorkflowOutputEvent,
+    ExecutorInvokedEvent,
+    ExecutorCompletedEvent,
+    WorkflowStatusEvent,
+    WorkflowRunState,
+)
+import asyncio
 
 async def main():
-    if not os.environ.get("AZURE_AI_PROJECT_ENDPOINT"):
-        print("Please set AZURE_AI_PROJECT_ENDPOINT in your environment or .env file.")
-        return
+    task = "Evaluate investing in Beam Therapeutics (BEAM), a small-cap biotech company."
 
-    endpoint = os.environ["AZURE_AI_PROJECT_ENDPOINT"]
-    deployment = os.environ.get("AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME", "gpt-4o-mini")
+    agent_sequence = []
 
-    try:
-        client = AzureOpenAIResponsesClient(
-            project_endpoint=endpoint,
-            deployment_name=deployment,
-            credential=AzureCliCredential(),
-        )
-    except Exception as e:
-        print(f"Failed to initialize MAF Azure Open AI client: {e}")
-        return
+    async for event in workflow.run_stream(task):
+        if isinstance(event, ExecutorInvokedEvent):
+            agent_sequence.append(event.executor_id)
+            print(f">> Invoking: {event.executor_id}")
 
-    # Discover skills
-    skills_dir = Path(__file__).parent / "skills"
-    skills_provider = FileAgentSkillsProvider(skill_paths=str(skills_dir))
+        elif isinstance(event, ExecutorCompletedEvent):
+            print(f"   Completed: {event.executor_id}")
 
-    async with Agent(
-        client=client,
-        instructions=(
-            "You are an assistant helping construct Azure Bicep code."
-        ),
-        context_providers=[skills_provider],
-        tools=[validate_bicep]
-    ) as agent:
-        print("Agent initialized with MAF.")
-        print("User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.")
-        print("-" * 40)
-        
-        response = await agent.run(
-            "I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging."
-        )
-        print(f"Agent:\n{response}\n")
+        elif isinstance(event, WorkflowStatusEvent):
+            if event.state == WorkflowRunState.IDLE:
+                print(f"\nWorkflow completed!")
+                print(f"Agent sequence: {' -> '.join(agent_sequence)}")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+        elif isinstance(event, WorkflowOutputEvent):
+            print(f"\nFinal output received")
 
+asyncio.run(main())
 ```
 
-In the code above, we point the `FileAgentSkillsProvider` to our directory. We then pass this provider into the `context_providers` array of our `Agent`. This grants the LLM access to the reference documents and specific behavioral guidelines we defined.
+### Observing Dynamic Routing in Action
 
-To test our agent, we simply run the Python script.
+When we run this workflow with a high-risk biotech stock like BEAM, here's what happens:
 
-```powershell
-> python.exe .\maf_agent\agent.py
+```
+>> Invoking: magentic_orchestrator
+   Completed: magentic_orchestrator
+>> Invoking: agent_market_researcher
+   Completed: agent_market_researcher
+>> Invoking: magentic_orchestrator
+   Completed: magentic_orchestrator
+>> Invoking: agent_financial_analyst
+   Completed: agent_financial_analyst
+>> Invoking: magentic_orchestrator
+   Completed: magentic_orchestrator
+>> Invoking: agent_risk_assessor
+   Completed: agent_risk_assessor
+>> Invoking: magentic_orchestrator        <- Manager sees high risk score
+   Completed: magentic_orchestrator
+>> Invoking: agent_market_researcher      <- LOOPS BACK for deep dive!
+   Completed: agent_market_researcher
+>> Invoking: magentic_orchestrator
+   Completed: magentic_orchestrator
+>> Invoking: agent_investment_advisor     <- Now proceeds to final step
+   Completed: agent_investment_advisor
+
+Workflow completed!
+Agent sequence: orchestrator -> market_researcher -> orchestrator ->
+               financial_analyst -> orchestrator -> risk_assessor ->
+               orchestrator -> market_researcher -> orchestrator ->
+               investment_advisor
 ```
 
-The agent loads the available skills and skill references to gain the procedural knowledge and generate the Bicep template.
+Notice the feedback loop: after the risk assessor returns a high score, the manager autonomously decides to invoke the market researcher again for deeper research on the identified risks. This adaptive behavior is impossible with static workflow patterns.
 
-```markdown
-Agent initialized with MAF.
-User: I need to deploy an Azure Storage Account and an App Service for our new portal. The environment will be Staging.
-----------------------------------------
-Agent:
-I created a validated Bicep template that deploys an Azure Storage Account and an App Service (with an App Service Plan) configured for the Staging environment and compliant with your org governance rules.
+Compare this to a low-risk stock like Microsoft (MSFT), where the workflow proceeds directly without the feedback loop:
 
-Notes:
-- Template is cross-checked with organizational policies: resource name prefixes, Storage SKU = Standard_GRS, App Service Plan tier = S1, mandatory tags (Environment, Owner), and allowed locations (eastus | westus).
-- The environment defaults to Staging. You must provide the Owner tag value (email or team name) when deploying.
-- Storage account name uses the storage-safe prefix orgxyz (no hyphens) per governance rules.
-
-Bicep template:
-
-/*
-Cross-checked with organizational policies: uses org-xyz prefix (storage accounts use orgxyz prefix as storage account names cannot contain hyphens), Storage Account SKU set to Standard_GRS, App Service Plan tier set to S1, mandatory tags (Environment, Owner) applied, and allowed locations restricted to eastus or westus.
-Purpose: Deploy an Azure Storage Account and an App Service for the portal in the specified environment.
-*/
-
-@allowed([
-  'eastus'
-  'westus'
-])
-param location string = 'eastus'
-
-@allowed([
-  'Development'
-  'Staging'
-  'Production'
-])
-param environment string = 'Staging'
-
-param owner string
-
-var envShort = environment == 'Production' ? 'prod' : (environment == 'Staging' ? 'stg' : 'dev')
-
-// Storage account names must be lowercase, alphanumeric, and between 3 and 24 characters. Hyphens are not allowed.
-var storageAccountName = toLower('orgxyzportal${envShort}')
-var appServicePlanName = 'org-xyz-asp-${envShort}'
-var appServiceName = 'org-xyz-portal-${envShort}'
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: storageAccountName
-  location: location
-  sku: {
-    name: 'Standard_GRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    accessTier: 'Hot'
-  }
-  tags: {
-    Environment: environment
-    Owner: owner
-  }
-}
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: appServicePlanName
-  location: location
-  sku: {
-    name: 'S1'
-    tier: 'Standard'
-    capacity: 1
-  }
-  kind: 'app'
-  properties: {
-    reserved: false
-  }
-  tags: {
-    Environment: environment
-    Owner: owner
-  }
-}
-
-resource appService 'Microsoft.Web/sites@2021-02-01' = {
-  name: appServiceName
-  location: location
-  properties: {
-    serverFarmId: appServicePlan.id
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
-          name: 'STORAGE_ACCOUNT_NAME'
-          value: storageAccount.name
-        }
-      ]
-    }
-  }
-  tags: {
-    Environment: environment
-    Owner: owner
-  }
-}
-
-output storageAccountName string = storageAccount.name
-output appServiceName string = appService.name
-output storageAccountId string = storageAccount.id
-output appServiceId string = appService.id
-
-Deployment example (resource group scope):
-- az deployment group create --resource-group <rg-name> --template-file portal-staging.bicep --parameters owner='team@example.com'
-
-I validated the Bicep file (lint/build) and it passed. If you want, I can:
-- Add a parameter for application runtime settings or Docker image,
-- Add Managed Identity and key/vault integration,
-- Or change naming conventions or include unique suffixes if you need globally unique storage account names. Which would you like next?
+```
+orchestrator -> market_researcher -> orchestrator -> financial_analyst ->
+orchestrator -> risk_assessor -> orchestrator -> investment_advisor
 ```
 
-As you can see, the agent successfully navigated our organizational requirements. It forcefully set the App Service Plan to S1, deployed to eastus, utilized the org-xyz- prefix, applied the required tags, and perfectly structured the document with parameters and comments!
+The same workflow code produces different execution paths based on the data discovered during execution.
 
-Both Google's Agent Development Kit (ADK) and the Microsoft Agent Framework (MAF) embrace the concept of "Agent Skills" to inject modular, domain-specific behavior into LLMs. While they share the underlying philosophy, there are notable differences in how they structure and execute these skills.
+## How Magentic Differs from Other Patterns
 
-### Skill Discovery and Registration
-- **MAF**: Uses the `FileAgentSkillsProvider` class. You simply point this provider to a root `skills/` directory, and it automatically discovers and indexes all sub-directories containing a SKILL.md file. It's a highly declarative, "drop-in" approach.
-- **ADK**: Uses direct loading mechanisms like `load_skill_from_dir()`. You explicitly load each skill directory into a variable, then bundle them together using a `SkillToolset` wrapper before passing them to the agent. ADK also natively supports initializing "Inline Skills" directly from Python code, without requiring a directory structure.
+| Pattern | Orchestration | Routing Logic | Use Case |
+|---------|--------------|---------------|----------|
+| Sequential | Fixed order | Predetermined | Pipelines with known steps |
+| Concurrent | Parallel execution | Fan-out/fan-in | Independent subtasks |
+| Handoff | Agent-to-agent transfer | Explicit handoff calls | Escalation, specialization |
+| Group Chat | Turn-based | Selection function | Brainstorming, debate |
+| Magentic | LLM manager | Dynamic, adaptive | Complex tasks with conditional logic |
 
-### Progressive Disclosure
-- **MAF**: Strictly follows the Agent Skills specification's progressive disclosure pattern. It "advertises" the skill's name and description (from the YAML frontmatter) in the system prompt. The agent must then consciously choose to read the full SKILL.md and subsequent `references/` files using specific tools provided automatically by the `FileAgentSkillsProvider`.
-- **ADK**: Inherently more aggressive with its context window. When an ADK agent determines it needs a skill based on the `SkillToolset`, it is more likely to eagerly load the primary instruction set into the context, reducing the multi-tool-call overhead but consuming more token budget upfront.
+Magentic is the most flexible but also the most resource-intensive pattern. The manager LLM is invoked between every agent execution to evaluate progress and decide the next step. Use it when:
 
-### Integration with Core Tools
-- **MAF**: Merges skills via `context_providers`. The skills layer is a system that provides context and tools on demand, cleanly separating standard Python functional tools (like our `validate_bicep function) from domain-knowledge skills.
-- **ADK**: Treats skills identically to functional tools. Both skills and Python functions are grouped together inside the `tools=[]` array when initializing the `LlmAgent`.
+- The workflow requires conditional branching based on intermediate results
+- You need feedback loops for iterative refinement
+- The optimal sequence of agents isn't known at design time
+- Task complexity warrants the overhead of LLM-based orchestration
 
-Ultimately, both frameworks provide an excellent way to organize agent logic, avoiding the anti-pattern of maintaining a monolithic 5,000-line system prompts.
+Magentic workflows represent the most sophisticated orchestration pattern in MAF, bridging the gap between rigid automation and truly autonomous multi-agent systems. When your task requires adaptive decision-making that can't be predetermined, magentic is the pattern to reach for.
 
