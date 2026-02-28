@@ -318,3 +318,4 @@ root_agent = LlmAgent(
 
 Google ADK's support for Agent Skills introduce an incredibly clean and modular way to scale the capabilities of your AI agents. By separating concerns, keeping standard conversational instructions in the agent prompt and domain-specific rules inside skills, your code remains maintainable, reusable, and highly robust. Whether you are enforcing cloud governance, establishing coding standards, or defining complex workflow protocols, directory-based and inline skills are essential tools in your ADK toolbelt.
 
+
