@@ -201,7 +201,7 @@ You can also retrieve the search service details using the Azure CLI.
 To get the admin keys for the search service (which you will need for indexing operations), use the following command.
 
 ```bash
-az search admin-key show `
+> az search admin-key show `
   --service-name rc-srch-demo `
   --resource-group ai-search-demo `
   --output json
@@ -210,12 +210,12 @@ az search admin-key show `
 For query-only operations, you should use query keys instead of admin keys. You can create and list query keys using the following commands.
 
 ```bash
-az search query-key create `
+> az search query-key create `
   --name "my-query-key" `
   --service-name rc-srch-demo `
   --resource-group ai-search-demo
 
-az search query-key list `
+> az search query-key list `
   --service-name rc-srch-demo `
   --resource-group ai-search-demo `
   --output table
@@ -226,13 +226,13 @@ az search query-key list `
 Once the deployment is complete, you can verify the search service endpoint is reachable by making a simple REST call.
 
 ```bash
-$env:SEARCH_ENDPOINT="https://rc-srch-demo.search.windows.net"
-$env:API_KEY=$(az search admin-key show `
+> $env:SEARCH_ENDPOINT="https://rc-srch-demo.search.windows.net"
+> $env:API_KEY=$(az search admin-key show `
   --service-name rc-srch-demo `
   --resource-group ai-search-demo `
   --query primaryKey -o tsv)
 
-Invoke-RestMethod -Uri "$env:SEARCH_ENDPOINT/indexes?api-version=2024-07-01" `
+> Invoke-RestMethod -Uri "$env:SEARCH_ENDPOINT/indexes?api-version=2024-07-01" `
   -Headers @{
     "api-key" = $env:API_KEY
     "Content-Type" = "application/json"
@@ -246,7 +246,7 @@ This should return an empty list of indexes since we have not created any yet. I
 Azure AI Search is a billable resource even when idle. If you are done experimenting, delete the resource group to avoid charges.
 
 ```bash
-az group delete `
+> az group delete `
   --name ai-search-demo `
   --yes --no-wait
 ```
