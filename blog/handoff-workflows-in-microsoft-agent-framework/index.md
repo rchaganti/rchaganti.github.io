@@ -24,7 +24,7 @@ A termination condition is a function that examines the conversation and decides
 Let's build a customer support system step by step. We'll start simple and progressively add sophistication. First, let us define the coordinator.
 
 ```python
-coordinator = chat_client.create_agent(
+coordinator = chat_client.as_agent(
     name="coordinator_agent",
     instructions="""You are a frontline customer support agent. 
     Assess the customer's issue and hand off to the appropriate specialist:
@@ -48,14 +48,14 @@ The agent names in the instructions (`refund_agent` and `shipping_agent`) must m
 We will now build the participant or the specialist agents. Each specialist has focused expertise and clear instructions on how to handle their domain:
 
 ```python
-refund_agent = chat_client.create_agent(
+refund_agent = chat_client.as_agent(
     name="refund_agent",
     instructions="""You handle refund requests. Ask for order details and process refunds.
     Once you have helped the customer, provide a clear resolution and end your response.
     Do not hand off back to the coordinator - just provide your final answer.""",
 )
 
-shipping_agent = chat_client.create_agent(
+shipping_agent = chat_client.as_agent(
     name="shipping_agent", 
     instructions="""You resolve shipping issues. Track packages and update delivery status.
     For order #12345, inform the customer that you've located the package and 
@@ -63,7 +63,7 @@ shipping_agent = chat_client.create_agent(
     Provide a clear resolution and end your response. Do not ask follow-up questions.""",
 )
 
-technical_agent = chat_client.create_agent(
+technical_agent = chat_client.as_agent(
     name="technical_agent",
     instructions="""You solve technical problems. Troubleshoot issues step by step.
     Once you have helped the customer, provide a clear resolution and end your response.
@@ -173,20 +173,28 @@ from agent_framework import (
     WorkflowStatusEvent,
     WorkflowRunState,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Coordinator agent
-coordinator = chat_client.create_agent(
+coordinator = chat_client.as_agent(
     name="coordinator_agent",
     instructions="""You are a frontline customer support agent. 
     Assess the customer's issue and hand off to the appropriate specialist:
@@ -199,21 +207,21 @@ coordinator = chat_client.create_agent(
 )
 
 # Specialist agents
-refund_agent = chat_client.create_agent(
+refund_agent = chat_client.as_agent(
     name="refund_agent",
     instructions="""You handle refund requests. Ask for order details and process refunds.
     Once you have helped the customer, provide a clear resolution and end your response.
     Do not hand off back to the coordinator - just provide your final answer.""",
 )
 
-shipping_agent = chat_client.create_agent(
+shipping_agent = chat_client.as_agent(
     name="shipping_agent", 
     instructions="""You resolve shipping issues. Track packages and update delivery status.
     For order #12345, inform the customer that you've located the package and it will be delivered within 2 business days.
     Provide a clear resolution and end your response. Do not ask follow-up questions.""",
 )
 
-technical_agent = chat_client.create_agent(
+technical_agent = chat_client.as_agent(
     name="technical_agent",
     instructions="""You solve technical problems. Troubleshoot issues step by step.
     Once you have helped the customer, provide a clear resolution and end your response.
@@ -319,13 +327,13 @@ Thank you — I’ve located the package for order #12345. It’s back in transi
 In the advanced implementation of this workflow, a specialist can hand off to other specialists.
 
 ```python
-senior_technical_agent = chat_client.create_agent(
+senior_technical_agent = chat_client.as_agent(
     name="senior_technical_agent",
     instructions="""You handle escalated technical issues that require 
     deep expertise. You receive cases from the technical_agent.""",
 )
 
-technical_agent = chat_client.create_agent(
+technical_agent = chat_client.as_agent(
     name="technical_agent",
     instructions="""You solve technical problems. For complex issues 
     you cannot resolve, hand off to senior_technical_agent.""",
@@ -364,4 +372,8 @@ The Handoff pattern enables dynamic, context-aware routing between agents. This 
 - Ensure each agent excels at exactly one thing.
 
 In the next article, we'll explore the group chat orchestration pattern for even more complex multi-agent collaboration scenarios.
+
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
 

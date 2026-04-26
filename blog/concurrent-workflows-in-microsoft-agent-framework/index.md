@@ -27,30 +27,38 @@ from agent_framework import (
     WorkflowStatusEvent,
     WorkflowRunState,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 
 from dotenv import load_dotenv
 load_dotenv()
 
 # Create chat client
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Create three specialized analyst agents
-technical_analyst = chat_client.create_agent(
+technical_analyst = chat_client.as_agent(
     name="TechnicalAnalyst",
     instructions="Analyze the topic from a technical/engineering perspective. Be concise.",
 )
 
-business_analyst = chat_client.create_agent(
+business_analyst = chat_client.as_agent(
     name="BusinessAnalyst",
     instructions="Analyze the topic from a business/market perspective. Be concise.",
 )
 
-ethical_analyst = chat_client.create_agent(
+ethical_analyst = chat_client.as_agent(
     name="EthicalAnalyst",
     instructions="Analyze the topic from an ethical/societal perspective. Be concise.",
 )
@@ -132,7 +140,7 @@ An aggregator is an async function that receives all agent responses and produce
 from agent_framework import AgentExecutorResponse, ChatMessage, Role
 
 # Create a summarizer agent to synthesize results
-summarizer = chat_client.create_agent(
+summarizer = chat_client.as_agent(
     name="Summarizer",
     instructions="""You are an expert synthesizer. You will receive analyses from three perspectives:
     - Technical/Engineering
@@ -203,36 +211,44 @@ from agent_framework import (
     WorkflowStatusEvent,
     WorkflowRunState,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 
 from dotenv import load_dotenv
 load_dotenv()
 
 # Create chat client
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Create agents with different perspectives
-technical_analyst = chat_client.create_agent(
+technical_analyst = chat_client.as_agent(
     name="TechnicalAnalyst",
     instructions="Analyze the topic from a technical/engineering perspective. Be concise.",
 )
 
-business_analyst = chat_client.create_agent(
+business_analyst = chat_client.as_agent(
     name="BusinessAnalyst",
     instructions="Analyze the topic from a business/market perspective. Be concise.",
 )
 
-ethical_analyst = chat_client.create_agent(
+ethical_analyst = chat_client.as_agent(
     name="EthicalAnalyst",
     instructions="Analyze the topic from an ethical/societal perspective. Be concise.",
 )
 
 # Create aggregator/summarizer agent
-summarizer = chat_client.create_agent(
+summarizer = chat_client.as_agent(
     name="Summarizer",
     instructions="""You are an expert synthesizer. You will receive analyses from three different perspectives:
     - Technical/Engineering
@@ -316,4 +332,8 @@ The design of an aggregator is important. Consider the following for designing a
 Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.
 
 In the next article, we'll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!
+
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
 

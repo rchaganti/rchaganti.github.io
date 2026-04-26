@@ -50,9 +50,10 @@ from agent_framework import (
   WorkflowRunState,
 )
 
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 from typing import Any
 from dotenv import load_dotenv
 
@@ -64,12 +65,19 @@ load_dotenv()
 We need a chat client for the workflow.
 
 ```python
-chat_client = AzureOpenAIChatClient(
+model = (
+  os.getenv("AZURE_OPENAI_CHAT_MODEL")
+  or os.getenv("AZURE_OPENAI_MODEL")
+  or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+  or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+  model=model,
   credential=DefaultAzureCredential(),
 )
 ```
 
-The `DefaultAzureCredential` handles authentication automatically. It tries multiple authentication methods in order:
+`OpenAIChatClient` resolves the deployed model name from one of the standard environment variables and authenticates via `DefaultAzureCredential`, which tries multiple authentication methods in order:
 
 - Environment variables
 - Managed Identity
@@ -78,17 +86,17 @@ The `DefaultAzureCredential` handles authentication automatically. It tries mult
 Now let's create three specialized agents for our content pipeline:
 
 ```python
-researcher = chat_client.create_agent(
+researcher = chat_client.as_agent(
     name="Researcher",
     instructions="Research the given topic and provide key facts and statistics.",
 )
 
-writer = chat_client.create_agent(
+writer = chat_client.as_agent(
     name="Writer", 
     instructions="Take the research and write an engaging article draft.",
 )
 
-editor = chat_client.create_agent(
+editor = chat_client.as_agent(
     name="Editor",
     instructions="Review the draft for clarity, grammar, and engagement. Provide the final version.",
 )
@@ -187,9 +195,10 @@ from agent_framework import (
     WorkflowStatusEvent,
     WorkflowRunState,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 from typing import Any
 
 from dotenv import load_dotenv
@@ -197,22 +206,29 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Create chat client
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Create specialized agents
-researcher = chat_client.create_agent(
+researcher = chat_client.as_agent(
     name="Researcher",
     instructions="Research the given topic and provide key facts and statistics.",
 )
 
-writer = chat_client.create_agent(
+writer = chat_client.as_agent(
     name="Writer", 
     instructions="Take the research and write an engaging article draft.",
 )
 
-editor = chat_client.create_agent(
+editor = chat_client.as_agent(
     name="Editor",
     instructions="Review the draft for clarity, grammar, and engagement. Provide the final version.",
 )
@@ -315,4 +331,8 @@ Sequential workflows in MAF provide a simple yet powerful way to orchestrate mul
 - The framework handles all the orchestration complexity
 
 The `SequentialBuilder` makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.
+
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
 

@@ -170,15 +170,23 @@ RECOMMEND: Request MarketResearcher to conduct deeper research on: {risk_factors
 Now we create four agents, each with distinct instructions and tools:
 
 ```python
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
+import os
 
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Market Researcher - gathers context and news
-market_researcher = chat_client.create_agent(
+market_researcher = chat_client.as_agent(
     name="MarketResearcher",
     instructions="""You are a market research analyst.
 
@@ -193,7 +201,7 @@ If asked to do a "deep dive" on specific risks, focus your search on those facto
 )
 
 # Financial Analyst - evaluates fundamentals
-financial_analyst = chat_client.create_agent(
+financial_analyst = chat_client.as_agent(
     name="FinancialAnalyst",
     instructions="""You are a financial analyst specializing in fundamental analysis.
 
@@ -205,7 +213,7 @@ YOUR ROLE:
 )
 
 # Risk Assessor - identifies and scores risks
-risk_assessor = chat_client.create_agent(
+risk_assessor = chat_client.as_agent(
     name="RiskAssessor",
     instructions="""You are a risk management specialist.
 
@@ -219,7 +227,7 @@ CRITICAL: If risk score > 7, recommend deeper research before final recommendati
 )
 
 # Investment Advisor - synthesizes final recommendation
-investment_advisor = chat_client.create_agent(
+investment_advisor = chat_client.as_agent(
     name="InvestmentAdvisor",
     instructions="""You are a senior investment advisor.
 
@@ -238,7 +246,7 @@ YOUR ROLE:
 The manager agent is the brain of the magentic workflow. Its instructions define how agents are coordinated:
 
 ```python
-manager_agent = chat_client.create_agent(
+manager_agent = chat_client.as_agent(
     name="InvestmentManager",
     instructions="""You are the Investment Due Diligence Manager.
 
@@ -396,4 +404,8 @@ Magentic is the most flexible but also the most resource-intensive pattern. The 
 - Task complexity warrants the overhead of LLM-based orchestration
 
 Magentic workflows represent the most sophisticated orchestration pattern in MAF, bridging the gap between rigid automation and truly autonomous multi-agent systems. When your task requires adaptive decision-making that can't be predetermined, magentic is the pattern to reach for.
+
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
 

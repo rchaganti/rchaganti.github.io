@@ -161,7 +161,7 @@ The one practical rule: do not call blocking I/O inside an async tool. If you ha
 Most non-trivial agents have more than one tool. You pass them as a list:
 
 ```python
-agent = chat_client.create_agent(
+agent = chat_client.as_agent(
     name="WeatherAgent",
     instructions="You are a weather assistant. Use the provided tools to answer questions.",
     tools=[get_weather, get_forecast, get_detailed_weather, search_locations],
@@ -239,9 +239,8 @@ Finally, if the tool's return value is large, the model will read it whether you
 
 Function tools are deceptively simple on the surface and surprisingly nuanced beneath the surface. The function signature, type hints, docstring, and return shape all become part of the prompt the model sees. Treat each of those as a piece of communication with the model, not as plumbing, and your agent will pick the right tool more often, pass the right arguments more often, and recover from errors more cleanly.
 
-In the next article, we will look at how an agent handles a conversation rather than a single turn. We have been calling `agent.run(...)` once and printing the result, but real applications have multi-turn conversations, and they often want to stream the response as it is generated. We will dig into `AgentThread`, streaming responses, and how the two interact when the agent is also calling tools.
+In the next article, we will look at how an agent handles a conversation rather than a single turn. We have been calling `agent.run(...)` once and printing the result, but real applications have multi-turn conversations, and they often want to stream the response as it is generated. We will dig into `AgentSession`, streaming responses, and how the two interact when the agent is also calling tools.
 
 {{< notice "info" >}}
-  Last updated: 26th April 2026
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The chat client method to construct an agent changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series have changes to imports and constructors as well; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
 {{< /notice >}}
-

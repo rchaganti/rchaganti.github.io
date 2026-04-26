@@ -19,17 +19,17 @@ The `GroupChat` workflow is ideal for scenarios where:
 To understand this better, let us start with an example. Let's build a classic brainstorming setup with three agents: a creative who generates ideas, a critic who challenges them, and a synthesizer who combines the best elements. Each agent needs a distinct perspective defined in its instructions:
 
 ```python
-creative = chat_client.create_agent(
+creative = chat_client.as_agent(
     name="Creative",
     instructions="You are a creative thinker. Generate bold, innovative ideas.",
 )
 
-critic = chat_client.create_agent(
+critic = chat_client.as_agent(
     name="Critic", 
     instructions="You are a critical thinker. Identify potential issues and challenges.",
 )
 
-synthesizer = chat_client.create_agent(
+synthesizer = chat_client.as_agent(
     name="Synthesizer",
     instructions="You synthesize ideas. Combine the best elements into actionable plans.",
 )
@@ -137,31 +137,39 @@ from agent_framework import (
     WorkflowStatusEvent,
     WorkflowRunState,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
+import os
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Create chat client
-chat_client = AzureOpenAIChatClient(
+model = (
+    os.getenv("AZURE_OPENAI_CHAT_MODEL")
+    or os.getenv("AZURE_OPENAI_MODEL")
+    or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
+    or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+)
+chat_client = OpenAIChatClient(
+    model=model,
     credential=DefaultAzureCredential(),
 )
 
 # Create participant agents
-creative = chat_client.create_agent(
+creative = chat_client.as_agent(
     name="Creative",
     instructions="You are a creative thinker. Generate bold, innovative ideas.",
 )
 
-critic = chat_client.create_agent(
+critic = chat_client.as_agent(
     name="Critic", 
     instructions="You are a critical thinker. Identify potential issues and challenges.",
 )
 
-synthesizer = chat_client.create_agent(
+synthesizer = chat_client.as_agent(
     name="Synthesizer",
     instructions="You synthesize ideas. Combine the best elements into actionable plans.",
 )
@@ -362,7 +370,7 @@ In this method, from the message history, we identify who spoke last and remove 
 For scenarios that require dynamic speaker selection, you can assign an LLM to be the manager.
 
 ```python
-moderator = chat_client.create_agent(
+moderator = chat_client.as_agent(
     name="Moderator",
     instructions="""You are a discussion moderator. 
     Based on the conversation so far, decide who should speak next:
@@ -431,4 +439,8 @@ The `GroupChat` workflow pattern enables dynamic, turn-based conversations betwe
 - Use streaming events to monitor conversation progress
 
 `GroupChat` excels when you need agents to build on each other's ideas; brainstorm, debate, code-review, and collaborate on problem-solving.
+
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
 

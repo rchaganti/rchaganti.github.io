@@ -93,7 +93,7 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
   "@type": "BlogPosting",
   "headline": "Concurrent workflows in Microsoft Agent Framework",
   "description": "In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks …",
-  "articleBody": "\"In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don\\u0026rsquo;t depend on each other\\u0026rsquo;s output, running them one at a time is inefficient.\\nHere\\u0026rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.\\nIn this article, we\\u0026rsquo;ll build up from a simple example to a sophisticated multi-analyst system that gathers insights from different perspectives and synthesizes them into a unified executive summary.\\nThe concurrent pattern is useful in scenarios such as:\\nIndependent analysis: Multiple agents can analyze the same input without needing each other\\u0026rsquo;s results. Time-sensitive operations: You need results fast, and parallelism can speed things up. Diverse perspectives: You want varied viewpoints on the same topic (technical, business, ethical, and so on). Redundancy/voting: Multiple agents tackle the same problem, and you aggregate their answers. Let us explore this further using an example. In this example, we will create three analyst agents that analyze a topic across three facets: technical, business, and ethical.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 from agent_framework import ( ConcurrentBuilder, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create three specialized analyst agents technical_analyst = chat_client.create_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.create_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.create_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Build the concurrent workflow workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .build() ) async def main(): print(\\u0026#34;Running concurrent analysis with 3 analysts...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;RESULTS\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) for msg in event.data: name = msg.author_name or \\u0026#34;Assistant\\u0026#34; print(f\\u0026#34;\\\\n--- {name} ---\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) In this concurrent workflow, three agents are created, each with a different analytical perspective. ConcurrentBuilder creates a workflow that runs all participants in parallel. All three agents receive the same input: Analyze the impact of autonomous vehicles. They execute simultaneously, returning results as they complete.\\nThe ConcurrentBuilder is a fluent builder pattern for constructing concurrent workflows:\\n1 2 3 4 5 workflow = ( ConcurrentBuilder() .participants([agent1, agent2, agent3]) # Agents to run in parallel .build() # Finalize and return the workflow ) Unlike SequentialBuilder, where agents run one after another, passing output forward, ConcurrentBuilder fans out the input to all participants simultaneously.\\nWith the help of events, we can track the progress of the agents as they complete.\\n1 2 3 4 5 6 7 8 9 10 11 12 $ python concurrent.py Running concurrent analysis with 3 analysts... ============================================================ ⚡ Starting: TechnicalAnalyst ⚡ Starting: BusinessAnalyst ⚡ Starting: EthicalAnalyst ✓ Completed: BusinessAnalyst ✓ Completed: TechnicalAnalyst ✓ Completed: EthicalAnalyst .... ✅ Workflow completed! So far, we have received individual responses from each agent. But what if we want to combine their insights into a unified summary? This is where aggregators come in.\\nWe can extend this workflow by adding an aggregator. It would be nice if another agent could take the response from the parallel workflow and summarize it for us.\\nBuilding a custom aggregator function An aggregator is an async function that receives all agent responses and produces a combined output.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 from agent_framework import AgentExecutorResponse, ChatMessage, Role # Create a summarizer agent to synthesize results summarizer = chat_client.create_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Create a unified executive summary that: 1. Highlights key insights from each perspective 2. Identifies common themes 3. Notes tensions or trade-offs 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Step 1: Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Step 2: Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Step 3: Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text This aggregator function can be used with ConcurrentBuilder().\\n1 2 3 4 5 6 workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) The .with_aggregator() method tells the workflow what to do with all the parallel results:\\nAll three analysts run concurrently. Once all are complete, the results are passed to aggregate_with_summarizer. The summarizer creates a unified executive summary. The summary becomes the final WorkflowOutputEvent.data Here is the complete working example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 from agent_framework import ( ConcurrentBuilder, AgentExecutorResponse, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio from dotenv import load_dotenv load_dotenv() # Create chat client chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) # Create agents with different perspectives technical_analyst = chat_client.create_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.create_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.create_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Create aggregator/summarizer agent summarizer = chat_client.create_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three different perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Your job is to create a unified executive summary that: 1. Highlights the key insights from each perspective 2. Identifies common themes across all analyses 3. Notes any tensions or trade-offs between perspectives 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) # Custom aggregator function that uses the summarizer agent async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text # Build concurrent workflow with custom aggregator workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) async def main(): # Run the workflow with streaming events print(\\u0026#34;Running concurrent analysis with 3 analysts + summarizer...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the aggregated summary if output_evt: print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;EXECUTIVE SUMMARY (Aggregated by Summarizer Agent)\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(output_evt.data) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The design of an aggregator is important. Consider the following for designing a meaningful aggregator.\\nWhat insights should be preserved from each agent? How should conflicts between perspectives be handled? What format does the final output need to be in? Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.\\nIn the next article, we\\u0026rsquo;ll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!\\n\"",
+  "articleBody": "\"In the [previous article](Sequential workflows in Microsoft Agent Framework | Ravikanth Chaganti), we explored the sequential workflow pattern, a straightforward approach where agents process tasks one after another in a defined order. While sequential workflows are powerful for pipeline-style processing, they have a limitation: speed. When agents don\\u0026rsquo;t depend on each other\\u0026rsquo;s output, running them one at a time is inefficient.\\nHere\\u0026rsquo;s where the concurrent workflow pattern comes into play. This pattern allows multiple agents to work in parallel, dramatically reducing total execution time and enabling scenarios that require diverse perspectives to be analyzed simultaneously.\\nIn this article, we\\u0026rsquo;ll build up from a simple example to a sophisticated multi-analyst system that gathers insights from different perspectives and synthesizes them into a unified executive summary.\\nThe concurrent pattern is useful in scenarios such as:\\nIndependent analysis: Multiple agents can analyze the same input without needing each other\\u0026rsquo;s results. Time-sensitive operations: You need results fast, and parallelism can speed things up. Diverse perspectives: You want varied viewpoints on the same topic (technical, business, ethical, and so on). Redundancy/voting: Multiple agents tackle the same problem, and you aggregate their answers. Let us explore this further using an example. In this example, we will create three analyst agents that analyze a topic across three facets: technical, business, and ethical.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 from agent_framework import ( ConcurrentBuilder, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio import os from dotenv import load_dotenv load_dotenv() # Create chat client model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) # Create three specialized analyst agents technical_analyst = chat_client.as_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.as_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.as_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Build the concurrent workflow workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .build() ) async def main(): print(\\u0026#34;Running concurrent analysis with 3 analysts...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;RESULTS\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) for msg in event.data: name = msg.author_name or \\u0026#34;Assistant\\u0026#34; print(f\\u0026#34;\\\\n--- {name} ---\\u0026#34;) print(msg.text) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) In this concurrent workflow, three agents are created, each with a different analytical perspective. ConcurrentBuilder creates a workflow that runs all participants in parallel. All three agents receive the same input: Analyze the impact of autonomous vehicles. They execute simultaneously, returning results as they complete.\\nThe ConcurrentBuilder is a fluent builder pattern for constructing concurrent workflows:\\n1 2 3 4 5 workflow = ( ConcurrentBuilder() .participants([agent1, agent2, agent3]) # Agents to run in parallel .build() # Finalize and return the workflow ) Unlike SequentialBuilder, where agents run one after another, passing output forward, ConcurrentBuilder fans out the input to all participants simultaneously.\\nWith the help of events, we can track the progress of the agents as they complete.\\n1 2 3 4 5 6 7 8 9 10 11 12 $ python concurrent.py Running concurrent analysis with 3 analysts... ============================================================ ⚡ Starting: TechnicalAnalyst ⚡ Starting: BusinessAnalyst ⚡ Starting: EthicalAnalyst ✓ Completed: BusinessAnalyst ✓ Completed: TechnicalAnalyst ✓ Completed: EthicalAnalyst .... ✅ Workflow completed! So far, we have received individual responses from each agent. But what if we want to combine their insights into a unified summary? This is where aggregators come in.\\nWe can extend this workflow by adding an aggregator. It would be nice if another agent could take the response from the parallel workflow and summarize it for us.\\nBuilding a custom aggregator function An aggregator is an async function that receives all agent responses and produces a combined output.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 from agent_framework import AgentExecutorResponse, ChatMessage, Role # Create a summarizer agent to synthesize results summarizer = chat_client.as_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Create a unified executive summary that: 1. Highlights key insights from each perspective 2. Identifies common themes 3. Notes tensions or trade-offs 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Step 1: Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Step 2: Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Step 3: Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text This aggregator function can be used with ConcurrentBuilder().\\n1 2 3 4 5 6 workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) The .with_aggregator() method tells the workflow what to do with all the parallel results:\\nAll three analysts run concurrently. Once all are complete, the results are passed to aggregate_with_summarizer. The summarizer creates a unified executive summary. The summary becomes the final WorkflowOutputEvent.data Here is the complete working example.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 from agent_framework import ( ConcurrentBuilder, AgentExecutorResponse, ChatMessage, Role, WorkflowOutputEvent, ExecutorInvokedEvent, ExecutorCompletedEvent, WorkflowStatusEvent, WorkflowRunState, ) from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio import os from dotenv import load_dotenv load_dotenv() # Create chat client model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) # Create agents with different perspectives technical_analyst = chat_client.as_agent( name=\\u0026#34;TechnicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a technical/engineering perspective. Be concise.\\u0026#34;, ) business_analyst = chat_client.as_agent( name=\\u0026#34;BusinessAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from a business/market perspective. Be concise.\\u0026#34;, ) ethical_analyst = chat_client.as_agent( name=\\u0026#34;EthicalAnalyst\\u0026#34;, instructions=\\u0026#34;Analyze the topic from an ethical/societal perspective. Be concise.\\u0026#34;, ) # Create aggregator/summarizer agent summarizer = chat_client.as_agent( name=\\u0026#34;Summarizer\\u0026#34;, instructions=\\u0026#34;\\u0026#34;\\u0026#34;You are an expert synthesizer. You will receive analyses from three different perspectives: - Technical/Engineering - Business/Market - Ethical/Societal Your job is to create a unified executive summary that: 1. Highlights the key insights from each perspective 2. Identifies common themes across all analyses 3. Notes any tensions or trade-offs between perspectives 4. Provides actionable recommendations Keep the summary concise but comprehensive.\\u0026#34;\\u0026#34;\\u0026#34;, ) # Custom aggregator function that uses the summarizer agent async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Aggregate all analyst responses using the summarizer agent.\\u0026#34;\\u0026#34;\\u0026#34; # Collect all analyses analyses = [] for r in results: agent_name = r.executor_id # Get the last assistant message (the analysis) for msg in reversed(r.agent_run_response.messages): if msg.role.value == \\u0026#34;assistant\\u0026#34;: analyses.append(f\\u0026#34;## {agent_name} Analysis\\\\n{msg.text}\\u0026#34;) break # Create prompt for summarizer combined = \\u0026#34;\\\\n\\\\n---\\\\n\\\\n\\u0026#34;.join(analyses) prompt = f\\u0026#34;Please synthesize the following three analyses into a unified executive summary:\\\\n\\\\n{combined}\\u0026#34; # Run summarizer agent response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)]) return response.text # Build concurrent workflow with custom aggregator workflow = ( ConcurrentBuilder() .participants([technical_analyst, business_analyst, ethical_analyst]) .with_aggregator(aggregate_with_summarizer) .build() ) async def main(): # Run the workflow with streaming events print(\\u0026#34;Running concurrent analysis with 3 analysts + summarizer...\\u0026#34;) print(\\u0026#34;=\\u0026#34; * 60) output_evt: WorkflowOutputEvent | None = None async for event in workflow.run_stream(\\u0026#34;Analyze the impact of autonomous vehicles\\u0026#34;): if isinstance(event, ExecutorInvokedEvent): print(f\\u0026#34;⚡ Starting: {event.executor_id}\\u0026#34;) elif isinstance(event, ExecutorCompletedEvent): print(f\\u0026#34;✓ Completed: {event.executor_id}\\u0026#34;) elif isinstance(event, WorkflowStatusEvent): if event.state == WorkflowRunState.IDLE: print(\\u0026#34;\\\\n✅ Workflow completed!\\u0026#34;) elif isinstance(event, WorkflowOutputEvent): output_evt = event # Display the aggregated summary if output_evt: print(f\\u0026#34;\\\\n{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(\\u0026#34;EXECUTIVE SUMMARY (Aggregated by Summarizer Agent)\\u0026#34;) print(f\\u0026#34;{\\u0026#39;=\\u0026#39;*60}\\u0026#34;) print(output_evt.data) if __name__ == \\u0026#34;__main__\\u0026#34;: asyncio.run(main()) The design of an aggregator is important. Consider the following for designing a meaningful aggregator.\\nWhat insights should be preserved from each agent? How should conflicts between perspectives be handled? What format does the final output need to be in? Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.\\nIn the next article, we\\u0026rsquo;ll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!\\nℹ️ Updated 26th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized after this article was first published. AzureOpenAIChatClient (in agent_framework.azure) has been replaced by OpenAIChatClient (in agent_framework.openai), which now requires an explicit model= parameter resolved from environment variables. Chat clients also use chat_client.as_agent(...) rather than chat_client.create_agent(...). Code samples have been updated to match the new package layout. See the client comparison article for the current set of clients and how to use them. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/concurrent-workflows-in-microsoft-agent-framework\/",
   "datePublished": "2025-10-14T00:00:00Z",
   "dateModified": "2025-10-14T00:00:00Z",
@@ -695,7 +695,7 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 12-part series
+        Part of a 13-part series
       </p>
 
       
@@ -871,6 +871,20 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
               </div>
             </li>
           
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                13
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Streaming and multi-turn conversations in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 4, 2026</p>
+              </div>
+            </li>
+          
         </ol>
 
         
@@ -887,6 +901,8 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
           
             
               
+            
+          
             
           
             
@@ -1076,6 +1092,14 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 </span><span class="lnt">64
 </span><span class="lnt">65
 </span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
@@ -1086,30 +1110,38 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowRunState</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
-</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create three specialized analyst agents</span>
-</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;TechnicalAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a technical/engineering perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;BusinessAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a business/market perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;EthicalAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from an ethical/societal perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
@@ -1252,7 +1284,7 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">AgentExecutorResponse</span><span class="p">,</span> <span class="n">ChatMessage</span><span class="p">,</span> <span class="n">Role</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create a summarizer agent to synthesize results</span>
-</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Summarizer&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are an expert synthesizer. You will receive analyses from three perspectives:
 </span></span></span><span class="line"><span class="cl"><span class="s2">    - Technical/Engineering
@@ -1433,6 +1465,14 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 </span><span class="lnt">111
 </span><span class="lnt">112
 </span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
@@ -1446,36 +1486,44 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowStatusEvent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">WorkflowRunState</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create chat client</span>
-</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create agents with different perspectives</span>
-</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">technical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;TechnicalAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a technical/engineering perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">business_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;BusinessAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from a business/market perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">ethical_analyst</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;EthicalAnalyst&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;Analyze the topic from an ethical/societal perspective. Be concise.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Create aggregator/summarizer agent</span>
-</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl"><span class="n">summarizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Summarizer&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are an expert synthesizer. You will receive analyses from three different perspectives:
 </span></span></span><span class="line"><span class="cl"><span class="s2">    - Technical/Engineering
@@ -1558,6 +1606,68 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
 </ul>
 <p>Agents in a concurrent workflow may complete at different speeds. The concurrent workflow waits for all to finish before aggregating. If you need partial results, consider using the events to track individual completions.</p>
 <p>In the next article, we&rsquo;ll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!</p>
+<style>
+.notice-shortcode.notice-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.dark .notice-shortcode.notice-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: #1e40af;
+  color: #f1f5f9;
+}
+.notice-shortcode.notice-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+}
+.dark .notice-shortcode.notice-warning {
+  background-color: rgba(133, 77, 14, 0.2);
+  border-color: #ca8a04;
+  color: #fef9c3;
+}
+.notice-shortcode.notice-tip {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #14532d;
+}
+.dark .notice-shortcode.notice-tip {
+  background-color: rgba(20, 83, 45, 0.2);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+.notice-shortcode.notice-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
+.dark .notice-shortcode.notice-danger {
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  color: #fecaca;
+}
+.notice-shortcode.notice-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+.dark .notice-shortcode.notice-success {
+  background-color: rgba(6, 78, 59, 0.2);
+  border-color: #059669;
+  color: #d1fae5;
+}
+</style>
+
+<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
+    <div class="flex-1 notice-content">
+      <strong>Updated 26th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized after this article was first published. <code>AzureOpenAIChatClient</code> (in <code>agent_framework.azure</code>) has been replaced by <code>OpenAIChatClient</code> (in <code>agent_framework.openai</code>), which now requires an explicit <code>model=</code> parameter resolved from environment variables. Chat clients also use <code>chat_client.as_agent(...)</code> rather than <code>chat_client.create_agent(...)</code>. Code samples have been updated to match the new package layout. See the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current set of clients and how to use them.
+    </div>
+  </div>
+</div>
+
 
         </div>
 
@@ -1718,6 +1828,8 @@ Here&rsquo;s where the concurrent workflow pattern comes into play. This pattern
     
       
         
+      
+    
       
     
       
