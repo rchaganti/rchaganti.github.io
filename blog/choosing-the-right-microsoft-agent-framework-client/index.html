@@ -18,11 +18,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A | Ravikanth Chaganti</title>
+  <title>Choosing the right Microsoft Agent Framework client | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="In the previous article, we explored how to build multi-agent systems using Google&rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and exposed it via A2A, then created a travel assistant that consumed it—all within the ADK ecosystem.
-But here&rsquo;s where A2A truly shines: framework interoperability. The A2A protocol isn&rsquo;t tied to any specific agent framework. Any A2A-compliant agent can communicate with any other, regardless of whether it was built with Google ADK, Microsoft Agent Framework, LangChain, or a custom implementation.">
+  <meta name="description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to AzureOpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,38 +30,36 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
   
 
   
-  <meta property="og:title" content="Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
-  <meta property="og:description" content="In the previous article, we explored how to build multi-agent systems using Google&rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and exposed it via A2A, then created a travel assistant that consumed it—all within the ADK ecosystem.
-But here&rsquo;s where A2A truly shines: framework interoperability. The A2A protocol isn&rsquo;t tied to any specific agent framework. Any A2A-compliant agent can communicate with any other, regardless of whether it was built with Google ADK, Microsoft Agent Framework, LangChain, or a custom implementation.">
+  <meta property="og:title" content="Choosing the right Microsoft Agent Framework client">
+  <meta property="og:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to AzureOpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
+  <meta property="og:image:alt" content="Choosing the right Microsoft Agent Framework client">
 
   
   
-    <meta property="article:published_time" content="2026-01-28T00:00:00Z">
-    <meta property="article:modified_time" content="2026-01-28T00:00:00Z">
+    <meta property="article:published_time" content="2026-03-01T00:00:00Z">
+    <meta property="article:modified_time" content="2026-03-01T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
-    <meta property="article:section" content="Microsoft">
+    <meta property="article:section" content="Microsoft Agent Framework">
     
   
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A">
-  <meta name="twitter:description" content="In the previous article, we explored how to build multi-agent systems using Google&rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and exposed it via A2A, then created a travel assistant that consumed it—all within the ADK ecosystem.
-But here&rsquo;s where A2A truly shines: framework interoperability. The A2A protocol isn&rsquo;t tied to any specific agent framework. Any A2A-compliant agent can communicate with any other, regardless of whether it was built with Google ADK, Microsoft Agent Framework, LangChain, or a custom implementation.">
+  <meta name="twitter:title" content="Choosing the right Microsoft Agent Framework client">
+  <meta name="twitter:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to AzureOpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -91,12 +88,12 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A",
-  "description": "In the previous article, we explored how to build multi-agent systems using Google\u0026rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and …",
-  "articleBody": "\"In the previous article, we explored how to build multi-agent systems using Google\\u0026rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and exposed it via A2A, then created a travel assistant that consumed it—all within the ADK ecosystem.\\nBut here\\u0026rsquo;s where A2A truly shines: framework interoperability. The A2A protocol isn\\u0026rsquo;t tied to any specific agent framework. Any A2A-compliant agent can communicate with any other, regardless of whether it was built with Google ADK, Microsoft Agent Framework, LangChain, or a custom implementation.\\nIn today\\u0026rsquo;s article, I\\u0026rsquo;ll demonstrate this by building a Microsoft Agent Framework (MAF) agent that consumes the ADK currency agent we created earlier. This proves the real value of A2A—true framework-agnostic agent communication.\\nComplete code for this article is available at rchaganti/a2a-samples\\nPrerequisites Before diving in, make sure you have:\\nThe ADK currency agent from the previous article is running on port 8001 Microsoft Agent Framework installed: 1 pip install agent-framework --pre httpx a2a When a MAF agent wants to communicate with an A2A server (our ADK agent), it needs to:\\nDiscover the agent by fetching its agent card from the well-known endpoint. Create a task by sending a message to the agent. Receive the response, which may include the agent\\u0026rsquo;s reply or artifacts. The A2A protocol handles all the complexity of message formatting, task management, and response handling through a standard HTTP/JSON interface.\\nThe A2A Client Components in MAF Microsoft Agent Framework provides first-class support for A2A through two key components:\\n1. A2ACardResolver The A2ACardResolver class from the a2a.client package handles agent discovery:\\n1 2 3 4 5 6 7 8 9 10 from a2a.client import A2ACardResolver import httpx async with httpx.AsyncClient(timeout=60.0) as http_client: resolver = A2ACardResolver( httpx_client=http_client, base_url=\\u0026#34;http://localhost:8001\\u0026#34; ) agent_card = await resolver.get_agent_card() This fetches the Agent Card from http://localhost:8001/.well-known/agent.json, which contains:\\nAgent name and description Supported capabilities and skills Authentication requirements Protocol version information 2. A2AAgent The A2AAgent class wraps a remote A2A agent as a local MAF agent:\\n1 2 3 4 5 6 7 8 from agent_framework.a2a import A2AAgent currency_agent = A2AAgent( name=\\u0026#34;currency_converter\\u0026#34;, description=\\u0026#34;Remote agent for currency conversions\\u0026#34;, agent_card=agent_card, url=\\u0026#34;http://localhost:8001\\u0026#34;, ) Once wrapped, you can interact with the remote agent using the standard MAF interface:\\n1 2 3 response = await currency_agent.run(\\u0026#34;Convert 100 USD to EUR\\u0026#34;) for message in response.messages: print(message.text) Building a MAF Shopping Assistant Let\\u0026rsquo;s build a practical example: a shopping assistant that uses local tools for product management and delegates currency conversions to the remote ADK agent.\\nLocal Shopping Tools First, we define our local capabilities:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 PRODUCTS = { \\u0026#34;laptop\\u0026#34;: {\\u0026#34;price\\u0026#34;: 1299.99, \\u0026#34;category\\u0026#34;: \\u0026#34;Electronics\\u0026#34;}, \\u0026#34;headphones\\u0026#34;: {\\u0026#34;price\\u0026#34;: 199.99, \\u0026#34;category\\u0026#34;: \\u0026#34;Electronics\\u0026#34;}, \\u0026#34;keyboard\\u0026#34;: {\\u0026#34;price\\u0026#34;: 89.99, \\u0026#34;category\\u0026#34;: \\u0026#34;Electronics\\u0026#34;}, \\u0026#34;backpack\\u0026#34;: {\\u0026#34;price\\u0026#34;: 79.99, \\u0026#34;category\\u0026#34;: \\u0026#34;Accessories\\u0026#34;}, } def get_product_price(product_name: str) -\\u0026gt; dict: \\u0026#34;\\u0026#34;\\u0026#34;Get the price of a product in USD.\\u0026#34;\\u0026#34;\\u0026#34; product_lower = product_name.lower().strip() if product_lower in PRODUCTS: product = PRODUCTS[product_lower] return { \\u0026#34;success\\u0026#34;: True, \\u0026#34;product\\u0026#34;: product_name.title(), \\u0026#34;price_usd\\u0026#34;: product[\\u0026#34;price\\u0026#34;], \\u0026#34;category\\u0026#34;: product[\\u0026#34;category\\u0026#34;], \\u0026#34;message\\u0026#34;: f\\u0026#34;{product_name.title()}: ${product[\\u0026#39;price\\u0026#39;]:.2f} USD\\u0026#34; } return { \\u0026#34;success\\u0026#34;: False, \\u0026#34;message\\u0026#34;: f\\u0026#34;Product \\u0026#39;{product_name}\\u0026#39; not found.\\u0026#34; } def calculate_cart_total(items: list[dict]) -\\u0026gt; dict: \\u0026#34;\\u0026#34;\\u0026#34;Calculate the total price for a shopping cart.\\u0026#34;\\u0026#34;\\u0026#34; subtotal = 0.0 cart_items = [] for item in items: product_name = item.get(\\u0026#34;product\\u0026#34;, \\u0026#34;\\u0026#34;).lower().strip() quantity = item.get(\\u0026#34;quantity\\u0026#34;, 1) if product_name in PRODUCTS: product = PRODUCTS[product_name] item_total = product[\\u0026#34;price\\u0026#34;] * quantity subtotal += item_total cart_items.append({ \\u0026#34;product\\u0026#34;: product_name.title(), \\u0026#34;unit_price\\u0026#34;: product[\\u0026#34;price\\u0026#34;], \\u0026#34;quantity\\u0026#34;: quantity, \\u0026#34;item_total\\u0026#34;: round(item_total, 2) }) # Apply tax (8.5%) tax = round(subtotal * 0.085, 2) total = round(subtotal + tax, 2) return { \\u0026#34;success\\u0026#34;: True, \\u0026#34;items\\u0026#34;: cart_items, \\u0026#34;subtotal_usd\\u0026#34;: round(subtotal, 2), \\u0026#34;tax_usd\\u0026#34;: tax, \\u0026#34;total_usd\\u0026#34;: total, \\u0026#34;message\\u0026#34;: f\\u0026#34;Cart total: ${total:.2f} USD (including ${tax:.2f} tax)\\u0026#34; } Connecting to the Remote ADK Agent Now we connect to the ADK Currency Agent:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 import asyncio import httpx from a2a.client import A2ACardResolver from agent_framework.a2a import A2AAgent ADK_CURRENCY_AGENT_URL = \\u0026#34;http://localhost:8001\\u0026#34; async def create_currency_agent(): \\u0026#34;\\u0026#34;\\u0026#34;Create an A2A agent wrapper for the remote ADK currency agent.\\u0026#34;\\u0026#34;\\u0026#34; async with httpx.AsyncClient(timeout=60.0) as http_client: resolver = A2ACardResolver( httpx_client=http_client, base_url=ADK_CURRENCY_AGENT_URL ) agent_card = await resolver.get_agent_card() print(f\\u0026#34;✅ Connected to: {agent_card.name}\\u0026#34;) print(f\\u0026#34; Description: {agent_card.description}\\u0026#34;) return A2AAgent( name=\\u0026#34;currency_converter\\u0026#34;, description=\\u0026#34;\\u0026#34;\\u0026#34;Remote agent for currency conversions. Use for: converting amounts, getting exchange rates, listing supported currencies.\\u0026#34;\\u0026#34;\\u0026#34;, agent_card=agent_card, url=ADK_CURRENCY_AGENT_URL, ) We can now orchestrate between local tools and the remote A2A agent:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 async def shopping_with_currency_conversion(): \\u0026#34;\\u0026#34;\\u0026#34;Demonstrate local tools + remote A2A agent working together.\\u0026#34;\\u0026#34;\\u0026#34; async with httpx.AsyncClient(timeout=60.0) as http_client: # Connect to the remote ADK agent resolver = A2ACardResolver( httpx_client=http_client, base_url=ADK_CURRENCY_AGENT_URL ) agent_card = await resolver.get_agent_card() currency_agent = A2AAgent( name=\\u0026#34;currency_converter\\u0026#34;, description=\\u0026#34;Remote currency conversion agent\\u0026#34;, agent_card=agent_card, url=ADK_CURRENCY_AGENT_URL, ) # Step 1: Use LOCAL tools to calculate cart print(\\u0026#34;📦 Using LOCAL shopping tools...\\u0026#34;) cart_result = calculate_cart_total([ {\\u0026#34;product\\u0026#34;: \\u0026#34;laptop\\u0026#34;, \\u0026#34;quantity\\u0026#34;: 1}, {\\u0026#34;product\\u0026#34;: \\u0026#34;headphones\\u0026#34;, \\u0026#34;quantity\\u0026#34;: 2} ]) print(f\\u0026#34; {cart_result[\\u0026#39;message\\u0026#39;]}\\u0026#34;) total_usd = cart_result[\\u0026#34;total_usd\\u0026#34;] # Step 2: Use REMOTE A2A agent for currency conversion print(\\u0026#34;\\\\n🌐 Using REMOTE A2A agent for currency conversion...\\u0026#34;) response = await currency_agent.run(f\\u0026#34;Convert {total_usd} USD to EUR\\u0026#34;) for message in response.messages: print(f\\u0026#34; {message.text}\\u0026#34;) Running this produces:\\n1 2 3 4 5 📦 Using LOCAL shopping tools... Cart total: $1838.46 USD (including $143.50 tax) 🌐 Using REMOTE A2A agent for currency conversion... 1838.46 USD = 1691.38 EUR Let\\u0026rsquo;s trace through exactly what happens when MAF calls the ADK agent:\\nAgent Discovery When A2ACardResolver.get_agent_card() is called, it sends:\\n1 2 GET /.well-known/agent.json HTTP/1.1 Host: localhost:8001 The ADK agent responds with its Agent Card:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 { \\u0026#34;name\\u0026#34;: \\u0026#34;currency_agent\\u0026#34;, \\u0026#34;description\\u0026#34;: \\u0026#34;A currency conversion agent that can convert amounts...\\u0026#34;, \\u0026#34;url\\u0026#34;: \\u0026#34;http://localhost:8001\\u0026#34;, \\u0026#34;version\\u0026#34;: \\u0026#34;1.0.0\\u0026#34;, \\u0026#34;capabilities\\u0026#34;: { \\u0026#34;streaming\\u0026#34;: false, \\u0026#34;pushNotifications\\u0026#34;: false }, \\u0026#34;defaultInputModes\\u0026#34;: [\\u0026#34;text\\u0026#34;], \\u0026#34;defaultOutputModes\\u0026#34;: [\\u0026#34;text\\u0026#34;], \\u0026#34;skills\\u0026#34;: [ { \\u0026#34;id\\u0026#34;: \\u0026#34;convert_currency\\u0026#34;, \\u0026#34;name\\u0026#34;: \\u0026#34;Currency Conversion\\u0026#34;, \\u0026#34;description\\u0026#34;: \\u0026#34;Convert amounts between different currencies\\u0026#34; } ] } Task Creation When currency_agent.run(\\u0026quot;Convert 100 USD to EUR\\u0026quot;) is called, MAF sends:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 POST /tasks/send HTTP/1.1 Host: localhost:8001 Content-Type: application/json { \\u0026#34;jsonrpc\\u0026#34;: \\u0026#34;2.0\\u0026#34;, \\u0026#34;method\\u0026#34;: \\u0026#34;tasks/send\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;unique-request-id\\u0026#34;, \\u0026#34;params\\u0026#34;: { \\u0026#34;id\\u0026#34;: \\u0026#34;task-uuid\\u0026#34;, \\u0026#34;message\\u0026#34;: { \\u0026#34;role\\u0026#34;: \\u0026#34;user\\u0026#34;, \\u0026#34;parts\\u0026#34;: [ { \\u0026#34;type\\u0026#34;: \\u0026#34;text\\u0026#34;, \\u0026#34;text\\u0026#34;: \\u0026#34;Convert 100 USD to EUR\\u0026#34; } ] } } } Response Handling The ADK agent processes the request, calls its tools, and returns:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 { \\u0026#34;jsonrpc\\u0026#34;: \\u0026#34;2.0\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;unique-request-id\\u0026#34;, \\u0026#34;result\\u0026#34;: { \\u0026#34;id\\u0026#34;: \\u0026#34;task-uuid\\u0026#34;, \\u0026#34;status\\u0026#34;: { \\u0026#34;state\\u0026#34;: \\u0026#34;completed\\u0026#34; }, \\u0026#34;messages\\u0026#34;: [ { \\u0026#34;role\\u0026#34;: \\u0026#34;agent\\u0026#34;, \\u0026#34;parts\\u0026#34;: [ { \\u0026#34;type\\u0026#34;: \\u0026#34;text\\u0026#34;, \\u0026#34;text\\u0026#34;: \\u0026#34;100 USD = 92 EUR\\u0026#34; } ] } ] } } MAF\\u0026rsquo;s A2AAgent handles all this serialization and deserialization, presenting a clean interface.\\nThe A2A protocol represents a significant step toward a future in which AI agents can collaborate regardless of their underlying frameworks. By standardizing the communication layer, we can build best-of-breed systems that leverage specialized agents from different ecosystems. A2A enables true interoperability, allowing agents developed in different frameworks to communicate seamlessly. The well-known endpoint (/.well-known/agent.json) provides all the information needed for agent discovery.\\nIn future articles, we\\u0026rsquo;ll explore:\\nExposing MAF agents via A2A for ADK or other frameworks to consume. Multi-agent orchestration with agents from different frameworks. Authentication and security in A2A communications. Streaming responses for long-running agent tasks. \"",
-  "url": "https:\/\/ravichaganti.com\/blog\/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a\/",
-  "datePublished": "2026-01-28T00:00:00Z",
-  "dateModified": "2026-01-28T00:00:00Z",
+  "headline": "Choosing the right Microsoft Agent Framework client",
+  "description": "If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used …",
+  "articleBody": "\"If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to AzureOpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — \\u0026ldquo;give me an agent that talks to a model.\\u0026rdquo;\\nThe reason for the variety is simple. MAF deliberately separates which model surface you talk to from how the agent and its conversation are managed. Each client class targets a different combination of those two questions. Picking the right one up front saves a surprising amount of refactoring later, especially when you start adding hosted tools, adding persistence, or moving an agent to production.\\nIn this article, we will pull all of these clients into one place, explain what each one is for, and build the same simple weather agent three different ways so you can see what changes and what stays the same.\\nThe mental model: client first, agent second In MAF, an agent is a thin object. Almost everything that determines runtime behavior, which API surface you call, which tools you can attach, where conversation state lives, is decided by the client you give the agent.\\nWhen you write code like this:\\n1 2 3 4 agent = chat_client.create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) the chat_client on the left of .create_agent is doing more work than it looks. It carries:\\nthe model endpoint and the deployed model name the credential used to authenticate every call the API surface (Chat Completions, Responses, Foundry Agent Service) the set of hosted tools available to the agent the strategy for storing or persisting conversations If you swap the client, all of those change at once. Swap the agent definition, and only the persona changes. That is why the rest of this article is organized around clients rather than agents.\\nBefore you pick a client, three questions decide most of the answers for you.\\nWhere does your model live? If you are deploying models through Microsoft Foundry, your client choice is between AzureAIClient (use the Foundry-deployed model directly) or AzureAIAgentClient (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI, you want either AzureAIClient or AzureOpenAIResponsesClient. If you are calling OpenAI directly, you want OpenAIChatClient or OpenAIResponsesClient. If you are running a model locally, Ollama, LM Studio, Foundry Local, you bring your own IChatClient and use the generic agent path.\\nDo you need hosted tools? Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through AzureAIAgentClient.\\nWho owns conversation state? If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (AzureAIAgentClient) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover AgentThread for multi-turn conversations.\\nThese three questions almost always narrow you down to one or two choices. The sections below walk through each client in turn.\\nAzureOpenAIChatClient This is the client we have used in the workflow articles. It targets the Azure OpenAI Chat Completions API, which is the most stable and widely available surface in the Azure OpenAI service. If your team has an Azure OpenAI resource, this is the safest starting point.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 import asyncio from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential async def main(): chat_client = AzureOpenAIChatClient( credential=DefaultAzureCredential(), ) agent = chat_client.create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) result = await agent.run(\\u0026#34;What should I wear in Bengaluru today?\\u0026#34;) print(result.text) asyncio.run(main()) This client picks up the endpoint and model deployment from environment variables (AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT_NAME), the same as in the workflow articles. Hosted tools available here include function tools and a limited set of others; richer tools belong on the Responses path described next.\\nAzureOpenAIResponsesClient The Responses API is Azure OpenAI\\u0026rsquo;s newer surface. It exposes more hosted tools out of the box (web search, file search, code interpreter) and carries server-side conversation state via previous_response_id. The trade-off is that support for the Responses API is uneven across regions and model families. Check that the model you want is available in the region you need before committing.\\n1 2 3 4 5 6 from agent_framework.azure import AzureOpenAIResponsesClient from azure.identity import DefaultAzureCredential chat_client = AzureOpenAIResponsesClient( credential=DefaultAzureCredential(), ) If your agent needs a hosted file search or code interpreter, and you are on Azure OpenAI, this is the client to reach for. If you only need function tools, stay on Chat Completions.\\nOpenAIChatClient and OpenAIResponsesClient When you are calling OpenAI\\u0026rsquo;s API directly rather than going through Azure, MAF gives you the same Chat / Responses split.\\n1 2 3 from agent_framework.openai import OpenAIChatClient chat_client = OpenAIChatClient(api_key=\\u0026#34;\\u0026lt;your-openai-api-key\\u0026gt;\\u0026#34;) The decision logic is identical to the Azure side. Use the responsesclient when you want richer hosted tools; use Chat Completions when you want stability and broader model coverage. Most enterprise teams will be on the Azure side; this path is more common for prototyping and for projects that have not gone through Azure procurement.\\nAzureAIClient This is the client we used in the persistent agents article. AzureAIClient connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 import asyncio from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential async def main(): async with AzureCliCredential() as credential: async with ( AzureAIClient( credential=credential, ).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) asyncio.run(main()) The endpoint and model are set by AZURE_AI_PROJECT_ENDPOINT and AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME. Use this when you want Foundry\\u0026rsquo;s deployment story without taking on the Foundry Agent Service.\\nAzureAIAgentClient AzureAIAgentClient is what we used in our first hands-on article. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34;) print(result.text) asyncio.run(main()) This is the right choice when you want the platform to own the agent: long-running threads that survive process restarts, centralized identity and audit, and access to the broader Foundry tool catalog. The trade-off is coupling — your agent now depends on the Foundry Agent Service being available, and moving to a different runtime later is more work.\\nFoundryChatClient FoundryChatClient is a more recent addition that targets Foundry-deployed models through a Chat Completions-compatible interface. The shape of the call is similar to AzureOpenAIChatClient, but it points at a Foundry project rather than an Azure OpenAI resource. If you are starting a new Python project today and your models are in Foundry, the documentation now recommends this path over the Azure OpenAI-specific clients. Verify the import path against your installed SDK version before depending on it.\\nChatClientAgent Everything above assumes a Microsoft- or OpenAI-hosted endpoint. For local models or third-party endpoints, MAF provides a generic path: implement (or import) a class that satisfies the IChatClient contract and pass it to a ChatClientAgent. This is the path for Foundry Local, Ollama, LM Studio, vLLM, or any OpenAI-compatible local server. It is also the path for Anthropic models when you do not want to go through a hosted gateway.\\nThe exact import surface here has been moving as MAF stabilizes across SDK versions, so I am keeping the example deliberately schematic. The structure to keep in mind is: any chat client that satisfies the protocol can be wrapped into an agent the same way the Azure and OpenAI clients are.\\nA side-by-side cheat sheet Here is the same information collapsed into one table you can paste into a design doc.\\nClient Model lives in API surface Hosted tools Conversation state Typical use AzureOpenAIChatClient Azure OpenAI Chat Completions Function + limited hosted App-managed Stable Azure default; the workhorse AzureOpenAIResponsesClient Azure OpenAI Responses Function + richer hosted Server-side via previous_response_id Need web/file/code-interpreter on Azure OpenAIChatClient OpenAI direct Chat Completions Function + limited hosted App-managed Prototyping outside Azure OpenAIResponsesClient OpenAI direct Responses Function + richer hosted Server-side Hosted tools on OpenAI direct AzureAIClient Microsoft Foundry deployment Chat Completions-compatible Function tools App-managed Foundry-deployed models without the Agent Service AzureAIAgentClient Foundry Agent Service Foundry Agent runtime Foundry tool catalog (incl. Code Interpreter) Platform-managed (Foundry threads) Persistent, platform-owned agents FoundryChatClient Microsoft Foundry deployment Chat Completions-compatible Function tools App-managed Newer recommended path for Foundry models ChatClientAgent over a custom client Anywhere Whatever the client implements Whatever the client exposes App-managed Local models, third-party providers The two columns that decide the most are Conversation state and Hosted tools. Once you have committed to where the state lives, the rest of your client choice is essentially fixed.\\nThe same agent, three ways To make the differences concrete, here is the weather agent from our second article implemented across three clients. The agent\\u0026rsquo;s behavior — its instructions, its get_weather tool, and the prompt — is identical across all versions. Only the client changes.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import os import asyncio from typing import Annotated from pydantic import Field from dotenv import load_dotenv load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; response = requests.get(f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34;) data = response.json() if data.get(\\u0026#34;cod\\u0026#34;) != \\u0026#34;404\\u0026#34;: return f\\u0026#34;Temperature: {data[\\u0026#39;main\\u0026#39;][\\u0026#39;temp\\u0026#39;]}°C\\u0026#34; return \\u0026#34;City not found\\u0026#34; Version A — AzureOpenAIChatClient. The most portable. No platform coupling, conversation lives in the application.\\n1 2 3 4 5 6 7 8 9 10 11 12 from agent_framework.azure import AzureOpenAIChatClient from azure.identity import DefaultAzureCredential async def main_a(): chat_client = AzureOpenAIChatClient(credential=DefaultAzureCredential()) agent = chat_client.create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version B — AzureAIAgentClient. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the async with blocks because the client needs explicit lifecycle management.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main_b(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version C — AzureAIClient. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential async def main_c(): async with AzureCliCredential() as credential: async with ( AzureAIClient(credential=credential).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=get_weather, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Three things are worth noticing across the three versions:\\nWhat changed Versions A, B, C Agent definition (name, instructions, tools) Identical Import path Different Credential type Sync DefaultAzureCredential in A; async AzureCliCredential in B and C Lifecycle Plain in A; async with blocks in B and C Where the agent lives Local in A and C; in Foundry Agent Service in B Where conversation history lives Application memory in A and C; Foundry threads in B The agent code does not change. The runtime characteristics — what survives a restart, where logs land, what tools you have access to — change a lot. That is the whole point of the client abstraction.\\nPitfalls A few things that have caught people out.\\nThe Responses API does not have feature parity with Chat Completions in every region or for every model family. If you swap from AzureOpenAIChatClient to AzureOpenAIResponsesClient and a model you were using stops responding, region or model availability is the first thing to check.\\nAzureAIClient and AzureAIAgentClient look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with AzureAIClient and later migrate to AzureAIAgentClient, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.\\nHosted tools are tied to clients. A HostedCodeInterpreterTool that works behind AzureAIAgentClient may need a different setup behind AzureOpenAIResponsesClient, and may not be available at all behind AzureOpenAIChatClient. When you change clients, audit your tool list.\\nCredentials matter more than they look. azure.identity (sync) and azure.identity.aio (async) export different classes with the same names. The clients in agent_framework.azure use the async ones for async work; mixing them silently leads to confusing errors deep inside an async with.\\nFinally, the import surface is still settling as MAF approaches stability. AzureChatClient from the early MAF preview is now AzureOpenAIChatClient. The newer FoundryChatClient is the recommended path for Foundry-deployed models, replacing some of what AzureAIClient used to do. When in doubt, pin your agent-framework version and check the imports against the version you are running.\\nWrap-up and what is next The agents we have written throughout this series have been deceptively portable — the persona, the tools, and the workflow code carry over between clients with little trouble. What does not carry across is the runtime: where state lives, which hosted tools you can reach, and how the platform manages your agent. Picking the right client is, more than anything, picking the runtime profile you want for the agent.\\nIn the next article, we will take this a step deeper and look at function tools. We have used them casually in earlier examples; now we will look at how MAF turns a Python function into a tool the model can call, what the schema generation actually does with your type hints, and how to handle errors and structured returns cleanly.\\nℹ️ Last updated: 26th April 2026 \"",
+  "url": "https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/",
+  "datePublished": "2026-03-01T00:00:00Z",
+  "dateModified": "2026-03-01T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -116,14 +113,14 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/"
   },
   
-  "articleSection": "\"Microsoft\"",
+  "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT7M",
+  "timeRequired": "PT12M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -156,14 +153,14 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "Microsoft",
-      "item": "https:\/\/ravichaganti.com\/categories/microsoft/"
+      "name": "Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/categories/microsoft-agent-framework/"
     },
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A",
-      "item": "https:\/\/ravichaganti.com\/blog\/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a\/"
+      "name": "Choosing the right Microsoft Agent Framework client",
+      "item": "https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/"
     }
     
     
@@ -585,14 +582,14 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
               <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
               
               <li><span class="mx-2">/</span></li>
-              <li><a href="/categories/microsoft/" class="hover:text-primary dark:hover:text-blue-400">Microsoft</a></li>
+              <li><a href="/categories/microsoft-agent-framework/" class="hover:text-primary dark:hover:text-blue-400">Microsoft Agent Framework</a></li>
               
             </ol>
           </nav>
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A
+            Choosing the right Microsoft Agent Framework client
           </h1>
 
           
@@ -604,7 +601,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-01-28">January 28, 2026</time>
+              <time datetime=" 2026-03-01">March 1, 2026</time>
             </div>
 
             
@@ -615,7 +612,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>7 min read</span>
+              <span>12 min read</span>
             </div>
             
 
@@ -627,24 +624,14 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
           <div class="flex flex-wrap gap-2 mb-6">
             
             
-            <a href="/categories/microsoft/"
+            <a href="/categories/microsoft-agent-framework/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Microsoft
-            </a>
-            
-            <a href="/categories/agent-framework/"
-              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Agent Framework
+              Microsoft Agent Framework
             </a>
             
             <a href="/categories/agents/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
               Agents
-            </a>
-            
-            <a href="/categories/a2a/"
-              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              A2A
             </a>
             
             
@@ -662,7 +649,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Microsoft Agent Protocol is an open framework for building enterprise-grade agents. It offers support for using the A2A protocol for cross-agent communication.
+            Across this series, we have used several Microsoft Agent Framework client classes to talk to different model surfaces. This article maps them out, explains when each one fits, and shows the same simple agent built three different ways.
           </div>
           
         </header>
@@ -825,10 +812,9 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 28, 2026</p>
               </div>
@@ -854,9 +840,10 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Choosing the right Microsoft Agent Framework client
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 1, 2026</p>
               </div>
@@ -885,34 +872,26 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
             
           
             
+          
+            
+          
+            
               
             
           
-            
-          
-            
-          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/magentic-workflows-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+            <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
               <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
-              <span class="truncate">Magentic workflows in Microsoft Agent Framework</span>
+              <span class="truncate">Microsoft Agent Framework - Agent Skills</span>
             </a>
           
 
           
-          
-            
-            <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Microsoft Agent Framework - Agent Skills</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
           
         </div>
       </nav>
@@ -954,15 +933,18 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#prerequisites">Prerequisites</a>
-      <ul>
-        <li><a href="#the-a2a-client-components-in-maf">The A2A Client Components in MAF</a></li>
-        <li><a href="#building-a-maf-shopping-assistant">Building a MAF Shopping Assistant</a></li>
-        <li><a href="#agent-discovery">Agent Discovery</a></li>
-        <li><a href="#task-creation">Task Creation</a></li>
-        <li><a href="#response-handling">Response Handling</a></li>
-      </ul>
-    </li>
+    <li><a href="#the-mental-model-client-first-agent-second">The mental model: client first, agent second</a></li>
+    <li><a href="#azureopenaichatclient">AzureOpenAIChatClient</a></li>
+    <li><a href="#azureopenairesponsesclient">AzureOpenAIResponsesClient</a></li>
+    <li><a href="#openaichatclient-and-openairesponsesclient">OpenAIChatClient and OpenAIResponsesClient</a></li>
+    <li><a href="#azureaiclient">AzureAIClient</a></li>
+    <li><a href="#azureaiagentclient">AzureAIAgentClient</a></li>
+    <li><a href="#foundrychatclient">FoundryChatClient</a></li>
+    <li><a href="#chatclientagent">ChatClientAgent</a></li>
+    <li><a href="#a-side-by-side-cheat-sheet">A side-by-side cheat sheet</a></li>
+    <li><a href="#the-same-agent-three-ways">The same agent, three ways</a></li>
+    <li><a href="#pitfalls">Pitfalls</a></li>
+    <li><a href="#wrap-up-and-what-is-next">Wrap-up and what is next</a></li>
   </ul>
 </nav>
       </nav>
@@ -1037,37 +1019,42 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>In the <a href="https://ravichaganti.com/blog/building-multi-agent-systems-with-google-adk-and-the-a2a-protocol/">previous article</a>, we explored how to build multi-agent systems using Google&rsquo;s Agent Development Kit (ADK) and the A2A (Agent-to-Agent) protocol. We built a currency conversion agent and exposed it via A2A, then created a travel assistant that consumed it—all within the ADK ecosystem.</p>
-<p>But here&rsquo;s where A2A truly shines: framework interoperability. The A2A protocol isn&rsquo;t tied to any specific agent framework. Any A2A-compliant agent can communicate with any other, regardless of whether it was built with Google ADK, Microsoft Agent Framework, LangChain, or a custom implementation.</p>
-<p>In today&rsquo;s article, I&rsquo;ll demonstrate this by building a Microsoft Agent Framework (MAF) agent that consumes the ADK currency agent we created earlier. This proves the real value of A2A—true framework-agnostic agent communication.</p>
-<blockquote>
-<p>Complete code for this article is available at <a href="https://github.com/rchaganti/a2a-samples/tree/main/02_maf">rchaganti/a2a-samples</a></p>
-</blockquote>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>Before diving in, make sure you have:</p>
-<ol>
-<li>The ADK currency agent from the previous article is running on port 8001</li>
-<li>Microsoft Agent Framework installed:</li>
-</ol>
+          <p>If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a> used <code>AzureAIAgentClient</code>. The <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a> used <code>AzureAIClient</code> and called it the recommended approach for Foundry persistence. The <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">workflow articles</a> switched to <code>AzureOpenAIChatClient</code>. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;</p>
+<p>The reason for the variety is simple. MAF deliberately separates <em>which model surface you talk to</em> from <em>how the agent and its conversation are managed</em>. Each client class targets a different combination of those two questions. Picking the right one up front saves a surprising amount of refactoring later, especially when you start adding hosted tools, adding persistence, or moving an agent to production.</p>
+<p>In this article, we will pull all of these clients into one place, explain what each one is for, and build the same simple weather agent three different ways so you can see what changes and what stays the same.</p>
+<h2 id="the-mental-model-client-first-agent-second">The mental model: client first, agent second</h2>
+<p>In MAF, an agent is a thin object. Almost everything that determines runtime behavior, which API surface you call, which tools you can attach, where conversation state lives, is decided by the client you give the agent.</p>
+<p>When you write code like this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install agent-framework --pre httpx a2a
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>When a MAF agent wants to communicate with an A2A server (our ADK agent), it needs to:</p>
-<ol>
-<li><strong>Discover the agent</strong> by fetching its agent card from the well-known endpoint.</li>
-<li><strong>Create a task</strong> by sending a message to the agent.</li>
-<li><strong>Receive the response,</strong> which may include the agent&rsquo;s reply or artifacts.</li>
-</ol>
-<p>The A2A protocol handles all the complexity of message formatting, task management, and response handling through a standard HTTP/JSON interface.</p>
-<h3 id="the-a2a-client-components-in-maf">The A2A Client Components in MAF</h3>
-<p>Microsoft Agent Framework provides first-class support for A2A through two key components:</p>
-<h4 id="1-a2acardresolver">1. A2ACardResolver</h4>
-<p>The <code>A2ACardResolver</code> class from the <code>a2a.client</code> package handles agent discovery:</p>
+</div><p>the <code>chat_client</code> on the left of <code>.create_agent</code> is doing more work than it looks. It carries:</p>
+<ul>
+<li>the model endpoint and the deployed model name</li>
+<li>the credential used to authenticate every call</li>
+<li>the API surface (Chat Completions, Responses, Foundry Agent Service)</li>
+<li>the set of hosted tools available to the agent</li>
+<li>the strategy for storing or persisting conversations</li>
+</ul>
+<p>If you swap the client, all of those change at once. Swap the agent definition, and only the persona changes. That is why the rest of this article is organized around clients rather than agents.</p>
+<p>Before you pick a client, three questions decide most of the answers for you.</p>
+<p><strong>Where does your model live?</strong> If you are deploying models through Microsoft Foundry, your client choice is between <code>AzureAIClient</code> (use the Foundry-deployed model directly) or <code>AzureAIAgentClient</code> (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI, you want either <code>AzureAIClient</code> or <code>AzureOpenAIResponsesClient</code>. If you are calling OpenAI directly, you want <code>OpenAIChatClient</code> or <code>OpenAIResponsesClient</code>. If you are running a model locally, Ollama, LM Studio, <a href="/blog/local-model-serving-using-foundry-local/">Foundry Local</a>, you bring your own <code>IChatClient</code> and use the generic agent path.</p>
+<p><strong>Do you need hosted tools?</strong> Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through <code>AzureAIAgentClient</code>.</p>
+<p><strong>Who owns conversation state?</strong> If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (<code>AzureAIAgentClient</code>) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover <code>AgentThread</code> for multi-turn conversations.</p>
+<p>These three questions almost always narrow you down to one or two choices. The sections below walk through each client in turn.</p>
+<h2 id="azureopenaichatclient">AzureOpenAIChatClient</h2>
+<p>This is the client we have used in the <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">workflow articles</a>. It targets the Azure OpenAI Chat Completions API, which is the most stable and widely available surface in the Azure OpenAI service. If your team has an Azure OpenAI resource, this is the safest starting point.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1080,29 +1067,39 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt"> 8
 </span><span class="lnt"> 9
 </span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">a2a.client</span> <span class="kn">import</span> <span class="n">A2ACardResolver</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">httpx</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span> <span class="k">as</span> <span class="n">http_client</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">resolver</span> <span class="o">=</span> <span class="n">A2ACardResolver</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">httpx_client</span><span class="o">=</span><span class="n">http_client</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">base_url</span><span class="o">=</span><span class="s2">&#34;http://localhost:8001&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="n">agent_card</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resolver</span><span class="o">.</span><span class="n">get_agent_card</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Bengaluru today?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>This fetches the Agent Card from <code>http://localhost:8001/.well-known/agent.json</code>, which contains:</p>
-<ul>
-<li>Agent name and description</li>
-<li>Supported capabilities and skills</li>
-<li>Authentication requirements</li>
-<li>Protocol version information</li>
-</ul>
-<h4 id="2-a2aagent">2. A2AAgent</h4>
-<p>The <code>A2AAgent</code> class wraps a remote A2A agent as a local MAF agent:</p>
+</div><p>This client picks up the endpoint and model deployment from environment variables (<code>AZURE_OPENAI_ENDPOINT</code>, <code>AZURE_OPENAI_CHAT_DEPLOYMENT_NAME</code>), the same as in the workflow articles. Hosted tools available here include function tools and a limited set of others; richer tools belong on the Responses path described next.</p>
+<h2 id="azureopenairesponsesclient">AzureOpenAIResponsesClient</h2>
+<p>The Responses API is Azure OpenAI&rsquo;s newer surface. It exposes more hosted tools out of the box (web search, file search, code interpreter) and carries server-side conversation state via <code>previous_response_id</code>. The trade-off is that support for the Responses API is uneven across regions and model families. Check that the model you want is available in the region you need before committing.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1111,21 +1108,19 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.a2a</span> <span class="kn">import</span> <span class="n">A2AAgent</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIResponsesClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">currency_agent</span> <span class="o">=</span> <span class="n">A2AAgent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;currency_converter&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">description</span><span class="o">=</span><span class="s2">&#34;Remote agent for currency conversions&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">agent_card</span><span class="o">=</span><span class="n">agent_card</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;http://localhost:8001&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIResponsesClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Once wrapped, you can interact with the remote agent using the standard MAF interface:</p>
+</div><p>If your agent needs a hosted file search or code interpreter, and you are on Azure OpenAI, this is the client to reach for. If you only need function tools, stay on Chat Completions.</p>
+<h2 id="openaichatclient-and-openairesponsesclient">OpenAIChatClient and OpenAIResponsesClient</h2>
+<p>When you are calling OpenAI&rsquo;s API directly rather than going through Azure, MAF gives you the same Chat / Responses split.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1133,15 +1128,14 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">currency_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;Convert 100 USD to EUR&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatClient</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&#34;&lt;your-openai-api-key&gt;&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="building-a-maf-shopping-assistant">Building a MAF Shopping Assistant</h3>
-<p>Let&rsquo;s build a practical example: a shopping assistant that uses local tools for product management and delegates currency conversions to the remote ADK agent.</p>
-<h4 id="local-shopping-tools">Local Shopping Tools</h4>
-<p>First, we define our local capabilities:</p>
+</div><p>The decision logic is identical to the Azure side. Use the responsesclient when you want richer hosted tools; use Chat Completions when you want stability and broader model coverage. Most enterprise teams will be on the Azure side; this path is more common for prototyping and for projects that have not gone through Azure procurement.</p>
+<h2 id="azureaiclient">AzureAIClient</h2>
+<p>This is the client we used in the <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a>. <code>AzureAIClient</code> connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1162,280 +1156,31 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt">16
 </span><span class="lnt">17
 </span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">PRODUCTS</span> <span class="o">=</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;laptop&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;price&#34;</span><span class="p">:</span> <span class="mf">1299.99</span><span class="p">,</span> <span class="s2">&#34;category&#34;</span><span class="p">:</span> <span class="s2">&#34;Electronics&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;headphones&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;price&#34;</span><span class="p">:</span> <span class="mf">199.99</span><span class="p">,</span> <span class="s2">&#34;category&#34;</span><span class="p">:</span> <span class="s2">&#34;Electronics&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;keyboard&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;price&#34;</span><span class="p">:</span> <span class="mf">89.99</span><span class="p">,</span> <span class="s2">&#34;category&#34;</span><span class="p">:</span> <span class="s2">&#34;Electronics&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;backpack&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;price&#34;</span><span class="p">:</span> <span class="mf">79.99</span><span class="p">,</span> <span class="s2">&#34;category&#34;</span><span class="p">:</span> <span class="s2">&#34;Accessories&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_product_price</span><span class="p">(</span><span class="n">product_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Get the price of a product in USD.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">product_lower</span> <span class="o">=</span> <span class="n">product_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">product_lower</span> <span class="ow">in</span> <span class="n">PRODUCTS</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">product</span> <span class="o">=</span> <span class="n">PRODUCTS</span><span class="p">[</span><span class="n">product_lower</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;success&#34;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;product&#34;</span><span class="p">:</span> <span class="n">product_name</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;price_usd&#34;</span><span class="p">:</span> <span class="n">product</span><span class="p">[</span><span class="s2">&#34;price&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;category&#34;</span><span class="p">:</span> <span class="n">product</span><span class="p">[</span><span class="s2">&#34;category&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">            <span class="s2">&#34;message&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">product_name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2">: $</span><span class="si">{</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> USD&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;success&#34;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;message&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;Product &#39;</span><span class="si">{</span><span class="n">product_name</span><span class="si">}</span><span class="s2">&#39; not found.&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">calculate_cart_total</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Calculate the total price for a shopping cart.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">subtotal</span> <span class="o">=</span> <span class="mf">0.0</span>
-</span></span><span class="line"><span class="cl">    <span class="n">cart_items</span> <span class="o">=</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">product_name</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;product&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="n">quantity</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;quantity&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">product_name</span> <span class="ow">in</span> <span class="n">PRODUCTS</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">product</span> <span class="o">=</span> <span class="n">PRODUCTS</span><span class="p">[</span><span class="n">product_name</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">            <span class="n">item_total</span> <span class="o">=</span> <span class="n">product</span><span class="p">[</span><span class="s2">&#34;price&#34;</span><span class="p">]</span> <span class="o">*</span> <span class="n">quantity</span>
-</span></span><span class="line"><span class="cl">            <span class="n">subtotal</span> <span class="o">+=</span> <span class="n">item_total</span>
-</span></span><span class="line"><span class="cl">            <span class="n">cart_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;product&#34;</span><span class="p">:</span> <span class="n">product_name</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;unit_price&#34;</span><span class="p">:</span> <span class="n">product</span><span class="p">[</span><span class="s2">&#34;price&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;quantity&#34;</span><span class="p">:</span> <span class="n">quantity</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;item_total&#34;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">item_total</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="p">})</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="c1"># Apply tax (8.5%)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tax</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">subtotal</span> <span class="o">*</span> <span class="mf">0.085</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">total</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">subtotal</span> <span class="o">+</span> <span class="n">tax</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;success&#34;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;items&#34;</span><span class="p">:</span> <span class="n">cart_items</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;subtotal_usd&#34;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">subtotal</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;tax_usd&#34;</span><span class="p">:</span> <span class="n">tax</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;total_usd&#34;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="s2">&#34;message&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;Cart total: $</span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> USD (including $</span><span class="si">{</span><span class="n">tax</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> tax)&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="connecting-to-the-remote-adk-agent">Connecting to the Remote ADK Agent</h4>
-<p>Now we connect to the ADK Currency Agent:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">httpx</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">a2a.client</span> <span class="kn">import</span> <span class="n">A2ACardResolver</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.a2a</span> <span class="kn">import</span> <span class="n">A2AAgent</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">ADK_CURRENCY_AGENT_URL</span> <span class="o">=</span> <span class="s2">&#34;http://localhost:8001&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">create_currency_agent</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Create an A2A agent wrapper for the remote ADK currency agent.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span> <span class="k">as</span> <span class="n">http_client</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resolver</span> <span class="o">=</span> <span class="n">A2ACardResolver</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">httpx_client</span><span class="o">=</span><span class="n">http_client</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">base_url</span><span class="o">=</span><span class="n">ADK_CURRENCY_AGENT_URL</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">agent_card</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resolver</span><span class="o">.</span><span class="n">get_agent_card</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;✅ Connected to: </span><span class="si">{</span><span class="n">agent_card</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;   Description: </span><span class="si">{</span><span class="n">agent_card</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">A2AAgent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;currency_converter&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;Remote agent for currency conversions.
-</span></span></span><span class="line"><span class="cl"><span class="s2">            Use for: converting amounts, getting exchange rates,
-</span></span></span><span class="line"><span class="cl"><span class="s2">            listing supported currencies.&#34;&#34;&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">agent_card</span><span class="o">=</span><span class="n">agent_card</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">url</span><span class="o">=</span><span class="n">ADK_CURRENCY_AGENT_URL</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>We can now orchestrate between local tools and the remote A2A agent:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">shopping_with_currency_conversion</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Demonstrate local tools + remote A2A agent working together.&#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span> <span class="k">as</span> <span class="n">http_client</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="c1"># Connect to the remote ADK agent</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resolver</span> <span class="o">=</span> <span class="n">A2ACardResolver</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">httpx_client</span><span class="o">=</span><span class="n">http_client</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">base_url</span><span class="o">=</span><span class="n">ADK_CURRENCY_AGENT_URL</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">agent_card</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resolver</span><span class="o">.</span><span class="n">get_agent_card</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">currency_agent</span> <span class="o">=</span> <span class="n">A2AAgent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;currency_converter&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="s2">&#34;Remote currency conversion agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">agent_card</span><span class="o">=</span><span class="n">agent_card</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">url</span><span class="o">=</span><span class="n">ADK_CURRENCY_AGENT_URL</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="c1"># Step 1: Use LOCAL tools to calculate cart</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;📦 Using LOCAL shopping tools...&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">cart_result</span> <span class="o">=</span> <span class="n">calculate_cart_total</span><span class="p">([</span>
-</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="s2">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;laptop&#34;</span><span class="p">,</span> <span class="s2">&#34;quantity&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="s2">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;headphones&#34;</span><span class="p">,</span> <span class="s2">&#34;quantity&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="p">])</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;   </span><span class="si">{</span><span class="n">cart_result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">total_usd</span> <span class="o">=</span> <span class="n">cart_result</span><span class="p">[</span><span class="s2">&#34;total_usd&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="c1"># Step 2: Use REMOTE A2A agent for currency conversion</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">🌐 Using REMOTE A2A agent for currency conversion...&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">currency_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Convert </span><span class="si">{</span><span class="n">total_usd</span><span class="si">}</span><span class="s2"> USD to EUR&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;   </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Running this produces:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="err">📦</span> <span class="n">Using</span> <span class="n">LOCAL</span> <span class="n">shopping</span> <span class="n">tools</span><span class="o">...</span>
-</span></span><span class="line"><span class="cl">   <span class="n">Cart</span> <span class="n">total</span><span class="p">:</span> <span class="o">$</span><span class="mf">1838.46</span> <span class="n">USD</span> <span class="p">(</span><span class="n">including</span> <span class="o">$</span><span class="mf">143.50</span> <span class="n">tax</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="err">🌐</span> <span class="n">Using</span> <span class="n">REMOTE</span> <span class="n">A2A</span> <span class="n">agent</span> <span class="k">for</span> <span class="n">currency</span> <span class="n">conversion</span><span class="o">...</span>
-</span></span><span class="line"><span class="cl">   <span class="mf">1838.46</span> <span class="n">USD</span> <span class="o">=</span> <span class="mf">1691.38</span> <span class="n">EUR</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Let&rsquo;s trace through exactly what happens when MAF calls the ADK agent:</p>
-<h3 id="agent-discovery">Agent Discovery</h3>
-<p>When <code>A2ACardResolver.get_agent_card()</code> is called, it sends:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">GET</span> <span class="nn">/.well-known/agent.json</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span></span><span class="line"><span class="cl"><span class="n">Host</span><span class="o">:</span> <span class="l">localhost:8001</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The ADK agent responds with its Agent Card:</p>
+</div><p>The endpoint and model are set by <code>AZURE_AI_PROJECT_ENDPOINT</code> and <code>AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME</code>. Use this when you want Foundry&rsquo;s deployment story without taking on the Foundry Agent Service.</p>
+<h2 id="azureaiagentclient">AzureAIAgentClient</h2>
+<p><code>AzureAIAgentClient</code> is what we used in our <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a>. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1459,79 +1204,116 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;currency_agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;A currency conversion agent that can convert amounts...&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;url&#34;</span><span class="p">:</span> <span class="s2">&#34;http://localhost:8001&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0.0&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;capabilities&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;streaming&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;pushNotifications&#34;</span><span class="p">:</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">  <span class="p">},</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;defaultInputModes&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;defaultOutputModes&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;skills&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;convert_currency&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Currency Conversion&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Convert amounts between different currencies&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="task-creation">Task Creation</h3>
-<p>When <code>currency_agent.run(&quot;Convert 100 USD to EUR&quot;)</code> is called, MAF sends:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="nf">POST</span> <span class="nn">/tasks/send</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span></span><span class="line"><span class="cl"><span class="n">Host</span><span class="o">:</span> <span class="l">localhost:8001</span>
-</span></span><span class="line"><span class="cl"><span class="n">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;jsonrpc&#34;</span><span class="p">:</span> <span class="s2">&#34;2.0&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;tasks/send&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;unique-request-id&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;task-uuid&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;message&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;parts&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">          <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">          <span class="nt">&#34;text&#34;</span><span class="p">:</span> <span class="s2">&#34;Convert 100 USD to EUR&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">      <span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What&#39;s the weather like in Bengaluru?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="response-handling">Response Handling</h3>
-<p>The ADK agent processes the request, calls its tools, and returns:</p>
+</div><p>This is the right choice when you want the platform to own the agent: long-running threads that survive process restarts, centralized identity and audit, and access to the broader Foundry tool catalog. The trade-off is coupling — your agent now depends on the Foundry Agent Service being available, and moving to a different runtime later is more work.</p>
+<h2 id="foundrychatclient">FoundryChatClient</h2>
+<p><code>FoundryChatClient</code> is a more recent addition that targets Foundry-deployed models through a Chat Completions-compatible interface. The shape of the call is similar to <code>AzureOpenAIChatClient</code>, but it points at a Foundry project rather than an Azure OpenAI resource. If you are starting a new Python project today and your models are in Foundry, the documentation now recommends this path over the Azure OpenAI-specific clients. Verify the import path against your installed SDK version before depending on it.</p>
+<h2 id="chatclientagent">ChatClientAgent</h2>
+<p>Everything above assumes a Microsoft- or OpenAI-hosted endpoint. For local models or third-party endpoints, MAF provides a generic path: implement (or import) a class that satisfies the <code>IChatClient</code> contract and pass it to a <code>ChatClientAgent</code>. This is the path for <a href="/blog/local-model-serving-using-foundry-local/">Foundry Local</a>, Ollama, LM Studio, vLLM, or any OpenAI-compatible local server. It is also the path for Anthropic models when you do not want to go through a hosted gateway.</p>
+<p>The exact import surface here has been moving as MAF stabilizes across SDK versions, so I am keeping the example deliberately schematic. The structure to keep in mind is: any chat client that satisfies the protocol can be wrapped into an agent the same way the Azure and OpenAI clients are.</p>
+<h2 id="a-side-by-side-cheat-sheet">A side-by-side cheat sheet</h2>
+<p>Here is the same information collapsed into one table you can paste into a design doc.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Client</th>
+          <th>Model lives in</th>
+          <th>API surface</th>
+          <th>Hosted tools</th>
+          <th>Conversation state</th>
+          <th>Typical use</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>AzureOpenAIChatClient</code></td>
+          <td>Azure OpenAI</td>
+          <td>Chat Completions</td>
+          <td>Function + limited hosted</td>
+          <td>App-managed</td>
+          <td>Stable Azure default; the workhorse</td>
+      </tr>
+      <tr>
+          <td><code>AzureOpenAIResponsesClient</code></td>
+          <td>Azure OpenAI</td>
+          <td>Responses</td>
+          <td>Function + richer hosted</td>
+          <td>Server-side via <code>previous_response_id</code></td>
+          <td>Need web/file/code-interpreter on Azure</td>
+      </tr>
+      <tr>
+          <td><code>OpenAIChatClient</code></td>
+          <td>OpenAI direct</td>
+          <td>Chat Completions</td>
+          <td>Function + limited hosted</td>
+          <td>App-managed</td>
+          <td>Prototyping outside Azure</td>
+      </tr>
+      <tr>
+          <td><code>OpenAIResponsesClient</code></td>
+          <td>OpenAI direct</td>
+          <td>Responses</td>
+          <td>Function + richer hosted</td>
+          <td>Server-side</td>
+          <td>Hosted tools on OpenAI direct</td>
+      </tr>
+      <tr>
+          <td><code>AzureAIClient</code></td>
+          <td>Microsoft Foundry deployment</td>
+          <td>Chat Completions-compatible</td>
+          <td>Function tools</td>
+          <td>App-managed</td>
+          <td>Foundry-deployed models without the Agent Service</td>
+      </tr>
+      <tr>
+          <td><code>AzureAIAgentClient</code></td>
+          <td>Foundry Agent Service</td>
+          <td>Foundry Agent runtime</td>
+          <td>Foundry tool catalog (incl. Code Interpreter)</td>
+          <td>Platform-managed (Foundry threads)</td>
+          <td>Persistent, platform-owned agents</td>
+      </tr>
+      <tr>
+          <td><code>FoundryChatClient</code></td>
+          <td>Microsoft Foundry deployment</td>
+          <td>Chat Completions-compatible</td>
+          <td>Function tools</td>
+          <td>App-managed</td>
+          <td>Newer recommended path for Foundry models</td>
+      </tr>
+      <tr>
+          <td><code>ChatClientAgent</code> over a custom client</td>
+          <td>Anywhere</td>
+          <td>Whatever the client implements</td>
+          <td>Whatever the client exposes</td>
+          <td>App-managed</td>
+          <td>Local models, third-party providers</td>
+      </tr>
+  </tbody>
+</table>
+<p>The two columns that decide the most are <em>Conversation state</em> and <em>Hosted tools</em>. Once you have committed to where the state lives, the rest of your client choice is essentially fixed.</p>
+<h2 id="the-same-agent-three-ways">The same agent, three ways</h2>
+<p>To make the differences concrete, here is the <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">weather agent from our second article</a> implemented across three clients. The agent&rsquo;s behavior — its instructions, its <code>get_weather</code> tool, and the prompt — is identical across all versions. Only the client changes.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1553,42 +1335,244 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;jsonrpc&#34;</span><span class="p">:</span> <span class="s2">&#34;2.0&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;unique-request-id&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="nt">&#34;result&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;task-uuid&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="nt">&#34;state&#34;</span><span class="p">:</span> <span class="s2">&#34;completed&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">      <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;agent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="nt">&#34;parts&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">          <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;text&#34;</span><span class="p">:</span> <span class="s2">&#34;100 USD = 92 EUR&#34;</span>
-</span></span><span class="line"><span class="cl">          <span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="p">]</span>
-</span></span><span class="line"><span class="cl">      <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_weather</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">location</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;The location to get the weather for.&#34;</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">import</span> <span class="nn">requests</span>
+</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;OPEN_WEATHERMAP_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&#34;http://api.openweathermap.org/data/2.5/weather&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">?q=</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">&amp;appid=</span><span class="si">{</span><span class="n">api_key</span><span class="si">}</span><span class="s2">&amp;units=metric&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;cod&#34;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&#34;404&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Temperature: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">][</span><span class="s1">&#39;temp&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">°C&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;City not found&#34;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>MAF&rsquo;s <code>A2AAgent</code> handles all this serialization and deserialization, presenting a clean interface.</p>
-<p>The A2A protocol represents a significant step toward a future in which AI agents can collaborate regardless of their underlying frameworks. By standardizing the communication layer, we can build best-of-breed systems that leverage specialized agents from different ecosystems. A2A enables true interoperability, allowing agents developed in different frameworks to communicate seamlessly. The well-known endpoint (<code>/.well-known/agent.json</code>) provides all the information needed for agent discovery.</p>
-<p>In future articles, we&rsquo;ll explore:</p>
-<ul>
-<li><strong>Exposing MAF agents via A2A</strong> for ADK or other frameworks to consume.</li>
-<li><strong>Multi-agent orchestration</strong> with agents from different frameworks.</li>
-<li><strong>Authentication and security</strong> in A2A communications.</li>
-<li><strong>Streaming responses</strong> for long-running agent tasks.</li>
-</ul>
+</div><p>Version A — <code>AzureOpenAIChatClient</code>. The most portable. No platform coupling, conversation lives in the application.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureOpenAIChatClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main_a</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">chat_client</span> <span class="o">=</span> <span class="n">AzureOpenAIChatClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Use tools to fetch current weather.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_weather</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Version B — <code>AzureAIAgentClient</code>. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the <code>async with</code> blocks because the client needs explicit lifecycle management.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main_b</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Use tools to fetch current weather.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_weather</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Version C — <code>AzureAIClient</code>. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main_c</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Use tools to fetch current weather.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">tools</span><span class="o">=</span><span class="n">get_weather</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Three things are worth noticing across the three versions:</p>
+<table>
+  <thead>
+      <tr>
+          <th>What changed</th>
+          <th>Versions A, B, C</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Agent definition (<code>name</code>, <code>instructions</code>, <code>tools</code>)</td>
+          <td>Identical</td>
+      </tr>
+      <tr>
+          <td>Import path</td>
+          <td>Different</td>
+      </tr>
+      <tr>
+          <td>Credential type</td>
+          <td>Sync <code>DefaultAzureCredential</code> in A; async <code>AzureCliCredential</code> in B and C</td>
+      </tr>
+      <tr>
+          <td>Lifecycle</td>
+          <td>Plain in A; <code>async with</code> blocks in B and C</td>
+      </tr>
+      <tr>
+          <td>Where the agent lives</td>
+          <td>Local in A and C; in Foundry Agent Service in B</td>
+      </tr>
+      <tr>
+          <td>Where conversation history lives</td>
+          <td>Application memory in A and C; Foundry threads in B</td>
+      </tr>
+  </tbody>
+</table>
+<p>The agent code does not change. The runtime characteristics — what survives a restart, where logs land, what tools you have access to — change a lot. That is the whole point of the client abstraction.</p>
+<h2 id="pitfalls">Pitfalls</h2>
+<p>A few things that have caught people out.</p>
+<p>The Responses API does not have feature parity with Chat Completions in every region or for every model family. If you swap from <code>AzureOpenAIChatClient</code> to <code>AzureOpenAIResponsesClient</code> and a model you were using stops responding, region or model availability is the first thing to check.</p>
+<p><code>AzureAIClient</code> and <code>AzureAIAgentClient</code> look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with <code>AzureAIClient</code> and later migrate to <code>AzureAIAgentClient</code>, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.</p>
+<p>Hosted tools are tied to clients. A <code>HostedCodeInterpreterTool</code> that works behind <code>AzureAIAgentClient</code> may need a different setup behind <code>AzureOpenAIResponsesClient</code>, and may not be available at all behind <code>AzureOpenAIChatClient</code>. When you change clients, audit your tool list.</p>
+<p>Credentials matter more than they look. <code>azure.identity</code> (sync) and <code>azure.identity.aio</code> (async) export different classes with the same names. The clients in <code>agent_framework.azure</code> use the async ones for async work; mixing them silently leads to confusing errors deep inside an <code>async with</code>.</p>
+<p>Finally, the import surface is still settling as MAF approaches stability. <code>AzureChatClient</code> from the early MAF preview is now <code>AzureOpenAIChatClient</code>. The newer <code>FoundryChatClient</code> is the recommended path for Foundry-deployed models, replacing some of what <code>AzureAIClient</code> used to do. When in doubt, pin your <code>agent-framework</code> version and check the imports against the version you are running.</p>
+<h2 id="wrap-up-and-what-is-next">Wrap-up and what is next</h2>
+<p>The agents we have written throughout this series have been deceptively portable — the persona, the tools, and the workflow code carry over between clients with little trouble. What does not carry across is the runtime: where state lives, which hosted tools you can reach, and how the platform manages your agent. Picking the right client is, more than anything, picking the runtime profile you want for the agent.</p>
+<p>In the next article, we will take this a step deeper and look at function tools. We have used them casually in earlier examples; now we will look at how MAF turns a Python function into a tool the model can call, what the schema generation actually does with your type hints, and how to handle errors and structured returns cleanly.</p>
+<style>
+.notice-shortcode.notice-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.dark .notice-shortcode.notice-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: #1e40af;
+  color: #f1f5f9;
+}
+.notice-shortcode.notice-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+}
+.dark .notice-shortcode.notice-warning {
+  background-color: rgba(133, 77, 14, 0.2);
+  border-color: #ca8a04;
+  color: #fef9c3;
+}
+.notice-shortcode.notice-tip {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #14532d;
+}
+.dark .notice-shortcode.notice-tip {
+  background-color: rgba(20, 83, 45, 0.2);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+.notice-shortcode.notice-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
+.dark .notice-shortcode.notice-danger {
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  color: #fecaca;
+}
+.notice-shortcode.notice-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+.dark .notice-shortcode.notice-success {
+  background-color: rgba(6, 78, 59, 0.2);
+  border-color: #059669;
+  color: #d1fae5;
+}
+</style>
+
+<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
+    <div class="flex-1 notice-content">
+      Last updated: 26th April 2026
+    </div>
+  </div>
+</div>
+
 
         </div>
 
@@ -1613,7 +1597,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fcross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a%2F&text=Cross-Framework&#43;Agent&#43;Communication%3A&#43;Microsoft&#43;Agent&#43;Framework&#43;meets&#43;Google&#43;ADK&#43;via&#43;A2A"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fchoosing-the-right-microsoft-agent-framework-client%2F&text=Choosing&#43;the&#43;right&#43;Microsoft&#43;Agent&#43;Framework&#43;client"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -1624,7 +1608,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fcross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fchoosing-the-right-microsoft-agent-framework-client%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -1635,7 +1619,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fcross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fchoosing-the-right-microsoft-agent-framework-client%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -1646,7 +1630,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fcross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a%2F&title=Cross-Framework&#43;Agent&#43;Communication%3A&#43;Microsoft&#43;Agent&#43;Framework&#43;meets&#43;Google&#43;ADK&#43;via&#43;A2A"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fchoosing-the-right-microsoft-agent-framework-client%2F&title=Choosing&#43;the&#43;right&#43;Microsoft&#43;Agent&#43;Framework&#43;client"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1657,7 +1641,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fcross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a%2F&t=Cross-Framework&#43;Agent&#43;Communication%3A&#43;Microsoft&#43;Agent&#43;Framework&#43;meets&#43;Google&#43;ADK&#43;via&#43;A2A"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fchoosing-the-right-microsoft-agent-framework-client%2F&t=Choosing&#43;the&#43;right&#43;Microsoft&#43;Agent&#43;Framework&#43;client"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1667,7 +1651,7 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1684,9 +1668,9 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Cross-Framework Agent Communication: Microsoft Agent Framework meets Google ADK via A2A',
-        text: 'Microsoft Agent Protocol is an open framework for building enterprise-grade agents. It offers support for using the A2A protocol for cross-agent communication.',
-        url: 'https:\/\/ravichaganti.com\/blog\/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a\/'
+        title: 'Choosing the right Microsoft Agent Framework client',
+        text: 'Across this series, we have used several Microsoft Agent Framework client classes to talk to different model surfaces. This article maps them out, explains when each one fits, and shows the same simple agent built three different ways.',
+        url: 'https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1756,11 +1740,11 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
       
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
 
@@ -1770,9 +1754,6 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
         
         
       
-      
-        
-        
       
     
   
@@ -1782,9 +1763,9 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/magentic-workflows-in-microsoft-agent-framework/"
+        <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Magentic workflows in Microsoft Agent Framework">
+           aria-label="Previous in Microsoft Agent Framework: Microsoft Agent Framework - Agent Skills">
           <div class="flex items-start gap-3">
             
             <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
@@ -1797,10 +1778,10 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
             <div class="flex-1 min-w-0">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Magentic workflows in Microsoft Agent Framework
+                Microsoft Agent Framework - Agent Skills
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">If you need a workflow that can adapt its routing decisions based on what agents discover during execution, look no further. Magentic is for you!</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.</p>
               
             </div>
           </div>
@@ -1811,29 +1792,20 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Microsoft Agent Framework - Agent Skills">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Microsoft Agent Framework - Agent Skills
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Latest release of Microsoft Agent Framework offers support for Agent Skills. We will explore implementing a practical use case for Skills with MAF.</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -2034,38 +2006,6 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Introduction to Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-02">
-      Oct 2, 2025
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Choosing the right Microsoft Agent Framework client
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-01">
-      Mar 1, 2026
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -2112,6 +2052,38 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
 </article>
 
       
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/handoff-workflows-in-microsoft-agent-framework/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Handoff workflows in Microsoft Agent Framework
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-16">
+      Oct 16, 2025
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Concurrent workflows in Microsoft Agent Framework
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-14">
+      Oct 14, 2025
+    </time>
+  </a>
+</article>
+
+      
     </div>
   </div>
 
@@ -2132,15 +2104,18 @@ But here&rsquo;s where A2A truly shines: framework interoperability. The A2A pro
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#prerequisites">Prerequisites</a>
-      <ul>
-        <li><a href="#the-a2a-client-components-in-maf">The A2A Client Components in MAF</a></li>
-        <li><a href="#building-a-maf-shopping-assistant">Building a MAF Shopping Assistant</a></li>
-        <li><a href="#agent-discovery">Agent Discovery</a></li>
-        <li><a href="#task-creation">Task Creation</a></li>
-        <li><a href="#response-handling">Response Handling</a></li>
-      </ul>
-    </li>
+    <li><a href="#the-mental-model-client-first-agent-second">The mental model: client first, agent second</a></li>
+    <li><a href="#azureopenaichatclient">AzureOpenAIChatClient</a></li>
+    <li><a href="#azureopenairesponsesclient">AzureOpenAIResponsesClient</a></li>
+    <li><a href="#openaichatclient-and-openairesponsesclient">OpenAIChatClient and OpenAIResponsesClient</a></li>
+    <li><a href="#azureaiclient">AzureAIClient</a></li>
+    <li><a href="#azureaiagentclient">AzureAIAgentClient</a></li>
+    <li><a href="#foundrychatclient">FoundryChatClient</a></li>
+    <li><a href="#chatclientagent">ChatClientAgent</a></li>
+    <li><a href="#a-side-by-side-cheat-sheet">A side-by-side cheat sheet</a></li>
+    <li><a href="#the-same-agent-three-ways">The same agent, three ways</a></li>
+    <li><a href="#pitfalls">Pitfalls</a></li>
+    <li><a href="#wrap-up-and-what-is-next">Wrap-up and what is next</a></li>
   </ul>
 </nav>
   </nav>
