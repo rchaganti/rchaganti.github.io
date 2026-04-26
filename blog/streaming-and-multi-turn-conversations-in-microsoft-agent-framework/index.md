@@ -214,3 +214,7 @@ Finally, sessions are not free. Each one carries memory, and creating thousands 
 
 In the next article, we will look at how to make the agent return *structured* data rather than free text. We have leaned on prose answers throughout the series; for many production use cases, what you actually want is a Pydantic model on the way out, not a paragraph the calling code has to parse.
 
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}
+

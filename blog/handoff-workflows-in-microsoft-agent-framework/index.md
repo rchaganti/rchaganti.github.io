@@ -374,6 +374,6 @@ The Handoff pattern enables dynamic, context-aware routing between agents. This 
 In the next article, we'll explore the group chat orchestration pattern for even more complex multi-agent collaboration scenarios.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. `AzureOpenAIChatClient` (in `agent_framework.azure`) has been replaced by `OpenAIChatClient` (in `agent_framework.openai`), which now requires an explicit `model=` parameter resolved from environment variables. Chat clients also use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples have been updated to match the new package layout. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
 {{< /notice >}}
 

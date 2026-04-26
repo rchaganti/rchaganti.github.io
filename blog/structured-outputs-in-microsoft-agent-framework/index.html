@@ -90,7 +90,7 @@
   "@type": "BlogPosting",
   "headline": "Structured outputs in Microsoft Agent Framework",
   "description": "Most of the agents we have built so far have replied in prose. The user asks about the weather, and the agent responds in a single sentence. That works for a chat application, but it does not work for …",
-  "articleBody": "\"Most of the agents we have built so far have replied in prose. The user asks about the weather, and the agent responds in a single sentence. That works for a chat application, but it does not work for an application that has to do something with the answer. If your code needs to know whether the temperature is above 30°C or whether the recommendation is BUY, HOLD, or SELL, parsing prose with a regex or a second LLM call is fragile. The model phrases things differently each time, and one badly worded sentence can break the pipeline.\\nMicrosoft Agent Framework (MAF) has a cleaner answer for this. You declare the shape of the response as a Pydantic model, pass it as a response_format, and the agent returns a parsed instance of that model. The model is constrained at generation time to emit valid JSON that matches the schema, so by the time your code reads the result, it is already typed and validated.\\nIf you have followed the function tools article, Pydantic will already feel familiar. We used it there to give tool functions a typed return shape that the model could read reliably. Structured outputs use the same library for a different job. Instead of typing what comes into the conversation from a tool, they type what comes out of the agent at the end. The two patterns sit at opposite ends of the same conversation and compose without any extra wiring.\\nThis article looks at how to use structured outputs, what changes when tools are also involved, and where the rough edges are.\\nA simple structured response The smallest useful example: ask the agent for a weather report and get back a typed object instead of prose.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 import asyncio import os from pydantic import BaseModel from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() class WeatherReport(BaseModel): location: str temperature_c: float conditions: str advice: str async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weather assistant. Provide concise, accurate weather information.\\u0026#34;, response_format=WeatherReport, ) result = await agent.run(\\u0026#34;What is the weather like in Bengaluru today?\\u0026#34;) report: WeatherReport = result.value print(f\\u0026#34;{report.location}: {report.temperature_c}°C, {report.conditions}\\u0026#34;) print(f\\u0026#34;Advice: {report.advice}\\u0026#34;) asyncio.run(main()) The change from a prose-returning agent is small but meaningful. We declare a WeatherReport Pydantic model, pass the class (not an instance) as response_format, and read the parsed object from result.value. The agent\\u0026rsquo;s underlying prose answer is no longer the primary surface; what comes back is a fully validated WeatherReport instance with typed fields you can pass directly into the rest of your application.\\nThe original result.text is still there if you need it for logging, but it now contains the JSON the model emitted rather than a sentence.\\nHow the model is constrained When you declare response_format=WeatherReport, MAF generates a JSON schema from the Pydantic model and passes it to the underlying model as part of the request. Modern models have explicit support for schema-constrained generation: rather than sampling tokens freely and hoping the result parses, they sample only tokens consistent with the schema at every step. The output is therefore guaranteed to be valid JSON of the right shape.\\nThat guarantee is on shape, not content. The model still chooses the values. If you ask \\u0026ldquo;what is the weather in Bengaluru?\\u0026rdquo; and the model has no real-time data, it may produce a plausible-looking but invented temperature. Schema constraints do not make the model a reliable data source; they make the response structure reliable, which is a different problem.\\nThree practical consequences follow from this. First, field names and descriptions are part of the prompt the model sees, the same way function-tool parameter descriptions are. A field called temperature_c with a description \\u0026quot;Temperature in degrees Celsius\\u0026quot; will be filled more reliably than a field called t with no description. Second, the model is bound by the type system, not by your intentions. If temperature_c is an int, the model will round; if you want decimal places, declare it as a float. Third, validation happens in MAF before the result reaches you. If the model produces something that does not validate against the model (rare, but possible with older models), the run fails cleanly rather than silently giving you bad data.\\nRicher models Structured outputs are not limited to a flat dictionary of primitives. Anything Pydantic can express, you can use, including nested models, lists, optional fields, and enum-like constraints via Literal.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 from typing import Literal from pydantic import BaseModel, Field class Hazard(BaseModel): severity: Literal[\\u0026#34;low\\u0026#34;, \\u0026#34;medium\\u0026#34;, \\u0026#34;high\\u0026#34;] description: str class WeatherReport(BaseModel): location: str = Field(description=\\u0026#34;City and country, e.g. \\u0026#39;Bengaluru, IN\\u0026#39;.\\u0026#34;) temperature_c: float = Field(description=\\u0026#34;Current temperature in Celsius.\\u0026#34;) conditions: str = Field(description=\\u0026#34;Short summary, e.g. \\u0026#39;partly cloudy\\u0026#39;.\\u0026#34;) hazards: list[Hazard] = Field( default_factory=list, description=\\u0026#34;Active weather hazards, if any.\\u0026#34;, ) advice: str = Field(description=\\u0026#34;One-sentence recommendation for the user.\\u0026#34;) A few things worth noticing. Literal[\\u0026quot;low\\u0026quot;, \\u0026quot;medium\\u0026quot;, \\u0026quot;high\\u0026quot;] becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see \\u0026ldquo;moderate\\u0026rdquo; or \\u0026ldquo;MEDIUM\\u0026rdquo; sneak in. list[Hazard] lets the model emit zero, one, or several hazards, each itself validated against the Hazard schema. default_factory=list means the field is optional from the model\\u0026rsquo;s perspective; if there are no hazards, the model can omit the field and Pydantic fills in an empty list. Field(description=...) is the same hint we used for function-tool parameters; it goes into the prompt and improves how reliably each field is filled.\\nFor models that already have a meaningful structure in your application, structured outputs are often a one-line change: take the Pydantic model you are using elsewhere, pass it as response_format, and the agent answers in your existing types.\\nStructured outputs and tools The interesting case is when the agent needs to call tools to gather information before producing the structured answer. Both can coexist on the same agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 from typing import Annotated from pydantic import Field as PydField def get_temperature( location: Annotated[str, PydField(description=\\u0026#34;City to look up.\\u0026#34;)], ) -\\u0026gt; float: \\u0026#34;\\u0026#34;\\u0026#34;Look up the current temperature in Celsius.\\u0026#34;\\u0026#34;\\u0026#34; # ... call your weather API ... return 28.4 agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;Use the get_temperature tool, then return a WeatherReport.\\u0026#34;, tools=[get_temperature], response_format=WeatherReport, ) result = await agent.run(\\u0026#34;Weather in Bengaluru?\\u0026#34;) report: WeatherReport = result.value The flow inside the run is straightforward. The model decides to call get_temperature, the tool runs and returns 28.4, the result goes back into the conversation, and then the model produces the final response constrained by the schema. The tool\\u0026rsquo;s return value can be anything (a float, a dict, a Pydantic model); only the agent\\u0026rsquo;s final reply is shape-constrained.\\nThe instructions still matter, especially when you have both. A line like \\u0026ldquo;use get_temperature first, then fill in the WeatherReport fields\\u0026rdquo; makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.\\nStreaming structured outputs Streaming and structured outputs work together, but with a wrinkle: the structured value is not finalized until the whole reply is generated. You can still stream the underlying JSON as it is produced, but the parsed Pydantic instance only becomes available at the end.\\n1 2 3 4 5 6 stream = agent.run(\\u0026#34;Weather in Bengaluru?\\u0026#34;, stream=True) async for update in stream: if update.text: print(update.text, end=\\u0026#34;\\u0026#34;, flush=True) final = await stream.get_final_response() report: WeatherReport = final.value The async loop yields chunks of the JSON as it is written, which is useful for showing progress in a UI (\\u0026ldquo;the model is generating the response\\u0026hellip;\\u0026rdquo;). The fully parsed WeatherReport is only available after get_final_response() resolves. If your application only cares about the parsed object, do not bother streaming; if it wants both progress feedback and the typed result, the pattern above gives you both.\\nA natural extension is to render the partial JSON in the UI as it streams, so the user sees fields populating in real time. That requires a partial-JSON parser on the receiving side and is more work than it sounds, but it produces the most polished interactive experience.\\nThings to note A few things to watch for when adopting structured outputs.\\nSchema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce something. If the input data is missing or ambiguous, the something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.\\nNot every model supports schema-constrained generation, and support varies across the Chat Completions and Responses APIs. Older models may produce JSON that resembles the schema without strictly conforming to it, in which case you fall back on Pydantic\\u0026rsquo;s validation to catch errors. If your runs occasionally fail with validation errors and you have a long tail of model versions in production, this is usually why.\\nOptional fields are tricky. A field declared as Optional[str] = None lets the model emit None, but the model has to decide to do so; many models default to filling everything in, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.\\nNested unions reduce reliability. A field whose type is Union[Hazard, Warning, Notice] works in the schema but forces the model to make a categorization decision mid-generation, which it does less consistently than when picking from a flat enum or producing a single shape. Where you can, prefer a flat shape with a discriminator field over a nested union.\\nFinally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, which incurs token costs and degrades attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.\\nSummary Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as response_format, and the agent returns a typed instance via result.value. The mechanism comprises tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its content. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.\\n\"",
+  "articleBody": "\"Most of the agents we have built so far have replied in prose. The user asks about the weather, and the agent responds in a single sentence. That works for a chat application, but it does not work for an application that has to do something with the answer. If your code needs to know whether the temperature is above 30°C or whether the recommendation is BUY, HOLD, or SELL, parsing prose with a regex or a second LLM call is fragile. The model phrases things differently each time, and one badly worded sentence can break the pipeline.\\nMicrosoft Agent Framework (MAF) has a cleaner answer for this. You declare the shape of the response as a Pydantic model, pass it as a response_format, and the agent returns a parsed instance of that model. The model is constrained at generation time to emit valid JSON that matches the schema, so by the time your code reads the result, it is already typed and validated.\\nIf you have followed the function tools article, Pydantic will already feel familiar. We used it there to give tool functions a typed return shape that the model could read reliably. Structured outputs use the same library for a different job. Instead of typing what comes into the conversation from a tool, they type what comes out of the agent at the end. The two patterns sit at opposite ends of the same conversation and compose without any extra wiring.\\nThis article looks at how to use structured outputs, what changes when tools are also involved, and where the rough edges are.\\nA simple structured response The smallest useful example: ask the agent for a weather report and get back a typed object instead of prose.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 import asyncio import os from pydantic import BaseModel from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() class WeatherReport(BaseModel): location: str temperature_c: float conditions: str advice: str async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weather assistant. Provide concise, accurate weather information.\\u0026#34;, response_format=WeatherReport, ) result = await agent.run(\\u0026#34;What is the weather like in Bengaluru today?\\u0026#34;) report: WeatherReport = result.value print(f\\u0026#34;{report.location}: {report.temperature_c}°C, {report.conditions}\\u0026#34;) print(f\\u0026#34;Advice: {report.advice}\\u0026#34;) asyncio.run(main()) The change from a prose-returning agent is small but meaningful. We declare a WeatherReport Pydantic model, pass the class (not an instance) as response_format, and read the parsed object from result.value. The agent\\u0026rsquo;s underlying prose answer is no longer the primary surface; what comes back is a fully validated WeatherReport instance with typed fields you can pass directly into the rest of your application.\\nThe original result.text is still there if you need it for logging, but it now contains the JSON the model emitted rather than a sentence.\\nHow the model is constrained When you declare response_format=WeatherReport, MAF generates a JSON schema from the Pydantic model and passes it to the underlying model as part of the request. Modern models have explicit support for schema-constrained generation: rather than sampling tokens freely and hoping the result parses, they sample only tokens consistent with the schema at every step. The output is therefore guaranteed to be valid JSON of the right shape.\\nThat guarantee is on shape, not content. The model still chooses the values. If you ask \\u0026ldquo;what is the weather in Bengaluru?\\u0026rdquo; and the model has no real-time data, it may produce a plausible-looking but invented temperature. Schema constraints do not make the model a reliable data source; they make the response structure reliable, which is a different problem.\\nThree practical consequences follow from this. First, field names and descriptions are part of the prompt the model sees, the same way function-tool parameter descriptions are. A field called temperature_c with a description \\u0026quot;Temperature in degrees Celsius\\u0026quot; will be filled more reliably than a field called t with no description. Second, the model is bound by the type system, not by your intentions. If temperature_c is an int, the model will round; if you want decimal places, declare it as a float. Third, validation happens in MAF before the result reaches you. If the model produces something that does not validate against the model (rare, but possible with older models), the run fails cleanly rather than silently giving you bad data.\\nRicher models Structured outputs are not limited to a flat dictionary of primitives. Anything Pydantic can express, you can use, including nested models, lists, optional fields, and enum-like constraints via Literal.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 from typing import Literal from pydantic import BaseModel, Field class Hazard(BaseModel): severity: Literal[\\u0026#34;low\\u0026#34;, \\u0026#34;medium\\u0026#34;, \\u0026#34;high\\u0026#34;] description: str class WeatherReport(BaseModel): location: str = Field(description=\\u0026#34;City and country, e.g. \\u0026#39;Bengaluru, IN\\u0026#39;.\\u0026#34;) temperature_c: float = Field(description=\\u0026#34;Current temperature in Celsius.\\u0026#34;) conditions: str = Field(description=\\u0026#34;Short summary, e.g. \\u0026#39;partly cloudy\\u0026#39;.\\u0026#34;) hazards: list[Hazard] = Field( default_factory=list, description=\\u0026#34;Active weather hazards, if any.\\u0026#34;, ) advice: str = Field(description=\\u0026#34;One-sentence recommendation for the user.\\u0026#34;) A few things worth noticing. Literal[\\u0026quot;low\\u0026quot;, \\u0026quot;medium\\u0026quot;, \\u0026quot;high\\u0026quot;] becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see \\u0026ldquo;moderate\\u0026rdquo; or \\u0026ldquo;MEDIUM\\u0026rdquo; sneak in. list[Hazard] lets the model emit zero, one, or several hazards, each itself validated against the Hazard schema. default_factory=list means the field is optional from the model\\u0026rsquo;s perspective; if there are no hazards, the model can omit the field, and Pydantic fills in an empty list. Field(description=...) is the same hint we used for function-tool parameters; it goes into the prompt and improves the reliability with which each field is filled.\\nFor models that already have a meaningful structure in your application, structured outputs are often a one-line change: take the Pydantic model you are using elsewhere, pass it as response_format, and the agent answers in your existing types.\\nStructured outputs and tools The interesting case is when the agent needs to call tools to gather information before producing the structured answer. Both can coexist on the same agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 from typing import Annotated from pydantic import Field as PydField def get_temperature( location: Annotated[str, PydField(description=\\u0026#34;City to look up.\\u0026#34;)], ) -\\u0026gt; float: \\u0026#34;\\u0026#34;\\u0026#34;Look up the current temperature in Celsius.\\u0026#34;\\u0026#34;\\u0026#34; # ... call your weather API ... return 28.4 agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;Use the get_temperature tool, then return a WeatherReport.\\u0026#34;, tools=[get_temperature], response_format=WeatherReport, ) result = await agent.run(\\u0026#34;Weather in Bengaluru?\\u0026#34;) report: WeatherReport = result.value The flow inside the run is straightforward. The model decides to call get_temperature. The tool runs and returns 28.4. The result goes back into the conversation, and then the model produces the final response, constrained by the schema. The tool\\u0026rsquo;s return value can be anything (a float, a dict, a Pydantic model); only the agent\\u0026rsquo;s final reply is shape-constrained.\\nThe instructions still matter, especially when you have both. A line like \\u0026ldquo;use get_temperature first, then fill in the WeatherReport fields\\u0026rdquo; makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.\\nStreaming structured outputs Streaming and structured outputs work together, but with a wrinkle: the structured value is not finalized until the whole reply is generated. You can still stream the underlying JSON as it is produced, but the parsed Pydantic instance only becomes available at the end.\\n1 2 3 4 5 6 stream = agent.run(\\u0026#34;Weather in Bengaluru?\\u0026#34;, stream=True) async for update in stream: if update.text: print(update.text, end=\\u0026#34;\\u0026#34;, flush=True) final = await stream.get_final_response() report: WeatherReport = final.value The async loop yields chunks of the JSON as it is written, which is useful for showing progress in a UI (\\u0026ldquo;the model is generating the response\\u0026hellip;\\u0026rdquo;). The fully parsed WeatherReport is only available after get_final_response() resolves. If your application only cares about the parsed object, do not bother streaming; if it wants both progress feedback and the typed result, the pattern above gives you both.\\nA natural extension is to render the partial JSON in the UI as it streams, so the user sees fields populating in real time. That requires a partial-JSON parser on the receiving side and is more work than it sounds, but it produces the most polished interactive experience.\\nThings to note A few things to watch for when adopting structured outputs.\\nSchema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce something. If the input data is missing or ambiguous, something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.\\nNot every model supports schema-constrained generation, and support varies across the Chat Completions and Responses APIs. Older models may produce JSON that resembles the schema without strictly conforming to it, in which case you fall back on Pydantic\\u0026rsquo;s validation to catch errors. If your runs occasionally fail with validation errors and you have a long tail of model versions in production, this is usually why.\\nOptional fields are tricky. A field declared as Optional[str] = None allows the model to emit None, but the model must decide to do so; many models default to filling in everything, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.\\nNested unions reduce reliability. A field whose type is Union[Hazard, Warning, Notice] works in the schema but forces the model to make a categorization decision mid-generation, which it does less consistently than when picking from a flat enum or producing a single shape. Where you can, prefer a flat shape with a discriminator field over a nested union.\\nFinally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, incurring token costs and degrading attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.\\nSummary Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as response_format, and the agent returns a typed instance via result.value. The mechanism comprises tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its content. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.\\nℹ️ Updated 26th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from chat_client.create_agent(...) to chat_client.as_agent(...). The Multiple tools example has been updated to match. Other articles in this series also include changes to imports and constructors; see the client comparison article for the current set of clients and how to use them. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/structured-outputs-in-microsoft-agent-framework\/",
   "datePublished": "2026-03-06T00:00:00Z",
   "dateModified": "2026-03-06T00:00:00Z",
@@ -687,7 +687,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 15-part series
+        Part of a 17-part series
       </p>
 
       
@@ -905,6 +905,34 @@
               </div>
             </li>
           
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                16
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/local-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Local MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                17
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
+              </div>
+            </li>
+          
         </ol>
 
         
@@ -943,6 +971,10 @@
               
             
           
+            
+          
+            
+          
 
           
           
@@ -956,6 +988,14 @@
           
 
           
+          
+            
+            <a href="https://ravichaganti.com/blog/local-mcp-tools-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Local MCP tools in Microsoft Agent Framework</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
           
         </div>
       </nav>
@@ -1216,7 +1256,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">advice</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;One-sentence recommendation for the user.&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>A few things worth noticing. <code>Literal[&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;]</code> becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see &ldquo;moderate&rdquo; or &ldquo;MEDIUM&rdquo; sneak in. <code>list[Hazard]</code> lets the model emit zero, one, or several hazards, each itself validated against the <code>Hazard</code> schema. <code>default_factory=list</code> means the field is optional from the model&rsquo;s perspective; if there are no hazards, the model can omit the field and Pydantic fills in an empty list. <code>Field(description=...)</code> is the same hint we used for function-tool parameters; it goes into the prompt and improves how reliably each field is filled.</p>
+</div><p>A few things worth noticing. <code>Literal[&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;]</code> becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see &ldquo;moderate&rdquo; or &ldquo;MEDIUM&rdquo; sneak in. <code>list[Hazard]</code> lets the model emit zero, one, or several hazards, each itself validated against the <code>Hazard</code> schema. <code>default_factory=list</code> means the field is optional from the model&rsquo;s perspective; if there are no hazards, the model can omit the field, and Pydantic fills in an empty list. <code>Field(description=...)</code> is the same hint we used for function-tool parameters; it goes into the prompt and improves the reliability with which each field is filled.</p>
 <p>For models that already have a meaningful structure in your application, structured outputs are often a one-line change: take the Pydantic model you are using elsewhere, pass it as <code>response_format</code>, and the agent answers in your existing types.</p>
 <h2 id="structured-outputs-and-tools">Structured outputs and tools</h2>
 <p>The interesting case is when the agent needs to call tools to gather information <em>before</em> producing the structured answer. Both can coexist on the same agent.</p>
@@ -1264,8 +1304,8 @@
 </span></span><span class="line"><span class="cl"><span class="n">report</span><span class="p">:</span> <span class="n">WeatherReport</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The flow inside the run is straightforward. The model decides to call <code>get_temperature</code>, the tool runs and returns 28.4, the result goes back into the conversation, and <em>then</em> the model produces the final response constrained by the schema. The tool&rsquo;s return value can be anything (a float, a dict, a Pydantic model); only the agent&rsquo;s final reply is shape-constrained.</p>
-<p>The instructions still matter, especially when you have both. A line like &ldquo;use <code>get_temperature</code> first, then fill in the WeatherReport fields&rdquo; makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.</p>
+</div><p>The flow inside the run is straightforward. The model decides to call <code>get_temperature</code>. The tool runs and returns 28.4. The result goes back into the conversation, and then the model produces the final response, constrained by the schema. The tool&rsquo;s return value can be anything (a <code>float</code>, a <code>dict</code>, a Pydantic model); only the agent&rsquo;s final reply is shape-constrained.</p>
+<p>The instructions still matter, especially when you have both. A line like &ldquo;use <code>get_temperature</code> first, then fill in the <code>WeatherReport</code> fields&rdquo; makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.</p>
 <h2 id="streaming-structured-outputs">Streaming structured outputs</h2>
 <p>Streaming and structured outputs work together, but with a wrinkle: the structured value is not finalized until the whole reply is generated. You can still stream the underlying JSON as it is produced, but the parsed Pydantic instance only becomes available at the end.</p>
 <div class="highlight"><div class="chroma">
@@ -1290,13 +1330,75 @@
 <p>A natural extension is to render the partial JSON in the UI as it streams, so the user sees fields populating in real time. That requires a partial-JSON parser on the receiving side and is more work than it sounds, but it produces the most polished interactive experience.</p>
 <h2 id="things-to-note">Things to note</h2>
 <p>A few things to watch for when adopting structured outputs.</p>
-<p>Schema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce <em>something</em>. If the input data is missing or ambiguous, the something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.</p>
+<p>Schema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce <em>something</em>. If the input data is missing or ambiguous, something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.</p>
 <p>Not every model supports schema-constrained generation, and support varies across the Chat Completions and Responses APIs. Older models may produce JSON that <em>resembles</em> the schema without strictly conforming to it, in which case you fall back on Pydantic&rsquo;s validation to catch errors. If your runs occasionally fail with validation errors and you have a long tail of model versions in production, this is usually why.</p>
-<p>Optional fields are tricky. A field declared as <code>Optional[str] = None</code> lets the model emit <code>None</code>, but the model has to decide to do so; many models default to filling everything in, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.</p>
+<p>Optional fields are tricky. A field declared as <code>Optional[str] = None</code> allows the model to emit None, but the model must decide to do so; many models default to filling in everything, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.</p>
 <p>Nested unions reduce reliability. A field whose type is <code>Union[Hazard, Warning, Notice]</code> works in the schema but forces the model to make a categorization decision mid-generation, which it does less consistently than when picking from a flat enum or producing a single shape. Where you can, prefer a flat shape with a discriminator field over a nested union.</p>
-<p>Finally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, which incurs token costs and degrades attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.</p>
+<p>Finally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, incurring token costs and degrading attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.</p>
 <h2 id="summary">Summary</h2>
 <p>Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as <code>response_format</code>, and the agent returns a typed instance via <code>result.value</code>. The mechanism comprises tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its <em>content</em>. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.</p>
+<style>
+.notice-shortcode.notice-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.dark .notice-shortcode.notice-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: #1e40af;
+  color: #f1f5f9;
+}
+.notice-shortcode.notice-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+}
+.dark .notice-shortcode.notice-warning {
+  background-color: rgba(133, 77, 14, 0.2);
+  border-color: #ca8a04;
+  color: #fef9c3;
+}
+.notice-shortcode.notice-tip {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #14532d;
+}
+.dark .notice-shortcode.notice-tip {
+  background-color: rgba(20, 83, 45, 0.2);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+.notice-shortcode.notice-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
+.dark .notice-shortcode.notice-danger {
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  color: #fecaca;
+}
+.notice-shortcode.notice-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+.dark .notice-shortcode.notice-success {
+  background-color: rgba(6, 78, 59, 0.2);
+  border-color: #059669;
+  color: #d1fae5;
+}
+</style>
+
+<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
+    <div class="flex-1 notice-content">
+      <strong>Updated 26th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from <code>chat_client.create_agent(...)</code> to <code>chat_client.as_agent(...)</code>. The <code>Multiple tools</code> example has been updated to match. Other articles in this series also include changes to imports and constructors; see the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current set of clients and how to use them.
+    </div>
+  </div>
+</div>
+
 
         </div>
 
@@ -1479,6 +1581,10 @@
         
       
     
+      
+    
+      
+    
 
     
     
@@ -1486,6 +1592,9 @@
         
         
       
+      
+        
+        
       
     
   
@@ -1524,20 +1633,29 @@
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/local-mcp-tools-in-microsoft-agent-framework/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in Microsoft Agent Framework: Local MCP tools in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
-            <div class="flex-1 text-right md:text-left">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Local MCP tools in Microsoft Agent Framework
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Function tools cover code you write yourself. MCP servers cover tools that other people write. This article looks at how to connect a Microsoft Agent Framework agent to a local MCP server, what the agent actually sees when you do, and how MCP tools coexist with the function tools we have already used.</p>
+              
             </div>
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
   </div>

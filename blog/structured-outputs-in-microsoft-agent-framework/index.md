@@ -91,7 +91,7 @@ class WeatherReport(BaseModel):
     advice: str = Field(description="One-sentence recommendation for the user.")
 ```
 
-A few things worth noticing. `Literal["low", "medium", "high"]` becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see "moderate" or "MEDIUM" sneak in. `list[Hazard]` lets the model emit zero, one, or several hazards, each itself validated against the `Hazard` schema. `default_factory=list` means the field is optional from the model's perspective; if there are no hazards, the model can omit the field and Pydantic fills in an empty list. `Field(description=...)` is the same hint we used for function-tool parameters; it goes into the prompt and improves how reliably each field is filled.
+A few things worth noticing. `Literal["low", "medium", "high"]` becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see "moderate" or "MEDIUM" sneak in. `list[Hazard]` lets the model emit zero, one, or several hazards, each itself validated against the `Hazard` schema. `default_factory=list` means the field is optional from the model's perspective; if there are no hazards, the model can omit the field, and Pydantic fills in an empty list. `Field(description=...)` is the same hint we used for function-tool parameters; it goes into the prompt and improves the reliability with which each field is filled.
 
 For models that already have a meaningful structure in your application, structured outputs are often a one-line change: take the Pydantic model you are using elsewhere, pass it as `response_format`, and the agent answers in your existing types.
 
@@ -121,9 +121,9 @@ result = await agent.run("Weather in Bengaluru?")
 report: WeatherReport = result.value
 ```
 
-The flow inside the run is straightforward. The model decides to call `get_temperature`, the tool runs and returns 28.4, the result goes back into the conversation, and *then* the model produces the final response constrained by the schema. The tool's return value can be anything (a float, a dict, a Pydantic model); only the agent's final reply is shape-constrained.
+The flow inside the run is straightforward. The model decides to call `get_temperature`. The tool runs and returns 28.4. The result goes back into the conversation, and then the model produces the final response, constrained by the schema. The tool's return value can be anything (a `float`, a `dict`, a Pydantic model); only the agent's final reply is shape-constrained.
 
-The instructions still matter, especially when you have both. A line like "use `get_temperature` first, then fill in the WeatherReport fields" makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.
+The instructions still matter, especially when you have both. A line like "use `get_temperature` first, then fill in the `WeatherReport` fields" makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.
 
 ## Streaming structured outputs
 
@@ -146,17 +146,20 @@ A natural extension is to render the partial JSON in the UI as it streams, so th
 
 A few things to watch for when adopting structured outputs.
 
-Schema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce *something*. If the input data is missing or ambiguous, the something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.
+Schema constraints can mask hallucinated values. The model is forced to fill the fields, so it will produce *something*. If the input data is missing or ambiguous, something may be plausible-looking nonsense. For domains where this matters (financial, medical, legal), pair structured outputs with a confidence field, or with a tool-based grounding step that the agent must call before producing the final answer.
 
 Not every model supports schema-constrained generation, and support varies across the Chat Completions and Responses APIs. Older models may produce JSON that *resembles* the schema without strictly conforming to it, in which case you fall back on Pydantic's validation to catch errors. If your runs occasionally fail with validation errors and you have a long tail of model versions in production, this is usually why.
 
-Optional fields are tricky. A field declared as `Optional[str] = None` lets the model emit `None`, but the model has to decide to do so; many models default to filling everything in, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.
+Optional fields are tricky. A field declared as `Optional[str] = None` allows the model to emit None, but the model must decide to do so; many models default to filling in everything, including invented values. If a field is genuinely optional, provide a default and add a description indicating when the model should omit it.
 
 Nested unions reduce reliability. A field whose type is `Union[Hazard, Warning, Notice]` works in the schema but forces the model to make a categorization decision mid-generation, which it does less consistently than when picking from a flat enum or producing a single shape. Where you can, prefer a flat shape with a discriminator field over a nested union.
 
-Finally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, which incurs token costs and degrades attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.
+Finally, large response models eat context. Every field name, type, and description becomes part of the prompt. A response model with 80 fields produces a prompt that the model must read on every turn, incurring token costs and degrading attention. If you are tempted to add a fortieth field, ask whether the agent really needs to produce all of that in one shot, or whether a smaller schema plus a follow-up call would work better.
 
 ## Summary
 
 Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as `response_format`, and the agent returns a typed instance via `result.value`. The mechanism comprises tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its *content*. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.
 
+{{< notice "info" >}}
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+{{< /notice >}}

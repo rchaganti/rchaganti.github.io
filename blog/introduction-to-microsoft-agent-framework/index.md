@@ -87,7 +87,7 @@ if completion:
 In this series of articles, we will learn how to create agents and workflows using the Microsoft Agent Framework. We will start by diving deep into Agents, then move on to exploring workflows in depth.
 
 {{< notice "info" >}}
-  Last updated: 6th December 2025
+**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
 {{< /notice >}}
 
 
