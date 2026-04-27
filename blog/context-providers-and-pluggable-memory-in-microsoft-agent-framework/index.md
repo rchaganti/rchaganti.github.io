@@ -213,11 +213,9 @@ Context windows fill up faster than they used to. With three providers each addi
 
 Attribution matters in failure modes. When the agent says something wrong, the question "where did this come from" is harder to answer with several providers than with a single provider. The `source_id` system gives you the trace; use it. For high-stakes domains, prefer a small set of explicitly-named providers over an opaque pile of retrieval.
 
-Finally, providers are stateful objects. Constructing them is sometimes expensive (an embedding model load, a Redis index creation, an API key check). Construct once at startup and pass the same instance to every agent that needs it; do not create new ones on demand unless they are designed for it.
+Finally, providers are stateful objects. Constructing them is sometimes expensive (an embedding model load, a Redis index creation, an API key check). Construct once at startup and pass the same instance to every agent that needs it; do not create new ones on demand unless they are designed to do so.
 
 ## Summary
 
 `HistoryProvider` is for raw conversation persistence; `ContextProvider` is for everything else you want the agent to see. The shipped providers (`FileHistoryProvider`, `CosmosHistoryProvider`, `Mem0ContextProvider`, `RedisContextProvider`, `RedisHistoryProvider`, `AzureAISearchContextProvider`, `FoundryMemoryProvider`) cover most production patterns, and a custom subclass with `before_run`/`after_run` covers everything else. Compose providers via `context_providers=[...]`, keep the list small, and use `source_id` for attribution.
-
-That closes out Phase B of this series — clients, agents, tools, MCP, and now memory. In the next set of articles, we will dig deeper into workflows: not the orchestration patterns we already covered (sequential, concurrent, handoff, group chat, magentic), but the lower-level primitives those patterns are built on: executors, edges, events, and the BSP execution model that makes long-running, checkpoint-able workflows possible.
 
