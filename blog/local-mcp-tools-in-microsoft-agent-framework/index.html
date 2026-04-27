@@ -90,7 +90,7 @@
   "@type": "BlogPosting",
   "headline": "Local MCP tools in Microsoft Agent Framework",
   "description": "The function tools article covered the case where you write the tool yourself: a Python function, type hints, a docstring, and Microsoft Agent Framework (MAF) takes care of the rest. That works …",
-  "articleBody": "\"The function tools article covered the case where you write the tool yourself: a Python function, type hints, a docstring, and Microsoft Agent Framework (MAF) takes care of the rest. That works beautifully when you control the code. It does not scale when the tool already exists somewhere else, when a vendor publishes a tool you want to use, or when your team wants to share a single tool implementation across multiple agents and frameworks.\\nThe Model Context Protocol (MCP) is the standard answer for that case. An MCP server exposes a set of tools (and other capabilities) over a well-defined protocol; an MCP client connects to the server and uses those tools. We compared the protocol to the Skills abstraction in an earlier article; this one focuses on the practical side, namely, how to wire an MCP server into a MAF agent and what changes when you do.\\nIn this article, we will connect to two flavors of MCP server: a local stdio server you run as a subprocess and a remote HTTP server somewhere on the network, and look at how MAF presents the resulting tools to the agent.\\nWhat an MCP tool looks like to the agent Before any code, the most useful thing to understand is what changes for the agent when you bring in MCP. From the agent\\u0026rsquo;s perspective, almost nothing changes. The agent still sees a list of tools, each with a name, a description, and a JSON schema for its parameters. It calls them the same way it calls a Python function tool. The model does not know whether a tool is implemented in your process or out in a separate server, and it does not need to.\\nWhat MAF does on your behalf is the plumbing. When you attach an MCP server to an agent, MAF connects to the server, discovers the tools it exposes, builds tool definitions from the server\\u0026rsquo;s metadata, and routes any tool call the model decides to make back to the server. The server runs the tool, returns a result, and MAF puts the result back into the conversation as a tool message. The agent reasoning loop is unchanged.\\nThe implication is that everything you learned about function tools, naming, descriptions, return shape, and error handling applies to MCP tools, too. If the upstream server has bad descriptions, the model picks the wrong tool. If a tool returns a 200 KB blob, your context window pays for it. The lessons are the same; they just apply to a tool you do not own.\\nA first stdio MCP server The simplest kind of MCP server runs as a local subprocess and communicates over stdin and stdout. MAF\\u0026rsquo;s MCPStdioTool handles the subprocess for you: tell it the command and the arguments, hand it to the agent, and you are done.\\nFor this example, we will use the open-source mcp-server-time server, which exposes a couple of time-related tools. It runs from uvx, the same single-shot runner you might be using for Python tooling.\\nBefore running the example, get the server on your machine. The simplest route is to install uv (Astral\\u0026rsquo;s Python package manager) and let uvx fetch the server on demand:\\n1 2 3 4 5 6 7 8 # One-time setup: install uv pip install uv # Confirm uvx is available uvx --version # Sanity-check that the time server starts uvx mcp-server-time The first call to uvx mcp-server-time downloads and caches the mcp-server-time package from PyPI; subsequent runs are fast. When you run the server directly like this, it speaks MCP over stdin and stdout and waits for a client to connect, so the process will sit and do nothing visible until you stop it with Ctrl+C. That is expected. In the example below, MAF will be the client, and it will start and stop the server for us via MCPStdioTool.\\nIf you prefer a permanent install over running through uvx every time, run uv tool install mcp-server-time. That puts a mcp-server-time binary on your PATH, and you can pass command=\\u0026quot;mcp-server-time\\u0026quot; and args=[] to MCPStdioTool instead of using uvx.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 import asyncio import os from agent_framework import MCPStdioTool from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) async with MCPStdioTool( name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;], ) as time_tool: agent = chat_client.as_agent( name=\\u0026#34;TimeAgent\\u0026#34;, instructions=\\u0026#34;You are a time assistant. Use the available tools to answer questions about the current time and time zones.\\u0026#34;, tools=[time_tool], ) result = await agent.run(\\u0026#34;What is the current time in Bengaluru and in New York?\\u0026#34;) print(result.text) asyncio.run(main()) A few things worth pointing out. The async with block matters: MCPStdioTool starts the subprocess when the context is entered and stops it cleanly when the context exits. If you skip the async with and use the tool plain, you risk leaving the subprocess running after the script exits, especially when an exception fires.\\nname is the name MAF uses internally to refer to the server, which is helpful when more than one MCP server is attached. The command and args are what you would type at the shell to launch the server. Anything that produces a stdio MCP server will work, whether it is a Python uvx-launched server, a Node.js npx -y @modelcontextprotocol/server-everything server, or a binary you built yourself.\\nYou do not need to enumerate the tools the server exposes. MAF discovers them at connect time from the server\\u0026rsquo;s tools/list response and automatically registers them with the agent. The agent simply sees a richer set of tools to choose from.\\nHow tool discovery works When MCPStdioTool.__aenter__ runs, MAF performs an MCP handshake with the server: the protocol version, the server\\u0026rsquo;s capabilities, and the list of tools it exposes. For each tool, the server returns a name, a description, and a JSON schema for its inputs. MAF turns each of those into a tool definition, the same shape the model sees for any other tool.\\nThe practical implication: the quality of the tools, from the model\\u0026rsquo;s perspective, depends entirely on the server author. Servers with sharp, action-oriented descriptions and well-named parameters work well. Servers that describe a tool as \\u0026ldquo;Retrieves data\\u0026rdquo; with a parameter called args work poorly. If a particular MCP server consistently produces bad behavior in your agent, the first place to look is the descriptions, not the agent.\\nThe schema generation is also the server\\u0026rsquo;s responsibility. If you write your own MCP server in Python, you typically describe inputs with Pydantic models, and the server emits the JSON schema for you, exactly the same loop we covered in the function tools article. From the MAF side, you only see the result.\\nTalking to a remote HTTP server Not every MCP server runs as a subprocess. Many useful ones, including those that need authentication or persistent state, run as HTTP services, often over the streamable-HTTP transport. MAF has a separate tool class for this case.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 from agent_framework import MCPStreamableHTTPTool async with MCPStreamableHTTPTool( name=\\u0026#34;github\\u0026#34;, url=\\u0026#34;https://api.example.com/mcp\\u0026#34;, headers={\\u0026#34;Authorization\\u0026#34;: f\\u0026#34;Bearer {os.environ[\\u0026#39;MCP_TOKEN\\u0026#39;]}\\u0026#34;}, ) as github_tool: agent = chat_client.as_agent( name=\\u0026#34;GitHubAgent\\u0026#34;, instructions=\\u0026#34;Use the available tools to answer questions about repositories.\\u0026#34;, tools=[github_tool], ) result = await agent.run(\\u0026#34;How many open issues does microsoft/agent-framework have?\\u0026#34;) print(result.text) The shape mirrors the stdio case. Same async with lifecycle, same tools=[...] parameter on the agent. The differences are at construction time: url instead of command, and an optional headers dict for authentication, which is where most of the security configuration lives. If the server requires more elaborate auth, like signing requests or refreshing tokens, you can layer that on top of the HTTP transport.\\nA practical note: HTTP MCP servers tend to have higher per-call latency than stdio servers, because every tool invocation crosses the network. For interactive agents, this matters. If a tool that takes 50 ms locally takes 500 ms remotely, an agent that calls it five times in a turn now spends an extra two seconds waiting. We will see how to surface this to the user when we cover observability later in the series.\\nSelecting and filtering tools By default, every tool the server exposes becomes available to the agent. That is the right default for small servers, but it is the wrong default for large ones. A general-purpose MCP server might expose forty tools, and putting all forty into one agent\\u0026rsquo;s tool list bloats the prompt, dilutes selection accuracy, and makes the agent\\u0026rsquo;s behavior harder to reason about.\\nThe cleanest fix is to declare which tools you want.\\n1 2 3 4 5 6 7 async with MCPStdioTool( name=\\u0026#34;github\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-github\\u0026#34;], allowed_tools=[\\u0026#34;search_issues\\u0026#34;, \\u0026#34;create_issue\\u0026#34;, \\u0026#34;list_repositories\\u0026#34;], ) as github_tool: ... The agent now sees only those three tools, regardless of what else the server exposes. This pattern is also a good practice for security: even if the server exposes a tool that performs a destructive action, the agent cannot choose to call it if the tool is not in the allow-list.\\nIf you need the inverse, exposing all but a few, MAF supports that too with a denied_tools argument; in practice, allow-lists age better, because new server versions may add tools that you have not vetted yet.\\nCombining MCP tools with function tools MCP tools and function tools live on the same tools=[...] list and are interchangeable from the agent\\u0026rsquo;s perspective. This makes it easy to mix and match: use a community MCP server for the public, well-defined operations, and write a few function tools for your application\\u0026rsquo;s private concerns.\\n1 2 3 4 5 6 7 8 9 10 11 def get_active_user_id() -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Return the user id for the currently authenticated user.\\u0026#34;\\u0026#34;\\u0026#34; return os.environ[\\u0026#34;CURRENT_USER_ID\\u0026#34;] async with MCPStdioTool(name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;]) as time_tool: agent = chat_client.as_agent( name=\\u0026#34;ScheduleAgent\\u0026#34;, instructions=\\u0026#34;You schedule meetings. Use the time tool for time-zone math; use get_active_user_id for the current user.\\u0026#34;, tools=[time_tool, get_active_user_id], ) The agent does not distinguish the two kinds of tool. It sees a flat list, picks whichever is right for the question, and MAF handles the routing. The lessons from the function tools article still apply: keep descriptions sharp, do not overload the list with too many similar tools, and audit what the agent has access to before you ship.\\nLifecycle and connection management Both MCPStdioTool and MCPStreamableHTTPTool are async context managers, and treating them as such is the right default. For one-shot scripts, an async with block around the agent\\u0026rsquo;s main work is enough. For long-running services, the answer is more nuanced.\\nIf you have a single agent process that runs for hours and serves many requests, opening and closing the MCP connection on every request is wasteful. The cleaner pattern is to open the connection once at startup, hold it open, and reuse it across requests.\\n1 2 3 4 5 6 async def lifespan(): async with MCPStdioTool(name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;]) as time_tool: # Make `time_tool` available to your request handlers, e.g. # via a module-level variable, dependency injection, or your # framework\\u0026#39;s lifespan hook. await serve_forever(time_tool) The exact wiring depends on your application framework, but the principle is the same: lifecycle of the MCP connection should match the lifecycle of the application, not the lifecycle of an individual request. For HTTP MCP servers, the same advice applies, with the additional concern that the server may close the connection on its end. Be ready to reconnect transparently if the underlying transport link drops, especially for services expected to stay up overnight.\\nPitfalls A few things to watch for once MCP servers are in your agent\\u0026rsquo;s tool list.\\nTreat MCP servers as untrusted unless you wrote them. A tool description and a tool implementation are written by the server author, and a malicious or buggy server can return responses that lead the model into bad behavior, or worse, prompt-inject the agent through the description. For servers you do not control, allow-list the specific tools you want and review the descriptions before shipping.\\nAuthentication failures are a class of bug worth pre-empting. If a tool the model decides to call returns an \\u0026ldquo;unauthorized\\u0026rdquo; error, the model will often retry with different arguments, sometimes inventing values. Surface auth failures with a clear error message, the same advice as in the function tools article, so the model can give up gracefully rather than guessing.\\nSchema mismatches between server versions can break runs that worked yesterday. Pin the server version where you can, especially for stdio servers launched via uvx or npx. A library that pins to @latest is convenient until a breaking change ships in a new release.\\nLatency adds up. An agent that calls four MCP tools in a turn waits for four round-trip times. If the server is local, this is rarely visible; if it is on the network, it becomes the dominant cost in your run. Measure, and if a single tool becomes a bottleneck, consider caching at the application layer.\\nFinally, MCP tools share the model\\u0026rsquo;s context window with everything else. A tool that returns a 200 KB blob is not free just because it came from an MCP server. The same advice applies to function tools: have the tool summarize before returning, or post-process the result on the application side before it enters the conversation.\\nSummary MCPStdioTool and MCPStreamableHTTPTool are the two front doors into the MCP ecosystem from MAF. They look identical from the agent\\u0026rsquo;s perspective, occupy the same position in the tools=[...] list as a function tool, and follow the same lessons on names, descriptions, errors, and return size. The differences lie in the lifecycle, latency, and trust model, and once you have those mapped, you can pull useful tools off the shelf rather than writing every capability from scratch.\\nIn the next article, we will look at the other half of the MCP picture in MAF: hosted MCP tools, where Microsoft Foundry runs the MCP server for you, and your agent connects through the platform rather than directly. The day-to-day code stays familiar, but the deployment story changes.\\nℹ️ Updated 26th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from chat_client.create_agent(...) to chat_client.as_agent(...). The Multiple tools example has been updated to match. Other articles in this series also include changes to imports and constructors; see the client comparison article for the current set of clients and how to use them. \"",
+  "articleBody": "\"The function tools article covered the case where you write the tool yourself: a Python function, type hints, a docstring, and Microsoft Agent Framework (MAF) takes care of the rest. That works beautifully when you control the code. It does not scale when the tool already exists somewhere else, when a vendor publishes a tool you want to use, or when your team wants to share a single tool implementation across multiple agents and frameworks.\\nThe Model Context Protocol (MCP) is the standard answer for that case. An MCP server exposes a set of tools (and other capabilities) over a well-defined protocol; an MCP client connects to the server and uses those tools. We compared the protocol to the Skills abstraction in an earlier article; this one focuses on the practical side, namely, how to wire an MCP server into a MAF agent and what changes when you do.\\nIn this article, we will connect to two flavors of MCP server: a local stdio server you run as a subprocess and a remote HTTP server somewhere on the network, and look at how MAF presents the resulting tools to the agent.\\nWhat an MCP tool looks like to the agent Before any code, the most useful thing to understand is what changes for the agent when you bring in MCP. From the agent\\u0026rsquo;s perspective, almost nothing changes. The agent still sees a list of tools, each with a name, a description, and a JSON schema for its parameters. It calls them the same way it calls a Python function tool. The model does not know whether a tool is implemented in your process or out in a separate server, and it does not need to.\\nWhat MAF does on your behalf is the plumbing. When you attach an MCP server to an agent, MAF connects to the server, discovers the tools it exposes, builds tool definitions from the server\\u0026rsquo;s metadata, and routes any tool call the model decides to make back to the server. The server runs the tool, returns a result, and MAF puts the result back into the conversation as a tool message. The agent reasoning loop is unchanged.\\nThe implication is that everything you learned about function tools, naming, descriptions, return shape, and error handling applies to MCP tools, too. If the upstream server has bad descriptions, the model picks the wrong tool. If a tool returns a 200 KB blob, your context window pays for it. The lessons are the same; they just apply to a tool you do not own.\\nA first stdio MCP server The simplest kind of MCP server runs as a local subprocess and communicates over stdin and stdout. MAF\\u0026rsquo;s MCPStdioTool handles the subprocess for you: tell it the command and the arguments, hand it to the agent, and you are done.\\nFor this example, we will use the open-source mcp-server-time server, which exposes a couple of time-related tools. It runs from uvx, the same single-shot runner you might be using for Python tooling.\\nBefore running the example, get the server on your machine. The simplest route is to install uv (Astral\\u0026rsquo;s Python package manager) and let uvx fetch the server on demand:\\n1 2 3 4 5 6 7 8 # One-time setup: install uv pip install uv # Confirm uvx is available uvx --version # Sanity-check that the time server starts uvx mcp-server-time The first call to uvx mcp-server-time downloads and caches the mcp-server-time package from PyPI; subsequent runs are fast. When you run the server directly like this, it speaks MCP over stdin and stdout and waits for a client to connect, so the process will sit and do nothing visible until you stop it with Ctrl+C. That is expected. In the example below, MAF will be the client, and it will start and stop the server for us via MCPStdioTool.\\nIf you prefer a permanent install over running through uvx every time, run uv tool install mcp-server-time. That puts a mcp-server-time binary on your PATH, and you can pass command=\\u0026quot;mcp-server-time\\u0026quot; and args=[] to MCPStdioTool instead of using uvx.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 import asyncio import os from agent_framework import MCPStdioTool from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) async with MCPStdioTool( name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;], ) as time_tool: agent = chat_client.as_agent( name=\\u0026#34;TimeAgent\\u0026#34;, instructions=\\u0026#34;You are a time assistant. Use the available tools to answer questions about the current time and time zones.\\u0026#34;, tools=[time_tool], ) result = await agent.run(\\u0026#34;What is the current time in Bengaluru and in New York?\\u0026#34;) print(result.text) asyncio.run(main()) A few things worth pointing out. The async with block matters: MCPStdioTool starts the subprocess when the context is entered and stops it cleanly when the context exits. If you skip the async with and use the tool plain, you risk leaving the subprocess running after the script exits, especially when an exception fires.\\nname is the name MAF uses internally to refer to the server, which is helpful when more than one MCP server is attached. The command and args are what you would type at the shell to launch the server. Anything that produces a stdio MCP server will work, whether it is a Python uvx-launched server, a Node.js npx -y @modelcontextprotocol/server-everything server, or a binary you built yourself.\\nYou do not need to enumerate the tools the server exposes. MAF discovers them at connect time from the server\\u0026rsquo;s tools/list response and automatically registers them with the agent. The agent simply sees a richer set of tools to choose from.\\nHow tool discovery works When MCPStdioTool.__aenter__ runs, MAF performs an MCP handshake with the server: the protocol version, the server\\u0026rsquo;s capabilities, and the list of tools it exposes. For each tool, the server returns a name, a description, and a JSON schema for its inputs. MAF turns each of those into a tool definition, the same shape the model sees for any other tool.\\nThe practical implication: the quality of the tools, from the model\\u0026rsquo;s perspective, depends entirely on the server author. Servers with sharp, action-oriented descriptions and well-named parameters work well. Servers that describe a tool as \\u0026ldquo;Retrieves data\\u0026rdquo; with a parameter called args work poorly. If a particular MCP server consistently produces bad behavior in your agent, the first place to look is the descriptions, not the agent.\\nThe schema generation is also the server\\u0026rsquo;s responsibility. If you write your own MCP server in Python, you typically describe inputs with Pydantic models, and the server emits the JSON schema for you, exactly the same loop we covered in the function tools article. From the MAF side, you only see the result.\\nTalking to a remote HTTP server Not every MCP server runs as a subprocess. Many useful ones, including those that need authentication or persistent state, run as HTTP services, often over the streamable-HTTP transport. MAF has a separate tool class for this case.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 from agent_framework import MCPStreamableHTTPTool async with MCPStreamableHTTPTool( name=\\u0026#34;github\\u0026#34;, url=\\u0026#34;https://api.example.com/mcp\\u0026#34;, header_provider=lambda _ctx: {\\u0026#34;Authorization\\u0026#34;: f\\u0026#34;Bearer {os.environ[\\u0026#39;MCP_TOKEN\\u0026#39;]}\\u0026#34;}, ) as github_tool: agent = chat_client.as_agent( name=\\u0026#34;GitHubAgent\\u0026#34;, instructions=\\u0026#34;Use the available tools to answer questions about repositories.\\u0026#34;, tools=[github_tool], ) result = await agent.run(\\u0026#34;How many open issues does microsoft/agent-framework have?\\u0026#34;) print(result.text) The shape mirrors the stdio case. Same async with lifecycle, same tools=[...] parameter on the agent. The differences are at construction time: url instead of command, and a header_provider callable that returns the headers dict for each call. The callable form is more flexible than a static dict because it lets you refresh tokens, rotate credentials, or add per-call metadata. If the server requires more elaborate auth, like signing requests, you can layer that on top of the HTTP transport.\\nA practical note: HTTP MCP servers tend to have higher per-call latency than stdio servers, because every tool invocation crosses the network. For interactive agents, this matters. If a tool that takes 50 ms locally takes 500 ms remotely, an agent that calls it five times in a turn now spends an extra two seconds waiting. We will see how to surface this to the user when we cover observability later in the series.\\nSelecting and filtering tools By default, every tool the server exposes becomes available to the agent. That is the right default for small servers, but it is the wrong default for large ones. A general-purpose MCP server might expose forty tools, and putting all forty into one agent\\u0026rsquo;s tool list bloats the prompt, dilutes selection accuracy, and makes the agent\\u0026rsquo;s behavior harder to reason about.\\nThe cleanest fix is to declare which tools you want.\\n1 2 3 4 5 6 7 async with MCPStdioTool( name=\\u0026#34;github\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-github\\u0026#34;], allowed_tools=[\\u0026#34;search_issues\\u0026#34;, \\u0026#34;create_issue\\u0026#34;, \\u0026#34;list_repositories\\u0026#34;], ) as github_tool: ... The agent now sees only those three tools, regardless of what else the server exposes. This pattern is also a good practice for security: even if the server exposes a tool that performs a destructive action, the agent cannot choose to call it if the tool is not in the allow-list.\\nIf you need the inverse, exposing all but a few, MAF supports that too with a denied_tools argument; in practice, allow-lists age better, because new server versions may add tools that you have not vetted yet.\\nCombining MCP tools with function tools MCP tools and function tools live on the same tools=[...] list and are interchangeable from the agent\\u0026rsquo;s perspective. This makes it easy to mix and match: use a community MCP server for the public, well-defined operations, and write a few function tools for your application\\u0026rsquo;s private concerns.\\n1 2 3 4 5 6 7 8 9 10 11 def get_active_user_id() -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Return the user id for the currently authenticated user.\\u0026#34;\\u0026#34;\\u0026#34; return os.environ[\\u0026#34;CURRENT_USER_ID\\u0026#34;] async with MCPStdioTool(name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;]) as time_tool: agent = chat_client.as_agent( name=\\u0026#34;ScheduleAgent\\u0026#34;, instructions=\\u0026#34;You schedule meetings. Use the time tool for time-zone math; use get_active_user_id for the current user.\\u0026#34;, tools=[time_tool, get_active_user_id], ) The agent does not distinguish the two kinds of tool. It sees a flat list, picks whichever is right for the question, and MAF handles the routing. The lessons from the function tools article still apply: keep descriptions sharp, do not overload the list with too many similar tools, and audit what the agent has access to before you ship.\\nLifecycle and connection management Both MCPStdioTool and MCPStreamableHTTPTool are async context managers, and treating them as such is the right default. For one-shot scripts, an async with block around the agent\\u0026rsquo;s main work is enough. For long-running services, the answer is more nuanced.\\nIf you have a single agent process that runs for hours and serves many requests, opening and closing the MCP connection on every request is wasteful. The cleaner pattern is to open the connection once at startup, hold it open, and reuse it across requests.\\n1 2 3 4 5 6 async def lifespan(): async with MCPStdioTool(name=\\u0026#34;time\\u0026#34;, command=\\u0026#34;uvx\\u0026#34;, args=[\\u0026#34;mcp-server-time\\u0026#34;]) as time_tool: # Make `time_tool` available to your request handlers, e.g. # via a module-level variable, dependency injection, or your # framework\\u0026#39;s lifespan hook. await serve_forever(time_tool) The exact wiring depends on your application framework, but the principle is the same: lifecycle of the MCP connection should match the lifecycle of the application, not the lifecycle of an individual request. For HTTP MCP servers, the same advice applies, with the additional concern that the server may close the connection on its end. Be ready to reconnect transparently if the underlying transport link drops, especially for services expected to stay up overnight.\\nPitfalls A few things to watch for once MCP servers are in your agent\\u0026rsquo;s tool list.\\nTreat MCP servers as untrusted unless you wrote them. A tool description and a tool implementation are written by the server author, and a malicious or buggy server can return responses that lead the model into bad behavior, or worse, prompt-inject the agent through the description. For servers you do not control, allow-list the specific tools you want and review the descriptions before shipping.\\nAuthentication failures are a class of bug worth pre-empting. If a tool the model decides to call returns an \\u0026ldquo;unauthorized\\u0026rdquo; error, the model will often retry with different arguments, sometimes inventing values. Surface auth failures with a clear error message, the same advice as in the function tools article, so the model can give up gracefully rather than guessing.\\nSchema mismatches between server versions can break runs that worked yesterday. Pin the server version where you can, especially for stdio servers launched via uvx or npx. A library that pins to @latest is convenient until a breaking change ships in a new release.\\nLatency adds up. An agent that calls four MCP tools in a turn waits for four round-trip times. If the server is local, this is rarely visible; if it is on the network, it becomes the dominant cost in your run. Measure, and if a single tool becomes a bottleneck, consider caching at the application layer.\\nFinally, MCP tools share the model\\u0026rsquo;s context window with everything else. A tool that returns a 200 KB blob is not free just because it came from an MCP server. The same advice applies to function tools: have the tool summarize before returning, or post-process the result on the application side before it enters the conversation.\\nSummary MCPStdioTool and MCPStreamableHTTPTool are the two front doors into the MCP ecosystem from MAF. They look identical from the agent\\u0026rsquo;s perspective, occupy the same position in the tools=[...] list as a function tool, and follow the same lessons on names, descriptions, errors, and return size. The differences lie in the lifecycle, latency, and trust model, and once you have those mapped, you can pull useful tools off the shelf rather than writing every capability from scratch.\\nIn the next article, we will look at the other half of the MCP picture in MAF: hosted MCP tools, where Microsoft Foundry runs the MCP server for you, and your agent connects through the platform rather than directly. The day-to-day code stays familiar, but the deployment story changes.\\n\"",
   "url": "https:\/\/ravichaganti.com\/blog\/local-mcp-tools-in-microsoft-agent-framework\/",
   "datePublished": "2026-03-08T00:00:00Z",
   "dateModified": "2026-03-08T00:00:00Z",
@@ -692,7 +692,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 17-part series
+        Part of a 18-part series
       </p>
 
       
@@ -702,6 +702,34 @@
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                 1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Exposing Microsoft Agent Framework agents as MCP servers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
               </span>
               <div class="flex-grow">
                 
@@ -715,7 +743,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
+                4
               </span>
               <div class="flex-grow">
                 
@@ -729,7 +757,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                3
+                5
               </span>
               <div class="flex-grow">
                 
@@ -743,7 +771,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                4
+                6
               </span>
               <div class="flex-grow">
                 
@@ -757,7 +785,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                5
+                7
               </span>
               <div class="flex-grow">
                 
@@ -771,7 +799,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                6
+                8
               </span>
               <div class="flex-grow">
                 
@@ -785,7 +813,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                7
+                9
               </span>
               <div class="flex-grow">
                 
@@ -799,7 +827,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                8
+                10
               </span>
               <div class="flex-grow">
                 
@@ -813,7 +841,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                9
+                11
               </span>
               <div class="flex-grow">
                 
@@ -827,7 +855,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                10
+                12
               </span>
               <div class="flex-grow">
                 
@@ -841,7 +869,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                11
+                13
               </span>
               <div class="flex-grow">
                 
@@ -855,7 +883,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                12
+                14
               </span>
               <div class="flex-grow">
                 
@@ -869,7 +897,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                13
+                15
               </span>
               <div class="flex-grow">
                 
@@ -883,7 +911,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                14
+                16
               </span>
               <div class="flex-grow">
                 
@@ -897,7 +925,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                15
+                17
               </span>
               <div class="flex-grow">
                 
@@ -911,7 +939,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                16
+                18
               </span>
               <div class="flex-grow">
                 
@@ -921,20 +949,6 @@
                   </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                17
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Hosted MCP tools in Microsoft Agent Framework
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
               </div>
             </li>
           
@@ -975,9 +989,11 @@
             
           
             
-              
+          
             
           
+            
+              
             
           
 
@@ -993,14 +1009,6 @@
           
 
           
-          
-            
-            <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Hosted MCP tools in Microsoft Agent Framework</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
           
         </div>
       </nav>
@@ -1277,7 +1285,7 @@
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">with</span> <span class="n">MCPStreamableHTTPTool</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;https://api.example.com/mcp&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;Authorization&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;Bearer </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MCP_TOKEN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="n">header_provider</span><span class="o">=</span><span class="k">lambda</span> <span class="n">_ctx</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;Authorization&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;Bearer </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MCP_TOKEN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">},</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="k">as</span> <span class="n">github_tool</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;GitHubAgent&#34;</span><span class="p">,</span>
@@ -1289,7 +1297,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The shape mirrors the stdio case. Same <code>async with</code> lifecycle, same <code>tools=[...]</code> parameter on the agent. The differences are at construction time: <code>url</code> instead of <code>command</code>, and an optional <code>headers</code> dict for authentication, which is where most of the security configuration lives. If the server requires more elaborate auth, like signing requests or refreshing tokens, you can layer that on top of the HTTP transport.</p>
+</div><p>The shape mirrors the stdio case. Same <code>async with</code> lifecycle, same <code>tools=[...]</code> parameter on the agent. The differences are at construction time: <code>url</code> instead of <code>command</code>, and a <code>header_provider</code> callable that returns the headers dict for each call. The callable form is more flexible than a static dict because it lets you refresh tokens, rotate credentials, or add per-call metadata. If the server requires more elaborate auth, like signing requests, you can layer that on top of the HTTP transport.</p>
 <p>A practical note: HTTP MCP servers tend to have higher per-call latency than stdio servers, because every tool invocation crosses the network. For interactive agents, this matters. If a tool that takes 50 ms locally takes 500 ms remotely, an agent that calls it five times in a turn now spends an extra two seconds waiting. We will see how to surface this to the user when we cover observability later in the series.</p>
 <h2 id="selecting-and-filtering-tools">Selecting and filtering tools</h2>
 <p>By default, every tool the server exposes becomes available to the agent. That is the right default for small servers, but it is the wrong default for large ones. A general-purpose MCP server might expose forty tools, and putting all forty into one agent&rsquo;s tool list bloats the prompt, dilutes selection accuracy, and makes the agent&rsquo;s behavior harder to reason about.</p>
@@ -1379,68 +1387,6 @@
 <h2 id="summary">Summary</h2>
 <p><code>MCPStdioTool</code> and <code>MCPStreamableHTTPTool</code> are the two front doors into the MCP ecosystem from MAF. They look identical from the agent&rsquo;s perspective, occupy the same position in the <code>tools=[...]</code> list as a function tool, and follow the same lessons on names, descriptions, errors, and return size. The differences lie in the lifecycle, latency, and trust model, and once you have those mapped, you can pull useful tools off the shelf rather than writing every capability from scratch.</p>
 <p>In the next article, we will look at the other half of the MCP picture in MAF: hosted MCP tools, where Microsoft Foundry runs the MCP server for you, and your agent connects through the platform rather than directly. The day-to-day code stays familiar, but the deployment story changes.</p>
-<style>
-.notice-shortcode.notice-info {
-  background-color: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1e3a8a;
-}
-.dark .notice-shortcode.notice-info {
-  background-color: rgba(30, 58, 138, 0.2);
-  border-color: #1e40af;
-  color: #f1f5f9;
-}
-.notice-shortcode.notice-warning {
-  background-color: #fefce8;
-  border-color: #fde047;
-  color: #854d0e;
-}
-.dark .notice-shortcode.notice-warning {
-  background-color: rgba(133, 77, 14, 0.2);
-  border-color: #ca8a04;
-  color: #fef9c3;
-}
-.notice-shortcode.notice-tip {
-  background-color: #f0fdf4;
-  border-color: #86efac;
-  color: #14532d;
-}
-.dark .notice-shortcode.notice-tip {
-  background-color: rgba(20, 83, 45, 0.2);
-  border-color: #16a34a;
-  color: #dcfce7;
-}
-.notice-shortcode.notice-danger {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-  color: #7f1d1d;
-}
-.dark .notice-shortcode.notice-danger {
-  background-color: rgba(127, 29, 29, 0.2);
-  border-color: #dc2626;
-  color: #fecaca;
-}
-.notice-shortcode.notice-success {
-  background-color: #ecfdf5;
-  border-color: #6ee7b7;
-  color: #064e3b;
-}
-.dark .notice-shortcode.notice-success {
-  background-color: rgba(6, 78, 59, 0.2);
-  border-color: #059669;
-  color: #d1fae5;
-}
-</style>
-
-<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
-  <div class="flex items-start gap-3">
-    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
-    <div class="flex-1 notice-content">
-      <strong>Updated 26th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from <code>chat_client.create_agent(...)</code> to <code>chat_client.as_agent(...)</code>. The <code>Multiple tools</code> example has been updated to match. Other articles in this series also include changes to imports and constructors; see the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current set of clients and how to use them.
-    </div>
-  </div>
-</div>
-
 
         </div>
 
@@ -1622,9 +1568,11 @@
       
     
       
-        
+    
       
     
+      
+        
       
     
 
@@ -1634,9 +1582,6 @@
         
         
       
-      
-        
-        
       
     
   
@@ -1675,29 +1620,20 @@
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Hosted MCP tools in Microsoft Agent Framework">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Hosted MCP tools in Microsoft Agent Framework
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">When your agent runs inside Foundry Agent Service, the MCP connection can run there too. This article looks at how hosted MCP tools differ from the local MCP setup we built last time, why you might prefer one over the other, and how authentication and tool approvals change when Foundry holds the connection.</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -1898,6 +1834,22 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Exposing Microsoft Agent Framework agents as MCP servers
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="0001-01-01">
+      Jan 1, 0001
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -1905,8 +1857,8 @@
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-09">
-      Mar 9, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="0001-01-01">
+      Jan 1, 0001
     </time>
   </a>
 </article>
@@ -1955,22 +1907,6 @@
     
     <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-05">
       Mar 5, 2026
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Streaming and multi-turn conversations in Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-04">
-      Mar 4, 2026
     </time>
   </a>
 </article>

@@ -32,8 +32,8 @@ import asyncio
 import os
 from collections.abc import Awaitable, Callable
 
-from agent_framework import ChatAgent, AgentRunContext
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework import Agent, AgentContext
+from agent_framework.foundry import FoundryChatClient
 from azure.identity.aio import AzureCliCredential
 
 from dotenv import load_dotenv
@@ -44,8 +44,8 @@ PROJECT_ENDPOINT = os.environ["AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"]
 MODEL_DEPLOYMENT_NAME = os.environ["AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME"]
 
 async def logging_agent_middleware(
-    context: AgentRunContext,
-    call_next: Callable[[AgentRunContext], Awaitable[None]],
+    context: AgentContext,
+    call_next: Callable[[AgentContext], Awaitable[None]],
 ) -> None:
     user_text = context.messages[-1].text if context.messages else ""
     print(f"[run] user said: {user_text!r}")
@@ -56,14 +56,14 @@ async def logging_agent_middleware(
 async def main() -> None:
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(
+        FoundryChatClient(
             project_endpoint=PROJECT_ENDPOINT,
-            model_deployment_name=MODEL_DEPLOYMENT_NAME,
+            model=MODEL_DEPLOYMENT_NAME,
             credential=credential,
         ) as client,
     ):
-        agent = ChatAgent(
-            chat_client=client,
+        agent = Agent(
+            client=client,
             name="GreetingAgent",
             instructions="You are a friendly greeting assistant.",
             middleware=[logging_agent_middleware],
@@ -288,6 +288,5 @@ Use the decorators when you do not want type annotations, or when you want to be
 Middleware is the cleanest way to add cross-cutting behavior to a MAF agent: agent middleware for whole-run concerns, function middleware for tool-level concerns, and chat middleware for model-level concerns. The same three primitives, `context`, `call_next`, and an optional `MiddlewareTermination`, give you logging, redaction, blocking, retries, and result rewriting without changing the agent or the tools.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names referenced in this article have moved or been renamed: the agent class is `Agent` (not `ChatAgent`), constructed with `Agent(client=chat_client, ...)`; the agent-run context is `AgentContext` (not `AgentRunContext`); `AzureAIAgentClient` was replaced by `FoundryChatClient` in `agent_framework.foundry`. Code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
-

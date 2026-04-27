@@ -90,7 +90,7 @@
   "@type": "BlogPosting",
   "headline": "Middleware in Microsoft Agent Framework",
   "description": "By the time we have function tools, streaming, and a Foundry-backed agent in place, most of the interesting logic still lives in the agent itself: the system prompt, the tools, and the conversation. …",
-  "articleBody": "\"By the time we have function tools, streaming, and a Foundry-backed agent in place, most of the interesting logic still lives in the agent itself: the system prompt, the tools, and the conversation. That is fine for a sample, but production agents quickly grow a second category of concerns that do not really belong in the prompt or the tools, things like logging every run, redacting PII before it leaves the process, blocking obvious abuse, timing function calls, retrying transient model errors, or rewriting the final response. Putting any of that into the agent definition makes the agent harder to read and harder to reuse.\\nMicrosoft Agent Framework (MAF) handles this through middleware: small async functions or classes that wrap an agent\\u0026rsquo;s execution across three layers. If you have written ASP.NET Core or Express middleware, the shape will feel familiar: a context object, a call_next callback, and the ability to do work before, after, or instead of the wrapped operation.\\nThree layers, three contexts MAF exposes middleware at three points in the call stack. From outermost to innermost, they are:\\nAgent middleware wraps a whole agent.run(...) call. It sees the input messages, the agent options, and the final result. It fires once per run. Function middleware wraps each tool invocation that happens during a run. If the agent calls three tools across two model turns, the function middleware fires three times. Chat middleware wraps each request to the underlying chat client. In a multi-turn tool-calling sequence, the model is called once for the initial response and once for each batch of tool results, so the chat middleware fires multiple times per run. Each layer has its own context object. The shape is the same, a mutable bag of state plus a call_next callback, but the fields differ:\\nMiddleware Context type Useful fields Agent run AgentContext agent, messages, options, stream, result Function call FunctionInvocationContext function, arguments, result, kwargs Chat request ChatContext chat_client, messages, options, stream, result All three contexts also carry a metadata dictionary you can use to pass values between middleware layers, for example, a request ID set in agent middleware and read in function middleware.\\nA first agent middleware The simplest useful middleware is a logging wrapper. It prints before and after the agent runs and otherwise leaves everything alone:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 import asyncio import os from collections.abc import Awaitable, Callable from agent_framework import ChatAgent, AgentRunContext from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential from dotenv import load_dotenv load_dotenv() PROJECT_ENDPOINT = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT\\u0026#34;] MODEL_DEPLOYMENT_NAME = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME\\u0026#34;] async def logging_agent_middleware( context: AgentRunContext, call_next: Callable[[AgentRunContext], Awaitable[None]], ) -\\u0026gt; None: user_text = context.messages[-1].text if context.messages else \\u0026#34;\\u0026#34; print(f\\u0026#34;[run] user said: {user_text!r}\\u0026#34;) await call_next(context) text = context.result.text if context.result is not None else \\u0026#34;\\u0026#34; print(f\\u0026#34;[run] assistant replied with {len(text)} chars\\u0026#34;) async def main() -\\u0026gt; None: async with ( AzureCliCredential() as credential, AzureAIAgentClient( project_endpoint=PROJECT_ENDPOINT, model_deployment_name=MODEL_DEPLOYMENT_NAME, credential=credential, ) as client, ): agent = ChatAgent( chat_client=client, name=\\u0026#34;GreetingAgent\\u0026#34;, instructions=\\u0026#34;You are a friendly greeting assistant.\\u0026#34;, middleware=[logging_agent_middleware], ) result = await agent.run(\\u0026#34;Hello!\\u0026#34;) print(result.text) asyncio.run(main()) A few things worth pointing out. The middleware signature is fixed: an async function that takes the context and a call_next callable that takes no arguments. You mutate the context, and you await call_next() to continue down the chain. If you do not call call_next, the rest of the chain (including the agent itself) does not run, which is exactly how you implement blocking behavior later.\\nIf you prefer a class, inherit from AgentMiddleware and implement process with the same signature:\\n1 2 3 4 5 6 7 from agent_framework import AgentMiddleware class LoggingAgentMiddleware(AgentMiddleware): async def process(self, context, call_next): print(\\u0026#34;[run] starting\\u0026#34;) await call_next() print(\\u0026#34;[run] done\\u0026#34;) Class-based middleware is the right choice when the middleware requires configuration or maintains its own state, such as a counter, a connection to an audit store, or a cache.\\nFunction middleware: timing, kwargs, and retries Function middleware is the layer that sees individual tool invocations. The context exposes the function being called, the validated arguments, and a mutable kwargs bag whose contents are forwarded to the tool at invocation time. That last part is what makes function middleware useful for injection: the model never sees these values, but the tool does.\\n1 2 3 4 5 6 7 8 9 from agent_framework import FunctionInvocationContext async def inject_tenant( context: FunctionInvocationContext, call_next: Callable[[], Awaitable[None]], ) -\\u0026gt; None: context.kwargs.setdefault(\\u0026#34;tenant\\u0026#34;, \\u0026#34;contoso\\u0026#34;) context.kwargs.setdefault(\\u0026#34;request_source\\u0026#34;, \\u0026#34;agent\\u0026#34;) await call_next() The tool then receives those values via its own FunctionInvocationContext parameter:\\n1 2 3 def get_orders(ctx: FunctionInvocationContext, customer_id: str) -\\u0026gt; str: tenant = ctx.kwargs.get(\\u0026#34;tenant\\u0026#34;, \\u0026#34;default\\u0026#34;) return f\\u0026#34;[{tenant}] orders for {customer_id}: ...\\u0026#34; This pattern keeps tenant IDs, user IDs, and request correlation IDs out of the prompt. The model has no business deciding the tenant ID, and you do not want it to make one up. Set it in middleware, read it in the tool.\\nThe same layer is the natural place for timing and structured logging:\\n1 2 3 4 5 6 7 8 9 10 11 import time from agent_framework import FunctionMiddleware class TimingFunctionMiddleware(FunctionMiddleware): async def process(self, context, call_next): started = time.perf_counter() try: await call_next() finally: elapsed = (time.perf_counter() - started) * 1000 print(f\\u0026#34;[tool] {context.function.name} took {elapsed:.1f}ms\\u0026#34;) Because function middleware fires once per tool call, an agent that makes three tool calls in one run will print three lines. If you want a single summary per run, aggregate in the agent middleware and use metadata to share state.\\nYou can also retry a failing tool by catching the exception around call_next:\\n1 2 3 4 5 6 7 8 9 async def retry_function_middleware(context, call_next): for attempt in range(3): try: await call_next() return except TransientError: if attempt == 2: raise await asyncio.sleep(0.2 * (2 ** attempt)) Note the placement: this retries the tool, not the model. If the model itself is rate-limited, that is a chat-middleware problem.\\nChat middleware: every model call Chat middleware sits closest to the wire. It wraps each individual request to the chat client, meaning it runs not only for the initial user turn but also for the follow-up calls the model makes after each round of tool results.\\nThis is where you put model-level concerns:\\nToken counting and budget enforcement. Adding or rewriting system messages just before they go out. Retrying on 429 or transient 5xx responses. Logging the exact request/response payloads for audit. 1 2 3 4 5 6 7 8 9 10 from agent_framework import ChatContext async def token_logging_chat_middleware( context: ChatContext, call_next: Callable[[], Awaitable[None]], ) -\\u0026gt; None: print(f\\u0026#34;[chat] sending {len(context.messages)} messages\\u0026#34;) await call_next() if context.result is not None: print(\\u0026#34;[chat] response received\\u0026#34;) The important mental model: in a run that involves two tool calls, you will typically see chat middleware fire three times (initial call, after-tool-1, after-tool-2), function middleware fire twice (the two tools), and agent middleware fire exactly once. If your numbers do not match that pattern, you are usually looking at a streaming or early-termination case.\\nBlocking and overriding results The most powerful thing middleware can do is not call call_next, or replace context.result after the fact. Both are first-class scenarios.\\nA blocking pattern, for example a guard against obviously sensitive prompts:\\n1 2 3 4 5 6 7 8 9 10 from agent_framework import AgentResponse, Message, MiddlewareTermination async def block_secrets(context: AgentContext, call_next): last = context.messages[-1].text.lower() if context.messages else \\u0026#34;\\u0026#34; if \\u0026#34;password\\u0026#34; in last or \\u0026#34;api key\\u0026#34; in last: context.result = AgentResponse( messages=[Message(role=\\u0026#34;assistant\\u0026#34;, contents=[\\u0026#34;Request blocked.\\u0026#34;])] ) raise MiddlewareTermination(result=context.result) await call_next() MiddlewareTermination short-circuits the rest of the chain and the agent. The caller still gets a normal AgentResponse, the one you set on context.result, so calling code does not need to know that anything was blocked.\\nA result-rewriting pattern, applied after the agent has produced its answer, is just as common. PII redaction is the classic example:\\n1 2 3 4 5 6 7 8 9 10 11 12 import re EMAIL = re.compile(r\\u0026#34;[\\\\w.+-]+@[\\\\w-]+\\\\.[\\\\w.-]+\\u0026#34;) async def redact_emails(context: AgentContext, call_next): await call_next() if context.result is None: return for message in context.result.messages: for i, content in enumerate(message.contents): if isinstance(content, str): message.contents[i] = EMAIL.sub(\\u0026#34;[email]\\u0026#34;, content) For streaming responses the shape is different, context.result is an async generator of AgentResponseUpdate chunks rather than a finished AgentResponse. You can detect which case you are in with context.stream and wrap the generator if needed:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 async def redact_streaming(context, call_next): await call_next() if not context.stream or context.result is None: return inner = context.result async def wrapped(): async for chunk in inner: for i, c in enumerate(chunk.contents): if isinstance(c, str): chunk.contents[i] = EMAIL.sub(\\u0026#34;[email]\\u0026#34;, c) yield chunk context.result = wrapped() The point of this whole pattern is that the agent definition stays clean. The agent does not know about redaction, and redaction does not know about the agent. You can add or remove the middleware without touching either.\\nRegistration and ordering You can register middleware at two scopes. Agent-level middleware is set when you construct the Agent and applies to every run. Run-level middleware is passed to a single agent.run(...) call and only applies to that call.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 async with Agent( client=FoundryChatClient(credential=credential), name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a helpful weather assistant.\\u0026#34;, tools=[get_weather], middleware=[ SecurityAgentMiddleware(), # agent-level TimingFunctionMiddleware(), # agent-level ], ) as agent: # Uses agent-level middleware only. await agent.run(\\u0026#34;Weather in Seattle?\\u0026#34;) # Adds a run-level middleware on top. await agent.run( \\u0026#34;Weather in Portland?\\u0026#34;, middleware=[token_logging_chat_middleware], ) Ordering follows the wrapping rule. For agent-level [A1, A2] and run-level [R1, R2], the execution order is A1 → A2 → R1 → R2 → Agent → R2 → R1 → A2 → A1. Function and chat middleware follow the same wrapping principle at their respective layers. In practice, the order matters mostly for two cases: blocking middleware should come first so it runs before logging or timing; result-rewriting middleware should come last so it sees the finished result before anyone else.\\nA small but important detail: a single middleware function can be used at any of the three layers as long as its context type matches. If you do not annotate the context parameter, MAF cannot infer the layer. The decorator form makes this explicit:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 from agent_framework import agent_middleware, function_middleware, chat_middleware @agent_middleware async def m1(context, call_next): await call_next() @function_middleware async def m2(context, call_next): await call_next() @chat_middleware async def m3(context, call_next): await call_next() Use the decorators when you do not want type annotations, or when you want to be explicit about intent, regardless of annotations.\\nSummary Middleware is the cleanest way to add cross-cutting behavior to a MAF agent: agent middleware for whole-run concerns, function middleware for tool-level concerns, and chat middleware for model-level concerns. The same three primitives, context, call_next, and an optional MiddlewareTermination, give you logging, redaction, blocking, retries, and result rewriting without changing the agent or the tools.\\nℹ️ Updated 26th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from chat_client.create_agent(...) to chat_client.as_agent(...). The Multiple tools example has been updated to match. Other articles in this series also include changes to imports and constructors; see the client comparison article for the current set of clients and how to use them. \"",
+  "articleBody": "\"By the time we have function tools, streaming, and a Foundry-backed agent in place, most of the interesting logic still lives in the agent itself: the system prompt, the tools, and the conversation. That is fine for a sample, but production agents quickly grow a second category of concerns that do not really belong in the prompt or the tools, things like logging every run, redacting PII before it leaves the process, blocking obvious abuse, timing function calls, retrying transient model errors, or rewriting the final response. Putting any of that into the agent definition makes the agent harder to read and harder to reuse.\\nMicrosoft Agent Framework (MAF) handles this through middleware: small async functions or classes that wrap an agent\\u0026rsquo;s execution across three layers. If you have written ASP.NET Core or Express middleware, the shape will feel familiar: a context object, a call_next callback, and the ability to do work before, after, or instead of the wrapped operation.\\nThree layers, three contexts MAF exposes middleware at three points in the call stack. From outermost to innermost, they are:\\nAgent middleware wraps a whole agent.run(...) call. It sees the input messages, the agent options, and the final result. It fires once per run. Function middleware wraps each tool invocation that happens during a run. If the agent calls three tools across two model turns, the function middleware fires three times. Chat middleware wraps each request to the underlying chat client. In a multi-turn tool-calling sequence, the model is called once for the initial response and once for each batch of tool results, so the chat middleware fires multiple times per run. Each layer has its own context object. The shape is the same, a mutable bag of state plus a call_next callback, but the fields differ:\\nMiddleware Context type Useful fields Agent run AgentContext agent, messages, options, stream, result Function call FunctionInvocationContext function, arguments, result, kwargs Chat request ChatContext chat_client, messages, options, stream, result All three contexts also carry a metadata dictionary you can use to pass values between middleware layers, for example, a request ID set in agent middleware and read in function middleware.\\nA first agent middleware The simplest useful middleware is a logging wrapper. It prints before and after the agent runs and otherwise leaves everything alone:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 import asyncio import os from collections.abc import Awaitable, Callable from agent_framework import Agent, AgentContext from agent_framework.foundry import FoundryChatClient from azure.identity.aio import AzureCliCredential from dotenv import load_dotenv load_dotenv() PROJECT_ENDPOINT = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_PROJECT_ENDPOINT\\u0026#34;] MODEL_DEPLOYMENT_NAME = os.environ[\\u0026#34;AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME\\u0026#34;] async def logging_agent_middleware( context: AgentContext, call_next: Callable[[AgentContext], Awaitable[None]], ) -\\u0026gt; None: user_text = context.messages[-1].text if context.messages else \\u0026#34;\\u0026#34; print(f\\u0026#34;[run] user said: {user_text!r}\\u0026#34;) await call_next(context) text = context.result.text if context.result is not None else \\u0026#34;\\u0026#34; print(f\\u0026#34;[run] assistant replied with {len(text)} chars\\u0026#34;) async def main() -\\u0026gt; None: async with ( AzureCliCredential() as credential, FoundryChatClient( project_endpoint=PROJECT_ENDPOINT, model=MODEL_DEPLOYMENT_NAME, credential=credential, ) as client, ): agent = Agent( client=client, name=\\u0026#34;GreetingAgent\\u0026#34;, instructions=\\u0026#34;You are a friendly greeting assistant.\\u0026#34;, middleware=[logging_agent_middleware], ) result = await agent.run(\\u0026#34;Hello!\\u0026#34;) print(result.text) asyncio.run(main()) A few things worth pointing out. The middleware signature is fixed: an async function that takes the context and a call_next callable that takes no arguments. You mutate the context, and you await call_next() to continue down the chain. If you do not call call_next, the rest of the chain (including the agent itself) does not run, which is exactly how you implement blocking behavior later.\\nIf you prefer a class, inherit from AgentMiddleware and implement process with the same signature:\\n1 2 3 4 5 6 7 from agent_framework import AgentMiddleware class LoggingAgentMiddleware(AgentMiddleware): async def process(self, context, call_next): print(\\u0026#34;[run] starting\\u0026#34;) await call_next() print(\\u0026#34;[run] done\\u0026#34;) Class-based middleware is the right choice when the middleware requires configuration or maintains its own state, such as a counter, a connection to an audit store, or a cache.\\nFunction middleware: timing, kwargs, and retries Function middleware is the layer that sees individual tool invocations. The context exposes the function being called, the validated arguments, and a mutable kwargs bag whose contents are forwarded to the tool at invocation time. That last part is what makes function middleware useful for injection: the model never sees these values, but the tool does.\\n1 2 3 4 5 6 7 8 9 from agent_framework import FunctionInvocationContext async def inject_tenant( context: FunctionInvocationContext, call_next: Callable[[], Awaitable[None]], ) -\\u0026gt; None: context.kwargs.setdefault(\\u0026#34;tenant\\u0026#34;, \\u0026#34;contoso\\u0026#34;) context.kwargs.setdefault(\\u0026#34;request_source\\u0026#34;, \\u0026#34;agent\\u0026#34;) await call_next() The tool then receives those values via its own FunctionInvocationContext parameter:\\n1 2 3 def get_orders(ctx: FunctionInvocationContext, customer_id: str) -\\u0026gt; str: tenant = ctx.kwargs.get(\\u0026#34;tenant\\u0026#34;, \\u0026#34;default\\u0026#34;) return f\\u0026#34;[{tenant}] orders for {customer_id}: ...\\u0026#34; This pattern keeps tenant IDs, user IDs, and request correlation IDs out of the prompt. The model has no business deciding the tenant ID, and you do not want it to make one up. Set it in middleware, read it in the tool.\\nThe same layer is the natural place for timing and structured logging:\\n1 2 3 4 5 6 7 8 9 10 11 import time from agent_framework import FunctionMiddleware class TimingFunctionMiddleware(FunctionMiddleware): async def process(self, context, call_next): started = time.perf_counter() try: await call_next() finally: elapsed = (time.perf_counter() - started) * 1000 print(f\\u0026#34;[tool] {context.function.name} took {elapsed:.1f}ms\\u0026#34;) Because function middleware fires once per tool call, an agent that makes three tool calls in one run will print three lines. If you want a single summary per run, aggregate in the agent middleware and use metadata to share state.\\nYou can also retry a failing tool by catching the exception around call_next:\\n1 2 3 4 5 6 7 8 9 async def retry_function_middleware(context, call_next): for attempt in range(3): try: await call_next() return except TransientError: if attempt == 2: raise await asyncio.sleep(0.2 * (2 ** attempt)) Note the placement: this retries the tool, not the model. If the model itself is rate-limited, that is a chat-middleware problem.\\nChat middleware: every model call Chat middleware sits closest to the wire. It wraps each individual request to the chat client, meaning it runs not only for the initial user turn but also for the follow-up calls the model makes after each round of tool results.\\nThis is where you put model-level concerns:\\nToken counting and budget enforcement. Adding or rewriting system messages just before they go out. Retrying on 429 or transient 5xx responses. Logging the exact request/response payloads for audit. 1 2 3 4 5 6 7 8 9 10 from agent_framework import ChatContext async def token_logging_chat_middleware( context: ChatContext, call_next: Callable[[], Awaitable[None]], ) -\\u0026gt; None: print(f\\u0026#34;[chat] sending {len(context.messages)} messages\\u0026#34;) await call_next() if context.result is not None: print(\\u0026#34;[chat] response received\\u0026#34;) The important mental model: in a run that involves two tool calls, you will typically see chat middleware fire three times (initial call, after-tool-1, after-tool-2), function middleware fire twice (the two tools), and agent middleware fire exactly once. If your numbers do not match that pattern, you are usually looking at a streaming or early-termination case.\\nBlocking and overriding results The most powerful thing middleware can do is not call call_next, or replace context.result after the fact. Both are first-class scenarios.\\nA blocking pattern, for example a guard against obviously sensitive prompts:\\n1 2 3 4 5 6 7 8 9 10 from agent_framework import AgentResponse, Message, MiddlewareTermination async def block_secrets(context: AgentContext, call_next): last = context.messages[-1].text.lower() if context.messages else \\u0026#34;\\u0026#34; if \\u0026#34;password\\u0026#34; in last or \\u0026#34;api key\\u0026#34; in last: context.result = AgentResponse( messages=[Message(role=\\u0026#34;assistant\\u0026#34;, contents=[\\u0026#34;Request blocked.\\u0026#34;])] ) raise MiddlewareTermination(result=context.result) await call_next() MiddlewareTermination short-circuits the rest of the chain and the agent. The caller still gets a normal AgentResponse, the one you set on context.result, so calling code does not need to know that anything was blocked.\\nA result-rewriting pattern, applied after the agent has produced its answer, is just as common. PII redaction is the classic example:\\n1 2 3 4 5 6 7 8 9 10 11 12 import re EMAIL = re.compile(r\\u0026#34;[\\\\w.+-]+@[\\\\w-]+\\\\.[\\\\w.-]+\\u0026#34;) async def redact_emails(context: AgentContext, call_next): await call_next() if context.result is None: return for message in context.result.messages: for i, content in enumerate(message.contents): if isinstance(content, str): message.contents[i] = EMAIL.sub(\\u0026#34;[email]\\u0026#34;, content) For streaming responses the shape is different, context.result is an async generator of AgentResponseUpdate chunks rather than a finished AgentResponse. You can detect which case you are in with context.stream and wrap the generator if needed:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 async def redact_streaming(context, call_next): await call_next() if not context.stream or context.result is None: return inner = context.result async def wrapped(): async for chunk in inner: for i, c in enumerate(chunk.contents): if isinstance(c, str): chunk.contents[i] = EMAIL.sub(\\u0026#34;[email]\\u0026#34;, c) yield chunk context.result = wrapped() The point of this whole pattern is that the agent definition stays clean. The agent does not know about redaction, and redaction does not know about the agent. You can add or remove the middleware without touching either.\\nRegistration and ordering You can register middleware at two scopes. Agent-level middleware is set when you construct the Agent and applies to every run. Run-level middleware is passed to a single agent.run(...) call and only applies to that call.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 async with Agent( client=FoundryChatClient(credential=credential), name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a helpful weather assistant.\\u0026#34;, tools=[get_weather], middleware=[ SecurityAgentMiddleware(), # agent-level TimingFunctionMiddleware(), # agent-level ], ) as agent: # Uses agent-level middleware only. await agent.run(\\u0026#34;Weather in Seattle?\\u0026#34;) # Adds a run-level middleware on top. await agent.run( \\u0026#34;Weather in Portland?\\u0026#34;, middleware=[token_logging_chat_middleware], ) Ordering follows the wrapping rule. For agent-level [A1, A2] and run-level [R1, R2], the execution order is A1 → A2 → R1 → R2 → Agent → R2 → R1 → A2 → A1. Function and chat middleware follow the same wrapping principle at their respective layers. In practice, the order matters mostly for two cases: blocking middleware should come first so it runs before logging or timing; result-rewriting middleware should come last so it sees the finished result before anyone else.\\nA small but important detail: a single middleware function can be used at any of the three layers as long as its context type matches. If you do not annotate the context parameter, MAF cannot infer the layer. The decorator form makes this explicit:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 from agent_framework import agent_middleware, function_middleware, chat_middleware @agent_middleware async def m1(context, call_next): await call_next() @function_middleware async def m2(context, call_next): await call_next() @chat_middleware async def m3(context, call_next): await call_next() Use the decorators when you do not want type annotations, or when you want to be explicit about intent, regardless of annotations.\\nSummary Middleware is the cleanest way to add cross-cutting behavior to a MAF agent: agent middleware for whole-run concerns, function middleware for tool-level concerns, and chat middleware for model-level concerns. The same three primitives, context, call_next, and an optional MiddlewareTermination, give you logging, redaction, blocking, retries, and result rewriting without changing the agent or the tools.\\nℹ️ Updated 27th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized in version 1.2.0. Several names referenced in this article have moved or been renamed: the agent class is Agent (not ChatAgent), constructed with Agent(client=chat_client, ...); the agent-run context is AgentContext (not AgentRunContext); AzureAIAgentClient was replaced by FoundryChatClient in agent_framework.foundry. Code samples in this article have been updated. See the client comparison article for the current client surface. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/middleware-in-microsoft-agent-framework\/",
   "datePublished": "2026-03-05T00:00:00Z",
   "dateModified": "2026-03-05T00:00:00Z",
@@ -692,7 +692,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 17-part series
+        Part of a 18-part series
       </p>
 
       
@@ -702,6 +702,34 @@
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                 1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Exposing Microsoft Agent Framework agents as MCP servers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
               </span>
               <div class="flex-grow">
                 
@@ -715,7 +743,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
+                4
               </span>
               <div class="flex-grow">
                 
@@ -729,7 +757,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                3
+                5
               </span>
               <div class="flex-grow">
                 
@@ -743,7 +771,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                4
+                6
               </span>
               <div class="flex-grow">
                 
@@ -757,7 +785,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                5
+                7
               </span>
               <div class="flex-grow">
                 
@@ -771,7 +799,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                6
+                8
               </span>
               <div class="flex-grow">
                 
@@ -785,7 +813,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                7
+                9
               </span>
               <div class="flex-grow">
                 
@@ -799,7 +827,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                8
+                10
               </span>
               <div class="flex-grow">
                 
@@ -813,7 +841,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                9
+                11
               </span>
               <div class="flex-grow">
                 
@@ -827,7 +855,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                10
+                12
               </span>
               <div class="flex-grow">
                 
@@ -841,7 +869,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                11
+                13
               </span>
               <div class="flex-grow">
                 
@@ -855,7 +883,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                12
+                14
               </span>
               <div class="flex-grow">
                 
@@ -869,7 +897,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                13
+                15
               </span>
               <div class="flex-grow">
                 
@@ -883,7 +911,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                14
+                16
               </span>
               <div class="flex-grow">
                 
@@ -898,7 +926,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                15
+                17
               </span>
               <div class="flex-grow">
                 
@@ -912,7 +940,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                16
+                18
               </span>
               <div class="flex-grow">
                 
@@ -921,20 +949,6 @@
                   </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                17
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Hosted MCP tools in Microsoft Agent Framework
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
               </div>
             </li>
           
@@ -971,9 +985,11 @@
             
           
             
-              
+          
             
           
+            
+              
             
           
             
@@ -1215,8 +1231,8 @@
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">ChatAgent</span><span class="p">,</span> <span class="n">AgentRunContext</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">AgentContext</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
@@ -1227,8 +1243,8 @@
 </span></span><span class="line"><span class="cl"><span class="n">MODEL_DEPLOYMENT_NAME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME&#34;</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">logging_agent_middleware</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="p">:</span> <span class="n">AgentRunContext</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">call_next</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">AgentRunContext</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
+</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="p">:</span> <span class="n">AgentContext</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">call_next</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">AgentContext</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">user_text</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span> <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">messages</span> <span class="k">else</span> <span class="s2">&#34;&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[run] user said: </span><span class="si">{</span><span class="n">user_text</span><span class="si">!r}</span><span class="s2">&#34;</span><span class="p">)</span>
@@ -1239,14 +1255,14 @@
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryChatClient</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">project_endpoint</span><span class="o">=</span><span class="n">PROJECT_ENDPOINT</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="n">MODEL_DEPLOYMENT_NAME</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">model</span><span class="o">=</span><span class="n">MODEL_DEPLOYMENT_NAME</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="n">agent</span> <span class="o">=</span> <span class="n">ChatAgent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">chat_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="s2">&#34;GreetingAgent&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a friendly greeting assistant.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">middleware</span><span class="o">=</span><span class="p">[</span><span class="n">logging_agent_middleware</span><span class="p">],</span>
@@ -1648,7 +1664,7 @@
   <div class="flex items-start gap-3">
     <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
     <div class="flex-1 notice-content">
-      <strong>Updated 26th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from <code>chat_client.create_agent(...)</code> to <code>chat_client.as_agent(...)</code>. The <code>Multiple tools</code> example has been updated to match. Other articles in this series also include changes to imports and constructors; see the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current set of clients and how to use them.
+      <strong>Updated 27th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized in version 1.2.0. Several names referenced in this article have moved or been renamed: the agent class is <code>Agent</code> (not <code>ChatAgent</code>), constructed with <code>Agent(client=chat_client, ...)</code>; the agent-run context is <code>AgentContext</code> (not <code>AgentRunContext</code>); <code>AzureAIAgentClient</code> was replaced by <code>FoundryChatClient</code> in <code>agent_framework.foundry</code>. Code samples in this article have been updated. See the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current client surface.
     </div>
   </div>
 </div>
@@ -1830,9 +1846,11 @@
       
     
       
-        
+    
       
     
+      
+        
       
     
       
@@ -2110,22 +2128,6 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Hosted MCP tools in Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-09">
-      Mar 9, 2026
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/local-mcp-tools-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -2183,6 +2185,22 @@
     
     <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-02">
       Mar 2, 2026
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Choosing the right Microsoft Agent Framework client
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-01">
+      Mar 1, 2026
     </time>
   </a>
 </article>

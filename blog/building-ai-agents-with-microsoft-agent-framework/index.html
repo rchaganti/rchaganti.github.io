@@ -111,7 +111,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
   "@type": "BlogPosting",
   "headline": "Building AI Agents with Microsoft Agent Framework",
   "description": "The Microsoft Agent Framework (MAF) is an open-source development kit that combines the best ideas from Semantic Kernel and AutoGen projects. It provides a flexible foundation for building AI agents …",
-  "articleBody": "\"The Microsoft Agent Framework (MAF) is an open-source development kit that combines the best ideas from Semantic Kernel and AutoGen projects. It provides a flexible foundation for building AI agents that can:\\nProcess user inputs using Large Language Models (LLMs) Call tools and MCP servers to perform actions. Generate intelligent, context-aware responses. Manage conversation state across interactions. In this article, we\\u0026rsquo;ll explore different examples that showcase different capabilities of AI agents.\\nBefore diving into the examples, make sure you have:\\nPython 3.10+ installed Azure CLI installed and authenticated (az login) Microsoft Foundry project set up with a deployed model. Required packages installed: 1 pip install agent-framework[azure-ai] azure-identity python-dotenv Environment variables configured: 1 2 export AZURE_AI_PROJECT_ENDPOINT=\\u0026#34;https://\\u0026lt;your-project\\u0026gt;.services.ai.azure.com/api/projects/\\u0026lt;project-id\\u0026gt;\\u0026#34; export AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME=\\u0026#34;gpt-4o-mini\\u0026#34; Basic Agent Let\\u0026rsquo;s start with the simplest possible agent - one that requires minimal setup and demonstrates the core concepts.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( project_endpoint=\\u0026#34;https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in\\u0026#34;, model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries.\\u0026#34;, ) as agent, ): query = \\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34; result = await agent.run(query) print(f\\u0026#34;Agent: {result}\\\\n\\u0026#34;) asyncio.run(main()) All Azure AI agent operations are async. Using the async/await pattern for better performance and scalability. The async with pattern ensures proper resource cleanup, preventing connection leaks. Both the credential and agent are managed as async context managers, ensuring proper cleanup. AzureCliCredential authenticates using your Azure CLI session - no need to manage API keys in your code or environment variables.\\nAzureAIAgentClient is used to create an AI agent client. It accepts:\\nproject_endpoint: Your Azure AI Foundry project URL. This can also be supplied using an environment variable AZURE_AI_PROJECT_ENDPOINT\\nmodel_deployment_name: The deployed model to use. This can also be supplied using an environment variable AZURE_AI_MODEL_DEPLOYMENT_NAME\\ncredential: Your authentication credential.\\nagent_name: A human-readable name of the agent created using this client.\\nThe instructions parameter defines the agent\\u0026rsquo;s persona and behavior. This is the system prompt that guides the agent\\u0026rsquo;s response. The agent.run() method sends a message and returns the complete response.\\nStreaming Responses For a better user experience, especially with longer responses, you often want to stream the output as it\\u0026rsquo;s generated rather than waiting for the complete response.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries.\\u0026#34;, ) as agent, ): print(\\u0026#34;Agent: \\u0026#34;, end=\\u0026#34;\\u0026#34;, flush=True) async for chunk in agent.run_stream(\\u0026#34;Tell me a short story\\u0026#34;): if chunk.text: print(chunk.text, end=\\u0026#34;\\u0026#34;, flush=True) print() asyncio.run(main()) Instead of waiting for the complete response, run_stream() returns an async iterator that yields chunks as they arrive. Each chunk may contain text (or may be empty for control messages), so we check if chunk.text before printing. Using flush=True ensures each chunk appears immediately in the console, creating a typing effect. Also, notice that the project_endpoint and model_deployment_name are not provided in this example. The AzureAIAgentClient uses the values from the environment variables. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (e.g., code generation), and user interfaces that require immediate feedback.\\nTool Calling This is where agents become truly powerful. By giving agents access to tools (functions), they can interact with the real world - fetch data from APIs, perform calculations, or execute any Python code you define.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 from pandas._libs.hashtable import mode import asyncio from typing import Annotated from pydantic import Field from dotenv import load_dotenv import os from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.\\u0026#34;, tools=[get_weather], ) as agent, ): result = await agent.run(\\u0026#34;I am travelling to Austin Texas tomorrow, what should I wear?\\u0026#34;) print(result.text) asyncio.run(main()) The get_weather function is a typed tool function that uses Python type annotations, including Annotated and Pydantic\\u0026rsquo;s Field, to describe its parameters. This metadata is automatically converted to the function schema that the LLM understands. You can pass your function(s) to the tools parameter when creating the agent. You can pass a single function or a list of functions. The agent automatically decides when to call your tool based on the user\\u0026rsquo;s query. Ask about the weather? It calls get_weather. Ask about something else? It uses its built-in knowledge.\\nThis example connects to the OpenWeatherMap API to fetch current weather data, demonstrating how agents can interact with external services. The store=True parameter enables conversation persistence on the server side.\\nWhen you ask, \\u0026ldquo;What should I wear in Austin, Texas?\\u0026rdquo;, the agent:\\nRecognizes it needs weather information Calls get_weather(\\u0026quot;Austin Texas\\u0026quot;) Receives the temperature data Combines that with its knowledge about clothing to give a contextual recommendation This pattern is fundamental to building agents that can take real-world actions.\\nCode Interpreter What if your agent needs to perform complex calculations or data analysis? The Code Interpreter tool allows agents to write and execute Python code in a sandboxed environment.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 import asyncio from agent_framework import HostedCodeInterpreterTool from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential from dotenv import load_dotenv load_dotenv() async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a Python coding expert. Use the provided tools to execute Python code to answer user queries accurately.\\u0026#34;, tools=HostedCodeInterpreterTool(), ) as agent, ): result = await agent.run(\\u0026#34;Calculate the 100th prime number.\\u0026#34;) print(result.text) asyncio.run(main()) HostedCodeInterpreterTool is a built-in tool that provides a sandboxed Python execution environment hosted in Azure. The agent can write and run code without affecting your local system. The code runs in an isolated environment, allowing the agent to experiment without risk. With this, you can ask the agent to calculate the 100th prime number, and it will:\\nWrite Python code to find prime numbers\\nExecute the code in the sandbox\\nReturn the result (541, by the way!)\\nHosted code tools are important when your agent needs to handle scenarios such as complex mathematical formulas, statistical analysis, parsing, transforming, analyzing data, and generating data visualizations.\\nThe Microsoft Agent Framework makes it remarkably easy to build sophisticated AI agents. Starting from a basic agent that takes less than 15 lines of code, you can progressively add capabilities like streaming, tool calling, code interpretation, and persistence. The key insight is that agents aren\\u0026rsquo;t just chat interfaces - they\\u0026rsquo;re intelligent systems that can reason about problems and take real actions. By giving them tools, you extend their capabilities beyond language into the real world. The future of AI is agentic, and with the Microsoft Agent Framework, you have everything you need to build that future today.\\nResources Microsoft Agent Framework Documentation Microsoft Foundry OpenWeatherMap API (for the tool calling example) \"",
+  "articleBody": "\"The Microsoft Agent Framework (MAF) is an open-source development kit that combines the best ideas from Semantic Kernel and AutoGen projects. It provides a flexible foundation for building AI agents that can:\\nProcess user inputs using Large Language Models (LLMs) Call tools and MCP servers to perform actions. Generate intelligent, context-aware responses. Manage conversation state across interactions. In this article, we\\u0026rsquo;ll explore different examples that showcase different capabilities of AI agents.\\nBefore diving into the examples, make sure you have:\\nPython 3.10+ installed Azure CLI installed and authenticated (az login) Microsoft Foundry project set up with a deployed model. Required packages installed: 1 pip install agent-framework[azure-ai] azure-identity python-dotenv Environment variables configured: 1 2 export AZURE_AI_PROJECT_ENDPOINT=\\u0026#34;https://\\u0026lt;your-project\\u0026gt;.services.ai.azure.com/api/projects/\\u0026lt;project-id\\u0026gt;\\u0026#34; export AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME=\\u0026#34;gpt-4o-mini\\u0026#34; Basic Agent Let\\u0026rsquo;s start with the simplest possible agent - one that requires minimal setup and demonstrates the core concepts.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import asyncio from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, FoundryAgent( project_endpoint=\\u0026#34;https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in\\u0026#34;, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, credential=credential, instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries.\\u0026#34;, ) as agent, ): query = \\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34; result = await agent.run(query) print(f\\u0026#34;Agent: {result}\\\\n\\u0026#34;) asyncio.run(main()) All Foundry agent operations are async. Using the async/await pattern for better performance and scalability. The async with pattern ensures proper resource cleanup, preventing connection leaks. The credential and the agent are managed as async context managers, ensuring proper cleanup. AzureCliCredential authenticates using your Azure CLI session — no need to manage API keys in your code or environment variables.\\nFoundryAgent is used to create a Foundry-backed agent. It accepts:\\nproject_endpoint: Your Microsoft Foundry project URL. This can also be supplied via the AZURE_AI_PROJECT_ENDPOINT environment variable. agent_name: A human-readable name for the agent. credential: Your authentication credential. instructions: The agent\\u0026rsquo;s system prompt. The instructions parameter defines the agent\\u0026rsquo;s persona and behavior. This is the system prompt that guides the agent\\u0026rsquo;s response. The agent.run() method sends a message and returns the complete response.\\nStreaming Responses For a better user experience, especially with longer responses, you often want to stream the output as it\\u0026rsquo;s generated rather than waiting for the complete response.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 import asyncio from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, FoundryAgent( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries.\\u0026#34;, ) as agent, ): print(\\u0026#34;Agent: \\u0026#34;, end=\\u0026#34;\\u0026#34;, flush=True) stream = agent.run(\\u0026#34;Tell me a short story\\u0026#34;, stream=True) async for update in stream: if update.text: print(update.text, end=\\u0026#34;\\u0026#34;, flush=True) await stream.get_final_response() print() asyncio.run(main()) Passing stream=True to agent.run(...) returns a stream object that yields updates as the model produces them. Each update may contain text (or may be empty for control messages), so we check if update.text before printing. Using flush=True ensures each chunk appears immediately in the console, creating a typing effect. After the loop ends, await stream.get_final_response() finalizes the run. Notice that the project_endpoint is not provided in this example; FoundryAgent reads it from the AZURE_AI_PROJECT_ENDPOINT environment variable. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (for example, code generation), and user interfaces that require immediate feedback.\\nTool Calling This is where agents become truly powerful. By giving agents access to tools (functions), they can interact with the real world - fetch data from APIs, perform calculations, or execute any Python code you define.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 from pandas._libs.hashtable import mode import asyncio from typing import Annotated from pydantic import Field from dotenv import load_dotenv import os from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main(): async with ( AzureCliCredential() as credential, FoundryAgent( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weather man. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.\\u0026#34;, tools=[get_weather], ) as agent, ): result = await agent.run(\\u0026#34;I am travelling to Austin Texas tomorrow, what should I wear?\\u0026#34;) print(result.text) asyncio.run(main()) The get_weather function is a typed tool function that uses Python type annotations, including Annotated and Pydantic\\u0026rsquo;s Field, to describe its parameters. This metadata is automatically converted to the function schema that the LLM understands. You can pass your function(s) to the tools parameter when creating the agent. You can pass a single function or a list of functions. The agent automatically decides when to call your tool based on the user\\u0026rsquo;s query. Ask about the weather? It calls get_weather. Ask about something else? It uses its built-in knowledge.\\nThis example connects to the OpenWeatherMap API to fetch current weather data, demonstrating how agents can interact with external services. The store=True parameter enables conversation persistence on the server side.\\nWhen you ask, \\u0026ldquo;What should I wear in Austin, Texas?\\u0026rdquo;, the agent:\\nRecognizes it needs weather information Calls get_weather(\\u0026quot;Austin Texas\\u0026quot;) Receives the temperature data Combines that with its knowledge about clothing to give a contextual recommendation This pattern is fundamental to building agents that can take real-world actions.\\nCode Interpreter What if your agent needs to perform complex calculations or data analysis? The Code Interpreter tool allows agents to write and execute Python code in a sandboxed environment.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 import asyncio from agent_framework import HostedCodeInterpreterTool from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential from dotenv import load_dotenv load_dotenv() async def main(): async with ( AzureCliCredential() as credential, FoundryAgent( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a Python coding expert. Use the provided tools to execute Python code to answer user queries accurately.\\u0026#34;, tools=HostedCodeInterpreterTool(), ) as agent, ): result = await agent.run(\\u0026#34;Calculate the 100th prime number.\\u0026#34;) print(result.text) asyncio.run(main()) HostedCodeInterpreterTool is a built-in tool that provides a sandboxed Python execution environment hosted in Azure. The agent can write and run code without affecting your local system. The code runs in an isolated environment, allowing the agent to experiment without risk. With this, you can ask the agent to calculate the 100th prime number, and it will:\\nWrite Python code to find prime numbers\\nExecute the code in the sandbox\\nReturn the result (541, by the way!)\\nHosted code tools are important when your agent needs to handle scenarios such as complex mathematical formulas, statistical analysis, parsing, transforming, analyzing data, and generating data visualizations.\\nThe Microsoft Agent Framework makes it remarkably easy to build sophisticated AI agents. Starting from a basic agent that takes less than 15 lines of code, you can progressively add capabilities like streaming, tool calling, code interpretation, and persistence. The key insight is that agents aren\\u0026rsquo;t just chat interfaces - they\\u0026rsquo;re intelligent systems that can reason about problems and take real actions. By giving them tools, you extend their capabilities beyond language into the real world. The future of AI is agentic, and with the Microsoft Agent Framework, you have everything you need to build that future today.\\nResources Microsoft Agent Framework Documentation Microsoft Foundry OpenWeatherMap API (for the tool calling example) ℹ️ Updated 27th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized in version 1.2.0. AzureAIAgentClient (formerly in agent_framework.azure) is now FoundryAgent in agent_framework.foundry. The construction shape simplified: pass instructions= and tools= directly to FoundryAgent(...) instead of going through a separate .create_agent(...) call. agent.run_stream(...) was replaced by agent.run(..., stream=True), which returns a stream object you iterate and then finalize with await stream.get_final_response(). Code samples in this article have been updated to match the current SDK. See the client comparison article for the current client surface. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/building-ai-agents-with-microsoft-agent-framework\/",
   "datePublished": "2025-10-04T00:00:00Z",
   "dateModified": "2025-10-04T00:00:00Z",
@@ -708,7 +708,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 17-part series
+        Part of a 18-part series
       </p>
 
       
@@ -718,6 +718,34 @@ In this article, we&rsquo;ll explore different examples that showcase different 
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                 1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Exposing Microsoft Agent Framework agents as MCP servers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
               </span>
               <div class="flex-grow">
                 
@@ -731,7 +759,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
+                4
               </span>
               <div class="flex-grow">
                 
@@ -746,7 +774,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                3
+                5
               </span>
               <div class="flex-grow">
                 
@@ -760,7 +788,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                4
+                6
               </span>
               <div class="flex-grow">
                 
@@ -774,7 +802,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                5
+                7
               </span>
               <div class="flex-grow">
                 
@@ -788,7 +816,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                6
+                8
               </span>
               <div class="flex-grow">
                 
@@ -802,7 +830,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                7
+                9
               </span>
               <div class="flex-grow">
                 
@@ -816,7 +844,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                8
+                10
               </span>
               <div class="flex-grow">
                 
@@ -830,7 +858,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                9
+                11
               </span>
               <div class="flex-grow">
                 
@@ -844,7 +872,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                10
+                12
               </span>
               <div class="flex-grow">
                 
@@ -858,7 +886,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                11
+                13
               </span>
               <div class="flex-grow">
                 
@@ -872,7 +900,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                12
+                14
               </span>
               <div class="flex-grow">
                 
@@ -886,7 +914,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                13
+                15
               </span>
               <div class="flex-grow">
                 
@@ -900,7 +928,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                14
+                16
               </span>
               <div class="flex-grow">
                 
@@ -914,7 +942,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                15
+                17
               </span>
               <div class="flex-grow">
                 
@@ -928,7 +956,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                16
+                18
               </span>
               <div class="flex-grow">
                 
@@ -937,20 +965,6 @@ In this article, we&rsquo;ll explore different examples that showcase different 
                   </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                17
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Hosted MCP tools in Microsoft Agent Framework
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
               </div>
             </li>
           
@@ -963,9 +977,11 @@ In this article, we&rsquo;ll explore different examples that showcase different 
             
           
             
-              
+          
             
           
+            
+              
             
           
             
@@ -1125,23 +1141,19 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">project_endpoint</span><span class="o">=</span><span class="s2">&#34;https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weather man. Provide accurate and concise weather information based on user queries.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="p">):</span>
@@ -1152,21 +1164,13 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>All Azure AI agent operations are async. Using the async/await pattern for better performance and scalability. The <code>async with</code> pattern ensures proper resource cleanup, preventing connection leaks. Both the credential and agent are managed as async context managers, ensuring proper cleanup. <code>AzureCliCredential</code> authenticates using your Azure CLI session - no need to manage API keys in your code or environment variables.</p>
-<p><code>AzureAIAgentClient</code> is used to create an AI agent client. It accepts:</p>
+</div><p>All Foundry agent operations are async. Using the async/await pattern for better performance and scalability. The <code>async with</code> pattern ensures proper resource cleanup, preventing connection leaks. The credential and the agent are managed as async context managers, ensuring proper cleanup. <code>AzureCliCredential</code> authenticates using your Azure CLI session — no need to manage API keys in your code or environment variables.</p>
+<p><code>FoundryAgent</code> is used to create a Foundry-backed agent. It accepts:</p>
 <ul>
-<li>
-<p><code>project_endpoint</code>: Your Azure AI Foundry project URL. This can also be supplied using an environment variable <code>AZURE_AI_PROJECT_ENDPOINT</code></p>
-</li>
-<li>
-<p><code>model_deployment_name</code>: The deployed model to use. This can also be supplied using an environment variable <code>AZURE_AI_MODEL_DEPLOYMENT_NAME</code></p>
-</li>
-<li>
-<p><code>credential</code>: Your authentication credential.</p>
-</li>
-<li>
-<p><code>agent_name</code>: A human-readable name of the agent created using this client.</p>
-</li>
+<li><code>project_endpoint</code>: Your Microsoft Foundry project URL. This can also be supplied via the <code>AZURE_AI_PROJECT_ENDPOINT</code> environment variable.</li>
+<li><code>agent_name</code>: A human-readable name for the agent.</li>
+<li><code>credential</code>: Your authentication credential.</li>
+<li><code>instructions</code>: The agent&rsquo;s system prompt.</li>
 </ul>
 <p>The <code>instructions</code> parameter defines the agent&rsquo;s persona and behavior. This is the system prompt that guides the agent&rsquo;s response. The <code>agent.run()</code> method sends a message and returns the complete response.</p>
 <h2 id="streaming-responses">Streaming Responses</h2>
@@ -1194,32 +1198,34 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span><span class="lnt">19
 </span><span class="lnt">20
 </span><span class="lnt">21
+</span><span class="lnt">22
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weather man. Provide accurate and concise weather information based on user queries.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">):</span>  
+</span></span><span class="line"><span class="cl">    <span class="p">):</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Agent: &#34;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">agent</span><span class="o">.</span><span class="n">run_stream</span><span class="p">(</span><span class="s2">&#34;Tell me a short story&#34;</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;Tell me a short story&#34;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Instead of waiting for the complete response, <code>run_stream()</code> returns an async iterator that yields chunks as they arrive. Each chunk may contain text (or may be empty for control messages), so we check <code>if chunk.text</code> before printing. Using <code>flush=True</code> ensures each chunk appears immediately in the console, creating a typing effect. Also, notice that the <code>project_endpoint</code> and <code>model_deployment_name</code> are not provided in this example. The <code>AzureAIAgentClient</code> uses the values from the environment variables. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (e.g., code generation), and user interfaces that require immediate feedback.</p>
+</div><p>Passing <code>stream=True</code> to <code>agent.run(...)</code> returns a stream object that yields updates as the model produces them. Each update may contain text (or may be empty for control messages), so we check <code>if update.text</code> before printing. Using <code>flush=True</code> ensures each chunk appears immediately in the console, creating a typing effect. After the loop ends, <code>await stream.get_final_response()</code> finalizes the run. Notice that the <code>project_endpoint</code> is not provided in this example; <code>FoundryAgent</code> reads it from the <code>AZURE_AI_PROJECT_ENDPOINT</code> environment variable. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (for example, code generation), and user interfaces that require immediate feedback.</p>
 <h2 id="tool-calling">Tool Calling</h2>
 <p>This is where agents become truly powerful. By giving agents access to tools (functions), they can interact with the real world - fetch data from APIs, perform calculations, or execute any Python code you define.</p>
 <div class="highlight"><div class="chroma">
@@ -1272,8 +1278,6 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span><span class="lnt">46
 </span><span class="lnt">47
 </span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pandas._libs.hashtable</span> <span class="kn">import</span> <span class="n">mode</span>
@@ -1283,7 +1287,7 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
@@ -1313,11 +1317,9 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weather man. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_weather</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
@@ -1364,13 +1366,11 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span><span class="lnt">20
 </span><span class="lnt">21
 </span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">HostedCodeInterpreterTool</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>  
@@ -1379,11 +1379,9 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a Python coding expert. Use the provided tools to execute Python code to answer user queries accurately.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">tools</span><span class="o">=</span><span class="n">HostedCodeInterpreterTool</span><span class="p">(),</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
@@ -1415,6 +1413,68 @@ In this article, we&rsquo;ll explore different examples that showcase different 
 <li><a href="https://azure.microsoft.com/en-us/products/ai-foundry/">Microsoft Foundry</a></li>
 <li><a href="https://openweathermap.org/api">OpenWeatherMap API</a> (for the tool calling example)</li>
 </ul>
+<style>
+.notice-shortcode.notice-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.dark .notice-shortcode.notice-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: #1e40af;
+  color: #f1f5f9;
+}
+.notice-shortcode.notice-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+}
+.dark .notice-shortcode.notice-warning {
+  background-color: rgba(133, 77, 14, 0.2);
+  border-color: #ca8a04;
+  color: #fef9c3;
+}
+.notice-shortcode.notice-tip {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #14532d;
+}
+.dark .notice-shortcode.notice-tip {
+  background-color: rgba(20, 83, 45, 0.2);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+.notice-shortcode.notice-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
+.dark .notice-shortcode.notice-danger {
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  color: #fecaca;
+}
+.notice-shortcode.notice-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+.dark .notice-shortcode.notice-success {
+  background-color: rgba(6, 78, 59, 0.2);
+  border-color: #059669;
+  color: #d1fae5;
+}
+</style>
+
+<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
+    <div class="flex-1 notice-content">
+      <strong>Updated 27th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized in version 1.2.0. <code>AzureAIAgentClient</code> (formerly in <code>agent_framework.azure</code>) is now <code>FoundryAgent</code> in <code>agent_framework.foundry</code>. The construction shape simplified: pass <code>instructions=</code> and <code>tools=</code> directly to <code>FoundryAgent(...)</code> instead of going through a separate <code>.create_agent(...)</code> call. <code>agent.run_stream(...)</code> was replaced by <code>agent.run(..., stream=True)</code>, which returns a stream object you iterate and then finalize with <code>await stream.get_final_response()</code>. Code samples in this article have been updated to match the current SDK. See the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current client surface.
+    </div>
+  </div>
+</div>
+
 
         </div>
 
@@ -1568,9 +1628,11 @@ In this article, we&rsquo;ll explore different examples that showcase different 
       
     
       
-        
+    
       
     
+      
+        
       
     
       

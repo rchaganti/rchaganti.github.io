@@ -21,7 +21,7 @@
   <title>Choosing the right Microsoft Agent Framework client | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
+  <meta name="description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used FoundryAgent. The persistent agents article used FoundryChatClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,7 +31,7 @@
 
   
   <meta property="og:title" content="Choosing the right Microsoft Agent Framework client">
-  <meta property="og:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
+  <meta property="og:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used FoundryAgent. The persistent agents article used FoundryChatClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
@@ -54,7 +54,7 @@
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Choosing the right Microsoft Agent Framework client">
-  <meta name="twitter:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
+  <meta name="twitter:description" content="If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used FoundryAgent. The persistent agents article used FoundryChatClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
@@ -89,8 +89,8 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "Choosing the right Microsoft Agent Framework client",
-  "description": "If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used …",
-  "articleBody": "\"If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used AzureAIAgentClient. The persistent agents article used AzureAIClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — \\u0026ldquo;give me an agent that talks to a model.\\u0026rdquo;\\nThe reason for the variety is simple. MAF deliberately separates which model surface you talk to from how the agent and its conversation are managed. Each client class targets a different combination of those two questions. Picking the right one up front saves a surprising amount of refactoring later, especially when you start adding hosted tools, adding persistence, or moving an agent to production.\\nIn this article, we will pull all of these clients into one place, explain what each one is for, and build the same simple weather agent three different ways so you can see what changes and what stays the same.\\nThe mental model: client first, agent second In MAF, an agent is a thin object. Almost everything that determines runtime behavior, which API surface you call, which tools you can attach, where conversation state lives, is decided by the client you give the agent.\\nWhen you write code like this:\\n1 2 3 4 agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) the chat_client on the left of .as_agent is doing more work than it looks. It carries:\\nthe model endpoint and the deployed model name the credential used to authenticate every call the API surface (Chat Completions, Responses, Foundry Agent Service) the set of hosted tools available to the agent the strategy for storing or persisting conversations If you swap the client, all of those change at once. Swap the agent definition, and only the persona changes. That is why the rest of this article is organized around clients rather than agents.\\nBefore you pick a client, three questions decide most of the answers for you.\\nWhere does your model live? If you are deploying models through Microsoft Foundry, your client choice is between AzureAIClient (use the Foundry-deployed model directly) or AzureAIAgentClient (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI or to OpenAI, OpenAIChatClient covers both — it switches paths based on whether you pass an Azure credential or an OpenAI API key. If you need richer hosted tools, the Responses API has its own client. If you are running a model locally, Ollama, LM Studio, Foundry Local, you bring your own IChatClient and use the generic agent path.\\nDo you need hosted tools? Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through AzureAIAgentClient.\\nWho owns conversation state? If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (AzureAIAgentClient) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover AgentSession for multi-turn conversations.\\nThese three questions almost always narrow you down to one or two choices. The sections below walk through each client in turn.\\nOpenAIChatClient This is the client we have used in the workflow articles. It lives in agent_framework.openai and targets the Chat Completions API. The same class covers both Azure OpenAI and OpenAI direct: pass DefaultAzureCredential for the Azure path, or api_key=... for OpenAI direct.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 import asyncio import os from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) result = await agent.run(\\u0026#34;What should I wear in Bengaluru today?\\u0026#34;) print(result.text) asyncio.run(main()) The constructor takes an explicit model= parameter rather than reading the deployment name from a single environment variable, so the four-getenv chain in the example resolves the model name from whichever variable your environment uses. Chat Completions is the most stable and widely available surface; if your team has an Azure OpenAI resource, this is the safest starting point. Hosted tools available here include function tools and a limited set of others; richer tools belong on the Responses path described next.\\nFor OpenAI direct, swap the credential for an API key:\\n1 chat_client = OpenAIChatClient(model=\\u0026#34;gpt-4o\\u0026#34;, api_key=\\u0026#34;\\u0026lt;your-openai-api-key\\u0026gt;\\u0026#34;) The decision logic is identical: pick OpenAI direct when you are prototyping outside Azure or for projects that have not gone through Azure procurement; pick the Azure path otherwise.\\nOpenAIResponsesClient The Responses API is the newer surface for both Azure OpenAI and OpenAI direct. It exposes more hosted tools out of the box (web search, file search, code interpreter) and carries server-side conversation state via previous_response_id. The trade-off is that support for the Responses API is uneven across regions and model families. Check that the model you want is available in the region you need before committing.\\n1 2 3 4 5 6 7 from agent_framework.openai import OpenAIResponsesClient from azure.identity import DefaultAzureCredential chat_client = OpenAIResponsesClient( model=model, credential=DefaultAzureCredential(), ) If your agent needs hosted file search or code interpreter, this is the client to reach for. If you only need function tools, stay on Chat Completions.\\nAzureAIClient This is the client we used in the persistent agents article. AzureAIClient connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 import asyncio from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential async def main(): async with AzureCliCredential() as credential: async with ( AzureAIClient( credential=credential, ).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) asyncio.run(main()) The endpoint and model are set by AZURE_AI_PROJECT_ENDPOINT and AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME. Use this when you want Foundry\\u0026rsquo;s deployment story without taking on the Foundry Agent Service.\\nAzureAIAgentClient AzureAIAgentClient is what we used in our first hands-on article. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import asyncio from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34;) print(result.text) asyncio.run(main()) This is the right choice when you want the platform to own the agent: long-running threads that survive process restarts, centralized identity and audit, and access to the broader Foundry tool catalog. The trade-off is coupling — your agent now depends on the Foundry Agent Service being available, and moving to a different runtime later is more work.\\nFoundryChatClient FoundryChatClient is a more recent addition that targets Foundry-deployed models through a Chat Completions-compatible interface. The shape of the call is similar to AzureOpenAIChatClient, but it points at a Foundry project rather than an Azure OpenAI resource. If you are starting a new Python project today and your models are in Foundry, the documentation now recommends this path over the Azure OpenAI-specific clients. Verify the import path against your installed SDK version before depending on it.\\nChatClientAgent Everything above assumes a Microsoft- or OpenAI-hosted endpoint. For local models or third-party endpoints, MAF provides a generic path: implement (or import) a class that satisfies the IChatClient contract and pass it to a ChatClientAgent. This is the path for Foundry Local, Ollama, LM Studio, vLLM, or any OpenAI-compatible local server. It is also the path for Anthropic models when you do not want to go through a hosted gateway.\\nThe exact import surface here has been moving as MAF stabilizes across SDK versions, so I am keeping the example deliberately schematic. The structure to keep in mind is: any chat client that satisfies the protocol can be wrapped into an agent the same way the Azure and OpenAI clients are.\\nA side-by-side cheat sheet Here is the same information collapsed into one table you can paste into a design doc.\\nClient Model lives in API surface Hosted tools Conversation state Typical use OpenAIChatClient Azure OpenAI or OpenAI direct (chosen by credential type) Chat Completions Function + limited hosted App-managed Stable default; the workhorse OpenAIResponsesClient Azure OpenAI or OpenAI direct Responses Function + richer hosted Server-side via previous_response_id Need web/file/code-interpreter AzureAIClient Microsoft Foundry deployment Chat Completions-compatible Function tools App-managed Foundry-deployed models without the Agent Service AzureAIAgentClient Foundry Agent Service Foundry Agent runtime Foundry tool catalog (incl. Code Interpreter) Platform-managed (Foundry threads) Persistent, platform-owned agents FoundryChatClient Microsoft Foundry deployment Chat Completions-compatible Function tools App-managed Newer recommended path for Foundry models ChatClientAgent over a custom client Anywhere Whatever the client implements Whatever the client exposes App-managed Local models, third-party providers The two columns that decide the most are Conversation state and Hosted tools. Once you have committed to where the state lives, the rest of your client choice is essentially fixed.\\nThe same agent, three ways To make the differences concrete, here is the weather agent from our second article implemented across three clients. The agent\\u0026rsquo;s behavior — its instructions, its get_weather tool, and the prompt — is identical across all versions. Only the client changes.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import os import asyncio from typing import Annotated from pydantic import Field from dotenv import load_dotenv load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; response = requests.get(f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34;) data = response.json() if data.get(\\u0026#34;cod\\u0026#34;) != \\u0026#34;404\\u0026#34;: return f\\u0026#34;Temperature: {data[\\u0026#39;main\\u0026#39;][\\u0026#39;temp\\u0026#39;]}°C\\u0026#34; return \\u0026#34;City not found\\u0026#34; Version A — OpenAIChatClient. The most portable. No platform coupling, conversation lives in the application.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential async def main_a(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient(model=model, credential=DefaultAzureCredential()) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version B — AzureAIAgentClient. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the async with blocks because the client needs explicit lifecycle management.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 from agent_framework.azure import AzureAIAgentClient from azure.identity.aio import AzureCliCredential async def main_b(): async with ( AzureCliCredential() as credential, AzureAIAgentClient( model_deployment_name=\\u0026#34;gpt-4o\\u0026#34;, credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, ).create_agent( instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version C — AzureAIClient. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project. AzureAIClient is a Foundry-backed client and uses create_agent rather than as_agent, since it actually creates a Foundry resource.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential async def main_c(): async with AzureCliCredential() as credential: async with ( AzureAIClient(credential=credential).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=get_weather, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Three things are worth noticing across the three versions:\\nWhat changed Versions A, B, C Agent definition (name, instructions, tools) Identical Import path Different Credential type Sync DefaultAzureCredential in A; async AzureCliCredential in B and C Lifecycle Plain in A; async with blocks in B and C Where the agent lives Local in A and C; in Foundry Agent Service in B Where conversation history lives Application memory in A and C; Foundry threads in B The agent code does not change. The runtime characteristics — what survives a restart, where logs land, what tools you have access to — change a lot. That is the whole point of the client abstraction.\\nPitfalls A few things that have caught people out.\\nThe Responses API does not have feature parity with Chat Completions in every region or for every model family. If you swap from OpenAIChatClient to OpenAIResponsesClient and a model you were using stops responding, region or model availability is the first thing to check.\\nAzureAIClient and AzureAIAgentClient look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with AzureAIClient and later migrate to AzureAIAgentClient, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.\\nHosted tools are tied to clients. A HostedCodeInterpreterTool that works behind AzureAIAgentClient may need a different setup behind OpenAIResponsesClient, and may not be available at all behind OpenAIChatClient. When you change clients, audit your tool list.\\nChat clients use as_agent(...) to construct an agent, while Foundry-backed clients (AzureAIClient, AzureAIAgentClient) use create_agent(...). The difference reflects what the call actually does: as_agent wraps the client into a local agent, while create_agent materializes a resource on the Foundry side.\\nCredentials matter more than they look. azure.identity (sync) and azure.identity.aio (async) export different classes with the same names. The async clients use the aio variants; mixing them silently leads to confusing errors deep inside an async with.\\nFinally, the import surface is still settling as MAF approaches stability. The early-preview AzureChatClient was renamed to AzureOpenAIChatClient, and that has since been consolidated into OpenAIChatClient (in agent_framework.openai), which now serves both Azure OpenAI and OpenAI direct depending on the credential or API key you pass in. The newer FoundryChatClient is the recommended path for Foundry-deployed models, replacing some of what AzureAIClient used to do. When in doubt, pin your agent-framework version and check the imports against the version you are running.\\nWrap-up and what is next The agents we have written throughout this series have been deceptively portable — the persona, the tools, and the workflow code carry over between clients with little trouble. What does not carry across is the runtime: where state lives, which hosted tools you can reach, and how the platform manages your agent. Picking the right client is, more than anything, picking the runtime profile you want for the agent.\\nIn the next article, we will take this a step deeper and look at function tools. We have used them casually in earlier examples; now we will look at how MAF turns a Python function into a tool the model can call, what the schema generation actually does with your type hints, and how to handle errors and structured returns cleanly.\\nℹ️ Updated 26th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from chat_client.create_agent(...) to chat_client.as_agent(...). The Multiple tools example has been updated to match. Other articles in this series also include changes to imports and constructors; see the client comparison article for the current set of clients and how to use them. \"",
+  "description": "If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used FoundryAgent. …",
+  "articleBody": "\"If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The first hands-on article used FoundryAgent. The persistent agents article used FoundryChatClient and called it the recommended approach for Foundry persistence. The workflow articles switched to OpenAIChatClient. That is a lot of clients for what looks, on the surface, like the same thing — \\u0026ldquo;give me an agent that talks to a model.\\u0026rdquo;\\nThe reason for the variety is simple. MAF deliberately separates which model surface you talk to from how the agent and its conversation are managed. Each client class targets a different combination of those two questions. Picking the right one up front saves a surprising amount of refactoring later, especially when you start adding hosted tools, adding persistence, or moving an agent to production.\\nIn this article, we will pull all of these clients into one place, explain what each one is for, and build the same simple weather agent three different ways so you can see what changes and what stays the same.\\nThe mental model: client first, agent second In MAF, an agent is a thin object. Almost everything that determines runtime behavior, which API surface you call, which tools you can attach, where conversation state lives, is decided by the client you give the agent.\\nWhen you write code like this:\\n1 2 3 4 agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) the chat_client on the left of .as_agent is doing more work than it looks. It carries:\\nthe model endpoint and the deployed model name the credential used to authenticate every call the API surface (Chat Completions, Responses, Foundry Agent Service) the set of hosted tools available to the agent the strategy for storing or persisting conversations If you swap the client, all of those change at once. Swap the agent definition, and only the persona changes. That is why the rest of this article is organized around clients rather than agents.\\nBefore you pick a client, three questions decide most of the answers for you.\\nWhere does your model live? If you are deploying models through Microsoft Foundry, your client choice is between FoundryChatClient (use the Foundry-deployed model directly) or FoundryAgent (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI or to OpenAI, OpenAIChatClient covers both — it switches paths based on whether you pass an Azure credential or an OpenAI API key. If you need richer hosted tools, the Responses API has its own client. If you are running a model locally, Ollama, LM Studio, Foundry Local, you bring your own IChatClient and use the generic agent path.\\nDo you need hosted tools? Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through FoundryAgent.\\nWho owns conversation state? If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (FoundryAgent) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover AgentSession for multi-turn conversations.\\nThese three questions almost always narrow you down to one or two choices. The sections below walk through each client in turn.\\nOpenAIChatClient This is the client we have used in the workflow articles. It lives in agent_framework.openai and targets the Chat Completions API. The same class covers both Azure OpenAI and OpenAI direct: pass DefaultAzureCredential for the Azure path, or api_key=... for OpenAI direct.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 import asyncio import os from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) result = await agent.run(\\u0026#34;What should I wear in Bengaluru today?\\u0026#34;) print(result.text) asyncio.run(main()) The constructor takes an explicit model= parameter rather than reading the deployment name from a single environment variable, so the four-getenv chain in the example resolves the model name from whichever variable your environment uses. Chat Completions is the most stable and widely available surface; if your team has an Azure OpenAI resource, this is the safest starting point. Hosted tools available here include function tools and a limited set of others; richer tools belong on the Responses path described next.\\nFor OpenAI direct, swap the credential for an API key:\\n1 chat_client = OpenAIChatClient(model=\\u0026#34;gpt-4o\\u0026#34;, api_key=\\u0026#34;\\u0026lt;your-openai-api-key\\u0026gt;\\u0026#34;) The decision logic is identical: pick OpenAI direct when you are prototyping outside Azure or for projects that have not gone through Azure procurement; pick the Azure path otherwise.\\nOpenAIResponsesClient The Responses API is the newer surface for both Azure OpenAI and OpenAI direct. It exposes more hosted tools out of the box (web search, file search, code interpreter) and carries server-side conversation state via previous_response_id. The trade-off is that support for the Responses API is uneven across regions and model families. Check that the model you want is available in the region you need before committing.\\n1 2 3 4 5 6 7 from agent_framework.openai import OpenAIResponsesClient from azure.identity import DefaultAzureCredential chat_client = OpenAIResponsesClient( model=model, credential=DefaultAzureCredential(), ) If your agent needs hosted file search or code interpreter, this is the client to reach for. If you only need function tools, stay on Chat Completions.\\nFoundryChatClient This is the client we used in the persistent agents article. FoundryChatClient connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 import asyncio from agent_framework.foundry import FoundryChatClient from azure.identity.aio import AzureCliCredential async def main(): async with AzureCliCredential() as credential: async with FoundryChatClient(credential=credential) as chat_client: agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) asyncio.run(main()) The endpoint and model are set by AZURE_AI_PROJECT_ENDPOINT and AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME. Use this when you want Foundry\\u0026rsquo;s deployment story without taking on the Foundry Agent Service.\\nFoundryAgent FoundryAgent is what we used in our first hands-on article. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 import asyncio from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential async def main(): async with ( AzureCliCredential() as credential, FoundryAgent( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide concise weather information.\\u0026#34;, ) as agent, ): result = await agent.run(\\u0026#34;What\\u0026#39;s the weather like in Bengaluru?\\u0026#34;) print(result.text) asyncio.run(main()) This is the right choice when you want the platform to own the agent: long-running threads that survive process restarts, centralized identity and audit, and access to the broader Foundry tool catalog. The trade-off is coupling — your agent now depends on the Foundry Agent Service being available, and moving to a different runtime later is more work.\\nChatClientAgent Everything above assumes a Microsoft- or OpenAI-hosted endpoint. For local models or third-party endpoints, MAF provides a generic path: implement (or import) a class that satisfies the IChatClient contract and pass it to a ChatClientAgent. This is the path for Foundry Local, Ollama, LM Studio, vLLM, or any OpenAI-compatible local server. It is also the path for Anthropic models when you do not want to go through a hosted gateway.\\nThe exact import surface here has been moving as MAF stabilizes across SDK versions, so I am keeping the example deliberately schematic. The structure to keep in mind is: any chat client that satisfies the protocol can be wrapped into an agent the same way the Azure and OpenAI clients are.\\nA side-by-side cheat sheet Here is the same information collapsed into one table you can paste into a design doc.\\nClient Model lives in API surface Hosted tools Conversation state Typical use OpenAIChatClient Azure OpenAI or OpenAI direct (chosen by credential type) Chat Completions Function + limited hosted App-managed Stable default; the workhorse OpenAIResponsesClient Azure OpenAI or OpenAI direct Responses Function + richer hosted Server-side via previous_response_id Need web/file/code-interpreter FoundryChatClient Microsoft Foundry deployment Chat Completions-compatible Function tools App-managed Foundry-deployed models, agent runs in your process FoundryAgent Foundry Agent Service Foundry Agent runtime Foundry tool catalog (incl. Code Interpreter) Platform-managed (Foundry threads) Persistent, platform-owned agents ChatClientAgent over a custom client Anywhere Whatever the client implements Whatever the client exposes App-managed Local models, third-party providers The two columns that decide the most are Conversation state and Hosted tools. Once you have committed to where the state lives, the rest of your client choice is essentially fixed.\\nThe same agent, three ways To make the differences concrete, here is the weather agent from our second article implemented across three clients. The agent\\u0026rsquo;s behavior — its instructions, its get_weather tool, and the prompt — is identical across all versions. Only the client changes.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 import os import asyncio from typing import Annotated from pydantic import Field from dotenv import load_dotenv load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; response = requests.get(f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34;) data = response.json() if data.get(\\u0026#34;cod\\u0026#34;) != \\u0026#34;404\\u0026#34;: return f\\u0026#34;Temperature: {data[\\u0026#39;main\\u0026#39;][\\u0026#39;temp\\u0026#39;]}°C\\u0026#34; return \\u0026#34;City not found\\u0026#34; Version A — OpenAIChatClient. The most portable. No platform coupling, conversation lives in the application.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential async def main_a(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient(model=model, credential=DefaultAzureCredential()) agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version B — FoundryAgent. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the async with blocks because the client needs explicit lifecycle management.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 from agent_framework.foundry import FoundryAgent from azure.identity.aio import AzureCliCredential async def main_b(): async with ( AzureCliCredential() as credential, FoundryAgent( credential=credential, agent_name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Version C — FoundryChatClient. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 from agent_framework.foundry import FoundryChatClient from azure.identity.aio import AzureCliCredential async def main_c(): async with AzureCliCredential() as credential: async with FoundryChatClient(credential=credential) as chat_client: agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Use tools to fetch current weather.\\u0026#34;, tools=[get_weather], ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(result.text) Three things are worth noticing across the three versions:\\nWhat changed Versions A, B, C Agent definition (name, instructions, tools) Identical Import path Different Credential type Sync DefaultAzureCredential in A; async AzureCliCredential in B and C Lifecycle Plain in A; async with blocks in B and C Where the agent lives Local in A and C; in Foundry Agent Service in B Where conversation history lives Application memory in A and C; Foundry threads in B The agent code does not change. The runtime characteristics — what survives a restart, where logs land, what tools you have access to — change a lot. That is the whole point of the client abstraction.\\nPitfalls A few things that have caught people out.\\nThe Responses API does not have feature parity with Chat Completions in every region or for every model family. If you swap from OpenAIChatClient to OpenAIResponsesClient and a model you were using stops responding, region or model availability is the first thing to check.\\nFoundryChatClient and FoundryAgent look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with FoundryChatClient and later migrate to FoundryAgent, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.\\nHosted tools are tied to clients. A HostedCodeInterpreterTool that works behind FoundryAgent may need a different setup behind OpenAIResponsesClient, and may not be available at all behind OpenAIChatClient. When you change clients, audit your tool list.\\nChat clients construct an agent via chat_client.as_agent(...), which wraps the client into a local agent. FoundryAgent is constructed directly with FoundryAgent(project_endpoint=..., agent_name=..., instructions=..., tools=[...]) and materializes a resource on the Foundry side. The difference reflects what the call actually does: chat clients build an agent locally, while FoundryAgent creates a platform resource.\\nCredentials matter more than they look. azure.identity (sync) and azure.identity.aio (async) export different classes with the same names. The async clients use the aio variants; mixing them silently leads to confusing errors deep inside an async with.\\nFinally, the import surface has shifted across MAF versions. The early-preview AzureChatClient was renamed to AzureOpenAIChatClient, and that has since been consolidated into OpenAIChatClient (in agent_framework.openai), which now serves both Azure OpenAI and OpenAI direct depending on the credential or API key you pass in. The Foundry path moved similarly: AzureAIClient and AzureAIAgentClient (formerly in agent_framework.azure) became FoundryChatClient and FoundryAgent in agent_framework.foundry. When in doubt, pin your agent-framework version and check the imports against the version you are running.\\nWrap-up and what is next The agents we have written throughout this series have been deceptively portable — the persona, the tools, and the workflow code carry over between clients with little trouble. What does not carry across is the runtime: where state lives, which hosted tools you can reach, and how the platform manages your agent. Picking the right client is, more than anything, picking the runtime profile you want for the agent.\\nIn the next article, we will take this a step deeper and look at function tools. We have used them casually in earlier examples; now we will look at how MAF turns a Python function into a tool the model can call, what the schema generation actually does with your type hints, and how to handle errors and structured returns cleanly.\\nℹ️ Updated 27th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized in version 1.2.0. AzureOpenAIChatClient and AzureOpenAIResponsesClient (formerly in agent_framework.azure) were consolidated into OpenAIChatClient and OpenAIResponsesClient (in agent_framework.openai), which now serve both Azure OpenAI and OpenAI direct depending on the credential or API key. The Azure path requires either an azure_endpoint= argument or an AZURE_OPENAI_ENDPOINT environment variable. AzureAIClient and AzureAIAgentClient (also formerly in agent_framework.azure) became FoundryChatClient and FoundryAgent in agent_framework.foundry. Chat clients use chat_client.as_agent(...) rather than chat_client.create_agent(...). The cheat sheet, the per-section examples, and the worked \\u0026ldquo;same agent, three ways\\u0026rdquo; example have been updated to match. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/choosing-the-right-microsoft-agent-framework-client\/",
   "datePublished": "2026-03-01T00:00:00Z",
   "dateModified": "2026-03-01T00:00:00Z",
@@ -687,7 +687,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 17-part series
+        Part of a 18-part series
       </p>
 
       
@@ -697,6 +697,34 @@
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                 1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Exposing Microsoft Agent Framework agents as MCP servers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
               </span>
               <div class="flex-grow">
                 
@@ -710,7 +738,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
+                4
               </span>
               <div class="flex-grow">
                 
@@ -724,7 +752,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                3
+                5
               </span>
               <div class="flex-grow">
                 
@@ -738,7 +766,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                4
+                6
               </span>
               <div class="flex-grow">
                 
@@ -752,7 +780,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                5
+                7
               </span>
               <div class="flex-grow">
                 
@@ -766,7 +794,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                6
+                8
               </span>
               <div class="flex-grow">
                 
@@ -780,7 +808,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                7
+                9
               </span>
               <div class="flex-grow">
                 
@@ -794,7 +822,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                8
+                10
               </span>
               <div class="flex-grow">
                 
@@ -808,7 +836,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                9
+                11
               </span>
               <div class="flex-grow">
                 
@@ -822,7 +850,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                10
+                12
               </span>
               <div class="flex-grow">
                 
@@ -836,7 +864,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                11
+                13
               </span>
               <div class="flex-grow">
                 
@@ -851,7 +879,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                12
+                14
               </span>
               <div class="flex-grow">
                 
@@ -865,7 +893,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                13
+                15
               </span>
               <div class="flex-grow">
                 
@@ -879,7 +907,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                14
+                16
               </span>
               <div class="flex-grow">
                 
@@ -893,7 +921,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                15
+                17
               </span>
               <div class="flex-grow">
                 
@@ -907,7 +935,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                16
+                18
               </span>
               <div class="flex-grow">
                 
@@ -916,20 +944,6 @@
                   </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                17
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Hosted MCP tools in Microsoft Agent Framework
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
               </div>
             </li>
           
@@ -960,9 +974,11 @@
             
           
             
-              
+          
             
           
+            
+              
             
           
             
@@ -1040,9 +1056,8 @@
     <li><a href="#the-mental-model-client-first-agent-second">The mental model: client first, agent second</a></li>
     <li><a href="#openaichatclient">OpenAIChatClient</a></li>
     <li><a href="#openairesponsesclient">OpenAIResponsesClient</a></li>
-    <li><a href="#azureaiclient">AzureAIClient</a></li>
-    <li><a href="#azureaiagentclient">AzureAIAgentClient</a></li>
     <li><a href="#foundrychatclient">FoundryChatClient</a></li>
+    <li><a href="#foundryagent">FoundryAgent</a></li>
     <li><a href="#chatclientagent">ChatClientAgent</a></li>
     <li><a href="#a-side-by-side-cheat-sheet">A side-by-side cheat sheet</a></li>
     <li><a href="#the-same-agent-three-ways">The same agent, three ways</a></li>
@@ -1122,7 +1137,7 @@
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a> used <code>AzureAIAgentClient</code>. The <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a> used <code>AzureAIClient</code> and called it the recommended approach for Foundry persistence. The <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">workflow articles</a> switched to <code>OpenAIChatClient</code>. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;</p>
+          <p>If you have followed this series so far, you have already seen us use a handful of different clients to create agents in Microsoft Agent Framework (MAF). The <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a> used <code>FoundryAgent</code>. The <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a> used <code>FoundryChatClient</code> and called it the recommended approach for Foundry persistence. The <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">workflow articles</a> switched to <code>OpenAIChatClient</code>. That is a lot of clients for what looks, on the surface, like the same thing — &ldquo;give me an agent that talks to a model.&rdquo;</p>
 <p>The reason for the variety is simple. MAF deliberately separates <em>which model surface you talk to</em> from <em>how the agent and its conversation are managed</em>. Each client class targets a different combination of those two questions. Picking the right one up front saves a surprising amount of refactoring later, especially when you start adding hosted tools, adding persistence, or moving an agent to production.</p>
 <p>In this article, we will pull all of these clients into one place, explain what each one is for, and build the same simple weather agent three different ways so you can see what changes and what stays the same.</p>
 <h2 id="the-mental-model-client-first-agent-second">The mental model: client first, agent second</h2>
@@ -1152,9 +1167,9 @@
 </ul>
 <p>If you swap the client, all of those change at once. Swap the agent definition, and only the persona changes. That is why the rest of this article is organized around clients rather than agents.</p>
 <p>Before you pick a client, three questions decide most of the answers for you.</p>
-<p><strong>Where does your model live?</strong> If you are deploying models through Microsoft Foundry, your client choice is between <code>AzureAIClient</code> (use the Foundry-deployed model directly) or <code>AzureAIAgentClient</code> (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI or to OpenAI, <code>OpenAIChatClient</code> covers both — it switches paths based on whether you pass an Azure credential or an OpenAI API key. If you need richer hosted tools, the Responses API has its own client. If you are running a model locally, Ollama, LM Studio, <a href="/blog/local-model-serving-using-foundry-local/">Foundry Local</a>, you bring your own <code>IChatClient</code> and use the generic agent path.</p>
-<p><strong>Do you need hosted tools?</strong> Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through <code>AzureAIAgentClient</code>.</p>
-<p><strong>Who owns conversation state?</strong> If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (<code>AzureAIAgentClient</code>) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover <code>AgentSession</code> for multi-turn conversations.</p>
+<p><strong>Where does your model live?</strong> If you are deploying models through Microsoft Foundry, your client choice is between <code>FoundryChatClient</code> (use the Foundry-deployed model directly) or <code>FoundryAgent</code> (let Foundry Agent Service own the agent lifecycle). If you are pointing directly at Azure OpenAI or to OpenAI, <code>OpenAIChatClient</code> covers both — it switches paths based on whether you pass an Azure credential or an OpenAI API key. If you need richer hosted tools, the Responses API has its own client. If you are running a model locally, Ollama, LM Studio, <a href="/blog/local-model-serving-using-foundry-local/">Foundry Local</a>, you bring your own <code>IChatClient</code> and use the generic agent path.</p>
+<p><strong>Do you need hosted tools?</strong> Hosted tools like web search, file search, and code interpreter are tied to specific API surfaces. The Responses API path (Azure or OpenAI) gives you the richest set today. Chat Completions clients support fewer hosted tools, but they are stable and broadly available. The Foundry Agent Service exposes its own hosted tools through <code>FoundryAgent</code>.</p>
+<p><strong>Who owns conversation state?</strong> If you want the platform to track threads, store messages, and survive process restarts, the Foundry Agent Service path (<code>FoundryAgent</code>) is the natural fit. If your application owns the conversation in its own database and just wants a stateless model call, any of the chat or response clients will work. We will revisit this trade-off later in the series, when we cover <code>AgentSession</code> for multi-turn conversations.</p>
 <p>These three questions almost always narrow you down to one or two choices. The sections below walk through each client in turn.</p>
 <h2 id="openaichatclient">OpenAIChatClient</h2>
 <p>This is the client we have used in the <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">workflow articles</a>. It lives in <code>agent_framework.openai</code> and targets the Chat Completions API. The same class covers both Azure OpenAI and OpenAI direct: pass <code>DefaultAzureCredential</code> for the Azure path, or <code>api_key=...</code> for OpenAI direct.</p>
@@ -1258,8 +1273,8 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>If your agent needs hosted file search or code interpreter, this is the client to reach for. If you only need function tools, stay on Chat Completions.</p>
-<h2 id="azureaiclient">AzureAIClient</h2>
-<p>This is the client we used in the <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a>. <code>AzureAIClient</code> connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.</p>
+<h2 id="foundrychatclient">FoundryChatClient</h2>
+<p>This is the client we used in the <a href="/blog/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry/">persistent agents article</a>. <code>FoundryChatClient</code> connects to a Microsoft Foundry project and uses one of the models you have deployed there. It is the recommended path when you want Foundry to manage your model deployments — including governance, content filters, and shared quotas — but you do not want the full Foundry Agent Service runtime managing your agents.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1277,25 +1292,19 @@
 </span><span class="lnt">13
 </span><span class="lnt">14
 </span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">                <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="n">FoundryChatClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">)</span> <span class="k">as</span> <span class="n">chat_client</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
@@ -1303,8 +1312,8 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>The endpoint and model are set by <code>AZURE_AI_PROJECT_ENDPOINT</code> and <code>AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT_NAME</code>. Use this when you want Foundry&rsquo;s deployment story without taking on the Foundry Agent Service.</p>
-<h2 id="azureaiagentclient">AzureAIAgentClient</h2>
-<p><code>AzureAIAgentClient</code> is what we used in our <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a>. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.</p>
+<h2 id="foundryagent">FoundryAgent</h2>
+<p><code>FoundryAgent</code> is what we used in our <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a>. It is also what binds you to the Foundry Agent Service runtime: the agent itself becomes a Foundry resource, conversations are stored as Foundry threads, and the platform handles persistence, identity, and observability.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1324,22 +1333,18 @@
 </span><span class="lnt">15
 </span><span class="lnt">16
 </span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide concise weather information.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="p">):</span>
@@ -1350,8 +1355,6 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is the right choice when you want the platform to own the agent: long-running threads that survive process restarts, centralized identity and audit, and access to the broader Foundry tool catalog. The trade-off is coupling — your agent now depends on the Foundry Agent Service being available, and moving to a different runtime later is more work.</p>
-<h2 id="foundrychatclient">FoundryChatClient</h2>
-<p><code>FoundryChatClient</code> is a more recent addition that targets Foundry-deployed models through a Chat Completions-compatible interface. The shape of the call is similar to <code>AzureOpenAIChatClient</code>, but it points at a Foundry project rather than an Azure OpenAI resource. If you are starting a new Python project today and your models are in Foundry, the documentation now recommends this path over the Azure OpenAI-specific clients. Verify the import path against your installed SDK version before depending on it.</p>
 <h2 id="chatclientagent">ChatClientAgent</h2>
 <p>Everything above assumes a Microsoft- or OpenAI-hosted endpoint. For local models or third-party endpoints, MAF provides a generic path: implement (or import) a class that satisfies the <code>IChatClient</code> contract and pass it to a <code>ChatClientAgent</code>. This is the path for <a href="/blog/local-model-serving-using-foundry-local/">Foundry Local</a>, Ollama, LM Studio, vLLM, or any OpenAI-compatible local server. It is also the path for Anthropic models when you do not want to go through a hosted gateway.</p>
 <p>The exact import surface here has been moving as MAF stabilizes across SDK versions, so I am keeping the example deliberately schematic. The structure to keep in mind is: any chat client that satisfies the protocol can be wrapped into an agent the same way the Azure and OpenAI clients are.</p>
@@ -1386,28 +1389,20 @@
           <td>Need web/file/code-interpreter</td>
       </tr>
       <tr>
-          <td><code>AzureAIClient</code></td>
-          <td>Microsoft Foundry deployment</td>
-          <td>Chat Completions-compatible</td>
-          <td>Function tools</td>
-          <td>App-managed</td>
-          <td>Foundry-deployed models without the Agent Service</td>
-      </tr>
-      <tr>
-          <td><code>AzureAIAgentClient</code></td>
-          <td>Foundry Agent Service</td>
-          <td>Foundry Agent runtime</td>
-          <td>Foundry tool catalog (incl. Code Interpreter)</td>
-          <td>Platform-managed (Foundry threads)</td>
-          <td>Persistent, platform-owned agents</td>
-      </tr>
-      <tr>
           <td><code>FoundryChatClient</code></td>
           <td>Microsoft Foundry deployment</td>
           <td>Chat Completions-compatible</td>
           <td>Function tools</td>
           <td>App-managed</td>
-          <td>Newer recommended path for Foundry models</td>
+          <td>Foundry-deployed models, agent runs in your process</td>
+      </tr>
+      <tr>
+          <td><code>FoundryAgent</code></td>
+          <td>Foundry Agent Service</td>
+          <td>Foundry Agent runtime</td>
+          <td>Foundry tool catalog (incl. Code Interpreter)</td>
+          <td>Platform-managed (Foundry threads)</td>
+          <td>Persistent, platform-owned agents</td>
       </tr>
       <tr>
           <td><code>ChatClientAgent</code> over a custom client</td>
@@ -1509,7 +1504,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Version B — <code>AzureAIAgentClient</code>. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the <code>async with</code> blocks because the client needs explicit lifecycle management.</p>
+</div><p>Version B — <code>FoundryAgent</code>. Same agent, but now Foundry Agent Service owns the agent and its conversation threads. Notice the <code>async with</code> blocks because the client needs explicit lifecycle management.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1527,21 +1522,17 @@
 </span><span class="lnt">13
 </span><span class="lnt">14
 </span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIAgentClient</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryAgent</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main_b</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">AzureAIAgentClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">model_deployment_name</span><span class="o">=</span><span class="s2">&#34;gpt-4o&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">FoundryAgent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">agent_name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">            <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Use tools to fetch current weather.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">            <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_weather</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
@@ -1550,7 +1541,7 @@
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Version C — <code>AzureAIClient</code>. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project. <code>AzureAIClient</code> is a Foundry-backed client and uses <code>create_agent</code> rather than <code>as_agent</code>, since it actually creates a Foundry resource.</p>
+</div><p>Version C — <code>FoundryChatClient</code>. Foundry-deployed model, but the agent runtime is local — the same shape as Version A, just talking to a model in a Foundry project.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1566,21 +1557,19 @@
 </span><span class="lnt">11
 </span><span class="lnt">12
 </span><span class="lnt">13
-</span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main_c</span><span class="p">():</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="n">FoundryChatClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">)</span> <span class="k">as</span> <span class="n">chat_client</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Use tools to fetch current weather.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">                <span class="n">tools</span><span class="o">=</span><span class="n">get_weather</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">                <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_weather</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
@@ -1624,11 +1613,11 @@
 <h2 id="pitfalls">Pitfalls</h2>
 <p>A few things that have caught people out.</p>
 <p>The Responses API does not have feature parity with Chat Completions in every region or for every model family. If you swap from <code>OpenAIChatClient</code> to <code>OpenAIResponsesClient</code> and a model you were using stops responding, region or model availability is the first thing to check.</p>
-<p><code>AzureAIClient</code> and <code>AzureAIAgentClient</code> look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with <code>AzureAIClient</code> and later migrate to <code>AzureAIAgentClient</code>, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.</p>
-<p>Hosted tools are tied to clients. A <code>HostedCodeInterpreterTool</code> that works behind <code>AzureAIAgentClient</code> may need a different setup behind <code>OpenAIResponsesClient</code>, and may not be available at all behind <code>OpenAIChatClient</code>. When you change clients, audit your tool list.</p>
-<p>Chat clients use <code>as_agent(...)</code> to construct an agent, while Foundry-backed clients (<code>AzureAIClient</code>, <code>AzureAIAgentClient</code>) use <code>create_agent(...)</code>. The difference reflects what the call actually does: <code>as_agent</code> wraps the client into a local agent, while <code>create_agent</code> materializes a resource on the Foundry side.</p>
+<p><code>FoundryChatClient</code> and <code>FoundryAgent</code> look similar, and you can recreate most of one from the other, but they have different conversation-state semantics. If you start with <code>FoundryChatClient</code> and later migrate to <code>FoundryAgent</code>, your existing application-managed conversation history does not move automatically — you have to bring it across into Foundry threads yourself.</p>
+<p>Hosted tools are tied to clients. A <code>HostedCodeInterpreterTool</code> that works behind <code>FoundryAgent</code> may need a different setup behind <code>OpenAIResponsesClient</code>, and may not be available at all behind <code>OpenAIChatClient</code>. When you change clients, audit your tool list.</p>
+<p>Chat clients construct an agent via <code>chat_client.as_agent(...)</code>, which wraps the client into a local agent. <code>FoundryAgent</code> is constructed directly with <code>FoundryAgent(project_endpoint=..., agent_name=..., instructions=..., tools=[...])</code> and materializes a resource on the Foundry side. The difference reflects what the call actually does: chat clients build an agent locally, while <code>FoundryAgent</code> creates a platform resource.</p>
 <p>Credentials matter more than they look. <code>azure.identity</code> (sync) and <code>azure.identity.aio</code> (async) export different classes with the same names. The async clients use the <code>aio</code> variants; mixing them silently leads to confusing errors deep inside an <code>async with</code>.</p>
-<p>Finally, the import surface is still settling as MAF approaches stability. The early-preview <code>AzureChatClient</code> was renamed to <code>AzureOpenAIChatClient</code>, and that has since been consolidated into <code>OpenAIChatClient</code> (in <code>agent_framework.openai</code>), which now serves both Azure OpenAI and OpenAI direct depending on the credential or API key you pass in. The newer <code>FoundryChatClient</code> is the recommended path for Foundry-deployed models, replacing some of what <code>AzureAIClient</code> used to do. When in doubt, pin your <code>agent-framework</code> version and check the imports against the version you are running.</p>
+<p>Finally, the import surface has shifted across MAF versions. The early-preview <code>AzureChatClient</code> was renamed to <code>AzureOpenAIChatClient</code>, and that has since been consolidated into <code>OpenAIChatClient</code> (in <code>agent_framework.openai</code>), which now serves both Azure OpenAI and OpenAI direct depending on the credential or API key you pass in. The Foundry path moved similarly: <code>AzureAIClient</code> and <code>AzureAIAgentClient</code> (formerly in <code>agent_framework.azure</code>) became <code>FoundryChatClient</code> and <code>FoundryAgent</code> in <code>agent_framework.foundry</code>. When in doubt, pin your <code>agent-framework</code> version and check the imports against the version you are running.</p>
 <h2 id="wrap-up-and-what-is-next">Wrap-up and what is next</h2>
 <p>The agents we have written throughout this series have been deceptively portable — the persona, the tools, and the workflow code carry over between clients with little trouble. What does not carry across is the runtime: where state lives, which hosted tools you can reach, and how the platform manages your agent. Picking the right client is, more than anything, picking the runtime profile you want for the agent.</p>
 <p>In the next article, we will take this a step deeper and look at function tools. We have used them casually in earlier examples; now we will look at how MAF turns a Python function into a tool the model can call, what the schema generation actually does with your type hints, and how to handle errors and structured returns cleanly.</p>
@@ -1689,7 +1678,7 @@
   <div class="flex items-start gap-3">
     <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
     <div class="flex-1 notice-content">
-      <strong>Updated 26th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from <code>chat_client.create_agent(...)</code> to <code>chat_client.as_agent(...)</code>. The <code>Multiple tools</code> example has been updated to match. Other articles in this series also include changes to imports and constructors; see the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current set of clients and how to use them.
+      <strong>Updated 27th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized in version 1.2.0. <code>AzureOpenAIChatClient</code> and <code>AzureOpenAIResponsesClient</code> (formerly in <code>agent_framework.azure</code>) were consolidated into <code>OpenAIChatClient</code> and <code>OpenAIResponsesClient</code> (in <code>agent_framework.openai</code>), which now serve both Azure OpenAI and OpenAI direct depending on the credential or API key. The Azure path requires either an <code>azure_endpoint=</code> argument or an <code>AZURE_OPENAI_ENDPOINT</code> environment variable. <code>AzureAIClient</code> and <code>AzureAIAgentClient</code> (also formerly in <code>agent_framework.azure</code>) became <code>FoundryChatClient</code> and <code>FoundryAgent</code> in <code>agent_framework.foundry</code>. Chat clients use <code>chat_client.as_agent(...)</code> rather than <code>chat_client.create_agent(...)</code>. The cheat sheet, the per-section examples, and the worked &ldquo;same agent, three ways&rdquo; example have been updated to match.
     </div>
   </div>
 </div>
@@ -1865,9 +1854,11 @@
       
     
       
-        
+    
       
     
+      
+        
       
     
       
@@ -2252,9 +2243,8 @@
     <li><a href="#the-mental-model-client-first-agent-second">The mental model: client first, agent second</a></li>
     <li><a href="#openaichatclient">OpenAIChatClient</a></li>
     <li><a href="#openairesponsesclient">OpenAIResponsesClient</a></li>
-    <li><a href="#azureaiclient">AzureAIClient</a></li>
-    <li><a href="#azureaiagentclient">AzureAIAgentClient</a></li>
     <li><a href="#foundrychatclient">FoundryChatClient</a></li>
+    <li><a href="#foundryagent">FoundryAgent</a></li>
     <li><a href="#chatclientagent">ChatClientAgent</a></li>
     <li><a href="#a-side-by-side-cheat-sheet">A side-by-side cheat sheet</a></li>
     <li><a href="#the-same-agent-three-ways">The same agent, three ways</a></li>

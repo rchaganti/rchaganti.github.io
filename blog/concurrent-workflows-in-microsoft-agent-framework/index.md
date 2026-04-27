@@ -19,14 +19,8 @@ Let us explore this further using an example. In this example, we will create th
 {{< figure src="/images/maf-concurrent.png" >}}  {{< load-photoswipe >}}
 
 ```python
-from agent_framework import (
-    ConcurrentBuilder,
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import WorkflowRunState
+from agent_framework.orchestrations import ConcurrentBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
@@ -74,15 +68,15 @@ async def main():
     print("Running concurrent analysis with 3 analysts...")
     print("=" * 60)
     
-    async for event in workflow.run_stream("Analyze the impact of autonomous vehicles"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("Analyze the impact of autonomous vehicles", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
+        elif event.type == "output":
             print(f"\n{'='*60}")
             print("RESULTS")
             print(f"{'='*60}")
@@ -137,7 +131,7 @@ An aggregator is an async function that receives all agent responses and produce
 {{< figure src="/images/maf-concurrent-aggregator.png" >}}
 
 ```python
-from agent_framework import AgentExecutorResponse, ChatMessage, Role
+from agent_framework import AgentExecutorResponse, Message, Role
 
 # Create a summarizer agent to synthesize results
 summarizer = chat_client.as_agent(
@@ -174,7 +168,7 @@ async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -> str
     prompt = f"Please synthesize the following three analyses into a unified executive summary:\n\n{combined}"
     
     # Step 3: Run summarizer agent
-    response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)])
+    response = await summarizer.run([Message(role=Role.USER, text=prompt)])
     
     return response.text
 ```
@@ -195,22 +189,13 @@ The `.with_aggregator()` method tells the workflow what to do with all the paral
 - All three analysts run concurrently.
 - Once all are complete, the results are passed to `aggregate_with_summarizer`.
 - The summarizer creates a unified executive summary.
-- The summary becomes the final `WorkflowOutputEvent.data`
+- The summary becomes the final `event.data` on the `output` workflow event
 
 Here is the complete working example.
 
 ```python
-from agent_framework import (
-    ConcurrentBuilder, 
-    AgentExecutorResponse,
-    ChatMessage,
-    Role,
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import AgentExecutorResponse, Message, Role, WorkflowRunState
+from agent_framework.orchestrations import ConcurrentBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
@@ -282,7 +267,7 @@ async def aggregate_with_summarizer(results: list[AgentExecutorResponse]) -> str
     prompt = f"Please synthesize the following three analyses into a unified executive summary:\n\n{combined}"
     
     # Run summarizer agent
-    response = await summarizer.run([ChatMessage(role=Role.USER, text=prompt)])
+    response = await summarizer.run([Message(role=Role.USER, text=prompt)])
     
     return response.text
 
@@ -299,25 +284,25 @@ async def main():
     print("Running concurrent analysis with 3 analysts + summarizer...")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    summary = None
     
-    async for event in workflow.run_stream("Analyze the impact of autonomous vehicles"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("Analyze the impact of autonomous vehicles", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            summary = event.data
     
     # Display the aggregated summary
-    if output_evt:
+    if summary:
         print(f"\n{'='*60}")
         print("EXECUTIVE SUMMARY (Aggregated by Summarizer Agent)")
         print(f"{'='*60}")
-        print(output_evt.data)
+        print(summary)
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -334,6 +319,6 @@ Agents in a concurrent workflow may complete at different speeds. The concurrent
 In the next article, we'll explore the handoff workflow pattern, in which agents can dynamically transfer control to each other based on the conversation context. This is perfect for scenarios like customer support, where a coordinator routes requests to specialized agents. Stay tuned!
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names and patterns referenced here have changed: `AzureOpenAIChatClient` (in `agent_framework.azure`) is now `OpenAIChatClient` (in `agent_framework.openai`), with an explicit `model=` parameter and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`; `ConcurrentBuilder` moved from `agent_framework` to `agent_framework.orchestrations`; `workflow.run_stream(...)` is now `workflow.run(input, stream=True)`; the per-event classes (`ExecutorInvokedEvent`, `WorkflowOutputEvent`, etc.) were collapsed into a single `WorkflowEvent` type discriminated by `event.type`; `ChatMessage` was renamed to `Message`. All code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
 

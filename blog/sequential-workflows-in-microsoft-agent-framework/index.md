@@ -39,22 +39,13 @@ AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-4o"
 Let's start by importing everything we need:
 
 ```python
-from agent_framework import (
-  SequentialBuilder,
-  ChatMessage,
-  Role,
-  WorkflowOutputEvent,
-  ExecutorInvokedEvent,
-  ExecutorCompletedEvent,
-  WorkflowStatusEvent,
-  WorkflowRunState,
-)
+from agent_framework import Role, WorkflowRunState
+from agent_framework.orchestrations import SequentialBuilder
 
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
 import os
-from typing import Any
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -133,39 +124,38 @@ async def main():
     print("Running sequential workflow: Researcher → Writer → Editor")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("Write about the future of AI agents"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("Write about the future of AI agents", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 ```
 
-Let's understand each event type:
+Workflow events come through as `WorkflowEvent` instances, discriminated by the `event.type` string. Let's understand each one:
 
-| Event | When It Fires | What It Contains |
-|-------|---------------|------------------|
-| `ExecutorInvokedEvent` | When an agent starts processing | `executor_id` - the agent's name |
-| `ExecutorCompletedEvent` | When an agent finishes | `executor_id` |
-| `WorkflowStatusEvent` | When the workflow state changes | `state` - RUNNING, IDLE, ERROR |
-| `WorkflowOutputEvent` | When the workflow produces output | `data` - the final result |
+| Event type | When it fires | What it contains |
+|------------|---------------|------------------|
+| `"executor_invoked"` | When an agent starts processing | `event.executor_id` — the agent's name |
+| `"executor_completed"` | When an agent finishes | `event.executor_id` |
+| `"status"` | When the workflow state changes | `event.state` — `STARTED`, `IN_PROGRESS`, `IDLE`, `FAILED`, etc. |
+| `"output"` | When the workflow produces output | `event.data` — the final result, plus `event.executor_id` |
 
 The final output contains the complete conversation history.
 
 ```python
     # Display the final conversation
-    if output_evt:
+    if output_data:
         print("\n" + "=" * 60)
         print("FINAL CONVERSATION")
         print("=" * 60)
-        messages: list[ChatMessage] | Any = output_evt.data
-        for i, msg in enumerate(messages, start=1):
+        for i, msg in enumerate(output_data, start=1):
             name = msg.author_name or ("assistant" if msg.role == Role.ASSISTANT else "user")
             print(f"\n{'-' * 60}")
             print(f"{i:02d} [{name}]")
@@ -176,7 +166,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-The `WorkflowOutputEvent.data` contains a list of `ChatMessage` objects with:
+For a `SequentialBuilder` workflow, `event.data` on the `output` event contains a list of message objects with:
 
 - `role`: USER or ASSISTANT
 - `author_name`: The agent's name (for assistant messages)
@@ -185,16 +175,8 @@ The `WorkflowOutputEvent.data` contains a list of `ChatMessage` objects with:
 Here is the complete example.
 
 ```python
-from agent_framework import (
-    SequentialBuilder,
-    ChatMessage,
-    Role,
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import Role, WorkflowRunState
+from agent_framework.orchestrations import SequentialBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
@@ -245,26 +227,25 @@ async def main():
     print("Running sequential workflow: Researcher → Writer → Editor")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("Write about the future of AI agents"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("Write about the future of AI agents", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 
     # Display the final conversation
-    if output_evt:
+    if output_data:
         print("\n" + "=" * 60)
         print("FINAL CONVERSATION")
         print("=" * 60)
-        messages: list[ChatMessage] | Any = output_evt.data
-        for i, msg in enumerate(messages, start=1):
+        for i, msg in enumerate(output_data, start=1):
             name = msg.author_name or ("assistant" if msg.role == Role.ASSISTANT else "user")
             print(f"\n{'-' * 60}")
             print(f"{i:02d} [{name}]")
@@ -333,6 +314,6 @@ Sequential workflows in MAF provide a simple yet powerful way to orchestrate mul
 The `SequentialBuilder` makes this pattern incredibly easy to implement. You just define your agents, list them in order, and let MAF handle the rest.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names and patterns referenced here have changed: `AzureOpenAIChatClient` (in `agent_framework.azure`) is now `OpenAIChatClient` (in `agent_framework.openai`), with an explicit `model=` parameter and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`; `SequentialBuilder` moved from `agent_framework` to `agent_framework.orchestrations`; `workflow.run_stream(...)` is now `workflow.run(input, stream=True)`; the per-event classes (`ExecutorInvokedEvent`, `WorkflowOutputEvent`, etc.) were collapsed into a single `WorkflowEvent` type discriminated by `event.type` (a string). All code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
 

@@ -104,7 +104,7 @@ from agent_framework import MCPStreamableHTTPTool
 async with MCPStreamableHTTPTool(
     name="github",
     url="https://api.example.com/mcp",
-    headers={"Authorization": f"Bearer {os.environ['MCP_TOKEN']}"},
+    header_provider=lambda _ctx: {"Authorization": f"Bearer {os.environ['MCP_TOKEN']}"},
 ) as github_tool:
     agent = chat_client.as_agent(
         name="GitHubAgent",
@@ -116,7 +116,7 @@ async with MCPStreamableHTTPTool(
     print(result.text)
 ```
 
-The shape mirrors the stdio case. Same `async with` lifecycle, same `tools=[...]` parameter on the agent. The differences are at construction time: `url` instead of `command`, and an optional `headers` dict for authentication, which is where most of the security configuration lives. If the server requires more elaborate auth, like signing requests or refreshing tokens, you can layer that on top of the HTTP transport.
+The shape mirrors the stdio case. Same `async with` lifecycle, same `tools=[...]` parameter on the agent. The differences are at construction time: `url` instead of `command`, and a `header_provider` callable that returns the headers dict for each call. The callable form is more flexible than a static dict because it lets you refresh tokens, rotate credentials, or add per-call metadata. If the server requires more elaborate auth, like signing requests, you can layer that on top of the HTTP transport.
 
 A practical note: HTTP MCP servers tend to have higher per-call latency than stdio servers, because every tool invocation crosses the network. For interactive agents, this matters. If a tool that takes 50 ms locally takes 500 ms remotely, an agent that calls it five times in a turn now spends an extra two seconds waiting. We will see how to surface this to the user when we cover observability later in the series.
 
@@ -197,6 +197,3 @@ Finally, MCP tools share the model's context window with everything else. A tool
 
 In the next article, we will look at the other half of the MCP picture in MAF: hosted MCP tools, where Microsoft Foundry runs the MCP server for you, and your agent connects through the platform rather than directly. The day-to-day code stays familiar, but the deployment story changes.
 
-{{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
-{{< /notice >}}

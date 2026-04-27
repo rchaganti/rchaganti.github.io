@@ -9,6 +9,8 @@ If you have followed the [function tools article](/blog/function-tools-in-micros
 
 This article looks at how to use structured outputs, what changes when tools are also involved, and where the rough edges are.
 
+A quick environment note before the first example: `OpenAIChatClient` against an Azure OpenAI deployment requires either an `azure_endpoint=...` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; without one of those, the constructor raises. Set it in your `.env` alongside the model variables.
+
 ## A simple structured response
 
 The smallest useful example: ask the agent for a weather report and get back a typed object instead of prose.
@@ -158,8 +160,6 @@ Finally, large response models eat context. Every field name, type, and descript
 
 ## Summary
 
-Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as `response_format`, and the agent returns a typed instance via `result.value`. The mechanism comprises tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its *content*. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.
+Structured outputs replace fragile prose parsing with schema-constrained generation. You declare a Pydantic model, pass it as `response_format`, and the agent returns a typed instance via `result.value`. The mechanism composes with tools and streaming, but it does not make a model a reliable data source; it makes the shape of the answer reliable, not its *content*. Use it whenever downstream code depends on a specific shape, keep response models tight, and pair it with grounding tools when factual accuracy matters.
 
-{{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
-{{< /notice >}}
+That wraps up the foundations of working with a single agent in MAF: clients, function tools, multi-turn conversations and streaming, middleware, and structured outputs. In the next set of articles, we will start moving outward, looking at how MAF agents talk to the world beyond their immediate process: connecting to MCP servers as a tool source, exposing your own agent as an MCP server, and bringing pluggable memory in through context providers.

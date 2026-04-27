@@ -60,20 +60,20 @@ TAVILY_API_KEY=your-tavily-api-key
 Each agent needs specialized tools. Let's start with the research and analysis tools:
 
 ```python
-from agent_framework import ai_function
+from agent_framework import tool
 from tavily import TavilyClient
 import yfinance as yf
 import os
 
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
-@ai_function
+@tool
 def search_web(query: str) -> str:
     """Search the web for general information about markets, companies, or trends."""
     result = tavily_client.search(query=query, max_results=5)
     return str(result)
 
-@ai_function
+@tool
 def search_financial_news(company_or_topic: str) -> str:
     """Search for recent financial news, analyst opinions, and market sentiment."""
     query = f"{company_or_topic} stock news analyst rating 2024"
@@ -84,7 +84,7 @@ def search_financial_news(company_or_topic: str) -> str:
 The financial analysis tool uses Yahoo Finance to fetch real market data:
 
 ```python
-@ai_function
+@tool
 def analyze_financials(ticker: str) -> str:
     """Get key financial metrics using Yahoo Finance."""
     try:
@@ -123,7 +123,7 @@ def analyze_financials(ticker: str) -> str:
 The risk assessment tool is where the conditional logic lives:
 
 ```python
-@ai_function
+@tool
 def assess_risk(analysis_summary: str) -> str:
     """Evaluate investment risks and return a risk score (1-10)."""
     summary_lower = analysis_summary.lower()
@@ -280,7 +280,7 @@ Notice how the manager's instructions encode the conditional logic: "if risk sco
 With all components defined, we build the magentic workflow using `MagenticBuilder`:
 
 ```python
-from agent_framework import MagenticBuilder
+from agent_framework.orchestrations import MagenticBuilder
 
 workflow = (
     MagenticBuilder()
@@ -309,13 +309,7 @@ Key configuration options:
 Execute the workflow and observe the orchestration events:
 
 ```python
-from agent_framework import (
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import WorkflowRunState
 import asyncio
 
 async def main():
@@ -323,20 +317,20 @@ async def main():
 
     agent_sequence = []
 
-    async for event in workflow.run_stream(task):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run(task, stream=True):
+        if event.type == "executor_invoked":
             agent_sequence.append(event.executor_id)
             print(f">> Invoking: {event.executor_id}")
 
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"   Completed: {event.executor_id}")
 
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print(f"\nWorkflow completed!")
                 print(f"Agent sequence: {' -> '.join(agent_sequence)}")
 
-        elif isinstance(event, WorkflowOutputEvent):
+        elif event.type == "output":
             print(f"\nFinal output received")
 
 asyncio.run(main())
@@ -406,6 +400,6 @@ Magentic is the most flexible but also the most resource-intensive pattern. The 
 Magentic workflows represent the most sophisticated orchestration pattern in MAF, bridging the gap between rigid automation and truly autonomous multi-agent systems. When your task requires adaptive decision-making that can't be predetermined, magentic is the pattern to reach for.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names and patterns referenced here have changed: `AzureOpenAIChatClient` (in `agent_framework.azure`) is now `OpenAIChatClient` (in `agent_framework.openai`), with an explicit `model=` parameter and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`; `MagenticBuilder` moved from `agent_framework` to `agent_framework.orchestrations`; `workflow.run_stream(...)` is now `workflow.run(input, stream=True)`; the per-event classes were collapsed into a single `WorkflowEvent` type discriminated by `event.type`; and the `@ai_function` decorator was renamed to `@tool`. All code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
 

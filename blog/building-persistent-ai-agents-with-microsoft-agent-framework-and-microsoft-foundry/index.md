@@ -46,7 +46,7 @@ import asyncio
 from dotenv import load_dotenv
 from typing import Annotated
 
-from agent_framework.azure import AzureAIClient
+from agent_framework.foundry import FoundryChatClient
 from azure.identity.aio import AzureCliCredential
 from pydantic import Field
 
@@ -76,15 +76,12 @@ def get_weather(
 
 async def main() -> None:
     async with AzureCliCredential() as credential:
-        async with (
-            AzureAIClient(
-                credential=credential,
-            ).create_agent(
+        async with FoundryChatClient(credential=credential) as chat_client:
+            agent = chat_client.as_agent(
                 name="WeatherAgent",
                 instructions="You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.",
                 tools=get_weather,
-            ) as agent,
-        ):
+            )
             result = await agent.run("What should I wear in Austin, Texas?")
             print(f"Agent: {result}")
 
@@ -95,9 +92,11 @@ In both scenarios, an agent gets created in the Foundry.
 
 {{< figure src="/images/maf-persist-agent-1.png" >}}  {{< load-photoswipe >}}
 
-As in the previous scenario, the agent is persisted in Foundry. Note that we are using `AzureAIClient` rather than `AzureAIAgentClient`. This is the recommended approach.
-
-To use an existing Foundry agent with MAF, specify `use_latest_version=True` in the `AzureAIClient` definition.
+As in the previous scenario, the agent is persisted in Foundry. We are using `FoundryChatClient`, which connects to a Foundry project and uses the model deployed there. The agent itself is constructed locally with `chat_client.as_agent(...)`; Foundry holds the model and the conversation, and your application orchestrates the agent run.
 
 In the subsequent parts of this series, we will examine other types of agents we can create with MAF.
+
+{{< notice "info" >}}
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. `AzureAIClient` (formerly in `agent_framework.azure`) is now `FoundryChatClient` in `agent_framework.foundry`. Chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)` to construct an agent. Code samples in this article have been updated to match the current SDK. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
+{{< /notice >}}
 

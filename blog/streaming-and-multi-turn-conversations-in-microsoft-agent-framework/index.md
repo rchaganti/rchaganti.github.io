@@ -3,6 +3,8 @@
 
 Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call `agent.run("a single question")`, print the result. That works for a quick demo, but production agents almost never run that way. They hold *conversations*, where each turn builds on what came before, and they often *stream* the response as it is generated so the user sees output immediately rather than waiting for the full reply.
 
+Before we get to the code, a quick environment note. The examples below use `OpenAIChatClient` against an Azure OpenAI deployment. The Azure path requires either an `azure_endpoint=...` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; without one of those, the constructor raises. Set it in your `.env` file alongside the model variables.
+
 In Microsoft Agent Framework (MAF), the answer to both is the same primitive: `AgentSession`. A session is the object that holds the running conversation, accumulates messages as they arrive, and lets you pass continuity from one turn to the next. Streaming and multi-turn are two aspects of the same idea, keeping the agent stateful across time.
 
 In this article, we will look at how a single turn works without any session at all, introduce `AgentSession` as the way to keep state across turns, and then look at streaming responses and what changes when the agent is also calling tools mid-stream.
@@ -188,9 +190,9 @@ MAF gives you a few options for moving conversation state out of memory.
 
 The simplest is to serialize the session to your own storage between turns. You take the messages out of the session at the end of a request, save them in a database keyed by the user, and rehydrate them into a fresh `AgentSession` at the start of the next request. This is the most portable approach because nothing about it depends on a specific platform, and it lets your application own the conversation, which is often what you want for compliance reasons. The trade-off is that you are responsible for the storage layer.
 
-The second option is to use a client whose conversations are managed by the platform itself. `AzureAIAgentClient` (the [Foundry Agent Service](/blog/building-ai-agents-with-microsoft-agent-framework/) path we looked at in earlier articles) persists conversations as Foundry threads. The session you get back from a Foundry-backed agent can survive process restarts because the actual storage is in Foundry, not in your application's memory. The trade-off is the inverse: less work for you, more coupling to Foundry.
+The second option is to use a client whose conversations are managed by the platform itself. `FoundryAgent` (the [Foundry Agent Service](/blog/building-ai-agents-with-microsoft-agent-framework/) path we looked at in earlier articles) persists conversations as Foundry threads. The session you get back from a Foundry-backed agent can survive process restarts because the actual storage is in Foundry, not in your application's memory. The trade-off is the inverse: less work for you, more coupling to Foundry.
 
-Which one fits depends on the question we asked back in the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/): who owns the conversation. If the answer is "the platform," reach for `AzureAIAgentClient` and let Foundry handle persistence. If the answer is "my application," use an in-memory `AgentSession` and serialize it yourself.
+Which one fits depends on the question we asked back in the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/): who owns the conversation. If the answer is "the platform," reach for `FoundryAgent` and let Foundry handle persistence. If the answer is "my application," use an in-memory `AgentSession` and serialize it yourself.
 
 ## Pitfalls
 
@@ -213,8 +215,4 @@ Finally, sessions are not free. Each one carries memory, and creating thousands 
 `AgentSession` is the small primitive that turns a stateless `agent.run(...)` call into a real conversation, and `stream=True` is the small change that turns a long silent wait into a responsive interactive reply. Both are simple to adopt, and both have edges that show up only when the conversation gets long, the tools get slow, or the agent runs across requests rather than in a single script. The earlier you decide how state will live and how output will reach the user, the less re-work you will do later.
 
 In the next article, we will look at how to make the agent return *structured* data rather than free text. We have leaned on prose answers throughout the series; for many production use cases, what you actually want is a Pydantic model on the way out, not a paragraph the calling code has to parse.
-
-{{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
-{{< /notice >}}
 

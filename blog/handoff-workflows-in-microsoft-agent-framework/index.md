@@ -127,18 +127,18 @@ async def main():
     print("Running handoff workflow: Coordinator → Specialists")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("I never received my order #12345"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("I never received my order #12345", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 
     # Display the conversation history
     if output_evt:
@@ -150,29 +150,22 @@ async def main():
                 print(f"[{name}]: {msg.text}")
 ```
 
-The streaming API emits different event types that let you track workflow progress:
+The streaming API emits different event types that let you track workflow progress. Events come through as `WorkflowEvent` instances, discriminated by the `event.type` string:
 
-| Event Type | When It Fires | Use Case |
+| Event type | When it fires | Use case |
 |------------|---------------|----------|
-| `ExecutorInvokedEvent` | An agent starts processing | Show "Agent X is working..." |
-| `ExecutorCompletedEvent` | An agent finishes | Update progress indicators |
-| `WorkflowStatusEvent` | Workflow state changes | Detect completion or errors |
-| `WorkflowOutputEvent` | Final output is ready | Capture the result |
+| `"executor_invoked"` | An agent starts processing | Show "Agent X is working..." |
+| `"executor_completed"` | An agent finishes | Update progress indicators |
+| `"status"` | Workflow state changes (`event.state`) | Detect completion or errors |
+| `"output"` | Final output is ready (`event.data`) | Capture the result |
 
 The `WorkflowRunState.IDLE` status indicates that the workflow has finished processing.
 
 Here is the complete example.
 
 ```python
-from agent_framework import (
-    HandoffBuilder,
-    Role,
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import Role, WorkflowRunState
+from agent_framework.orchestrations import HandoffBuilder
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
@@ -254,27 +247,26 @@ async def main():
     print("Customer issue: I never received my order #12345")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("I never received my order #12345"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("I never received my order #12345", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Workflow completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 
     # Display the final conversation
-    if output_evt:
+    if output_data:
         print("\n" + "=" * 60)
         print("CONVERSATION HISTORY")
         print("=" * 60)
-        messages = output_evt.data
-        if isinstance(messages, list):
-            for i, msg in enumerate(messages, start=1):
+        if isinstance(output_data, list):
+            for i, msg in enumerate(output_data, start=1):
                 if hasattr(msg, 'role'):
                     name = msg.author_name or ("assistant" if msg.role == Role.ASSISTANT else "user")
                     print(f"\n{'-' * 60}")
@@ -282,7 +274,7 @@ async def main():
                     print(f"{'-' * 60}")
                     print(msg.text)
         else:
-            print(output_evt.data)
+            print(output_data)
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -374,6 +366,6 @@ The Handoff pattern enables dynamic, context-aware routing between agents. This 
 In the next article, we'll explore the group chat orchestration pattern for even more complex multi-agent collaboration scenarios.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names and patterns referenced here have changed: `AzureOpenAIChatClient` (in `agent_framework.azure`) is now `OpenAIChatClient` (in `agent_framework.openai`), with an explicit `model=` parameter and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`; `HandoffBuilder` moved from `agent_framework` to `agent_framework.orchestrations`; `workflow.run_stream(...)` is now `workflow.run(input, stream=True)`; the per-event classes (`ExecutorInvokedEvent`, `WorkflowOutputEvent`, etc.) were collapsed into a single `WorkflowEvent` type discriminated by `event.type`. All code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
 

@@ -90,7 +90,7 @@
   "@type": "BlogPosting",
   "headline": "Building persistent AI Agents with Microsoft Agent Framework and Microsoft Foundry",
   "description": "In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In another article in this …",
-  "articleBody": "\"In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In another article in this series, we looked at creating Azure AI agents with Microsoft Agent Framework (MAF). Agents created with MAF are local only where MAF acts as the runtime. In this follow-up, we will examine how to create Foundry agents using MAF.\\nWhen working directly with the native SDK, the typical pattern involves:\\nCreating an AIProjectClient Defining an agent with PromptAgentDefinition Managing conversations manually Handling responses through the OpenAI client wrapper Here\\u0026rsquo;s what that looks like with the native SDK:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 from azure.ai.projects import AIProjectClient from azure.ai.projects.models import PromptAgentDefinition project_client = AIProjectClient( endpoint=foundry_endpoint, credential=DefaultAzureCredential(), ) agent = project_client.agents.create_version( agent_name=agent_name, definition=PromptAgentDefinition( model=foundry_model, instructions=instruction, ), ) # Manually manage conversations conversation = openai_client.conversations.create() response = openai_client.responses.create( conversation=conversation.id, extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent_name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, input=\\u0026#34;your question here\\u0026#34;, ) While this approach gives you fine-grained control, it requires explicit conversation management and more boilerplate code. This is where the Microsoft Agent Framework comes into play. We have already seen the basics of MAF in an earlier article in this series. So, let\\u0026rsquo;s look at the persistent agent pattern.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 import os import asyncio from dotenv import load_dotenv from typing import Annotated from agent_framework.azure import AzureAIClient from azure.identity.aio import AzureCliCredential from pydantic import Field load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main() -\\u0026gt; None: async with AzureCliCredential() as credential: async with ( AzureAIClient( credential=credential, ).create_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.\\u0026#34;, tools=get_weather, ) as agent, ): result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(f\\u0026#34;Agent: {result}\\u0026#34;) asyncio.run(main()) In both scenarios, an agent gets created in the Foundry.\\nAs in the previous scenario, the agent is persisted in Foundry. Note that we are using AzureAIClient rather than AzureAIAgentClient. This is the recommended approach.\\nTo use an existing Foundry agent with MAF, specify use_latest_version=True in the AzureAIClient definition.\\nIn the subsequent parts of this series, we will examine other types of agents we can create with MAF.\\n\"",
+  "articleBody": "\"In my earlier post on Getting Started with Foundry Agents, I covered the basics of creating agents using the Azure AI Foundry Agents service and the azure-ai-projects SDK. In another article in this series, we looked at creating Azure AI agents with Microsoft Agent Framework (MAF). Agents created with MAF are local only where MAF acts as the runtime. In this follow-up, we will examine how to create Foundry agents using MAF.\\nWhen working directly with the native SDK, the typical pattern involves:\\nCreating an AIProjectClient Defining an agent with PromptAgentDefinition Managing conversations manually Handling responses through the OpenAI client wrapper Here\\u0026rsquo;s what that looks like with the native SDK:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 from azure.ai.projects import AIProjectClient from azure.ai.projects.models import PromptAgentDefinition project_client = AIProjectClient( endpoint=foundry_endpoint, credential=DefaultAzureCredential(), ) agent = project_client.agents.create_version( agent_name=agent_name, definition=PromptAgentDefinition( model=foundry_model, instructions=instruction, ), ) # Manually manage conversations conversation = openai_client.conversations.create() response = openai_client.responses.create( conversation=conversation.id, extra_body={\\u0026#34;agent\\u0026#34;: {\\u0026#34;name\\u0026#34;: agent_name, \\u0026#34;type\\u0026#34;: \\u0026#34;agent_reference\\u0026#34;}}, input=\\u0026#34;your question here\\u0026#34;, ) While this approach gives you fine-grained control, it requires explicit conversation management and more boilerplate code. This is where the Microsoft Agent Framework comes into play. We have already seen the basics of MAF in an earlier article in this series. So, let\\u0026rsquo;s look at the persistent agent pattern.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 import os import asyncio from dotenv import load_dotenv from typing import Annotated from agent_framework.foundry import FoundryChatClient from azure.identity.aio import AzureCliCredential from pydantic import Field load_dotenv() def get_weather( location: Annotated[str, Field(description=\\u0026#34;The location to get the weather for.\\u0026#34;)], ) -\\u0026gt; str: import requests import json api_key = os.getenv(\\u0026#34;OPEN_WEATHERMAP_API_KEY\\u0026#34;) base_url = \\u0026#34;http://api.openweathermap.org/data/2.5/weather\\u0026#34; complete_url = f\\u0026#34;{base_url}?q={location}\\u0026amp;appid={api_key}\\u0026amp;units=metric\\u0026#34; response = requests.get(complete_url) data = response.json() if data[\\u0026#34;cod\\u0026#34;] != \\u0026#34;404\\u0026#34;: main_data = data[\\u0026#34;main\\u0026#34;] current_temperature = main_data[\\u0026#34;temp\\u0026#34;] return f\\u0026#34;Temperature: {current_temperature}°C\\u0026#34; else: return \\u0026#34;City not found\\u0026#34; async def main() -\\u0026gt; None: async with AzureCliCredential() as credential: async with FoundryChatClient(credential=credential) as chat_client: agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.\\u0026#34;, tools=get_weather, ) result = await agent.run(\\u0026#34;What should I wear in Austin, Texas?\\u0026#34;) print(f\\u0026#34;Agent: {result}\\u0026#34;) asyncio.run(main()) In both scenarios, an agent gets created in the Foundry.\\nAs in the previous scenario, the agent is persisted in Foundry. We are using FoundryChatClient, which connects to a Foundry project and uses the model deployed there. The agent itself is constructed locally with chat_client.as_agent(...); Foundry holds the model and the conversation, and your application orchestrates the agent run.\\nIn the subsequent parts of this series, we will examine other types of agents we can create with MAF.\\nℹ️ Updated 27th April 2026 for breaking API changes. Microsoft Agent Framework\\u0026rsquo;s Python package was reorganized in version 1.2.0. AzureAIClient (formerly in agent_framework.azure) is now FoundryChatClient in agent_framework.foundry. Chat clients use chat_client.as_agent(...) rather than chat_client.create_agent(...) to construct an agent. Code samples in this article have been updated to match the current SDK. See the client comparison article for the current client surface. \"",
   "url": "https:\/\/ravichaganti.com\/blog\/building-persistent-ai-agents-with-microsoft-agent-framework-and-microsoft-foundry\/",
   "datePublished": "2025-10-10T00:00:00Z",
   "dateModified": "2025-10-10T00:00:00Z",
@@ -692,7 +692,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 17-part series
+        Part of a 18-part series
       </p>
 
       
@@ -702,6 +702,34 @@
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
                 1
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Exposing Microsoft Agent Framework agents as MCP servers
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                2
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    Hosted MCP tools in Microsoft Agent Framework
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
+              </div>
+            </li>
+          
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
               </span>
               <div class="flex-grow">
                 
@@ -715,7 +743,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
+                4
               </span>
               <div class="flex-grow">
                 
@@ -729,7 +757,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                3
+                5
               </span>
               <div class="flex-grow">
                 
@@ -744,7 +772,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                4
+                6
               </span>
               <div class="flex-grow">
                 
@@ -758,7 +786,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                5
+                7
               </span>
               <div class="flex-grow">
                 
@@ -772,7 +800,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                6
+                8
               </span>
               <div class="flex-grow">
                 
@@ -786,7 +814,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                7
+                9
               </span>
               <div class="flex-grow">
                 
@@ -800,7 +828,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                8
+                10
               </span>
               <div class="flex-grow">
                 
@@ -814,7 +842,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                9
+                11
               </span>
               <div class="flex-grow">
                 
@@ -828,7 +856,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                10
+                12
               </span>
               <div class="flex-grow">
                 
@@ -842,7 +870,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                11
+                13
               </span>
               <div class="flex-grow">
                 
@@ -856,7 +884,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                12
+                14
               </span>
               <div class="flex-grow">
                 
@@ -870,7 +898,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                13
+                15
               </span>
               <div class="flex-grow">
                 
@@ -884,7 +912,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                14
+                16
               </span>
               <div class="flex-grow">
                 
@@ -898,7 +926,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                15
+                17
               </span>
               <div class="flex-grow">
                 
@@ -912,7 +940,7 @@
           
             <li class="flex items-start">
               <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                16
+                18
               </span>
               <div class="flex-grow">
                 
@@ -921,20 +949,6 @@
                   </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 8, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                17
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    Hosted MCP tools in Microsoft Agent Framework
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 9, 2026</p>
               </div>
             </li>
           
@@ -949,9 +963,11 @@
             
           
             
-              
+          
             
           
+            
+              
             
           
             
@@ -1158,9 +1174,6 @@
 </span><span class="lnt">43
 </span><span class="lnt">44
 </span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
@@ -1168,7 +1181,7 @@
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.azure</span> <span class="kn">import</span> <span class="n">AzureAIClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.foundry</span> <span class="kn">import</span> <span class="n">FoundryChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity.aio</span> <span class="kn">import</span> <span class="n">AzureCliCredential</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
 </span></span><span class="line"><span class="cl">
@@ -1198,15 +1211,12 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">with</span> <span class="n">AzureCliCredential</span><span class="p">()</span> <span class="k">as</span> <span class="n">credential</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">            <span class="n">AzureAIClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">                <span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">create_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">async</span> <span class="k">with</span> <span class="n">FoundryChatClient</span><span class="p">(</span><span class="n">credential</span><span class="o">=</span><span class="n">credential</span><span class="p">)</span> <span class="k">as</span> <span class="n">chat_client</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">                <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a weatherman. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                <span class="n">tools</span><span class="o">=</span><span class="n">get_weather</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="p">)</span> <span class="k">as</span> <span class="n">agent</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What should I wear in Austin, Texas?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Agent: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
@@ -1239,9 +1249,70 @@
       });
     });
   </script></p>
-<p>As in the previous scenario, the agent is persisted in Foundry. Note that we are using <code>AzureAIClient</code> rather than <code>AzureAIAgentClient</code>. This is the recommended approach.</p>
-<p>To use an existing Foundry agent with MAF, specify <code>use_latest_version=True</code> in the <code>AzureAIClient</code> definition.</p>
+<p>As in the previous scenario, the agent is persisted in Foundry. We are using <code>FoundryChatClient</code>, which connects to a Foundry project and uses the model deployed there. The agent itself is constructed locally with <code>chat_client.as_agent(...)</code>; Foundry holds the model and the conversation, and your application orchestrates the agent run.</p>
 <p>In the subsequent parts of this series, we will examine other types of agents we can create with MAF.</p>
+<style>
+.notice-shortcode.notice-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.dark .notice-shortcode.notice-info {
+  background-color: rgba(30, 58, 138, 0.2);
+  border-color: #1e40af;
+  color: #f1f5f9;
+}
+.notice-shortcode.notice-warning {
+  background-color: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+}
+.dark .notice-shortcode.notice-warning {
+  background-color: rgba(133, 77, 14, 0.2);
+  border-color: #ca8a04;
+  color: #fef9c3;
+}
+.notice-shortcode.notice-tip {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #14532d;
+}
+.dark .notice-shortcode.notice-tip {
+  background-color: rgba(20, 83, 45, 0.2);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+.notice-shortcode.notice-danger {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
+.dark .notice-shortcode.notice-danger {
+  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  color: #fecaca;
+}
+.notice-shortcode.notice-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #064e3b;
+}
+.dark .notice-shortcode.notice-success {
+  background-color: rgba(6, 78, 59, 0.2);
+  border-color: #059669;
+  color: #d1fae5;
+}
+</style>
+
+<div class="notice-shortcode notice-info my-6 p-4 border-l-4 rounded-r-lg">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl flex-shrink-0" style="line-height: 1;">ℹ️</span>
+    <div class="flex-1 notice-content">
+      <strong>Updated 27th April 2026 for breaking API changes.</strong> Microsoft Agent Framework&rsquo;s Python package was reorganized in version 1.2.0. <code>AzureAIClient</code> (formerly in <code>agent_framework.azure</code>) is now <code>FoundryChatClient</code> in <code>agent_framework.foundry</code>. Chat clients use <code>chat_client.as_agent(...)</code> rather than <code>chat_client.create_agent(...)</code> to construct an agent. Code samples in this article have been updated to match the current SDK. See the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a> for the current client surface.
+    </div>
+  </div>
+</div>
+
 
         </div>
 
@@ -1397,9 +1468,11 @@
       
     
       
-        
+    
       
     
+      
+        
       
     
       

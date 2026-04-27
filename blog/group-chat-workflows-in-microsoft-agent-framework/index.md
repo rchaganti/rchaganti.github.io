@@ -35,39 +35,29 @@ synthesizer = chat_client.as_agent(
 )
 ```
 
-The heart of a `GroupChat` workflow is the speaker selection function. This function decides who speaks next based on the current state of the conversation. The speaker selection function receives the conversation state. 
-
-```python
-GroupChatStateSnapshot = TypedDict('GroupChatStateSnapshot', {
-    'participants': dict,  # Dictionary of participant agents (name → agent)
-    'history': list,       # Conversation history so far
-    'round_index': int,    # Current round number (0-indexed)
-})
-```
+The heart of a `GroupChat` workflow is the speaker selection function. This function decides who speaks next based on the current state of the conversation. The framework hands it a `GroupChatState` (immutable dataclass) imported from `agent_framework.orchestrations`:
 
 | Field | Description |
 |-------|-------------|
-| `participants` | A dictionary where keys are agent names |
-| `history` | List of messages exchanged so far |
-| `round_index` | How many turns have been taken |
+| `participants` | An `OrderedDict` mapping agent names to their descriptions |
+| `conversation` | The full conversation history so far as a `list[Message]` |
+| `current_round` | The current round index, starting from 0 |
 
 A simple way to select speakers is to use a round-robin method. In this approach, each agent speaks in order.
 
 ```python
-def select_speaker(state: GroupChatStateSnapshot) -> str | None:
+from agent_framework.orchestrations import GroupChatState
+
+
+def select_speaker(state: GroupChatState) -> str | None:
     """Select the next speaker in round-robin order."""
-    participants = state["participants"]
-    round_index = state["round_index"]
-    
     # End after 6 rounds (2 full cycles through 3 agents)
-    if round_index >= 6:
+    if state.current_round >= 6:
         return None  # Returning None ends the conversation
-    
-    # Get the list of participant names
-    participant_names = list(participants.keys())
-    
+
     # Select based on round index
-    return participant_names[round_index % len(participant_names)]
+    participant_names = list(state.participants.keys())
+    return participant_names[state.current_round % len(participant_names)]
 ```
 
 As defined in this function, the next participant name is returned. To terminate the conversation, this function returns `None`.
@@ -92,30 +82,29 @@ async def main():
     print("Topic: How can we make AI agents more trustworthy?")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("How can we make AI agents more trustworthy?"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("How can we make AI agents more trustworthy?", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Group chat completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 ```
 
-The `WorkflowOutputEvent.data` contains the full conversation as a list of messages:
+The `event.data` on the `output` event contains the full conversation as a list of messages:
 
 ```python
-if output_evt:
+if output_data:
     print("\n" + "=" * 60)
     print("GROUP CHAT TRANSCRIPT")
     print("=" * 60)
-    messages = output_evt.data
-    if isinstance(messages, list):
-        for i, msg in enumerate(messages, start=1):
+    if isinstance(output_data, list):
+        for i, msg in enumerate(output_data, start=1):
             if hasattr(msg, 'role'):
                 name = msg.author_name or ("assistant" if msg.role == Role.ASSISTANT else "user")
                 print(f"\n{'-' * 60}")
@@ -127,16 +116,8 @@ if output_evt:
 Here's the complete code for a brainstorming `GroupChat`.
 
 ```python
-from agent_framework import (
-    GroupChatBuilder,
-    GroupChatStateSnapshot,
-    Role,
-    WorkflowOutputEvent,
-    ExecutorInvokedEvent,
-    ExecutorCompletedEvent,
-    WorkflowStatusEvent,
-    WorkflowRunState,
-)
+from agent_framework import Role, WorkflowRunState
+from agent_framework.orchestrations import GroupChatBuilder, GroupChatState
 from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 import asyncio
@@ -175,17 +156,14 @@ synthesizer = chat_client.as_agent(
 )
 
 # Simple round-robin speaker selection
-def select_speaker(state: GroupChatStateSnapshot) -> str | None:
-    participants = state["participants"]
-    round_index = state["round_index"]
-    
+def select_speaker(state: GroupChatState) -> str | None:
     # End after 6 rounds (2 full cycles)
-    if round_index >= 6:
+    if state.current_round >= 6:
         return None
     
-    # participants is a dict with agent names as keys
-    participant_names = list(participants.keys())
-    return participant_names[round_index % len(participant_names)]
+    # participants is an ordered dict with agent names as keys
+    participant_names = list(state.participants.keys())
+    return participant_names[state.current_round % len(participant_names)]
 
 # Build group chat workflow
 workflow = (
@@ -202,27 +180,26 @@ async def main():
     print("Topic: How can we make AI agents more trustworthy?")
     print("=" * 60)
     
-    output_evt: WorkflowOutputEvent | None = None
+    output_data = None
     
-    async for event in workflow.run_stream("How can we make AI agents more trustworthy?"):
-        if isinstance(event, ExecutorInvokedEvent):
+    async for event in workflow.run("How can we make AI agents more trustworthy?", stream=True):
+        if event.type == "executor_invoked":
             print(f"⚡ Starting: {event.executor_id}")
-        elif isinstance(event, ExecutorCompletedEvent):
+        elif event.type == "executor_completed":
             print(f"✓ Completed: {event.executor_id}")
-        elif isinstance(event, WorkflowStatusEvent):
+        elif event.type == "status":
             if event.state == WorkflowRunState.IDLE:
                 print("\n✅ Group chat completed!")
-        elif isinstance(event, WorkflowOutputEvent):
-            output_evt = event
+        elif event.type == "output":
+            output_data = event.data
 
     # Display the final conversation
-    if output_evt:
+    if output_data:
         print("\n" + "=" * 60)
         print("GROUP CHAT TRANSCRIPT")
         print("=" * 60)
-        messages = output_evt.data
-        if isinstance(messages, list):
-            for i, msg in enumerate(messages, start=1):
+        if isinstance(output_data, list):
+            for i, msg in enumerate(output_data, start=1):
                 if hasattr(msg, 'role'):
                     name = msg.author_name or ("assistant" if msg.role == Role.ASSISTANT else "user")
                     print(f"\n{'-' * 60}")
@@ -230,7 +207,7 @@ async def main():
                     print(f"{'-' * 60}")
                     print(msg.text)
         else:
-            print(output_evt.data)
+            print(output_data)
 
 
 if __name__ == "__main__":
@@ -287,28 +264,26 @@ The round-robin method for speaker selection is simple but does not necessarily 
 In this pattern, we let the content of the conversation drive the speaker selection. Let us look at the implementation.
 
 ```python
-def content_aware_selection(state: GroupChatStateSnapshot) -> str | None:
+def content_aware_selection(state: GroupChatState) -> str | None:
     """Select speaker based on what was just said."""
-    history = state["history"]
-    round_index = state["round_index"]
-    
-    if round_index >= 9:
+    if state.current_round >= 9:
         return None
-    
-    if round_index == 0:
+
+    if state.current_round == 0:
         return "Creative"
-    
-    last_turn = history[-1] if history else None
+
     last_message = ""
-    if last_turn and hasattr(last_turn, 'message'):
-        last_message = last_turn.message.lower() if isinstance(last_turn.message, str) else ""
-    
+    if state.conversation:
+        last = state.conversation[-1]
+        if last.text:
+            last_message = last.text.lower()
+
     if "idea" in last_message or "propose" in last_message:
         return "Critic"
-    
+
     if "concern" in last_message or "risk" in last_message:
         return "Creative"
-    
+
     return "Synthesizer"
 ```
 
@@ -319,16 +294,14 @@ In this pattern, based on the `creative` or `critic` agent's response, we choose
 In this method, you can prioritize one speaker over others.
 
 ```python
-def weighted_selection(state: GroupChatStateSnapshot) -> str | None:
+def weighted_selection(state: GroupChatState) -> str | None:
     """Weighted speaker selection - Creative speaks more often."""
-    round_index = state["round_index"]
-    
-    if round_index >= 8:
+    if state.current_round >= 8:
         return None
-    
+
     # Pattern: Creative, Critic, Creative, Synthesizer, repeat
     pattern = ["Creative", "Critic", "Creative", "Synthesizer"]
-    return pattern[round_index % len(pattern)]
+    return pattern[state.current_round % len(pattern)]
 ```
 
 In this example, the `creative` agent is given greater weight than the others.
@@ -338,29 +311,25 @@ In this example, the `creative` agent is given greater weight than the others.
 In this pattern, we ensure that the same agent doesn't speak twice in a row.
 
 ```python
-def no_repeat_selection(state: GroupChatStateSnapshot) -> str | None:
+def no_repeat_selection(state: GroupChatState) -> str | None:
     """Prevent the same agent from speaking consecutively."""
-    participants = state["participants"]
-    history = state["history"]
-    round_index = state["round_index"]
-    
-    if round_index >= 6:
+    if state.current_round >= 6:
         return None
-    
-    participant_names = list(participants.keys())
-    
+
+    participant_names = list(state.participants.keys())
+
     # Find who spoke last
     last_speaker = None
-    for msg in reversed(history):
-        if hasattr(msg, 'author_name') and msg.author_name:
+    for msg in reversed(state.conversation):
+        if hasattr(msg, "author_name") and msg.author_name:
             last_speaker = msg.author_name
             break
-    
+
     # Filter out last speaker
     available = [p for p in participant_names if p != last_speaker]
-    
+
     # Simple rotation among available speakers
-    return available[round_index % len(available)]
+    return available[state.current_round % len(available)]
 ```
 
 In this method, from the message history, we identify who spoke last and remove that speaker from the list of potential participants.
@@ -400,8 +369,8 @@ In addition to speaker selection, identifying and implementing an appropriate te
 The simplest approach is to return `None` when you want to stop:
 
 ```python
-def select_speaker(state: GroupChatStateSnapshot) -> str | None:
-  if state["round_index"] >= 10:
+def select_speaker(state: GroupChatState) -> str | None:
+  if state.current_round >= 10:
     return None  # End after 10 rounds
   # ... selection logic
 ```
@@ -411,10 +380,10 @@ def select_speaker(state: GroupChatStateSnapshot) -> str | None:
 We can use `with_termination_condition()` for complex logic.
 
 ```python
-def check_consensus(state: GroupChatStateSnapshot) -> bool:
+def check_consensus(state: GroupChatState) -> bool:
     """End when agents reach consensus."""
-    for entry in state["history"]:
-        text = entry.text.upper() if hasattr(entry, 'text') else ""
+    for entry in state.conversation:
+        text = entry.text.upper() if hasattr(entry, "text") and entry.text else ""
         if "CONSENSUS REACHED" in text or "AGREED" in text:
             return True
     return False
@@ -441,6 +410,6 @@ The `GroupChat` workflow pattern enables dynamic, turn-based conversations betwe
 `GroupChat` excels when you need agents to build on each other's ideas; brainstorm, debate, code-review, and collaborate on problem-solving.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several names and patterns referenced here have changed: `AzureOpenAIChatClient` (in `agent_framework.azure`) is now `OpenAIChatClient` (in `agent_framework.openai`), with an explicit `model=` parameter and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`; `GroupChatBuilder` moved from `agent_framework` to `agent_framework.orchestrations`; `workflow.run_stream(...)` is now `workflow.run(input, stream=True)`; the per-event classes were collapsed into a single `WorkflowEvent` type discriminated by `event.type`; and the speaker-selection state type is now `GroupChatState` (a frozen dataclass) with attributes `current_round`, `participants`, and `conversation`, replacing the older `GroupChatStateSnapshot` `TypedDict` with `round_index`/`history`. All code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
 

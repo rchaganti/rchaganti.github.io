@@ -17,15 +17,16 @@ Here is a quick example of an [Azure AI Foundry agent](https://learn.microsoft.c
 
 ```python
 import asyncio
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework.foundry import FoundryAgent
 from azure.identity.aio import AzureCliCredential
 
 async def main():
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(async_credential=credential).create_agent(
+        FoundryAgent(
+            credential=credential,
             name="HelperAgent",
-            instructions="You are a helpful assistant."
+            instructions="You are a helpful assistant.",
         ) as agent,
     ):
         result = await agent.run("Hello!")
@@ -39,13 +40,15 @@ Workflows are graph structures that connect multiple agents to perform complex, 
 Here is a quick example of a concurrent workflow.
 
 ```python
-from agent_framework.azure import AzureChatClient
-from agent_framework import ChatMessage, WorkflowCompletedEvent
-from agent_framework import ConcurrentBuilder
+import os
+from agent_framework.openai import OpenAIChatClient
+from agent_framework.orchestrations import ConcurrentBuilder
+from azure.identity import DefaultAzureCredential
 
-chat_client = AzureChatClient(credential=AzureCliCredential())
+model = os.environ["AZURE_OPENAI_CHAT_MODEL"]
+chat_client = OpenAIChatClient(model=model, credential=DefaultAzureCredential())
 
-researcher = chat_client.create_agent(
+researcher = chat_client.as_agent(
     instructions=(
         "You're an expert market and product researcher. Given a prompt, provide concise, factual insights,"
         " opportunities, and risks."
@@ -53,7 +56,7 @@ researcher = chat_client.create_agent(
     name="researcher",
 )
 
-marketer = chat_client.create_agent(
+marketer = chat_client.as_agent(
     instructions=(
         "You're a creative marketing strategist. Craft compelling value propositions and target messaging"
         " aligned to the prompt."
@@ -61,7 +64,7 @@ marketer = chat_client.create_agent(
     name="marketer",
 )
 
-legal = chat_client.create_agent(
+legal = chat_client.as_agent(
     instructions=(
         "You're a cautious legal/compliance reviewer. Highlight constraints, disclaimers, and policy concerns"
         " based on the prompt."
@@ -71,23 +74,20 @@ legal = chat_client.create_agent(
 
 workflow = ConcurrentBuilder().participants([researcher, marketer, legal]).build()
 
-completion: WorkflowCompletedEvent | None = None
-async for event in workflow.run_stream("We are launching a new budget-friendly electric bike for urban commuters."):
-    if isinstance(event, WorkflowCompletedEvent):
-        completion = event
+messages = None
+async for event in workflow.run("We are launching a new budget-friendly electric bike for urban commuters.", stream=True):
+    if event.type == "output":
+        messages = event.data
 
-if completion:
+if messages:
     print("===== Final Aggregated Conversation (messages) =====")
-    messages: list[ChatMessage] | Any = completion.data
     for i, msg in enumerate(messages, start=1):
         name = msg.author_name if msg.author_name else "user"
-        print(f"{'-' * 60}\n\n{i:02d} [{name}]:\n{msg.text}")        
+        print(f"{'-' * 60}\n\n{i:02d} [{name}]:\n{msg.text}")
 ```
 
 In this series of articles, we will learn how to create agents and workflows using the Microsoft Agent Framework. We will start by diving deep into Agents, then move on to exploring workflows in depth.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. Several class names and import paths in this article have moved: `AzureAIAgentClient` and `AzureAIClient` (formerly in `agent_framework.azure`) are now `FoundryAgent` and `FoundryChatClient` in `agent_framework.foundry`; `AzureChatClient` is now `OpenAIChatClient` in `agent_framework.openai`, configured with an explicit `model=` and either an `azure_endpoint=` argument or an `AZURE_OPENAI_ENDPOINT` environment variable; chat clients use `chat_client.as_agent(...)` rather than `chat_client.create_agent(...)`. Code samples in this article have been updated. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
 {{< /notice >}}
-
-

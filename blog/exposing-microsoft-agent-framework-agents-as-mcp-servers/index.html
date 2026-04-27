@@ -18,10 +18,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Streaming and multi-turn conversations in Microsoft Agent Framework | Ravikanth Chaganti</title>
+  <title>Exposing Microsoft Agent Framework agents as MCP servers | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call agent.run(&quot;a single question&quot;), print the result. That works for a quick demo, but production agents almost never run that way. They hold conversations, where each turn builds on what came before, and they often stream the response as it is generated so the user sees output immediately rather than waiting for the full reply.">
+  <meta name="description" content="So far in this series, we have used MCP in one direction. The local MCP article and the hosted MCP article both treated the agent as a client: it found tools on someone else&rsquo;s server and called them. That is the more common pattern, and it is where most teams start.
+The opposite direction is just as useful and gets less attention. A Microsoft Agent Framework (MAF) agent can also be published as an MCP server, which is how you let other agents and applications, in any framework, in any language, consume your agent&rsquo;s behavior as a tool. Once you have an agent that does something useful, exposing it over MCP is often the cleanest way to share it with the rest of your organization without forcing everyone onto MAF.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,22 +31,23 @@
   
 
   
-  <meta property="og:title" content="Streaming and multi-turn conversations in Microsoft Agent Framework">
-  <meta property="og:description" content="Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call agent.run(&quot;a single question&quot;), print the result. That works for a quick demo, but production agents almost never run that way. They hold conversations, where each turn builds on what came before, and they often stream the response as it is generated so the user sees output immediately rather than waiting for the full reply.">
+  <meta property="og:title" content="Exposing Microsoft Agent Framework agents as MCP servers">
+  <meta property="og:description" content="So far in this series, we have used MCP in one direction. The local MCP article and the hosted MCP article both treated the agent as a client: it found tools on someone else&rsquo;s server and called them. That is the more common pattern, and it is where most teams start.
+The opposite direction is just as useful and gets less attention. A Microsoft Agent Framework (MAF) agent can also be published as an MCP server, which is how you let other agents and applications, in any framework, in any language, consume your agent&rsquo;s behavior as a tool. Once you have an agent that does something useful, exposing it over MCP is often the cleanest way to share it with the rest of your organization without forcing everyone onto MAF.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Streaming and multi-turn conversations in Microsoft Agent Framework">
+  <meta property="og:image:alt" content="Exposing Microsoft Agent Framework agents as MCP servers">
 
   
   
-    <meta property="article:published_time" content="2026-03-04T00:00:00Z">
-    <meta property="article:modified_time" content="2026-03-04T00:00:00Z">
+    <meta property="article:published_time" content="0001-01-01T00:00:00Z">
+    
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -53,13 +55,14 @@
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Streaming and multi-turn conversations in Microsoft Agent Framework">
-  <meta name="twitter:description" content="Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call agent.run(&quot;a single question&quot;), print the result. That works for a quick demo, but production agents almost never run that way. They hold conversations, where each turn builds on what came before, and they often stream the response as it is generated so the user sees output immediately rather than waiting for the full reply.">
+  <meta name="twitter:title" content="Exposing Microsoft Agent Framework agents as MCP servers">
+  <meta name="twitter:description" content="So far in this series, we have used MCP in one direction. The local MCP article and the hosted MCP article both treated the agent as a client: it found tools on someone else&rsquo;s server and called them. That is the more common pattern, and it is where most teams start.
+The opposite direction is just as useful and gets less attention. A Microsoft Agent Framework (MAF) agent can also be published as an MCP server, which is how you let other agents and applications, in any framework, in any language, consume your agent&rsquo;s behavior as a tool. Once you have an agent that does something useful, exposing it over MCP is often the cleanest way to share it with the rest of your organization without forcing everyone onto MAF.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +91,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Streaming and multi-turn conversations in Microsoft Agent Framework",
-  "description": "Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call agent.run(\u0026quot;a single question\u0026quot;), print the result. That works for a quick …",
-  "articleBody": "\"Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call agent.run(\\u0026quot;a single question\\u0026quot;), print the result. That works for a quick demo, but production agents almost never run that way. They hold conversations, where each turn builds on what came before, and they often stream the response as it is generated so the user sees output immediately rather than waiting for the full reply.\\nBefore we get to the code, a quick environment note. The examples below use OpenAIChatClient against an Azure OpenAI deployment. The Azure path requires either an azure_endpoint=... argument or an AZURE_OPENAI_ENDPOINT environment variable; without one of those, the constructor raises. Set it in your .env file alongside the model variables.\\nIn Microsoft Agent Framework (MAF), the answer to both is the same primitive: AgentSession. A session is the object that holds the running conversation, accumulates messages as they arrive, and lets you pass continuity from one turn to the next. Streaming and multi-turn are two aspects of the same idea, keeping the agent stateful across time.\\nIn this article, we will look at how a single turn works without any session at all, introduce AgentSession as the way to keep state across turns, and then look at streaming responses and what changes when the agent is also calling tools mid-stream.\\nA single turn When you call agent.run(\\u0026quot;Hello!\\u0026quot;) on its own, MAF runs the call in isolation. The agent receives the message, decides what to do (call a tool, generate text, both), and returns a response. As soon as that call is complete, the conversation context goes away. The next call starts fresh.\\nThis is fine for one-shot tasks, but it shows up immediately when the user expects continuity. Consider this:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio import os from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;Assistant\\u0026#34;, instructions=\\u0026#34;You are a friendly assistant.\\u0026#34;, ) first = await agent.run(\\u0026#34;My name is Ravi.\\u0026#34;) print(first.text) second = await agent.run(\\u0026#34;What is my name?\\u0026#34;) print(second.text) asyncio.run(main()) The second call has no idea what was said in the first. The agent responds with something polite and apologetic, but it does not know the user\\u0026rsquo;s name because the second run does not see the first run\\u0026rsquo;s message history. Every call is a fresh conversation.\\nThat is the right default. State should be opt-in, not implicit; otherwise, concurrent runs of the same agent would overwrite each other\\u0026rsquo;s history. To make a conversation actually behave like a conversation, you bring in a session.\\nAgentSession AgentSession is the object that carries conversation state across turns. You create one, pass it to agent.run(...) on every call, and the session accumulates messages as the conversation progresses. The agent reads the session when deciding what to say, and writes new messages back into it.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 from agent_framework import AgentSession from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential import asyncio import os from dotenv import load_dotenv load_dotenv() async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;Assistant\\u0026#34;, instructions=\\u0026#34;You are a friendly assistant.\\u0026#34;, ) session = AgentSession() first = await agent.run(\\u0026#34;My name is Ravi.\\u0026#34;, session=session) print(first.text) second = await agent.run(\\u0026#34;What is my name?\\u0026#34;, session=session) print(second.text) asyncio.run(main()) The second call now sees the first one in the session\\u0026rsquo;s history, and the agent answers correctly. The session is just a parameter you pass through with no changes to the rest.\\nA few practical points. A session is not tied to a specific agent. You can route the same session through different agents in the same process, which is useful when you want a triage agent to hand off to a specialist while preserving the conversation. The session carries only the conversation; it does not carry tool definitions, so the receiving agent works with whatever tools it was constructed with.\\nYou can inspect a session to see its accumulated messages, and you can construct one with messages already populated, which is useful when you are restoring a conversation from your application\\u0026rsquo;s database between requests. The exact API for inspection and serialization is the place where MAF is still settling, so check the version of agent-framework you have installed before depending on a specific shape.\\nThe session you create with AgentSession() is an in-memory session. It lives as long as the Python object lives and disappears when the process exits. That is the right default for short-lived conversations, but it is not the right default for an agent that has to remember a user across days. We will come back to where sessions can be persisted further down.\\nStreaming responses By default, agent.run(...) waits for the full reply before returning. For long answers, that means the user waits in silence until the model has finished generating. Passing stream=True is the alternative: instead of returning the result, the call returns a stream object that yields updates as the model produces them, so you can print them out (or push them down a websocket) immediately.\\nWe saw a small example of this in our first hands-on article. Here it is again with a session:\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 async def main(): model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) agent = chat_client.as_agent( name=\\u0026#34;Assistant\\u0026#34;, instructions=\\u0026#34;You are a friendly assistant.\\u0026#34;, ) session = AgentSession() stream = agent.run(\\u0026#34;Tell me a short story about a fox.\\u0026#34;, session=session, stream=True) print(\\u0026#34;Assistant: \\u0026#34;, end=\\u0026#34;\\u0026#34;, flush=True) async for update in stream: if update.text: print(update.text, end=\\u0026#34;\\u0026#34;, flush=True) print() await stream.get_final_response() asyncio.run(main()) A few things worth understanding about this loop. Each iteration of the loop returns an update, not a full message. Some updates contain text; some are empty or carry metadata for events that are not text (more on that in a moment). Checking if update.text is what filters the loop down to the part you actually want to print. flush=True matters because the default Python buffering would hold the output until a newline, defeating the point of streaming.\\nAfter the loop ends, await stream.get_final_response() finalizes the run. This is what returns the complete response object and ensures the session is updated. Skipping it can leave the session in an inconsistent state, especially when the stream involved tool calls, so make it part of every streaming code path.\\nThe session is updated as the stream progresses. By the time the final-response call resolves, the session holds the user\\u0026rsquo;s question and the full assistant reply, and the next call against the same session will see them.\\nWhat you see in a stream A streaming response is more than a sequence of text fragments. The stream carries events for everything the agent does in a turn: text being generated, tool calls being made, tool results coming back, and a final completion event when the turn ends.\\nFor a turn that does not call any tools, you mostly see text deltas, with one or two control events at the start and end. For a turn that calls a tool, the order looks roughly like this:\\nThe model starts generating a tool call (you see the tool name and arguments coming through). The tool runs, and a tool result event is emitted. The model continues, now with the tool result in context, and produces the actual user-facing reply. If you only want to print the final text, the if update.text filter is enough. If you are building a richer UI — showing \\u0026ldquo;calling get_weather\\u0026hellip;\\u0026rdquo; while the tool runs, then the answer once it returns — you want to inspect the update types more deliberately:\\n1 2 3 4 5 6 7 8 stream = agent.run(\\u0026#34;What is the weather in Bengaluru?\\u0026#34;, session=session, stream=True) async for update in stream: if getattr(update, \\u0026#34;tool_calls\\u0026#34;, None): for call in update.tool_calls: print(f\\u0026#34;\\\\n[calling {call.name}({call.arguments})]\\u0026#34;) elif update.text: print(update.text, end=\\u0026#34;\\u0026#34;, flush=True) await stream.get_final_response() The exact attribute names on an update depend on the client and the SDK version. The pattern is stable: there are events for tool calls, events for tool results, and events for text. You filter for the events you care about.\\nIf the only thing you need is the final reply, prefer agent.run(...) without stream=True over a streaming loop that throws everything but the text away. Streaming is worth the extra code only when the user sees the partial output.\\nStreaming and tools, together When a turn involves tools, the relationship between streaming and tool calls is sometimes counterintuitive. The model does not stream the tool\\u0026rsquo;s result. The tool runs in full, returns a value, and the value goes back into the conversation as a tool message. What streams is the model\\u0026rsquo;s reasoning around the tool call: the call itself, then the user-facing text that follows the tool result.\\nThis matters for UI design. If your tool takes ten seconds to run, your user sees the streaming reply pause for ten seconds while the tool executes, and then resume when the model continues. If the pause is long enough to be confusing, surface the tool call to the user explicitly. The streaming pattern above, with the [calling get_weather(...)] line, is the simplest version. Production interfaces typically render a small spinner or a \\u0026ldquo;tool running\\u0026rdquo; pill that disappears when the result arrives.\\nFor tools that take a long time, the right answer is often not to make the tool faster but to acknowledge the wait. Showing the user that something is happening is usually more important than reducing the wait by a second or two.\\nWhere conversation state lives So far, every session we have used has been an in-memory AgentSession. The session lives in the Python process, and the moment the process exits, the conversation is gone. For a CLI tool or a one-shot script, that is fine. For a chatbot that runs across requests, days, or users, it is not.\\nMAF gives you a few options for moving conversation state out of memory.\\nThe simplest is to serialize the session to your own storage between turns. You take the messages out of the session at the end of a request, save them in a database keyed by the user, and rehydrate them into a fresh AgentSession at the start of the next request. This is the most portable approach because nothing about it depends on a specific platform, and it lets your application own the conversation, which is often what you want for compliance reasons. The trade-off is that you are responsible for the storage layer.\\nThe second option is to use a client whose conversations are managed by the platform itself. FoundryAgent (the Foundry Agent Service path we looked at in earlier articles) persists conversations as Foundry threads. The session you get back from a Foundry-backed agent can survive process restarts because the actual storage is in Foundry, not in your application\\u0026rsquo;s memory. The trade-off is the inverse: less work for you, more coupling to Foundry.\\nWhich one fits depends on the question we asked back in the client comparison article: who owns the conversation. If the answer is \\u0026ldquo;the platform,\\u0026rdquo; reach for FoundryAgent and let Foundry handle persistence. If the answer is \\u0026ldquo;my application,\\u0026rdquo; use an in-memory AgentSession and serialize it yourself.\\nPitfalls A few things to watch for when you start using sessions and streaming together.\\nForgetting to pass the session through is the most common mistake. If you create a session but call agent.run(...) without session=session, the call is stateless again and the session does not get updated. Wire the session through every call site or wrap your agent in a small helper that does it for you.\\nSessions can grow large. Every turn appends messages, including tool calls and tool results, and the agent has to read all of them on every subsequent turn. Long-lived conversations consume tokens on every call, and eventually they hit the model\\u0026rsquo;s context window. For agents that run for days, plan for either summarization (compress old turns into a digest) or rolling windows (keep the last N turns and drop the rest). We will look at this more carefully when we cover context providers later in the series.\\nForgetting to await stream.get_final_response() is the streaming-specific equivalent. The loop will exit cleanly even if you skip the call, but the session may not be fully updated and the stream object holds resources until it is finalized. Treat get_final_response() as a required step, not an optional one.\\nWhen you stream, partial updates are not always at character boundaries. A multibyte character can be split across two updates, and printing the text naïvely can produce a momentary glitch. For console output this is rarely visible. For a websocket stream into a browser, the receiving side needs to be tolerant of partial UTF-8 sequences.\\nErrors during streaming are also worth thinking through. If a tool raises mid-stream, the stream still completes and the error becomes part of the conversation history (we covered this in the function tools article). The stream consumer sees the updates before the error, an event indicating the tool error, and then the model\\u0026rsquo;s recovery text. Your loop should not assume the stream always ends with a clean text reply.\\nFinally, sessions are not free. Each one carries memory, and creating thousands of long-lived sessions in a single process will eat into your application\\u0026rsquo;s heap. For high-fan-out scenarios, persist sessions outside the process and rehydrate them on demand rather than keeping them all in memory.\\nSummary AgentSession is the small primitive that turns a stateless agent.run(...) call into a real conversation, and stream=True is the small change that turns a long silent wait into a responsive interactive reply. Both are simple to adopt, and both have edges that show up only when the conversation gets long, the tools get slow, or the agent runs across requests rather than in a single script. The earlier you decide how state will live and how output will reach the user, the less re-work you will do later.\\nIn the next article, we will look at how to make the agent return structured data rather than free text. We have leaned on prose answers throughout the series; for many production use cases, what you actually want is a Pydantic model on the way out, not a paragraph the calling code has to parse.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/streaming-and-multi-turn-conversations-in-microsoft-agent-framework\/",
-  "datePublished": "2026-03-04T00:00:00Z",
-  "dateModified": "2026-03-04T00:00:00Z",
+  "headline": "Exposing Microsoft Agent Framework agents as MCP servers",
+  "description": "So far in this series, we have used MCP in one direction. The local MCP article and the hosted MCP article both treated the agent as a client: it found tools on someone else\u0026rsquo;s server and called …",
+  "articleBody": "\"So far in this series, we have used MCP in one direction. The local MCP article and the hosted MCP article both treated the agent as a client: it found tools on someone else\\u0026rsquo;s server and called them. That is the more common pattern, and it is where most teams start.\\nThe opposite direction is just as useful and gets less attention. A Microsoft Agent Framework (MAF) agent can also be published as an MCP server, which is how you let other agents and applications, in any framework, in any language, consume your agent\\u0026rsquo;s behavior as a tool. Once you have an agent that does something useful, exposing it over MCP is often the cleanest way to share it with the rest of your organization without forcing everyone onto MAF.\\nIn this article, we will look at why you might want to do this, what the result looks like to a consumer, and how to wire it up. The pattern overlaps with the A2A interop article we covered earlier: A2A is the agent-to-agent protocol, while MCP is the tool-and-context protocol; you will sometimes use both for different audiences.\\nWhy expose an agent as an MCP server A few patterns come up often enough to be worth naming.\\nThe first is capability publishing. Your team builds a domain-specific agent, say, an internal \\u0026ldquo;customer-history agent\\u0026rdquo; that knows how to answer questions about a CRM. The natural question from another team is \\u0026ldquo;how can my agent use yours?\\u0026rdquo; Wrapping the agent as an MCP server gives you a stable, framework-neutral answer. They add it as a tool, just like any other MCP server, and your agent shows up alongside the rest of their tools.\\nThe second is cross-framework reuse. The consumer might not be a MAF agent at all. It might be an OpenAI Assistant run, a Claude Desktop client, an Anthropic API caller using MCP, a LangGraph workflow, or a custom orchestrator. MCP works everywhere; once your agent is an MCP server, all of those become valid callers without a single line of consumer-side MAF code.\\nThe third is the separation of concerns. The team that owns the agent owns its prompt, tools, model choice, and evaluation harness. Consumers do not need to know any of that. They see a tool with a name, a description, and a parameter schema, and they call it. That separation is exactly what good library boundaries look like, applied to agents.\\nWhat consumers see When you expose an MAF agent through MCP, the consumer sees one or more tools, depending on how you model the surface. The simplest shape is one agent, one tool: the agent\\u0026rsquo;s whole behavior collapses into a single tool that takes a question (or a structured input) and returns the agent\\u0026rsquo;s answer.\\n1 2 3 4 5 6 Tool: ask_customer_history Description: Answers questions about a customer\\u0026#39;s order and support history. Parameters: - customer_id: string (the customer to look up) - question: string (the natural-language question) Returns: string That is a perfectly good interface for an agent that mostly answers free-form questions. For agents whose behavior decomposes naturally into distinct operations, a multi-tool surface is sometimes cleaner: each operation becomes its own MCP tool with its own parameter schema, and the calling agent selects the appropriate one. We will see both shapes below.\\nWhat consumers do not see is everything that happens inside the agent-run. Tool calls the agent makes, function calls, MCP calls of its own, the model conversation, all of that is internal. The MCP boundary is the agent\\u0026rsquo;s input and output, nothing more.\\nA first MCP server The simplest way to publish a MAF agent over MCP is to wrap it inside the standard Python MCP server library. The mcp package ships with FastMCP, a small framework that turns decorated Python functions into MCP tools and serves them over stdio or HTTP.\\nInstall the MCP SDK first:\\n1 pip install mcp The example below uses OpenAIChatClient against an Azure OpenAI deployment. The Azure path requires either an azure_endpoint=... argument or an AZURE_OPENAI_ENDPOINT environment variable; without one of those, the constructor raises. Set it in your .env file alongside the model variables.\\nNow we can write a server that wraps a single MAF agent.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 import asyncio import os from agent_framework.openai import OpenAIChatClient from azure.identity import DefaultAzureCredential from mcp.server.fastmcp import FastMCP from dotenv import load_dotenv load_dotenv() model = ( os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_MODEL\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME\\u0026#34;) or os.getenv(\\u0026#34;AZURE_OPENAI_DEPLOYMENT_NAME\\u0026#34;) ) chat_client = OpenAIChatClient( model=model, credential=DefaultAzureCredential(), ) weather_agent = chat_client.as_agent( name=\\u0026#34;WeatherAgent\\u0026#34;, instructions=\\u0026#34;You are a concise weather assistant. Answer in one or two sentences.\\u0026#34;, ) mcp = FastMCP(\\u0026#34;weather-agent-server\\u0026#34;) @mcp.tool() async def ask_weather(question: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Ask the weather agent a natural-language question about the weather.\\u0026#34;\\u0026#34;\\u0026#34; result = await weather_agent.run(question) return result.text if __name__ == \\u0026#34;__main__\\u0026#34;: mcp.run(transport=\\u0026#34;stdio\\u0026#34;) A few things worth pulling out. The MAF agent is built exactly as it would be in any other MAF script; the MCP layer does not change anything about how you construct the agent or its tools. The @mcp.tool() decorator turns the ask_weather function into an MCP tool, and FastMCP derives the tool\\u0026rsquo;s schema from the function signature: a single string parameter question, return type str. The docstring becomes the tool description.\\nInside the function, we simply forward the call to the agent and return the agent\\u0026rsquo;s text response. The consumer sees a clean, single-purpose tool. Behind the scenes, every call to that tool can fan out into model calls, function tool calls, MCP-client calls, whatever the agent decides to do, but the consumer never has to think about any of it.\\nRun the server with python weather_server.py. It will sit on stdin and stdout waiting for an MCP client to connect, in the same shape as any stdio MCP server. Now, any MCP client, including an MAF agent using MCPStdioTool, can use it as a tool.\\nMulti-tool servers When the agent\\u0026rsquo;s behavior naturally splits into a few distinct operations, exposing each as its own tool yields the calling model better selection accuracy than collapsing everything into a single ask-anything entry point.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 @mcp.tool() async def get_temperature(location: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Return the current temperature for a city.\\u0026#34;\\u0026#34;\\u0026#34; result = await weather_agent.run(f\\u0026#34;What is the current temperature in {location}? Respond with just the temperature.\\u0026#34;) return result.text @mcp.tool() async def get_forecast(location: str, days: int = 3) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;Return a short multi-day weather forecast for a city.\\u0026#34;\\u0026#34;\\u0026#34; result = await weather_agent.run(f\\u0026#34;Give me a {days}-day forecast for {location}.\\u0026#34;) return result.text @mcp.tool() async def get_weather_alerts(location: str) -\\u0026gt; str: \\u0026#34;\\u0026#34;\\u0026#34;List any active weather alerts for a city.\\u0026#34;\\u0026#34;\\u0026#34; result = await weather_agent.run(f\\u0026#34;Are there any active weather alerts for {location}?\\u0026#34;) return result.text Each function becomes a separately documented tool. The calling model picks the right one based on the question, the same way it would for a hand-written tool, and you get the benefit of distinct names, descriptions, and parameter schemas.\\nThe trade-off is brittleness. Splitting into many tools makes the server\\u0026rsquo;s prompt-to-prompt behavior more constrained: each entry point essentially fixes the prompt template the agent is run with. Lean on multi-tool surfaces when the operations really are distinct; if they all collapse to \\u0026ldquo;answer a question about weather,\\u0026rdquo; a single tool is cleaner.\\nA useful middle ground is to expose one general-purpose tool plus a small number of specialized ones. Consumers can reach for the specialized tools when they fit and fall back to the general one otherwise.\\nSessions and state A subtle point about exposing an agent over MCP: each MCP tool call is independent. Unless you do something extra, two calls to ask_weather start two separate agent runs with no shared history. That is usually what you want when the consumer is treating your agent as a single-shot tool.\\nWhen the consumer needs continuity, for example, a customer-support agent that keeps context across several questions, you have two options. One is to make the session_id (or equivalent) part of the tool\\u0026rsquo;s input, and to keep AgentSession instances keyed by that id on the server side. Calls with the same id share state; calls with different ids are independent. The other is to expose multi-turn conversation as its own protocol layer, possibly with A2A rather than MCP, since A2A models multi-turn conversation as a first-class concept and MCP does not.\\nMost of the time, MCP-exposed agents are stateless from the consumer\\u0026rsquo;s perspective. Build for that, and only add session affinity when you have a concrete use case that needs it.\\nTransports: stdio vs HTTP FastMCP supports both stdio and HTTP transports. The choice depends on where your callers run.\\nStdio is the right answer when the consumer launches the server as a subprocess. Many MCP clients work this way, including MAF\\u0026rsquo;s MCPStdioTool, Claude Desktop, and most local development setups. The server starts when the client connects, and stops when the client disconnects. There is no network exposure, which is good for security but limits scope to clients on the same machine.\\nHTTP is the right answer when consumers are remote. Switch the run line:\\n1 2 if __name__ == \\u0026#34;__main__\\u0026#34;: mcp.run(transport=\\u0026#34;streamable-http\\u0026#34;, host=\\u0026#34;0.0.0.0\\u0026#34;, port=8080) The server now listens on http://0.0.0.0:8080/mcp and accepts MCP requests over the streamable-HTTP transport. Anything that speaks MCP over HTTP can call it: a Foundry-backed agent via FoundryChatClient.get_mcp_tool(...), a local MAF agent via MCPStreamableHTTPTool, an Anthropic API caller, or any other MCP client.\\nHTTP also unlocks the standard set of HTTP concerns: TLS, authentication, rate limiting, and reverse proxies. None of those are MCP-specific, but they all become your problem the moment your agent is reachable over the network. Most teams put the HTTP server behind their existing API gateway and let the gateway handle auth and TLS, leaving the MCP server itself focused on routing tool calls into the agent.\\nPitfalls A few things to plan for once your agent is on the other end of an MCP call.\\nErrors propagate in unhelpful ways by default. If the agent run fails, the simplest implementation lets the exception bubble out of ask_weather, which the MCP framework turns into a generic tool error on the consumer side. The consumer\\u0026rsquo;s model sees a wall-of-text traceback and usually does not recover well. Catch the exception in the wrapper, log the details on the server side, and return a short, actionable error string the calling model can actually use.\\nTracing crosses a process boundary and breaks unless you carry it across. If you have OpenTelemetry set up on both sides, propagate the trace context through the MCP call so the agent run on the server side joins the consumer\\u0026rsquo;s trace. Without this, an MCP-exposed agent looks like a black box in your traces, which is exactly the wrong signal for debugging an agent-of-agents system. We will dig into this in the observability article later in the series.\\nSecurity is your responsibility once the server is exposed over HTTP. The MCP protocol does not specify authentication; that lives at the transport layer. For internal-only servers, network ACLs are usually enough. For anything internet-facing, pair the server with the same authentication path your other internal APIs use, and assume that any unauthenticated call is hostile.\\nTool descriptions matter even more than they did when you were the consumer. The model on the other side is the one selecting your tool, and its decision is based entirely on the description text. Treat the docstrings on your @mcp.tool() functions like a public API: short, action-oriented, unambiguous, and stable across versions.\\nFinally, agents are stochastic. A tool that wraps an agent will not always return identical results for identical inputs, the way a deterministic tool would. Document this. Consumers will reasonably assume they can cache the result of a tool call by its inputs, and an agent-backed tool that quietly returns different answers on retry can produce confusing downstream behavior.\\nSummary Wrapping a MAF agent in FastMCP turns it into a server that any MCP client can use, in any framework or language. The shape of the server is up to you: a single ask-anything entry point for free-form agents, a small set of specialized tools when the behavior decomposes cleanly, or a mix of both. The boundary between server and consumer is the agent\\u0026rsquo;s input and output; everything inside the agent stays internal.\\nIn the next article, we will look at the other side of \\u0026ldquo;things outside the agent\\u0026rsquo;s process\\u0026rdquo;: context providers and pluggable memory. We have leaned on AgentSession to keep a single conversation alive in memory; for agents that need to remember a user across days, weeks, or systems, the session is too thin a primitive on its own.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/exposing-microsoft-agent-framework-agents-as-mcp-servers\/",
+  "datePublished": "0001-01-01T00:00:00Z",
+  
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -113,14 +116,14 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/streaming-and-multi-turn-conversations-in-microsoft-agent-framework\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/exposing-microsoft-agent-framework-agents-as-mcp-servers\/"
   },
   
   "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT12M",
+  "timeRequired": "PT11M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -159,8 +162,8 @@
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Streaming and multi-turn conversations in Microsoft Agent Framework",
-      "item": "https:\/\/ravichaganti.com\/blog\/streaming-and-multi-turn-conversations-in-microsoft-agent-framework\/"
+      "name": "Exposing Microsoft Agent Framework agents as MCP servers",
+      "item": "https:\/\/ravichaganti.com\/blog\/exposing-microsoft-agent-framework-agents-as-mcp-servers\/"
     }
     
     
@@ -589,7 +592,7 @@
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Streaming and multi-turn conversations in Microsoft Agent Framework
+            Exposing Microsoft Agent Framework agents as MCP servers
           </h1>
 
           
@@ -601,7 +604,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-03-04">March 4, 2026</time>
+              <time datetime=" 0001-01-01">January 1, 0001</time>
             </div>
 
             
@@ -612,7 +615,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>12 min read</span>
+              <span>11 min read</span>
             </div>
             
 
@@ -629,9 +632,14 @@
               Microsoft Agent Framework
             </a>
             
-            <a href="/categories/agents/"
+            <a href="/categories/tools/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Agents
+              Tools
+            </a>
+            
+            <a href="/categories/mcp/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              MCP
             </a>
             
             
@@ -649,7 +657,7 @@
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Real applications rarely call an agent once and walk away. They hold conversations, and they often stream the response as it is generated. This article looks at AgentSession, streaming responses, and how the two work together.
+            We have spent the last two articles consuming MCP servers from a MAF agent. This one flips the picture: how to publish a MAF agent as an MCP server so that other agents and applications, in any framework, can call it as a tool.
           </div>
           
         </header>
@@ -700,9 +708,10 @@
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/exposing-microsoft-agent-framework-agents-as-mcp-servers/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Exposing Microsoft Agent Framework agents as MCP servers
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
               </div>
@@ -896,10 +905,9 @@
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Streaming and multi-turn conversations in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 4, 2026</p>
               </div>
@@ -954,34 +962,6 @@
           
           
             
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
               
             
           
@@ -991,23 +971,45 @@
           
             
           
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+
+          
+          
+            <div></div>
+          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/function-tools-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-              <span class="truncate">Function tools in Microsoft Agent Framework</span>
-            </a>
-          
-
-          
-          
-            
-            <a href="https://ravichaganti.com/blog/middleware-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">Middleware in Microsoft Agent Framework</span>
+            <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Hosted MCP tools in Microsoft Agent Framework</span>
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
@@ -1053,12 +1055,12 @@
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#a-single-turn">A single turn</a></li>
-    <li><a href="#agentsession">AgentSession</a></li>
-    <li><a href="#streaming-responses">Streaming responses</a></li>
-    <li><a href="#what-you-see-in-a-stream">What you see in a stream</a></li>
-    <li><a href="#streaming-and-tools-together">Streaming and tools, together</a></li>
-    <li><a href="#where-conversation-state-lives">Where conversation state lives</a></li>
+    <li><a href="#why-expose-an-agent-as-an-mcp-server">Why expose an agent as an MCP server</a></li>
+    <li><a href="#what-consumers-see">What consumers see</a></li>
+    <li><a href="#a-first-mcp-server">A first MCP server</a></li>
+    <li><a href="#multi-tool-servers">Multi-tool servers</a></li>
+    <li><a href="#sessions-and-state">Sessions and state</a></li>
+    <li><a href="#transports-stdio-vs-http">Transports: stdio vs HTTP</a></li>
     <li><a href="#pitfalls">Pitfalls</a></li>
     <li><a href="#summary">Summary</a></li>
   </ul>
@@ -1135,87 +1137,49 @@
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>Most of the agents we have built in this series so far have looked like this: create a client, create an agent, call <code>agent.run(&quot;a single question&quot;)</code>, print the result. That works for a quick demo, but production agents almost never run that way. They hold <em>conversations</em>, where each turn builds on what came before, and they often <em>stream</em> the response as it is generated so the user sees output immediately rather than waiting for the full reply.</p>
-<p>Before we get to the code, a quick environment note. The examples below use <code>OpenAIChatClient</code> against an Azure OpenAI deployment. The Azure path requires either an <code>azure_endpoint=...</code> argument or an <code>AZURE_OPENAI_ENDPOINT</code> environment variable; without one of those, the constructor raises. Set it in your <code>.env</code> file alongside the model variables.</p>
-<p>In Microsoft Agent Framework (MAF), the answer to both is the same primitive: <code>AgentSession</code>. A session is the object that holds the running conversation, accumulates messages as they arrive, and lets you pass continuity from one turn to the next. Streaming and multi-turn are two aspects of the same idea, keeping the agent stateful across time.</p>
-<p>In this article, we will look at how a single turn works without any session at all, introduce <code>AgentSession</code> as the way to keep state across turns, and then look at streaming responses and what changes when the agent is also calling tools mid-stream.</p>
-<h2 id="a-single-turn">A single turn</h2>
-<p>When you call <code>agent.run(&quot;Hello!&quot;)</code> on its own, MAF runs the call in isolation. The agent receives the message, decides what to do (call a tool, generate text, both), and returns a response. As soon as that call is complete, the conversation context goes away. The next call starts fresh.</p>
-<p>This is fine for one-shot tasks, but it shows up immediately when the user expects continuity. Consider this:</p>
+          <p>So far in this series, we have used MCP in one direction. The <a href="/blog/local-mcp-tools-in-microsoft-agent-framework/">local MCP article</a> and the <a href="/blog/hosted-mcp-tools-in-microsoft-agent-framework/">hosted MCP article</a> both treated the agent as a <em>client</em>: it found tools on someone else&rsquo;s server and called them. That is the more common pattern, and it is where most teams start.</p>
+<p>The opposite direction is just as useful and gets less attention. A Microsoft Agent Framework (MAF) agent can also be published as an MCP server, which is how you let other agents and applications, in any framework, in any language, consume your agent&rsquo;s behavior as a tool. Once you have an agent that does something useful, exposing it over MCP is often the cleanest way to share it with the rest of your organization without forcing everyone onto MAF.</p>
+<p>In this article, we will look at why you might want to do this, what the result looks like to a consumer, and how to wire it up. The pattern overlaps with the <a href="/blog/cross-framework-agent-communication-microsoft-agent-framework-meets-google-adk-via-a2a/">A2A interop article</a> we covered earlier: A2A is the agent-to-agent protocol, while MCP is the tool-and-context protocol; you will sometimes use both for different audiences.</p>
+<h2 id="why-expose-an-agent-as-an-mcp-server">Why expose an agent as an MCP server</h2>
+<p>A few patterns come up often enough to be worth naming.</p>
+<p>The first is <em>capability publishing</em>. Your team builds a domain-specific agent, say, an internal &ldquo;customer-history agent&rdquo; that knows how to answer questions about a CRM. The natural question from another team is &ldquo;how can my agent use yours?&rdquo; Wrapping the agent as an MCP server gives you a stable, framework-neutral answer. They add it as a tool, just like any other MCP server, and your agent shows up alongside the rest of their tools.</p>
+<p>The second is <em>cross-framework reuse</em>. The consumer might not be a MAF agent at all. It might be an OpenAI Assistant run, a Claude Desktop client, an Anthropic API caller using MCP, a LangGraph workflow, or a custom orchestrator. MCP works everywhere; once your agent is an MCP server, all of those become valid callers without a single line of consumer-side MAF code.</p>
+<p>The third is the <em>separation of concerns</em>. The team that owns the agent owns its prompt, tools, model choice, and evaluation harness. Consumers do not need to know any of that. They see a tool with a name, a description, and a parameter schema, and they call it. That separation is exactly what good library boundaries look like, applied to agents.</p>
+<h2 id="what-consumers-see">What consumers see</h2>
+<p>When you expose an MAF agent through MCP, the consumer sees one or more tools, depending on how you model the surface. The simplest shape is <em>one agent, one tool</em>: the agent&rsquo;s whole behavior collapses into a single tool that takes a question (or a structured input) and returns the agent&rsquo;s answer.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Assistant&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a friendly assistant.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">first</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;My name is Ravi.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">second</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What is my name?&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Tool: ask_customer_history
+</span></span><span class="line"><span class="cl">Description: Answers questions about a customer&#39;s order and support history.
+</span></span><span class="line"><span class="cl">Parameters:
+</span></span><span class="line"><span class="cl">  - customer_id: string  (the customer to look up)
+</span></span><span class="line"><span class="cl">  - question:    string  (the natural-language question)
+</span></span><span class="line"><span class="cl">Returns: string
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The second call has no idea what was said in the first. The agent responds with something polite and apologetic, but it does not know the user&rsquo;s name because the second run does not see the first run&rsquo;s message history. Every call is a fresh conversation.</p>
-<p>That is the right default. State should be opt-in, not implicit; otherwise, concurrent runs of the same agent would overwrite each other&rsquo;s history. To make a conversation actually behave like a conversation, you bring in a session.</p>
-<h2 id="agentsession">AgentSession</h2>
-<p><code>AgentSession</code> is the object that carries conversation state across turns. You create one, pass it to <code>agent.run(...)</code> on every call, and the session accumulates messages as the conversation progresses. The agent reads the session when deciding what to say, and writes new messages back into it.</p>
+</div><p>That is a perfectly good interface for an agent that mostly answers free-form questions. For agents whose behavior decomposes naturally into distinct operations, a multi-tool surface is sometimes cleaner: each operation becomes its own MCP tool with its own parameter schema, and the calling agent selects the appropriate one. We will see both shapes below.</p>
+<p>What consumers do <em>not</em> see is everything that happens inside the agent-run. Tool calls the agent makes, function calls, MCP calls of its own, the model conversation, all of that is internal. The MCP boundary is the agent&rsquo;s input and output, nothing more.</p>
+<h2 id="a-first-mcp-server">A first MCP server</h2>
+<p>The simplest way to publish a MAF agent over MCP is to wrap it inside the standard Python MCP server library. The <code>mcp</code> package ships with <code>FastMCP</code>, a small framework that turns decorated Python functions into MCP tools and serves them over stdio or HTTP.</p>
+<p>Install the MCP SDK first:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install mcp
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The example below uses <code>OpenAIChatClient</code> against an Azure OpenAI deployment. The Azure path requires either an <code>azure_endpoint=...</code> argument or an <code>AZURE_OPENAI_ENDPOINT</code> environment variable; without one of those, the constructor raises. Set it in your <code>.env</code> file alongside the model variables.</p>
+<p>Now we can write a server that wraps a single MAF agent.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1253,52 +1217,54 @@
 </span><span class="lnt">33
 </span><span class="lnt">34
 </span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">AgentSession</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework.openai</span> <span class="kn">import</span> <span class="n">OpenAIChatClient</span>
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">azure.identity</span> <span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">mcp.server.fastmcp</span> <span class="kn">import</span> <span class="n">FastMCP</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Assistant&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a friendly assistant.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">session</span> <span class="o">=</span> <span class="n">AgentSession</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">weather_agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;WeatherAgent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a concise weather assistant. Answer in one or two sentences.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">first</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;My name is Ravi.&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">mcp</span> <span class="o">=</span> <span class="n">FastMCP</span><span class="p">(</span><span class="s2">&#34;weather-agent-server&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">second</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What is my name?&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@mcp.tool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">ask_weather</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Ask the weather agent a natural-language question about the weather.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">weather_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;stdio&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The second call now sees the first one in the session&rsquo;s history, and the agent answers correctly. The session is just a parameter you pass through with no changes to the rest.</p>
-<p>A few practical points. A session is not tied to a specific agent. You can route the same session through different agents in the same process, which is useful when you want a triage agent to hand off to a specialist while preserving the conversation. The session carries only the conversation; it does not carry tool definitions, so the receiving agent works with whatever tools it was constructed with.</p>
-<p>You can inspect a session to see its accumulated messages, and you can construct one with messages already populated, which is useful when you are restoring a conversation from your application&rsquo;s database between requests. The exact API for inspection and serialization is the place where MAF is still settling, so check the version of <code>agent-framework</code> you have installed before depending on a specific shape.</p>
-<p>The session you create with <code>AgentSession()</code> is an in-memory session. It lives as long as the Python object lives and disappears when the process exits. That is the right default for short-lived conversations, but it is not the right default for an agent that has to remember a user across days. We will come back to where sessions can be persisted further down.</p>
-<h2 id="streaming-responses">Streaming responses</h2>
-<p>By default, <code>agent.run(...)</code> waits for the full reply before returning. For long answers, that means the user waits in silence until the model has finished generating. Passing <code>stream=True</code> is the alternative: instead of returning the result, the call returns a stream object that yields updates as the model produces them, so you can print them out (or push them down a websocket) immediately.</p>
-<p>We saw a small example of this in our <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">first hands-on article</a>. Here it is again with a session:</p>
+</div><p>A few things worth pulling out. The MAF agent is built exactly as it would be in any other MAF script; the MCP layer does not change anything about how you construct the agent or its tools. The <code>@mcp.tool()</code> decorator turns the <code>ask_weather</code> function into an MCP tool, and <code>FastMCP</code> derives the tool&rsquo;s schema from the function signature: a single string parameter <code>question</code>, return type <code>str</code>. The docstring becomes the tool description.</p>
+<p>Inside the function, we simply forward the call to the agent and return the agent&rsquo;s text response. The consumer sees a clean, single-purpose tool. Behind the scenes, every call to that tool can fan out into model calls, function tool calls, MCP-client calls, whatever the agent decides to do, but the consumer never has to think about any of it.</p>
+<p>Run the server with <code>python weather_server.py</code>. It will sit on stdin and stdout waiting for an MCP client to connect, in the same shape as any stdio MCP server. Now, any MCP client, including an MAF agent using <code>MCPStdioTool</code>, can use it as a tool.</p>
+<h2 id="multi-tool-servers">Multi-tool servers</h2>
+<p>When the agent&rsquo;s behavior naturally splits into a few distinct operations, exposing each as its own tool yields the calling model better selection accuracy than collapsing everything into a single ask-anything entry point.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1320,104 +1286,62 @@
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_MODEL&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_CHAT_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;AZURE_OPENAI_DEPLOYMENT_NAME&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">chat_client</span> <span class="o">=</span> <span class="n">OpenAIChatClient</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Assistant&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are a friendly assistant.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@mcp.tool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Return the current temperature for a city.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">weather_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;What is the current temperature in </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">? Respond with just the temperature.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">session</span> <span class="o">=</span> <span class="n">AgentSession</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;Tell me a short story about a fox.&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Assistant: &#34;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@mcp.tool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">get_forecast</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Return a short multi-day weather forecast for a city.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">weather_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Give me a </span><span class="si">{</span><span class="n">days</span><span class="si">}</span><span class="s2">-day forecast for </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@mcp.tool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">get_weather_alerts</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;List any active weather alerts for a city.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">weather_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Are there any active weather alerts for </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">?&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>A few things worth understanding about this loop. Each iteration of the loop returns an <em>update</em>, not a full message. Some updates contain text; some are empty or carry metadata for events that are not text (more on that in a moment). Checking <code>if update.text</code> is what filters the loop down to the part you actually want to print. <code>flush=True</code> matters because the default Python buffering would hold the output until a newline, defeating the point of streaming.</p>
-<p>After the loop ends, <code>await stream.get_final_response()</code> finalizes the run. This is what returns the complete response object and ensures the session is updated. Skipping it can leave the session in an inconsistent state, especially when the stream involved tool calls, so make it part of every streaming code path.</p>
-<p>The session is updated as the stream progresses. By the time the final-response call resolves, the session holds the user&rsquo;s question and the full assistant reply, and the next call against the same session will see them.</p>
-<h2 id="what-you-see-in-a-stream">What you see in a stream</h2>
-<p>A streaming response is more than a sequence of text fragments. The stream carries events for everything the agent does in a turn: text being generated, tool calls being made, tool results coming back, and a final completion event when the turn ends.</p>
-<p>For a turn that does not call any tools, you mostly see text deltas, with one or two control events at the start and end. For a turn that calls a tool, the order looks roughly like this:</p>
-<ol>
-<li>The model starts generating a tool call (you see the tool name and arguments coming through).</li>
-<li>The tool runs, and a tool result event is emitted.</li>
-<li>The model continues, now with the tool result in context, and produces the actual user-facing reply.</li>
-</ol>
-<p>If you only want to print the final text, the <code>if update.text</code> filter is enough. If you are building a richer UI — showing &ldquo;calling get_weather&hellip;&rdquo; while the tool runs, then the answer once it returns — you want to inspect the update types more deliberately:</p>
+</div><p>Each function becomes a separately documented tool. The calling model picks the right one based on the question, the same way it would for a hand-written tool, and you get the benefit of distinct names, descriptions, and parameter schemas.</p>
+<p>The trade-off is brittleness. Splitting into many tools makes the server&rsquo;s prompt-to-prompt behavior more constrained: each entry point essentially fixes the prompt template the agent is run with. Lean on multi-tool surfaces when the operations really are distinct; if they all collapse to &ldquo;answer a question about weather,&rdquo; a single tool is cleaner.</p>
+<p>A useful middle ground is to expose one general-purpose tool plus a small number of specialized ones. Consumers can reach for the specialized tools when they fit and fall back to the general one otherwise.</p>
+<h2 id="sessions-and-state">Sessions and state</h2>
+<p>A subtle point about exposing an agent over MCP: each MCP tool call is independent. Unless you do something extra, two calls to <code>ask_weather</code> start two separate agent runs with no shared history. That is usually what you want when the consumer is treating your agent as a single-shot tool.</p>
+<p>When the consumer needs continuity, for example, a customer-support agent that keeps context across several questions, you have two options. One is to make the <code>session_id</code> (or equivalent) part of the tool&rsquo;s input, and to keep <code>AgentSession</code> instances keyed by that id on the server side. Calls with the same id share state; calls with different ids are independent. The other is to expose multi-turn conversation as its own protocol layer, possibly with A2A rather than MCP, since A2A models multi-turn conversation as a first-class concept and MCP does not.</p>
+<p>Most of the time, MCP-exposed agents are stateless from the consumer&rsquo;s perspective. Build for that, and only add session affinity when you have a concrete use case that needs it.</p>
+<h2 id="transports-stdio-vs-http">Transports: stdio vs HTTP</h2>
+<p><code>FastMCP</code> supports both stdio and HTTP transports. The choice depends on where your callers run.</p>
+<p>Stdio is the right answer when the consumer launches the server as a subprocess. Many MCP clients work this way, including MAF&rsquo;s <code>MCPStdioTool</code>, Claude Desktop, and most local development setups. The server starts when the client connects, and stops when the client disconnects. There is no network exposure, which is good for security but limits scope to clients on the same machine.</p>
+<p>HTTP is the right answer when consumers are remote. Switch the run line:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What is the weather in Bengaluru?&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="s2">&#34;tool_calls&#34;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">update</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">[calling </span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">)]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">elif</span> <span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;streamable-http&#34;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&#34;0.0.0.0&#34;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The exact attribute names on an update depend on the client and the SDK version. The pattern is stable: there are events for tool calls, events for tool results, and events for text. You filter for the events you care about.</p>
-<p>If the only thing you need is the final reply, prefer <code>agent.run(...)</code> without <code>stream=True</code> over a streaming loop that throws everything but the text away. Streaming is worth the extra code only when the user sees the partial output.</p>
-<h2 id="streaming-and-tools-together">Streaming and tools, together</h2>
-<p>When a turn involves tools, the relationship between streaming and tool calls is sometimes counterintuitive. The model does not stream the tool&rsquo;s <em>result</em>. The tool runs in full, returns a value, and the value goes back into the conversation as a tool message. What streams is the model&rsquo;s reasoning around the tool call: the call itself, then the user-facing text that follows the tool result.</p>
-<p>This matters for UI design. If your tool takes ten seconds to run, your user sees the streaming reply pause for ten seconds while the tool executes, and then resume when the model continues. If the pause is long enough to be confusing, surface the tool call to the user explicitly. The streaming pattern above, with the <code>[calling get_weather(...)]</code> line, is the simplest version. Production interfaces typically render a small spinner or a &ldquo;tool running&rdquo; pill that disappears when the result arrives.</p>
-<p>For tools that take a long time, the right answer is often not to make the tool faster but to acknowledge the wait. Showing the user that something is happening is usually more important than reducing the wait by a second or two.</p>
-<h2 id="where-conversation-state-lives">Where conversation state lives</h2>
-<p>So far, every session we have used has been an in-memory <code>AgentSession</code>. The session lives in the Python process, and the moment the process exits, the conversation is gone. For a CLI tool or a one-shot script, that is fine. For a chatbot that runs across requests, days, or users, it is not.</p>
-<p>MAF gives you a few options for moving conversation state out of memory.</p>
-<p>The simplest is to serialize the session to your own storage between turns. You take the messages out of the session at the end of a request, save them in a database keyed by the user, and rehydrate them into a fresh <code>AgentSession</code> at the start of the next request. This is the most portable approach because nothing about it depends on a specific platform, and it lets your application own the conversation, which is often what you want for compliance reasons. The trade-off is that you are responsible for the storage layer.</p>
-<p>The second option is to use a client whose conversations are managed by the platform itself. <code>FoundryAgent</code> (the <a href="/blog/building-ai-agents-with-microsoft-agent-framework/">Foundry Agent Service</a> path we looked at in earlier articles) persists conversations as Foundry threads. The session you get back from a Foundry-backed agent can survive process restarts because the actual storage is in Foundry, not in your application&rsquo;s memory. The trade-off is the inverse: less work for you, more coupling to Foundry.</p>
-<p>Which one fits depends on the question we asked back in the <a href="/blog/choosing-the-right-microsoft-agent-framework-client/">client comparison article</a>: who owns the conversation. If the answer is &ldquo;the platform,&rdquo; reach for <code>FoundryAgent</code> and let Foundry handle persistence. If the answer is &ldquo;my application,&rdquo; use an in-memory <code>AgentSession</code> and serialize it yourself.</p>
+</div><p>The server now listens on <code>http://0.0.0.0:8080/mcp</code> and accepts MCP requests over the streamable-HTTP transport. Anything that speaks MCP over HTTP can call it: a Foundry-backed agent via <code>FoundryChatClient.get_mcp_tool(...)</code>, a local MAF agent via <code>MCPStreamableHTTPTool</code>, an Anthropic API caller, or any other MCP client.</p>
+<p>HTTP also unlocks the standard set of HTTP concerns: TLS, authentication, rate limiting, and reverse proxies. None of those are MCP-specific, but they all become your problem the moment your agent is reachable over the network. Most teams put the HTTP server behind their existing API gateway and let the gateway handle auth and TLS, leaving the MCP server itself focused on routing tool calls into the agent.</p>
 <h2 id="pitfalls">Pitfalls</h2>
-<p>A few things to watch for when you start using sessions and streaming together.</p>
-<p>Forgetting to pass the session through is the most common mistake. If you create a session but call <code>agent.run(...)</code> without <code>session=session</code>, the call is stateless again and the session does not get updated. Wire the session through every call site or wrap your agent in a small helper that does it for you.</p>
-<p>Sessions can grow large. Every turn appends messages, including tool calls and tool results, and the agent has to read all of them on every subsequent turn. Long-lived conversations consume tokens on every call, and eventually they hit the model&rsquo;s context window. For agents that run for days, plan for either summarization (compress old turns into a digest) or rolling windows (keep the last N turns and drop the rest). We will look at this more carefully when we cover context providers later in the series.</p>
-<p>Forgetting to await <code>stream.get_final_response()</code> is the streaming-specific equivalent. The loop will exit cleanly even if you skip the call, but the session may not be fully updated and the stream object holds resources until it is finalized. Treat <code>get_final_response()</code> as a required step, not an optional one.</p>
-<p>When you stream, partial updates are not always at character boundaries. A multibyte character can be split across two updates, and printing the text naïvely can produce a momentary glitch. For console output this is rarely visible. For a websocket stream into a browser, the receiving side needs to be tolerant of partial UTF-8 sequences.</p>
-<p>Errors during streaming are also worth thinking through. If a tool raises mid-stream, the stream still completes and the error becomes part of the conversation history (we covered this in the <a href="/blog/function-tools-in-microsoft-agent-framework/">function tools article</a>). The stream consumer sees the updates before the error, an event indicating the tool error, and then the model&rsquo;s recovery text. Your loop should not assume the stream always ends with a clean text reply.</p>
-<p>Finally, sessions are not free. Each one carries memory, and creating thousands of long-lived sessions in a single process will eat into your application&rsquo;s heap. For high-fan-out scenarios, persist sessions outside the process and rehydrate them on demand rather than keeping them all in memory.</p>
+<p>A few things to plan for once your agent is on the other end of an MCP call.</p>
+<p>Errors propagate in unhelpful ways by default. If the agent run fails, the simplest implementation lets the exception bubble out of <code>ask_weather</code>, which the MCP framework turns into a generic tool error on the consumer side. The consumer&rsquo;s model sees a wall-of-text traceback and usually does not recover well. Catch the exception in the wrapper, log the details on the server side, and return a short, actionable error string the calling model can actually use.</p>
+<p>Tracing crosses a process boundary and breaks unless you carry it across. If you have OpenTelemetry set up on both sides, propagate the trace context through the MCP call so the agent run on the server side joins the consumer&rsquo;s trace. Without this, an MCP-exposed agent looks like a black box in your traces, which is exactly the wrong signal for debugging an agent-of-agents system. We will dig into this in the observability article later in the series.</p>
+<p>Security is your responsibility once the server is exposed over HTTP. The MCP protocol does not specify authentication; that lives at the transport layer. For internal-only servers, network ACLs are usually enough. For anything internet-facing, pair the server with the same authentication path your other internal APIs use, and assume that any unauthenticated call is hostile.</p>
+<p>Tool descriptions matter even more than they did when you were the consumer. The model on the <em>other</em> side is the one selecting your tool, and its decision is based entirely on the description text. Treat the docstrings on your <code>@mcp.tool()</code> functions like a public API: short, action-oriented, unambiguous, and stable across versions.</p>
+<p>Finally, agents are stochastic. A tool that wraps an agent will not always return identical results for identical inputs, the way a deterministic tool would. Document this. Consumers will reasonably assume they can cache the result of a tool call by its inputs, and an agent-backed tool that quietly returns different answers on retry can produce confusing downstream behavior.</p>
 <h2 id="summary">Summary</h2>
-<p><code>AgentSession</code> is the small primitive that turns a stateless <code>agent.run(...)</code> call into a real conversation, and <code>stream=True</code> is the small change that turns a long silent wait into a responsive interactive reply. Both are simple to adopt, and both have edges that show up only when the conversation gets long, the tools get slow, or the agent runs across requests rather than in a single script. The earlier you decide how state will live and how output will reach the user, the less re-work you will do later.</p>
-<p>In the next article, we will look at how to make the agent return <em>structured</em> data rather than free text. We have leaned on prose answers throughout the series; for many production use cases, what you actually want is a Pydantic model on the way out, not a paragraph the calling code has to parse.</p>
+<p>Wrapping a MAF agent in <code>FastMCP</code> turns it into a server that any MCP client can use, in any framework or language. The shape of the server is up to you: a single ask-anything entry point for free-form agents, a small set of specialized tools when the behavior decomposes cleanly, or a mix of both. The boundary between server and consumer is the agent&rsquo;s input and output; everything inside the agent stays internal.</p>
+<p>In the next article, we will look at the other side of &ldquo;things outside the agent&rsquo;s process&rdquo;: context providers and pluggable memory. We have leaned on <code>AgentSession</code> to keep a single conversation alive in memory; for agents that need to remember a user across days, weeks, or systems, the session is too thin a primitive on its own.</p>
 
         </div>
 
@@ -1442,7 +1366,7 @@
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fstreaming-and-multi-turn-conversations-in-microsoft-agent-framework%2F&text=Streaming&#43;and&#43;multi-turn&#43;conversations&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fexposing-microsoft-agent-framework-agents-as-mcp-servers%2F&text=Exposing&#43;Microsoft&#43;Agent&#43;Framework&#43;agents&#43;as&#43;MCP&#43;servers"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -1453,7 +1377,7 @@
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fstreaming-and-multi-turn-conversations-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fexposing-microsoft-agent-framework-agents-as-mcp-servers%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -1464,7 +1388,7 @@
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fstreaming-and-multi-turn-conversations-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fexposing-microsoft-agent-framework-agents-as-mcp-servers%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -1475,7 +1399,7 @@
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fstreaming-and-multi-turn-conversations-in-microsoft-agent-framework%2F&title=Streaming&#43;and&#43;multi-turn&#43;conversations&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fexposing-microsoft-agent-framework-agents-as-mcp-servers%2F&title=Exposing&#43;Microsoft&#43;Agent&#43;Framework&#43;agents&#43;as&#43;MCP&#43;servers"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1486,7 +1410,7 @@
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fstreaming-and-multi-turn-conversations-in-microsoft-agent-framework%2F&t=Streaming&#43;and&#43;multi-turn&#43;conversations&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fexposing-microsoft-agent-framework-agents-as-mcp-servers%2F&t=Exposing&#43;Microsoft&#43;Agent&#43;Framework&#43;agents&#43;as&#43;MCP&#43;servers"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1496,7 +1420,7 @@
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/streaming-and-multi-turn-conversations-in-microsoft-agent-framework\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/exposing-microsoft-agent-framework-agents-as-mcp-servers\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1513,9 +1437,9 @@
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Streaming and multi-turn conversations in Microsoft Agent Framework',
-        text: 'Real applications rarely call an agent once and walk away. They hold conversations, and they often stream the response as it is generated. This article looks at AgentSession, streaming responses, and how the two work together.',
-        url: 'https:\/\/ravichaganti.com\/blog\/streaming-and-multi-turn-conversations-in-microsoft-agent-framework\/'
+        title: 'Exposing Microsoft Agent Framework agents as MCP servers',
+        text: 'We have spent the last two articles consuming MCP servers from a MAF agent. This one flips the picture: how to publish a MAF agent as an MCP server so that other agents and applications, in any framework, can call it as a tool.',
+        url: 'https:\/\/ravichaganti.com\/blog\/exposing-microsoft-agent-framework-agents-as-mcp-servers\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1569,35 +1493,35 @@
     
     
       
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -1609,9 +1533,6 @@
 
     
     
-      
-        
-        
       
       
         
@@ -1625,47 +1546,38 @@
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/function-tools-in-microsoft-agent-framework/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Function tools in Microsoft Agent Framework">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </div>
-
-            
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Function tools in Microsoft Agent Framework
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Function tools turn ordinary Python functions into capabilities your agent can call. This article looks at how MAF converts type hints into schemas, what return types it accepts, how async tools work, and what happens when a tool raises an error.</p>
-              
+            <div class="flex-1">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
 
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/middleware-in-microsoft-agent-framework/"
+        <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/"
            class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in Microsoft Agent Framework: Middleware in Microsoft Agent Framework">
+           aria-label="Next in Microsoft Agent Framework: Hosted MCP tools in Microsoft Agent Framework">
           <div class="flex items-start gap-3">
             
             <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
               <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
               <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Middleware in Microsoft Agent Framework
+                Hosted MCP tools in Microsoft Agent Framework
               </h3>
               
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">MAF middleware lets you intercept agent runs, tool calls, and the underlying chat-client requests. This article looks at the three middleware types, when each one fires, and how to use them for logging, redaction, blocking, and result overrides without touching your agent code.</p>
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Foundry can host the MCP connection on the agent&#39;s behalf. This article looks at how a hosted MCP tool differs from the local MCP setup we built last time, where authentication moves, and how to wire one up via FoundryChatClient.get_mcp_tool.</p>
               
             </div>
 
@@ -1877,15 +1789,31 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/structured-outputs-in-microsoft-agent-framework/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/hosted-mcp-tools-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Structured outputs in Microsoft Agent Framework
+      Hosted MCP tools in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-06">
-      Mar 6, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="0001-01-01">
+      Jan 1, 0001
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/local-mcp-tools-in-microsoft-agent-framework/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Local MCP tools in Microsoft Agent Framework
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-08">
+      Mar 8, 2026
     </time>
   </a>
 </article>
@@ -1909,15 +1837,15 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/choosing-the-right-microsoft-agent-framework-client/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/structured-outputs-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Choosing the right Microsoft Agent Framework client
+      Structured outputs in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-01">
-      Mar 1, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-06">
+      Mar 6, 2026
     </time>
   </a>
 </article>
@@ -1925,31 +1853,15 @@
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/middleware-in-microsoft-agent-framework/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Microsoft Agent Framework - Agent Skills
+      Middleware in Microsoft Agent Framework
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-02-28">
-      Feb 28, 2026
-    </time>
-  </a>
-</article>
-
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/magentic-workflows-in-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Magentic workflows in Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-20">
-      Oct 20, 2025
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-05">
+      Mar 5, 2026
     </time>
   </a>
 </article>
@@ -1975,12 +1887,12 @@
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#a-single-turn">A single turn</a></li>
-    <li><a href="#agentsession">AgentSession</a></li>
-    <li><a href="#streaming-responses">Streaming responses</a></li>
-    <li><a href="#what-you-see-in-a-stream">What you see in a stream</a></li>
-    <li><a href="#streaming-and-tools-together">Streaming and tools, together</a></li>
-    <li><a href="#where-conversation-state-lives">Where conversation state lives</a></li>
+    <li><a href="#why-expose-an-agent-as-an-mcp-server">Why expose an agent as an MCP server</a></li>
+    <li><a href="#what-consumers-see">What consumers see</a></li>
+    <li><a href="#a-first-mcp-server">A first MCP server</a></li>
+    <li><a href="#multi-tool-servers">Multi-tool servers</a></li>
+    <li><a href="#sessions-and-state">Sessions and state</a></li>
+    <li><a href="#transports-stdio-vs-http">Transports: stdio vs HTTP</a></li>
     <li><a href="#pitfalls">Pitfalls</a></li>
     <li><a href="#summary">Summary</a></li>
   </ul>

@@ -35,18 +35,16 @@ Let's start with the simplest possible agent - one that requires minimal setup a
 
 ```python
 import asyncio
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework.foundry import FoundryAgent
 from azure.identity.aio import AzureCliCredential
 
 async def main():
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(
+        FoundryAgent(
             project_endpoint="https://ai-engineer-in.services.ai.azure.com/api/projects/ai-engineer-in",
-            model_deployment_name="gpt-4o",
-            credential=credential,
             agent_name="WeatherAgent",
-        ).create_agent(
+            credential=credential,
             instructions="You are a weather man. Provide accurate and concise weather information based on user queries.",
         ) as agent,
     ):
@@ -57,15 +55,14 @@ async def main():
 asyncio.run(main())
 ```
 
-All Azure AI agent operations are async. Using the async/await pattern for better performance and scalability. The `async with` pattern ensures proper resource cleanup, preventing connection leaks. Both the credential and agent are managed as async context managers, ensuring proper cleanup. `AzureCliCredential` authenticates using your Azure CLI session - no need to manage API keys in your code or environment variables.
+All Foundry agent operations are async. Using the async/await pattern for better performance and scalability. The `async with` pattern ensures proper resource cleanup, preventing connection leaks. The credential and the agent are managed as async context managers, ensuring proper cleanup. `AzureCliCredential` authenticates using your Azure CLI session — no need to manage API keys in your code or environment variables.
 
-`AzureAIAgentClient` is used to create an AI agent client. It accepts:
+`FoundryAgent` is used to create a Foundry-backed agent. It accepts:
 
-- `project_endpoint`: Your Azure AI Foundry project URL. This can also be supplied using an environment variable `AZURE_AI_PROJECT_ENDPOINT`
-
-- `model_deployment_name`: The deployed model to use. This can also be supplied using an environment variable `AZURE_AI_MODEL_DEPLOYMENT_NAME`
+- `project_endpoint`: Your Microsoft Foundry project URL. This can also be supplied via the `AZURE_AI_PROJECT_ENDPOINT` environment variable.
+- `agent_name`: A human-readable name for the agent.
 - `credential`: Your authentication credential.
-- `agent_name`: A human-readable name of the agent created using this client.
+- `instructions`: The agent's system prompt.
 
 The `instructions` parameter defines the agent's persona and behavior. This is the system prompt that guides the agent's response. The `agent.run()` method sends a message and returns the complete response.
 
@@ -75,29 +72,30 @@ For a better user experience, especially with longer responses, you often want t
 
 ```python
 import asyncio
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework.foundry import FoundryAgent
 from azure.identity.aio import AzureCliCredential
 
 async def main():
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(
+        FoundryAgent(
             credential=credential,
             agent_name="WeatherAgent",
-        ).create_agent(
             instructions="You are a weather man. Provide accurate and concise weather information based on user queries.",
         ) as agent,
-    ):  
+    ):
         print("Agent: ", end="", flush=True)
-        async for chunk in agent.run_stream("Tell me a short story"):
-            if chunk.text:
-                print(chunk.text, end="", flush=True)
+        stream = agent.run("Tell me a short story", stream=True)
+        async for update in stream:
+            if update.text:
+                print(update.text, end="", flush=True)
+        await stream.get_final_response()
         print()
 
 asyncio.run(main())
 ```
 
-Instead of waiting for the complete response, `run_stream()` returns an async iterator that yields chunks as they arrive. Each chunk may contain text (or may be empty for control messages), so we check `if chunk.text` before printing. Using `flush=True` ensures each chunk appears immediately in the console, creating a typing effect. Also, notice that the `project_endpoint` and `model_deployment_name` are not provided in this example. The `AzureAIAgentClient` uses the values from the environment variables. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (e.g., code generation), and user interfaces that require immediate feedback.
+Passing `stream=True` to `agent.run(...)` returns a stream object that yields updates as the model produces them. Each update may contain text (or may be empty for control messages), so we check `if update.text` before printing. Using `flush=True` ensures each chunk appears immediately in the console, creating a typing effect. After the loop ends, `await stream.get_final_response()` finalizes the run. Notice that the `project_endpoint` is not provided in this example; `FoundryAgent` reads it from the `AZURE_AI_PROJECT_ENDPOINT` environment variable. Streaming responses are well-suited for interactive applications such as chatbots, command-line tools, long-form content (for example, code generation), and user interfaces that require immediate feedback.
 
 ## Tool Calling
 
@@ -111,7 +109,7 @@ from pydantic import Field
 from dotenv import load_dotenv
 import os
 
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework.foundry import FoundryAgent
 from azure.identity.aio import AzureCliCredential
 
 load_dotenv()
@@ -141,11 +139,9 @@ def get_weather(
 async def main():
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(
-            model_deployment_name="gpt-4o",
+        FoundryAgent(
             credential=credential,
             agent_name="WeatherAgent",
-        ).create_agent(
             instructions="You are a weather man. Provide accurate and concise weather information based on user queries. Use provided tools to fetch current weather data.",
             tools=[get_weather],
         ) as agent,
@@ -175,7 +171,7 @@ What if your agent needs to perform complex calculations or data analysis? The C
 ```python
 import asyncio
 from agent_framework import HostedCodeInterpreterTool
-from agent_framework.azure import AzureAIAgentClient
+from agent_framework.foundry import FoundryAgent
 from azure.identity.aio import AzureCliCredential
 
 from dotenv import load_dotenv  
@@ -184,11 +180,9 @@ load_dotenv()
 async def main():
     async with (
         AzureCliCredential() as credential,
-        AzureAIAgentClient(
-            model_deployment_name="gpt-4o",
+        FoundryAgent(
             credential=credential,
             agent_name="WeatherAgent",
-        ).create_agent(
             instructions="You are a Python coding expert. Use the provided tools to execute Python code to answer user queries accurately.",
             tools=HostedCodeInterpreterTool(),
         ) as agent,
@@ -217,4 +211,8 @@ The Microsoft Agent Framework makes it remarkably easy to build sophisticated AI
 - [Microsoft Agent Framework Documentation](https://learn.microsoft.com/en-us/agent-framework/)
 - [Microsoft Foundry](https://azure.microsoft.com/en-us/products/ai-foundry/)
 - [OpenWeatherMap API](https://openweathermap.org/api) (for the tool calling example)
+
+{{< notice "info" >}}
+**Updated 27th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized in version 1.2.0. `AzureAIAgentClient` (formerly in `agent_framework.azure`) is now `FoundryAgent` in `agent_framework.foundry`. The construction shape simplified: pass `instructions=` and `tools=` directly to `FoundryAgent(...)` instead of going through a separate `.create_agent(...)` call. `agent.run_stream(...)` was replaced by `agent.run(..., stream=True)`, which returns a stream object you iterate and then finalize with `await stream.get_final_response()`. Code samples in this article have been updated to match the current SDK. See the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current client surface.
+{{< /notice >}}
 
