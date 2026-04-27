@@ -18,11 +18,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Workflow fundamentals in Microsoft Agent Framework | Ravikanth Chaganti</title>
+  <title>Visualizing and checkpointing workflows in Microsoft Agent Framework | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: sequential, concurrent, handoff, group chat, and magentic. Each one came with a fluent builder (SequentialBuilder, ConcurrentBuilder, and so on) and a tidy mental model. They are the right tools for ninety percent of multi-agent work.
-This article is about the other ten percent. The orchestration builders are convenience layers on top of a smaller, more general set of primitives: executors (units of computation), edges (the connections between them), events (the observable signals the runtime emits as it works), and a superstep execution model that decides what runs when. When you understand those four things, the builders stop being magic, and you can build the workflows that the builders do not cover.">
+  <meta name="description" content="In the previous article, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is visualization: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is checkpointing: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,23 +30,22 @@ This article is about the other ten percent. The orchestration builders are conv
   
 
   
-  <meta property="og:title" content="Workflow fundamentals in Microsoft Agent Framework">
-  <meta property="og:description" content="Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: sequential, concurrent, handoff, group chat, and magentic. Each one came with a fluent builder (SequentialBuilder, ConcurrentBuilder, and so on) and a tidy mental model. They are the right tools for ninety percent of multi-agent work.
-This article is about the other ten percent. The orchestration builders are convenience layers on top of a smaller, more general set of primitives: executors (units of computation), edges (the connections between them), events (the observable signals the runtime emits as it works), and a superstep execution model that decides what runs when. When you understand those four things, the builders stop being magic, and you can build the workflows that the builders do not cover.">
+  <meta property="og:title" content="Visualizing and checkpointing workflows in Microsoft Agent Framework">
+  <meta property="og:description" content="In the previous article, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is visualization: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is checkpointing: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/workflow-fundamentals-in-microsoft-agent-framework/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/maf.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Workflow fundamentals in Microsoft Agent Framework">
+  <meta property="og:image:alt" content="Visualizing and checkpointing workflows in Microsoft Agent Framework">
 
   
   
-    <meta property="article:published_time" content="2026-03-16T00:00:00Z">
-    <meta property="article:modified_time" content="2026-03-16T00:00:00Z">
+    <meta property="article:published_time" content="0001-01-01T00:00:00Z">
+    
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Microsoft Agent Framework">
     
@@ -55,14 +53,13 @@ This article is about the other ten percent. The orchestration builders are conv
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Workflow fundamentals in Microsoft Agent Framework">
-  <meta name="twitter:description" content="Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: sequential, concurrent, handoff, group chat, and magentic. Each one came with a fluent builder (SequentialBuilder, ConcurrentBuilder, and so on) and a tidy mental model. They are the right tools for ninety percent of multi-agent work.
-This article is about the other ten percent. The orchestration builders are convenience layers on top of a smaller, more general set of primitives: executors (units of computation), edges (the connections between them), events (the observable signals the runtime emits as it works), and a superstep execution model that decides what runs when. When you understand those four things, the builders stop being magic, and you can build the workflows that the builders do not cover.">
+  <meta name="twitter:title" content="Visualizing and checkpointing workflows in Microsoft Agent Framework">
+  <meta name="twitter:description" content="In the previous article, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is visualization: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is checkpointing: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/maf.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/workflow-fundamentals-in-microsoft-agent-framework/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -91,12 +88,12 @@ This article is about the other ten percent. The orchestration builders are conv
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Workflow fundamentals in Microsoft Agent Framework",
-  "description": "Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: sequential, concurrent, handoff, group chat, and magentic. Each one came with a …",
-  "articleBody": "\"Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: sequential, concurrent, handoff, group chat, and magentic. Each one came with a fluent builder (SequentialBuilder, ConcurrentBuilder, and so on) and a tidy mental model. They are the right tools for ninety percent of multi-agent work.\\nThis article is about the other ten percent. The orchestration builders are convenience layers on top of a smaller, more general set of primitives: executors (units of computation), edges (the connections between them), events (the observable signals the runtime emits as it works), and a superstep execution model that decides what runs when. When you understand those four things, the builders stop being magic, and you can build the workflows that the builders do not cover.\\nWe will introduce each primitive, build a small workflow that uses them all, walk through the event stream the runtime produces, and close with the cases where you should and should not reach for the raw API.\\nThe four primitives A MAF workflow is a directed graph of executors connected by edges. An executor is any object that knows how to handle one or more message types and produce zero or more output messages. An edge is a routing rule: when this executor produces a message of this type, send it to that executor. The framework runs the graph in supersteps (a single round in which \\u0026ldquo;every executor that has incoming messages runs in parallel\\u0026rdquo;) and emits a stream of events throughout, so the calling code can observe progress.\\nThe orchestration builders are pre-baked configurations of executors and edges. SequentialBuilder adds an executor for each agent and connects them in a line. ConcurrentBuilder fans the input out to a set of agents and fans the results back in. MagenticBuilder adds a manager executor that decides at run time which participant to send messages to. The graph is the unit underneath all of them.\\nA first workflow The smallest interesting example is two executors connected by a single edge. The first doubles its input; the second converts the result to a string and returns it as the workflow\\u0026rsquo;s output.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 import asyncio from agent_framework import Executor, WorkflowBuilder, WorkflowContext, handler class Doubler(Executor): @handler async def double(self, message: int, ctx: WorkflowContext[int]) -\\u0026gt; None: await ctx.send_message(message * 2) class Stringifier(Executor): @handler async def stringify(self, message: int, ctx: WorkflowContext[str, str]) -\\u0026gt; None: await ctx.yield_output(f\\u0026#34;Result: {message}\\u0026#34;) async def main(): doubler = Doubler(id=\\u0026#34;doubler\\u0026#34;) stringifier = Stringifier(id=\\u0026#34;stringifier\\u0026#34;) workflow = ( WorkflowBuilder(start_executor=doubler) .add_edge(doubler, stringifier) .build() ) final = None async for event in workflow.run(5, stream=True): if event.type == \\u0026#34;output\\u0026#34;: final = event.data print(final) asyncio.run(main()) Running this prints Result: 10.\\nEach executor subclasses Executor. The processing logic is a method decorated with @handler. The decorator inspects the type annotations on the method to figure out which input types the executor can accept and which output types it can produce. Doubler.double accepts an int and produces an int; Stringifier.stringify accepts an int, sends str messages downstream, and is allowed to yield str workflow outputs (the second str in WorkflowContext[str, str]).\\nctx.send_message(value) is how an executor passes a message to the next executor along the graph. The runtime decides which executors receive the message based on the edges defined in the builder. ctx.yield_output(value) is how an executor marks a value as the workflow\\u0026rsquo;s final output, surfacing through the event.type == \\u0026quot;output\\u0026quot; event we covered in the streaming article.\\nThe WorkflowBuilder is constructed with a start_executor (the executor that receives the workflow\\u0026rsquo;s input) and a sequence of add_edge(source, target) calls that wire the graph together. The build() call validates the graph and returns a runnable Workflow.\\nExecutors in detail The @handler decorator is the only piece of plumbing that turns a method into a workflow handler. The method\\u0026rsquo;s first argument is self; the second is the message; the third is the WorkflowContext, parameterized by the types the handler can produce. The runtime inspects all three to figure out the executor\\u0026rsquo;s input and output types.\\nAn executor can have multiple @handler methods, each accepting a different message type:\\n1 2 3 4 5 6 7 8 class Router(Executor): @handler async def handle_text(self, message: str, ctx: WorkflowContext[dict]) -\\u0026gt; None: await ctx.send_message({\\u0026#34;kind\\u0026#34;: \\u0026#34;text\\u0026#34;, \\u0026#34;value\\u0026#34;: message}) @handler async def handle_number(self, message: int, ctx: WorkflowContext[dict]) -\\u0026gt; None: await ctx.send_message({\\u0026#34;kind\\u0026#34;: \\u0026#34;number\\u0026#34;, \\u0026#34;value\\u0026#34;: message}) Router accepts both str and int messages. The runtime dispatches each incoming message to the matching handler based on its type.\\nA handler can also produce no output messages at all. That is the right shape for a \\u0026ldquo;side-effect\\u0026rdquo; executor that, for example, writes to a database or emits a custom event but does not feed anything downstream:\\n1 2 3 4 class Audit(Executor): @handler async def log_message(self, message: str, ctx: WorkflowContext[None]) -\\u0026gt; None: print(f\\u0026#34;[audit] saw: {message}\\u0026#34;) The WorkflowContext[None] annotation tells the framework that this executor produces no downstream messages. It can still observe input, write to logs, mutate external state, or call ctx.add_event(...) to emit a custom event into the run\\u0026rsquo;s event stream.\\nEvery executor has an id (set via the constructor or auto-generated). The id is what shows up in executor_invoked / executor_completed events and is the handle you use to set explicit edges between executors. For graphs with more than a few nodes, set the ids deliberately so the event stream is readable.\\nEdges An edge is a routing rule: when this executor produces a message that the target executor can handle, send it. The simplest edge is a direct connection.\\n1 2 3 WorkflowBuilder(start_executor=a) \\\\ .add_edge(a, b) \\\\ .build() A conditional edge attaches a predicate. The message only flows to the target if the predicate returns true:\\n1 2 .add_edge(router, text_path, condition=lambda msg: msg[\\u0026#34;kind\\u0026#34;] == \\u0026#34;text\\u0026#34;) .add_edge(router, number_path, condition=lambda msg: msg[\\u0026#34;kind\\u0026#34;] == \\u0026#34;number\\u0026#34;) This is the building block that lets you create branching workflows: one source, several possible targets, the edges\\u0026rsquo; conditions decide which one fires for any given message.\\nFor fan-out (one source, multiple parallel targets), the builder has a convenience method:\\n1 .add_fan_out_edges(start, [worker_a, worker_b, worker_c]) The message produced by start is delivered to all three workers in the same superstep, and they run in parallel. The inverse, fan-in, is the corresponding shape:\\n1 .add_fan_in_edges([worker_a, worker_b, worker_c], aggregator) The aggregator executor only fires when all three workers have produced output. Its handler receives a list of the workers\\u0026rsquo; messages, in source-id order. This is exactly how the concurrent orchestration builder works under the hood: a fan-out from the input to the participant agents, and a fan-in to the aggregator.\\nFor more elaborate routing — picking one of several targets based on a more nuanced rule — add_switch_case_edge_group and add_multi_selection_edge_group give you switch semantics and a multi-target select rule, respectively. Reach for those when the conditional-edge form starts to get unwieldy.\\nThe BSP execution model The runtime executes the graph in supersteps, following a Bulk Synchronous Parallel pattern.\\nEach superstep proceeds in three phases. First, all executors that have at least one incoming message run in parallel. Second, the messages they produce are collected and routed across the edges to the next set of target executors. Third, the runtime emits a superstep_completed event and starts the next superstep with whatever messages are now sitting in the inboxes.\\nThis matters because it tells you what runs in parallel and what does not. Within a superstep, every executor with incoming messages runs concurrently; across supersteps, each one waits for the previous to finish. A fan-out followed by a fan-in is therefore one superstep of parallel work, followed by another superstep in which the aggregator runs alone. A long sequential chain is N supersteps, with one executor per step.\\nIt also shows how the runtime handles cycles: a graph with a feedback loop runs as long as messages are still in flight, up to the max_iterations limit in WorkflowBuilder. The default is 100, which is enough for most scenarios; if your graph genuinely needs to iterate longer, raise it explicitly.\\nThe model is deliberate. Pregel-like execution is what makes workflows checkpoint-able (you can pause cleanly between supersteps), durable (you can resume from the last completed superstep), and observable (each superstep is a discrete, namable point in the run). Those properties are what we will lean on in the next article when we cover checkpointing and resuming.\\nEvents The runtime produces a typed event stream while the graph executes. We saw the high-level shape in the streaming article; here are the events that matter for raw-workflow code, with the fields each one carries.\\nEvent type When it fires Useful fields \\u0026quot;started\\u0026quot; Run begins (lifecycle marker) \\u0026quot;status\\u0026quot; Workflow state changes event.state (STARTED, IN_PROGRESS, IDLE, FAILED, \\u0026hellip;) \\u0026quot;superstep_started\\u0026quot; A new superstep begins event.iteration \\u0026quot;executor_invoked\\u0026quot; A handler is about to run event.executor_id, event.data (the input message) \\u0026quot;executor_completed\\u0026quot; A handler finished event.executor_id, event.data (the messages it sent) \\u0026quot;superstep_completed\\u0026quot; All executors in a superstep finished event.iteration \\u0026quot;output\\u0026quot; An executor yielded a workflow output event.executor_id, event.data (the output value) \\u0026quot;executor_failed\\u0026quot; A handler raised event.executor_id, event.details \\u0026quot;failed\\u0026quot; The whole run failed event.details \\u0026quot;warning\\u0026quot; / \\u0026quot;error\\u0026quot; User-emitted via ctx.add_event event.data Iterating the run with stream=True and filtering by event.type is the lowest-level way to observe a workflow. For interactive surfaces, you usually only care about executor_invoked (to show \\u0026ldquo;now running X\\u0026rdquo;), output (to capture results), and the failure events. For audit and tracing, the full stream is what you want, including the superstep markers, which give you a clean way to align traces with the BSP semantics.\\nRaw workflows vs orchestration builders The raw API gives you total control, and almost always more flexibility than you need. Reach for it in three cases.\\nThe first is a novel topology. If your workflow is not \\u0026ldquo;agents in a pipeline,\\u0026rdquo; \\u0026ldquo;agents in parallel,\\u0026rdquo; \\u0026ldquo;agents that pass control to each other,\\u0026rdquo; or one of the other shapes the builders ship with, building the graph by hand is the cleanest path. Examples include map-reduce-style pipelines over data, branching workflows whose structure depends on the input, or workflows that mix agents with pure-Python executors.\\nThe second is non-agent computation. Executors do not have to be agents. Plain Python code, calls to external services, transformations, validators, and so on are all valid executors. When most of your workflow is data shuffling with one or two agent calls in the middle, the raw API keeps the graph honest about that.\\nThe third is production primitives that the builders do not surface. Checkpointing, custom events, edge conditions that depend on accumulated state, and integration with the request-info system for human-in-the-loop pauses all occur at the WorkflowBuilder / Executor layer. The orchestration builders use these internally; for direct access, use the raw API.\\nFor everything else — and that is most agent work — the orchestration builders are the better default. They are tested, they bake in good patterns, and they save you from rebuilding the same graph for the hundredth time.\\nThings to know Type annotations are load-bearing. The framework derives input and output types from @handler annotations, and a wrong annotation produces a runtime \\u0026ldquo;no handler matches this message\\u0026rdquo; error well after the workflow starts. When the graph misbehaves, the first place to look is whether the message type at the source matches the parameter type at the target.\\nHandlers must be async. The runtime always invokes them through the asyncio event loop, and a synchronous handler will simply not run. Wrap blocking calls in asyncio.to_thread rather than calling them directly, the same advice we gave for function tools.\\nCycles need an explicit termination story. The runtime will keep running supersteps as long as messages are in flight, up to max_iterations. A workflow that loops indefinitely will hit the limit and fail rather than running forever, but the failure mode is not always obvious. Build a counter into your state or use a conditional edge to break the loop, rather than relying on the iteration cap.\\nFan-in waits for all sources. A fan-in edge group only fires the aggregator when every source has produced a message in the current run. If one source can legitimately produce no message, the aggregator will hang. Either guarantee every source produces something (even a sentinel \\u0026ldquo;no result\\u0026rdquo; value) or model the optional source differently.\\nFinally, the graph is statically defined at build time. You cannot add or remove edges while the workflow runs. If your topology genuinely needs to change with the input, the right move is usually a MagenticBuilder-style manager executor that decides routing at run time, not graph mutation.\\nSummary A MAF workflow is a graph of executors connected by edges, executed in supersteps, observed through a typed event stream. The orchestration builders cover the common shapes; the raw WorkflowBuilder and Executor API covers everything else, and gives you direct access to the primitives the builders are built on. When you reach for the raw API, you are making a deliberate trade: more code, more flexibility, more responsibility for making the graph make sense.\\nIn the next article, we will look at the two operational features that underpin much of the BSP execution model: checkpointing (pausing a long-running workflow cleanly between supersteps) and visualization (exporting the graph as a Mermaid or Graphviz diagram so the topology is reviewable). Both lean on the same primitives we covered here.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/workflow-fundamentals-in-microsoft-agent-framework\/",
-  "datePublished": "2026-03-16T00:00:00Z",
-  "dateModified": "2026-03-16T00:00:00Z",
+  "headline": "Visualizing and checkpointing workflows in Microsoft Agent Framework",
+  "description": "In the previous article, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model …",
+  "articleBody": "\"In the previous article, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is visualization: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is checkpointing: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.\\nBoth features matter for production workflows. A graph you cannot see is hard to review and even harder to onboard new engineers. A long-running workflow that cannot survive a process restart is fragile. This article is about how MAF handles each.\\nVisualizing a workflow The WorkflowViz class wraps a built workflow and produces representations you can read or render. It supports two text formats out of the box (Mermaid and Graphviz DOT) plus image export to SVG, PNG, or PDF.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 from agent_framework import ( Executor, WorkflowBuilder, WorkflowContext, WorkflowViz, handler, ) class Doubler(Executor): @handler async def double(self, message: int, ctx: WorkflowContext[int]) -\\u0026gt; None: await ctx.send_message(message * 2) class Stringifier(Executor): @handler async def stringify(self, message: int, ctx: WorkflowContext[str, str]) -\\u0026gt; None: await ctx.yield_output(f\\u0026#34;Result: {message}\\u0026#34;) doubler = Doubler(id=\\u0026#34;doubler\\u0026#34;) stringifier = Stringifier(id=\\u0026#34;stringifier\\u0026#34;) workflow = ( WorkflowBuilder(start_executor=doubler, name=\\u0026#34;DemoWorkflow\\u0026#34;) .add_edge(doubler, stringifier) .build() ) viz = WorkflowViz(workflow) print(viz.to_mermaid()) to_mermaid() returns a Mermaid string suitable for dropping straight into a markdown file or any Mermaid-rendering tool:\\n1 2 3 4 flowchart TD doubler[\\u0026#34;doubler (Start)\\u0026#34;]; stringifier[\\u0026#34;stringifier\\u0026#34;]; doubler --\\u0026gt; stringifier; to_digraph() returns the equivalent in Graphviz DOT. For static documentation, image export is often what you want:\\n1 2 3 viz.save_svg(\\u0026#34;workflow.svg\\u0026#34;) viz.save_png(\\u0026#34;workflow.png\\u0026#34;) viz.save_pdf(\\u0026#34;workflow.pdf\\u0026#34;) For a programmatic export with explicit format selection, use export(\\u0026quot;svg\\u0026quot; | \\u0026quot;png\\u0026quot; | \\u0026quot;pdf\\u0026quot; | \\u0026quot;dot\\u0026quot;, filename=...). SVG and DOT do not require any system tools beyond the Python package; PNG and PDF rely on the graphviz binary being on your PATH, as with any other Python project that renders DOT.\\nBy default, the visualization shows only the executors you defined. Some orchestration builders (handoff, group chat, magentic) inject framework-internal coordinator executors that do not directly correspond to anything in your code. To include them in the diagram, pass include_internal_executors=True. For a documentation diagram, the default is the right call; for debugging unexpected event sequences, the more verbose form often answers the question \\u0026ldquo;where is this event coming from.\\u0026rdquo;\\nA practical note. The Mermaid output is the cheapest to integrate, and it is what most blog posts and READMEs use. Reach for SVG when you need precise sizing or want to embed a vector graphic in a slide deck. Reach for DOT only when you need post-processing with another Graphviz tool. The image formats are convenient for review but immutable; if the workflow changes, regenerate.\\nWhy checkpointing A workflow that runs in a single process for ten seconds does not need checkpoints. A workflow that runs across days, waits on a human approver, fans out to many calls to a slow service, or simply needs to survive an application restart does so. Without checkpointing, a process crash or a planned deployment causes the run to lose the state; with checkpointing, the run resumes from the last completed superstep and continues.\\nMAF\\u0026rsquo;s superstep execution model is what makes this clean. The runtime knows exactly which executors have finished and what messages are sitting in the next-step inboxes at any superstep boundary. That is the natural pause point: serialize the state at the boundary, store it somewhere durable, and a future run can rehydrate from the same point with no surprises.\\nConcretely, MAF saves a WorkflowCheckpoint per superstep when checkpoint storage is configured on the builder. Each checkpoint carries a generated ID, an iteration counter, messages in flight, any per-executor state, and a hash of the graph signature, so that resumption can detect graph drift.\\nAdding checkpoint storage Checkpointing is enabled when you provide the builder with a CheckpointStorage instance and a workflow name. After that, the runtime automatically persists checkpoints; no per-handler code changes.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 from agent_framework import InMemoryCheckpointStorage storage = InMemoryCheckpointStorage() workflow = ( WorkflowBuilder( start_executor=doubler, checkpoint_storage=storage, name=\\u0026#34;DemoWorkflow\\u0026#34;, ) .add_edge(doubler, stringifier) .build() ) async for event in workflow.run(5, stream=True): if event.type == \\u0026#34;output\\u0026#34;: print(f\\u0026#34;Output: {event.data}\\u0026#34;) The workflow name matters because the storage layer keys checkpoints by workflow. Several workflows can share the same storage backend without colliding, and resumption uses the name to find the right runs to choose from.\\nInspect what was saved:\\n1 2 3 4 5 6 7 ids = await storage.list_checkpoint_ids(workflow_name=\\u0026#34;DemoWorkflow\\u0026#34;) print(f\\u0026#34;{len(ids)} checkpoints saved.\\u0026#34;) latest = await storage.get_latest(workflow_name=\\u0026#34;DemoWorkflow\\u0026#34;) if latest: print(f\\u0026#34;Latest iteration: {latest.iteration_count}\\u0026#34;) print(f\\u0026#34;Latest id: {latest.checkpoint_id}\\u0026#34;) For our two-executor demo, one checkpoint is saved per superstep, so a complete run produces two checkpoints. For a longer graph, expect one per superstep, with the count increasing linearly with the run depth.\\nResuming from a checkpoint To pick up a run from a checkpoint, pass the checkpoint ID to the workflow.run along with the same storage instance. No new input message is needed; the runtime rehydrates from the saved state and continues from there.\\n1 2 3 4 5 6 7 8 9 latest = await storage.get_latest(workflow_name=\\u0026#34;DemoWorkflow\\u0026#34;) async for event in workflow.run( checkpoint_id=latest.checkpoint_id, checkpoint_storage=storage, stream=True, ): if event.type == \\u0026#34;output\\u0026#34;: print(f\\u0026#34;Resumed output: {event.data}\\u0026#34;) The most common shape this enables is a workflow that pauses to wait for an external event, such as human approval, and resumes once the event arrives. The pause is just a checkpoint; the resume is just run(checkpoint_id=..., responses=...). The responses parameter is how you supply data that the workflow was waiting on; for an approval flow, it is where the approver\\u0026rsquo;s decision goes.\\nFor a workflow that does not require external input but simply wants to retry the last superstep (perhaps after fixing a bug in an executor), the same shape works without responses. The runtime replays the stored messages through the (newly redeployed) handler code.\\nA third use case is forking. A checkpoint ID is just a string; nothing prevents you from running a checkpoint multiple times, with different responses each time, to explore alternative paths. This is occasionally useful for evaluation pipelines that want to compare downstream behavior under different responses to the same upstream prompt.\\nPicking storage MAF ships two storage backends, and the abstract base class lets you write your own.\\nInMemoryCheckpointStorage() keeps checkpoints in a Python dictionary that lives for the duration of the process. Useful for tests, demos, and short-lived development loops. Not useful for anything that has to survive a restart.\\nFileCheckpointStorage(storage_path=...) writes checkpoints as JSON files under a directory you specify. The right default for single-machine deployments and for development workflows where you want to inspect what was saved.\\n1 2 from agent_framework import FileCheckpointStorage storage = FileCheckpointStorage(storage_path=\\u0026#34;./checkpoints/\\u0026#34;) For production with multiple machines, you probably want a shared backend, which means you\\u0026rsquo;ll need to write your own. Subclass CheckpointStorage and implement save, load, delete, list_checkpoint_ids, list_checkpoints, and get_latest. The interface is small and intentionally storage-shaped: any KV store with prefix scans (Cosmos, Redis, S3 with a metadata index, Postgres) maps cleanly onto it.\\nA general rule for production checkpoint storage: use the same persistence layer as the rest of your application\\u0026rsquo;s state. The checkpoint is part of the application\\u0026rsquo;s durable state, and placing it alongside the rest of the application (rather than on its own bespoke backend) keeps backups, observability, and disaster recovery uniform.\\nInspecting a checkpoint WorkflowCheckpoint is a serializable record. The fields that matter for most cases:\\nField What it carries checkpoint_id Unique id for this checkpoint (used to resume). previous_checkpoint_id The id of the checkpoint this one was created from, useful for tracing the run\\u0026rsquo;s history. iteration_count Which superstep produced this checkpoint. messages The messages in flight at the boundary. state Per-executor state captured at the boundary. pending_request_info_events Outstanding requests for external input (the human-in-the-loop case). metadata Free-form metadata associated with the run. workflow_name The workflow this checkpoint belongs to. graph_signature_hash A hash of the graph at build time, used to detect changes to the graph since the checkpoint was saved. The graph signature hash is worth understanding. If you save a checkpoint, change the graph (rename an executor or add a new edge), and then try to resume, the runtime detects the mismatch via the hash and refuses to resume, rather than silently doing the wrong thing. For long-lived applications where the graph evolves over time, plan a migration path: a \\u0026ldquo;drain\\u0026rdquo; phase in which outstanding checkpoints finish on the old graph before the new one ships, or explicit checkpoint discarding at deployment time.\\nThings to know Checkpoint storage grows. Every superstep produces a checkpoint. A long-running, deeply-iterating workflow can produce hundreds. Have a retention policy: keep the latest N, or all checkpoints since the last completed run, and prune the rest. The storage layer\\u0026rsquo;s delete method is the hook for this.\\nSensitive data lives in checkpoints. Messages, executor state, and request metadata all serialize as part of the checkpoint. If your workflow handles PII, secrets, or anything else that should not sit on disk in clear text, encrypt at the storage layer (or use a backend that does it for you). The framework does not do this automatically.\\nResumption is exact, not approximate. Resuming a checkpoint replays from the saved superstep boundary; it does not \\u0026ldquo;almost\\u0026rdquo; replay. If the executor code has changed in a way that affects deterministic behavior (e.g., a different random seed or an external API version), the resumed run can diverge from what the original run would have done. For most workflows, this is fine, but for ones where bit-level reproducibility matters, resumption is not the right tool.\\nThe default backend (InMemoryCheckpointStorage) survives nothing. If you have wired checkpointing into a service and it is not surviving restarts, the first thing to check is which storage backend you actually configured. The in-memory backend is convenient enough that it shows up in production code by accident.\\nFinally, do not assume you can mix and match. Once a workflow has been built and is producing checkpoints, do not change the storage backend mid-flight. Migrate by draining the old storage\\u0026rsquo;s runs before pointing the new builder at the new backend.\\nSummary WorkflowViz turns the static graph into something you can paste into a docstring or render as an image. CheckpointStorage, configured at build time, turns the BSP execution model into something you can pause and resume across processes, deployments, and human-in-the-loop waits. Both are small APIs that lean directly on the workflow primitives we covered in the previous article, and both are the kind of feature that pays for itself the first time a long-running workflow needs to survive an event the developer did not see coming.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework\/",
+  "datePublished": "0001-01-01T00:00:00Z",
+  
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -116,14 +113,14 @@ This article is about the other ten percent. The orchestration builders are conv
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/workflow-fundamentals-in-microsoft-agent-framework\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework\/"
   },
   
   "articleSection": "\"Microsoft Agent Framework\"",
   
   
   
-  "timeRequired": "PT11M",
+  "timeRequired": "PT9M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -162,8 +159,8 @@ This article is about the other ten percent. The orchestration builders are conv
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Workflow fundamentals in Microsoft Agent Framework",
-      "item": "https:\/\/ravichaganti.com\/blog\/workflow-fundamentals-in-microsoft-agent-framework\/"
+      "name": "Visualizing and checkpointing workflows in Microsoft Agent Framework",
+      "item": "https:\/\/ravichaganti.com\/blog\/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework\/"
     }
     
     
@@ -592,7 +589,7 @@ This article is about the other ten percent. The orchestration builders are conv
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Workflow fundamentals in Microsoft Agent Framework
+            Visualizing and checkpointing workflows in Microsoft Agent Framework
           </h1>
 
           
@@ -604,7 +601,7 @@ This article is about the other ten percent. The orchestration builders are conv
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-03-16">March 16, 2026</time>
+              <time datetime=" 0001-01-01">January 1, 0001</time>
             </div>
 
             
@@ -615,7 +612,7 @@ This article is about the other ten percent. The orchestration builders are conv
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>11 min read</span>
+              <span>9 min read</span>
             </div>
             
 
@@ -652,7 +649,7 @@ This article is about the other ten percent. The orchestration builders are conv
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Sequential, concurrent, handoff, group chat, and magentic workflows are all built on the same four primitives: executors, edges, events, and a superstep-based execution model. This article looks at those primitives directly, so you know what is happening underneath when you reach for an orchestration builder, and so you can build workflows the builders do not cover.
+            A workflow is a graph that runs in discrete supersteps. That structure makes two things easy that are usually hard: drawing the graph, and pausing the run cleanly so you can resume it later. This article looks at WorkflowViz for visualization and the CheckpointStorage system for persistence.
           </div>
           
         </header>
@@ -703,9 +700,10 @@ This article is about the other ten percent. The orchestration builders are conv
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     Visualizing and checkpointing workflows in Microsoft Agent Framework
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Jan 1, 0001</p>
               </div>
@@ -983,10 +981,9 @@ This article is about the other ten percent. The orchestration builders are conv
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/workflow-fundamentals-in-microsoft-agent-framework/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Workflow fundamentals in Microsoft Agent Framework
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Mar 16, 2026</p>
               </div>
@@ -999,62 +996,64 @@ This article is about the other ten percent. The orchestration builders are conv
           
           
             
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
-          
-            
               
             
           
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+
+          
+          
+            <div></div>
+          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/context-providers-and-pluggable-memory-in-microsoft-agent-framework/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">Introduction to Microsoft Agent Framework</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-              <span class="truncate">Context providers and pluggable memory in Microsoft Agent Framework</span>
             </a>
-          
-
-          
           
         </div>
       </nav>
@@ -1096,13 +1095,12 @@ This article is about the other ten percent. The orchestration builders are conv
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#the-four-primitives">The four primitives</a></li>
-    <li><a href="#a-first-workflow">A first workflow</a></li>
-    <li><a href="#executors-in-detail">Executors in detail</a></li>
-    <li><a href="#edges">Edges</a></li>
-    <li><a href="#the-bsp-execution-model">The BSP execution model</a></li>
-    <li><a href="#events">Events</a></li>
-    <li><a href="#raw-workflows-vs-orchestration-builders">Raw workflows vs orchestration builders</a></li>
+    <li><a href="#visualizing-a-workflow">Visualizing a workflow</a></li>
+    <li><a href="#why-checkpointing">Why checkpointing</a></li>
+    <li><a href="#adding-checkpoint-storage">Adding checkpoint storage</a></li>
+    <li><a href="#resuming-from-a-checkpoint">Resuming from a checkpoint</a></li>
+    <li><a href="#picking-storage">Picking storage</a></li>
+    <li><a href="#inspecting-a-checkpoint">Inspecting a checkpoint</a></li>
     <li><a href="#things-to-know">Things to know</a></li>
     <li><a href="#summary">Summary</a></li>
   </ul>
@@ -1179,14 +1177,10 @@ This article is about the other ten percent. The orchestration builders are conv
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>Earlier in this series, we walked through the five orchestration patterns Microsoft Agent Framework (MAF) ships with: <a href="/blog/sequential-workflows-in-microsoft-agent-framework/">sequential</a>, <a href="/blog/concurrent-workflows-in-microsoft-agent-framework/">concurrent</a>, <a href="/blog/handoff-workflows-in-microsoft-agent-framework/">handoff</a>, <a href="/blog/groupchat-workflows-in-microsoft-agent-framework/">group chat</a>, and <a href="/blog/magentic-workflows-in-microsoft-agent-framework/">magentic</a>. Each one came with a fluent builder (<code>SequentialBuilder</code>, <code>ConcurrentBuilder</code>, and so on) and a tidy mental model. They are the right tools for ninety percent of multi-agent work.</p>
-<p>This article is about the other ten percent. The orchestration builders are convenience layers on top of a smaller, more general set of primitives: <em>executors</em> (units of computation), <em>edges</em> (the connections between them), <em>events</em> (the observable signals the runtime emits as it works), and a <em>superstep</em> execution model that decides what runs when. When you understand those four things, the builders stop being magic, and you can build the workflows that the builders do not cover.</p>
-<p>We will introduce each primitive, build a small workflow that uses them all, walk through the event stream the runtime produces, and close with the cases where you should and should not reach for the raw API.</p>
-<h2 id="the-four-primitives">The four primitives</h2>
-<p>A MAF workflow is a directed graph of <em>executors</em> connected by <em>edges</em>. An executor is any object that knows how to handle one or more message types and produce zero or more output messages. An edge is a routing rule: when this executor produces a message of this type, send it to that executor. The framework runs the graph in <em>supersteps</em> (a single round in which &ldquo;every executor that has incoming messages runs in parallel&rdquo;) and emits a stream of events throughout, so the calling code can observe progress.</p>
-<p>The orchestration builders are pre-baked configurations of executors and edges. <code>SequentialBuilder</code> adds an executor for each agent and connects them in a line. <code>ConcurrentBuilder</code> fans the input out to a set of agents and fans the results back in. <code>MagenticBuilder</code> adds a manager executor that decides at run time which participant to send messages to. The graph is the unit underneath all of them.</p>
-<h2 id="a-first-workflow">A first workflow</h2>
-<p>The smallest interesting example is two executors connected by a single edge. The first doubles its input; the second converts the result to a string and returns it as the workflow&rsquo;s output.</p>
+          <p>In the <a href="/blog/workflow-fundamentals-in-microsoft-agent-framework/">previous article</a>, we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is <em>visualization</em>: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is <em>checkpointing</em>: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.</p>
+<p>Both features matter for production workflows. A graph you cannot see is hard to review and even harder to onboard new engineers. A long-running workflow that cannot survive a process restart is fragile. This article is about how MAF handles each.</p>
+<h2 id="visualizing-a-workflow">Visualizing a workflow</h2>
+<p>The <code>WorkflowViz</code> class wraps a built workflow and produces representations you can read or render. It supports two text formats out of the box (Mermaid and Graphviz DOT) plus image export to SVG, PNG, or PDF.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1214,62 +1208,137 @@ This article is about the other ten percent. The orchestration builders are conv
 </span><span class="lnt">23
 </span><span class="lnt">24
 </span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">asyncio</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">Executor</span><span class="p">,</span> <span class="n">WorkflowBuilder</span><span class="p">,</span> <span class="n">WorkflowContext</span><span class="p">,</span> <span class="n">handler</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Executor</span><span class="p">,</span> <span class="n">WorkflowBuilder</span><span class="p">,</span> <span class="n">WorkflowContext</span><span class="p">,</span> <span class="n">WorkflowViz</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Doubler</span><span class="p">(</span><span class="n">Executor</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">double</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Stringifier</span><span class="p">(</span><span class="n">Executor</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">stringify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">yield_output</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Result: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">doubler</span> <span class="o">=</span> <span class="n">Doubler</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&#34;doubler&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">stringifier</span> <span class="o">=</span> <span class="n">Stringifier</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&#34;stringifier&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">doubler</span> <span class="o">=</span> <span class="n">Doubler</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&#34;doubler&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">stringifier</span> <span class="o">=</span> <span class="n">Stringifier</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&#34;stringifier&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowBuilder</span><span class="p">(</span><span class="n">start_executor</span><span class="o">=</span><span class="n">doubler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&#34;DemoWorkflow&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">doubler</span><span class="p">,</span> <span class="n">stringifier</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">WorkflowBuilder</span><span class="p">(</span><span class="n">start_executor</span><span class="o">=</span><span class="n">doubler</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">doubler</span><span class="p">,</span> <span class="n">stringifier</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">final</span> <span class="o">=</span> <span class="kc">None</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&#34;output&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">final</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="n">viz</span> <span class="o">=</span> <span class="n">WorkflowViz</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">viz</span><span class="o">.</span><span class="n">to_mermaid</span><span class="p">())</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Running this prints <code>Result: 10</code>.</p>
-<p>Each executor subclasses <code>Executor</code>. The processing logic is a method decorated with <code>@handler</code>. The decorator inspects the type annotations on the method to figure out which input types the executor can accept and which output types it can produce. <code>Doubler.double</code> accepts an <code>int</code> and produces an <code>int</code>; <code>Stringifier.stringify</code> accepts an <code>int</code>, sends <code>str</code> messages downstream, and is allowed to yield <code>str</code> workflow outputs (the second <code>str</code> in <code>WorkflowContext[str, str]</code>).</p>
-<p><code>ctx.send_message(value)</code> is how an executor passes a message to the next executor along the graph. The runtime decides which executors receive the message based on the edges defined in the builder. <code>ctx.yield_output(value)</code> is how an executor marks a value as the workflow&rsquo;s final output, surfacing through the <code>event.type == &quot;output&quot;</code> event we covered in the <a href="/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/">streaming article</a>.</p>
-<p>The <code>WorkflowBuilder</code> is constructed with a <code>start_executor</code> (the executor that receives the workflow&rsquo;s input) and a sequence of <code>add_edge(source, target)</code> calls that wire the graph together. The <code>build()</code> call validates the graph and returns a runnable <code>Workflow</code>.</p>
-<h2 id="executors-in-detail">Executors in detail</h2>
-<p>The <code>@handler</code> decorator is the only piece of plumbing that turns a method into a workflow handler. The method&rsquo;s first argument is <code>self</code>; the second is the message; the third is the <code>WorkflowContext</code>, parameterized by the types the handler can produce. The runtime inspects all three to figure out the executor&rsquo;s input and output types.</p>
-<p>An executor can have multiple <code>@handler</code> methods, each accepting a different message type:</p>
+</div><p><code>to_mermaid()</code> returns a Mermaid string suitable for dropping straight into a markdown file or any Mermaid-rendering tool:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">flowchart TD
+</span></span><span class="line"><span class="cl">  doubler[&#34;doubler (Start)&#34;];
+</span></span><span class="line"><span class="cl">  stringifier[&#34;stringifier&#34;];
+</span></span><span class="line"><span class="cl">  doubler --&gt; stringifier;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>to_digraph()</code> returns the equivalent in Graphviz DOT. For static documentation, image export is often what you want:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">viz</span><span class="o">.</span><span class="n">save_svg</span><span class="p">(</span><span class="s2">&#34;workflow.svg&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">viz</span><span class="o">.</span><span class="n">save_png</span><span class="p">(</span><span class="s2">&#34;workflow.png&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">viz</span><span class="o">.</span><span class="n">save_pdf</span><span class="p">(</span><span class="s2">&#34;workflow.pdf&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>For a programmatic export with explicit format selection, use <code>export(&quot;svg&quot; | &quot;png&quot; | &quot;pdf&quot; | &quot;dot&quot;, filename=...)</code>. SVG and DOT do not require any system tools beyond the Python package; PNG and PDF rely on the <code>graphviz</code> binary being on your <code>PATH</code>, as with any other Python project that renders DOT.</p>
+<p>By default, the visualization shows only the executors you defined. Some orchestration builders (handoff, group chat, magentic) inject framework-internal coordinator executors that do not directly correspond to anything in your code. To include them in the diagram, pass <code>include_internal_executors=True</code>. For a documentation diagram, the default is the right call; for debugging unexpected event sequences, the more verbose form often answers the question &ldquo;where is this event coming from.&rdquo;</p>
+<p>A practical note. The Mermaid output is the cheapest to integrate, and it is what most blog posts and READMEs use. Reach for SVG when you need precise sizing or want to embed a vector graphic in a slide deck. Reach for DOT only when you need post-processing with another Graphviz tool. The image formats are convenient for review but immutable; if the workflow changes, regenerate.</p>
+<h2 id="why-checkpointing">Why checkpointing</h2>
+<p>A workflow that runs in a single process for ten seconds does not need checkpoints. A workflow that runs across days, waits on a human approver, fans out to many calls to a slow service, or simply needs to survive an application restart does so. Without checkpointing, a process crash or a planned deployment causes the run to lose the state; with checkpointing, the run resumes from the last completed superstep and continues.</p>
+<p>MAF&rsquo;s superstep execution model is what makes this clean. The runtime knows exactly which executors have finished and what messages are sitting in the next-step inboxes at any superstep boundary. That is the natural pause point: serialize the state at the boundary, store it somewhere durable, and a future run can rehydrate from the same point with no surprises.</p>
+<p>Concretely, MAF saves a <code>WorkflowCheckpoint</code> per superstep when checkpoint storage is configured on the builder. Each checkpoint carries a generated ID, an iteration counter, messages in flight, any per-executor state, and a hash of the graph signature, so that resumption can detect graph drift.</p>
+<h2 id="adding-checkpoint-storage">Adding checkpoint storage</h2>
+<p>Checkpointing is enabled when you provide the builder with a <code>CheckpointStorage</code> instance and a workflow name. After that, the runtime automatically persists checkpoints; no per-handler code changes.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">InMemoryCheckpointStorage</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">storage</span> <span class="o">=</span> <span class="n">InMemoryCheckpointStorage</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">workflow</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">WorkflowBuilder</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">start_executor</span><span class="o">=</span><span class="n">doubler</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkpoint_storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;DemoWorkflow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">doubler</span><span class="p">,</span> <span class="n">stringifier</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&#34;output&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Output: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The workflow name matters because the storage layer keys checkpoints by workflow. Several workflows can share the same storage backend without colliding, and resumption uses the name to find the right runs to choose from.</p>
+<p>Inspect what was saved:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">ids</span> <span class="o">=</span> <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">list_checkpoint_ids</span><span class="p">(</span><span class="n">workflow_name</span><span class="o">=</span><span class="s2">&#34;DemoWorkflow&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> checkpoints saved.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">latest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_latest</span><span class="p">(</span><span class="n">workflow_name</span><span class="o">=</span><span class="s2">&#34;DemoWorkflow&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">latest</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Latest iteration: </span><span class="si">{</span><span class="n">latest</span><span class="o">.</span><span class="n">iteration_count</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Latest id: </span><span class="si">{</span><span class="n">latest</span><span class="o">.</span><span class="n">checkpoint_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>For our two-executor demo, one checkpoint is saved per superstep, so a complete run produces two checkpoints. For a longer graph, expect one per superstep, with the count increasing linearly with the run depth.</p>
+<h2 id="resuming-from-a-checkpoint">Resuming from a checkpoint</h2>
+<p>To pick up a run from a checkpoint, pass the checkpoint ID to the <code>workflow.run</code> along with the same storage instance. No new input message is needed; the runtime rehydrates from the saved state and continues from there.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1280,167 +1349,96 @@ This article is about the other ten percent. The orchestration builders are conv
 </span><span class="lnt">6
 </span><span class="lnt">7
 </span><span class="lnt">8
+</span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Router</span><span class="p">(</span><span class="n">Executor</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s2">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span> <span class="s2">&#34;value&#34;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">latest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_latest</span><span class="p">(</span><span class="n">workflow_name</span><span class="o">=</span><span class="s2">&#34;DemoWorkflow&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s2">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;number&#34;</span><span class="p">,</span> <span class="s2">&#34;value&#34;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">latest</span><span class="o">.</span><span class="n">checkpoint_id</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">checkpoint_storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&#34;output&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Resumed output: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><code>Router</code> accepts both <code>str</code> and <code>int</code> messages. The runtime dispatches each incoming message to the matching handler based on its type.</p>
-<p>A handler can also produce no output messages at all. That is the right shape for a &ldquo;side-effect&rdquo; executor that, for example, writes to a database or emits a custom event but does not feed anything downstream:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Audit</span><span class="p">(</span><span class="n">Executor</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
-</span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">log_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[audit] saw: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>WorkflowContext[None]</code> annotation tells the framework that this executor produces no downstream messages. It can still observe input, write to logs, mutate external state, or call <code>ctx.add_event(...)</code> to emit a custom event into the run&rsquo;s event stream.</p>
-<p>Every executor has an <code>id</code> (set via the constructor or auto-generated). The id is what shows up in <code>executor_invoked</code> / <code>executor_completed</code> events and is the handle you use to set explicit edges between executors. For graphs with more than a few nodes, set the ids deliberately so the event stream is readable.</p>
-<h2 id="edges">Edges</h2>
-<p>An edge is a routing rule: when this executor produces a message that the target executor can handle, send it. The simplest edge is a direct connection.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">WorkflowBuilder</span><span class="p">(</span><span class="n">start_executor</span><span class="o">=</span><span class="n">a</span><span class="p">)</span> \
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> \
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>A <em>conditional</em> edge attaches a predicate. The message only flows to the target if the predicate returns true:</p>
+</div><p>The most common shape this enables is a workflow that <em>pauses</em> to wait for an external event, such as human approval, and <em>resumes</em> once the event arrives. The pause is just a checkpoint; the resume is just <code>run(checkpoint_id=..., responses=...)</code>. The <code>responses</code> parameter is how you supply data that the workflow was waiting on; for an approval flow, it is where the approver&rsquo;s decision goes.</p>
+<p>For a workflow that does not require external input but simply wants to retry the last superstep (perhaps after fixing a bug in an executor), the same shape works without <code>responses</code>. The runtime replays the stored messages through the (newly redeployed) handler code.</p>
+<p>A third use case is <em>forking</em>. A checkpoint ID is just a string; nothing prevents you from running a checkpoint multiple times, with different <code>responses</code> each time, to explore alternative paths. This is occasionally useful for evaluation pipelines that want to compare downstream behavior under different responses to the same upstream prompt.</p>
+<h2 id="picking-storage">Picking storage</h2>
+<p>MAF ships two storage backends, and the abstract base class lets you write your own.</p>
+<p><code>InMemoryCheckpointStorage()</code> keeps checkpoints in a Python dictionary that lives for the duration of the process. Useful for tests, demos, and short-lived development loops. Not useful for anything that has to survive a restart.</p>
+<p><code>FileCheckpointStorage(storage_path=...)</code> writes checkpoints as JSON files under a directory you specify. The right default for single-machine deployments and for development workflows where you want to inspect what was saved.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">text_path</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&#34;kind&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;text&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">number_path</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&#34;kind&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;number&#34;</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">agent_framework</span> <span class="kn">import</span> <span class="n">FileCheckpointStorage</span>
+</span></span><span class="line"><span class="cl"><span class="n">storage</span> <span class="o">=</span> <span class="n">FileCheckpointStorage</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="s2">&#34;./checkpoints/&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>This is the building block that lets you create branching workflows: one source, several possible targets, the edges&rsquo; conditions decide which one fires for any given message.</p>
-<p>For <em>fan-out</em> (one source, multiple parallel targets), the builder has a convenience method:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_out_edges</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">])</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The message produced by <code>start</code> is delivered to all three workers in the same superstep, and they run in parallel. The inverse, <em>fan-in</em>, is the corresponding shape:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_in_edges</span><span class="p">([</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">],</span> <span class="n">aggregator</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The <code>aggregator</code> executor only fires when all three workers have produced output. Its handler receives a list of the workers&rsquo; messages, in source-id order. This is exactly how the concurrent orchestration builder works under the hood: a fan-out from the input to the participant agents, and a fan-in to the aggregator.</p>
-<p>For more elaborate routing — picking one of several targets based on a more nuanced rule — <code>add_switch_case_edge_group</code> and <code>add_multi_selection_edge_group</code> give you <code>switch</code> semantics and a multi-target select rule, respectively. Reach for those when the conditional-edge form starts to get unwieldy.</p>
-<h2 id="the-bsp-execution-model">The BSP execution model</h2>
-<p>The runtime executes the graph in <em>supersteps</em>, following a Bulk Synchronous Parallel pattern.</p>
-<p>Each <em>superstep</em> proceeds in three phases. First, all executors that have at least one incoming message run in parallel. Second, the messages they produce are collected and routed across the edges to the next set of target executors. Third, the runtime emits a <code>superstep_completed</code> event and starts the next superstep with whatever messages are now sitting in the inboxes.</p>
-<p>This matters because it tells you what runs in parallel and what does not. Within a <em>superstep</em>, every executor with incoming messages runs concurrently; across <em>supersteps</em>, each one waits for the previous to finish. A fan-out followed by a fan-in is therefore one <em>superstep</em> of parallel work, followed by another <em>superstep</em> in which the aggregator runs alone. A long sequential chain is N <em>supersteps</em>, with one executor per step.</p>
-<p>It also shows how the runtime handles cycles: a graph with a feedback loop runs as long as messages are still in flight, up to the max_iterations limit in <code>WorkflowBuilder</code>. The default is 100, which is enough for most scenarios; if your graph genuinely needs to iterate longer, raise it explicitly.</p>
-<p>The model is deliberate. Pregel-like execution is what makes workflows checkpoint-able (you can pause cleanly between <em>supersteps</em>), durable (you can resume from the last completed <em>superstep</em>), and observable (each <em>superstep</em> is a discrete, namable point in the run). Those properties are what we will lean on in the next article when we cover checkpointing and resuming.</p>
-<h2 id="events">Events</h2>
-<p>The runtime produces a typed event stream while the graph executes. We saw the high-level shape in the <a href="/blog/streaming-and-multi-turn-conversations-in-microsoft-agent-framework/">streaming article</a>; here are the events that matter for raw-workflow code, with the fields each one carries.</p>
+</div><p>For production with multiple machines, you probably want a shared backend, which means you&rsquo;ll need to write your own. Subclass <code>CheckpointStorage</code> and implement <code>save</code>, <code>load</code>, <code>delete</code>, <code>list_checkpoint_ids</code>, <code>list_checkpoints</code>, and <code>get_latest</code>. The interface is small and intentionally storage-shaped: any KV store with prefix scans (Cosmos, Redis, S3 with a metadata index, Postgres) maps cleanly onto it.</p>
+<p>A general rule for production checkpoint storage: use the same persistence layer as the rest of your application&rsquo;s state. The checkpoint is part of the application&rsquo;s durable state, and placing it alongside the rest of the application (rather than on its own bespoke backend) keeps backups, observability, and disaster recovery uniform.</p>
+<h2 id="inspecting-a-checkpoint">Inspecting a checkpoint</h2>
+<p><code>WorkflowCheckpoint</code> is a serializable record. The fields that matter for most cases:</p>
 <table>
   <thead>
       <tr>
-          <th>Event type</th>
-          <th>When it fires</th>
-          <th>Useful fields</th>
+          <th>Field</th>
+          <th>What it carries</th>
       </tr>
   </thead>
   <tbody>
       <tr>
-          <td><code>&quot;started&quot;</code></td>
-          <td>Run begins</td>
-          <td>(lifecycle marker)</td>
+          <td><code>checkpoint_id</code></td>
+          <td>Unique id for this checkpoint (used to resume).</td>
       </tr>
       <tr>
-          <td><code>&quot;status&quot;</code></td>
-          <td>Workflow state changes</td>
-          <td><code>event.state</code> (<code>STARTED</code>, <code>IN_PROGRESS</code>, <code>IDLE</code>, <code>FAILED</code>, &hellip;)</td>
+          <td><code>previous_checkpoint_id</code></td>
+          <td>The id of the checkpoint this one was created from, useful for tracing the run&rsquo;s history.</td>
       </tr>
       <tr>
-          <td><code>&quot;superstep_started&quot;</code></td>
-          <td>A new superstep begins</td>
-          <td><code>event.iteration</code></td>
+          <td><code>iteration_count</code></td>
+          <td>Which superstep produced this checkpoint.</td>
       </tr>
       <tr>
-          <td><code>&quot;executor_invoked&quot;</code></td>
-          <td>A handler is about to run</td>
-          <td><code>event.executor_id</code>, <code>event.data</code> (the input message)</td>
+          <td><code>messages</code></td>
+          <td>The messages in flight at the boundary.</td>
       </tr>
       <tr>
-          <td><code>&quot;executor_completed&quot;</code></td>
-          <td>A handler finished</td>
-          <td><code>event.executor_id</code>, <code>event.data</code> (the messages it sent)</td>
+          <td><code>state</code></td>
+          <td>Per-executor state captured at the boundary.</td>
       </tr>
       <tr>
-          <td><code>&quot;superstep_completed&quot;</code></td>
-          <td>All executors in a superstep finished</td>
-          <td><code>event.iteration</code></td>
+          <td><code>pending_request_info_events</code></td>
+          <td>Outstanding requests for external input (the human-in-the-loop case).</td>
       </tr>
       <tr>
-          <td><code>&quot;output&quot;</code></td>
-          <td>An executor yielded a workflow output</td>
-          <td><code>event.executor_id</code>, <code>event.data</code> (the output value)</td>
+          <td><code>metadata</code></td>
+          <td>Free-form metadata associated with the run.</td>
       </tr>
       <tr>
-          <td><code>&quot;executor_failed&quot;</code></td>
-          <td>A handler raised</td>
-          <td><code>event.executor_id</code>, <code>event.details</code></td>
+          <td><code>workflow_name</code></td>
+          <td>The workflow this checkpoint belongs to.</td>
       </tr>
       <tr>
-          <td><code>&quot;failed&quot;</code></td>
-          <td>The whole run failed</td>
-          <td><code>event.details</code></td>
-      </tr>
-      <tr>
-          <td><code>&quot;warning&quot;</code> / <code>&quot;error&quot;</code></td>
-          <td>User-emitted via <code>ctx.add_event</code></td>
-          <td><code>event.data</code></td>
+          <td><code>graph_signature_hash</code></td>
+          <td>A hash of the graph at build time, used to detect changes to the graph since the checkpoint was saved.</td>
       </tr>
   </tbody>
 </table>
-<p>Iterating the run with <code>stream=True</code> and filtering by <code>event.type</code> is the lowest-level way to observe a workflow. For interactive surfaces, you usually only care about <code>executor_invoked</code> (to show &ldquo;now running X&rdquo;), <code>output</code> (to capture results), and the failure events. For audit and tracing, the full stream is what you want, including the superstep markers, which give you a clean way to align traces with the BSP semantics.</p>
-<h2 id="raw-workflows-vs-orchestration-builders">Raw workflows vs orchestration builders</h2>
-<p>The raw API gives you total control, and almost always more flexibility than you need. Reach for it in three cases.</p>
-<p>The first is a <em>novel topology</em>. If your workflow is not &ldquo;agents in a pipeline,&rdquo; &ldquo;agents in parallel,&rdquo; &ldquo;agents that pass control to each other,&rdquo; or one of the other shapes the builders ship with, building the graph by hand is the cleanest path. Examples include map-reduce-style pipelines over data, branching workflows whose structure depends on the input, or workflows that mix agents with pure-Python executors.</p>
-<p>The second is <em>non-agent computation</em>. Executors do not have to be agents. Plain Python code, calls to external services, transformations, validators, and so on are all valid executors. When most of your workflow is data shuffling with one or two agent calls in the middle, the raw API keeps the graph honest about that.</p>
-<p>The third is <em>production primitives that the builders do not surface</em>. Checkpointing, custom events, edge conditions that depend on accumulated state, and integration with the request-info system for human-in-the-loop pauses all occur at the <code>WorkflowBuilder</code> / <code>Executor</code> layer. The orchestration builders use these internally; for direct access, use the raw API.</p>
-<p>For everything else — and that is most agent work — the orchestration builders are the better default. They are tested, they bake in good patterns, and they save you from rebuilding the same graph for the hundredth time.</p>
+<p>The graph signature hash is worth understanding. If you save a checkpoint, change the graph (rename an executor or add a new edge), and then try to resume, the runtime detects the mismatch via the hash and refuses to resume, rather than silently doing the wrong thing. For long-lived applications where the graph evolves over time, plan a migration path: a &ldquo;drain&rdquo; phase in which outstanding checkpoints finish on the old graph before the new one ships, or explicit checkpoint discarding at deployment time.</p>
 <h2 id="things-to-know">Things to know</h2>
-<p>Type annotations are load-bearing. The framework derives input and output types from <code>@handler</code> annotations, and a wrong annotation produces a runtime &ldquo;no handler matches this message&rdquo; error well after the workflow starts. When the graph misbehaves, the first place to look is whether the message type at the source matches the parameter type at the target.</p>
-<p>Handlers must be <code>async</code>. The runtime always invokes them through the asyncio event loop, and a synchronous handler will simply not run. Wrap blocking calls in <code>asyncio.to_thread</code> rather than calling them directly, the same advice we gave for <a href="/blog/function-tools-in-microsoft-agent-framework/">function tools</a>.</p>
-<p>Cycles need an explicit termination story. The runtime will keep running supersteps as long as messages are in flight, up to <code>max_iterations</code>. A workflow that loops indefinitely will hit the limit and fail rather than running forever, but the failure mode is not always obvious. Build a counter into your state or use a conditional edge to break the loop, rather than relying on the iteration cap.</p>
-<p>Fan-in waits for all sources. A fan-in edge group only fires the aggregator when every source has produced a message in the current run. If one source can legitimately produce no message, the aggregator will hang. Either guarantee every source produces something (even a sentinel &ldquo;no result&rdquo; value) or model the optional source differently.</p>
-<p>Finally, the graph is statically defined at build time. You cannot add or remove edges while the workflow runs. If your topology genuinely needs to change with the input, the right move is usually a <code>MagenticBuilder</code>-style manager executor that decides routing at run time, not graph mutation.</p>
+<p>Checkpoint storage grows. Every superstep produces a checkpoint. A long-running, deeply-iterating workflow can produce hundreds. Have a retention policy: keep the latest N, or all checkpoints since the last completed run, and prune the rest. The storage layer&rsquo;s <code>delete</code> method is the hook for this.</p>
+<p>Sensitive data lives in checkpoints. Messages, executor state, and request metadata all serialize as part of the checkpoint. If your workflow handles PII, secrets, or anything else that should not sit on disk in clear text, encrypt at the storage layer (or use a backend that does it for you). The framework does not do this automatically.</p>
+<p>Resumption is exact, not approximate. Resuming a checkpoint replays from the saved superstep boundary; it does not &ldquo;almost&rdquo; replay. If the executor code has changed in a way that affects deterministic behavior (e.g., a different random seed or an external API version), the resumed run can diverge from what the original run would have done. For most workflows, this is fine, but for ones where bit-level reproducibility matters, resumption is not the right tool.</p>
+<p>The default backend (<code>InMemoryCheckpointStorage</code>) survives nothing. If you have wired checkpointing into a service and it is not surviving restarts, the first thing to check is which storage backend you actually configured. The in-memory backend is convenient enough that it shows up in production code by accident.</p>
+<p>Finally, do not assume you can mix and match. Once a workflow has been built and is producing checkpoints, do not change the storage backend mid-flight. Migrate by draining the old storage&rsquo;s runs before pointing the new builder at the new backend.</p>
 <h2 id="summary">Summary</h2>
-<p>A MAF workflow is a graph of executors connected by edges, executed in supersteps, observed through a typed event stream. The orchestration builders cover the common shapes; the raw <code>WorkflowBuilder</code> and <code>Executor</code> API covers everything else, and gives you direct access to the primitives the builders are built on. When you reach for the raw API, you are making a deliberate trade: more code, more flexibility, more responsibility for making the graph make sense.</p>
-<p>In the next article, we will look at the two operational features that underpin much of the BSP execution model: checkpointing (pausing a long-running workflow cleanly between supersteps) and visualization (exporting the graph as a Mermaid or <code>Graphviz</code> diagram so the topology is reviewable). Both lean on the same primitives we covered here.</p>
+<p><code>WorkflowViz</code> turns the static graph into something you can paste into a docstring or render as an image. <code>CheckpointStorage</code>, configured at build time, turns the BSP execution model into something you can pause and resume across processes, deployments, and human-in-the-loop waits. Both are small APIs that lean directly on the workflow primitives we covered in the <a href="/blog/workflow-fundamentals-in-microsoft-agent-framework/">previous article</a>, and both are the kind of feature that pays for itself the first time a long-running workflow needs to survive an event the developer did not see coming.</p>
 
         </div>
 
@@ -1465,7 +1463,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fworkflow-fundamentals-in-microsoft-agent-framework%2F&text=Workflow&#43;fundamentals&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fvisualizing-and-checkpointing-workflows-in-microsoft-agent-framework%2F&text=Visualizing&#43;and&#43;checkpointing&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -1476,7 +1474,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fworkflow-fundamentals-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fvisualizing-and-checkpointing-workflows-in-microsoft-agent-framework%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -1487,7 +1485,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fworkflow-fundamentals-in-microsoft-agent-framework%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fvisualizing-and-checkpointing-workflows-in-microsoft-agent-framework%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -1498,7 +1496,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fworkflow-fundamentals-in-microsoft-agent-framework%2F&title=Workflow&#43;fundamentals&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fvisualizing-and-checkpointing-workflows-in-microsoft-agent-framework%2F&title=Visualizing&#43;and&#43;checkpointing&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1509,7 +1507,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fworkflow-fundamentals-in-microsoft-agent-framework%2F&t=Workflow&#43;fundamentals&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fvisualizing-and-checkpointing-workflows-in-microsoft-agent-framework%2F&t=Visualizing&#43;and&#43;checkpointing&#43;workflows&#43;in&#43;Microsoft&#43;Agent&#43;Framework"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1519,7 +1517,7 @@ This article is about the other ten percent. The orchestration builders are conv
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/workflow-fundamentals-in-microsoft-agent-framework\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1536,9 +1534,9 @@ This article is about the other ten percent. The orchestration builders are conv
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Workflow fundamentals in Microsoft Agent Framework',
-        text: 'Sequential, concurrent, handoff, group chat, and magentic workflows are all built on the same four primitives: executors, edges, events, and a superstep-based execution model. This article looks at those primitives directly, so you know what is happening underneath when you reach for an orchestration builder, and so you can build workflows the builders do not cover.',
-        url: 'https:\/\/ravichaganti.com\/blog\/workflow-fundamentals-in-microsoft-agent-framework\/'
+        title: 'Visualizing and checkpointing workflows in Microsoft Agent Framework',
+        text: 'A workflow is a graph that runs in discrete supersteps. That structure makes two things easy that are usually hard: drawing the graph, and pausing the run cleanly so you can resume it later. This article looks at WorkflowViz for visualization and the CheckpointStorage system for persistence.',
+        url: 'https:\/\/ravichaganti.com\/blog\/visualizing-and-checkpointing-workflows-in-microsoft-agent-framework\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1592,56 +1590,56 @@ This article is about the other ten percent. The orchestration builders are conv
     
     
       
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
 
     
     
       
-        
-        
       
+        
+        
       
     
   
@@ -1651,49 +1649,49 @@ This article is about the other ten percent. The orchestration builders are conv
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/context-providers-and-pluggable-memory-in-microsoft-agent-framework/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Previous in Microsoft Agent Framework: Context providers and pluggable memory in Microsoft Agent Framework">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </div>
-
-            
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in Microsoft Agent Framework</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                Context providers and pluggable memory in Microsoft Agent Framework
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">AgentSession keeps one conversation alive for as long as the Python process runs. Context providers let an agent remember things across sessions, across users, and across long timescales. This article looks at the provider abstraction, the built-in history and memory providers, and how to write your own.</p>
-              
+            <div class="flex-1">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
 
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/introduction-to-microsoft-agent-framework/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in Microsoft Agent Framework: Introduction to Microsoft Agent Framework">
           <div class="flex items-start gap-3">
-            <div class="flex-1 text-right md:text-left">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in Microsoft Agent Framework</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Introduction to Microsoft Agent Framework
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">Microsoft Agent Framework is an open-source development kit for building AI agents and multi-agent workflows.</p>
+              
             </div>
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
   </div>
@@ -1894,6 +1892,22 @@ This article is about the other ten percent. The orchestration builders are conv
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/workflow-fundamentals-in-microsoft-agent-framework/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      Workflow fundamentals in Microsoft Agent Framework
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-03-16">
+      Mar 16, 2026
+    </time>
+  </a>
+</article>
+
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
   <a href="https://ravichaganti.com/blog/microsoft-agent-framework-agent-skills/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
@@ -1956,22 +1970,6 @@ This article is about the other ten percent. The orchestration builders are conv
 </article>
 
       
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/concurrent-workflows-in-microsoft-agent-framework/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      Concurrent workflows in Microsoft Agent Framework
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2025-10-14">
-      Oct 14, 2025
-    </time>
-  </a>
-</article>
-
-      
     </div>
   </div>
 
@@ -1992,13 +1990,12 @@ This article is about the other ten percent. The orchestration builders are conv
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#the-four-primitives">The four primitives</a></li>
-    <li><a href="#a-first-workflow">A first workflow</a></li>
-    <li><a href="#executors-in-detail">Executors in detail</a></li>
-    <li><a href="#edges">Edges</a></li>
-    <li><a href="#the-bsp-execution-model">The BSP execution model</a></li>
-    <li><a href="#events">Events</a></li>
-    <li><a href="#raw-workflows-vs-orchestration-builders">Raw workflows vs orchestration builders</a></li>
+    <li><a href="#visualizing-a-workflow">Visualizing a workflow</a></li>
+    <li><a href="#why-checkpointing">Why checkpointing</a></li>
+    <li><a href="#adding-checkpoint-storage">Adding checkpoint storage</a></li>
+    <li><a href="#resuming-from-a-checkpoint">Resuming from a checkpoint</a></li>
+    <li><a href="#picking-storage">Picking storage</a></li>
+    <li><a href="#inspecting-a-checkpoint">Inspecting a checkpoint</a></li>
     <li><a href="#things-to-know">Things to know</a></li>
     <li><a href="#summary">Summary</a></li>
   </ul>
