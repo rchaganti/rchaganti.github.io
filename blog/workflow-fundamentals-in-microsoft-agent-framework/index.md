@@ -189,5 +189,5 @@ Finally, the graph is statically defined at build time. You cannot add or remove
 
 A MAF workflow is a graph of executors connected by edges, executed in supersteps, observed through a typed event stream. The orchestration builders cover the common shapes; the raw `WorkflowBuilder` and `Executor` API covers everything else, and gives you direct access to the primitives the builders are built on. When you reach for the raw API, you are making a deliberate trade: more code, more flexibility, more responsibility for making the graph make sense.
 
-In the next article, we will look at the two operational features that underpin much of the BSP execution model: checkpointing (pausing a long-running workflow cleanly between supersteps) and visualization (exporting the graph as a Mermaid or Graphviz diagram so the topology is reviewable). Both lean on the same primitives we covered here.
+In the next article, we will look at the two operational features that underpin much of the BSP execution model: checkpointing (pausing a long-running workflow cleanly between supersteps) and visualization (exporting the graph as a Mermaid or `Graphviz` diagram so the topology is reviewable). Both lean on the same primitives we covered here.
 
