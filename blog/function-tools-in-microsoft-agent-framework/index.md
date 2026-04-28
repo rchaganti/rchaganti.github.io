@@ -176,6 +176,43 @@ The second is *instructions* on the agent that tell the model when to reach for 
 
 The model can also call multiple tools in a single turn, and MAF will execute them in sequence (or, for some clients, in parallel) and return all results before the model produces its next message. This is how you get behavior like "look up the weather in Austin and Bengaluru and compare them" working in a single round.
 
+## The `@tool` decorator
+
+So far, every example has passed plain Python functions to the agent. MAF wraps them into `FunctionTool` objects automatically, deriving the name, description, and schema from the signature, the docstring, and the type annotations. That is the right default for most cases, and you should reach for it first.
+
+When you need more control over how a function becomes a tool, the `@tool` decorator gives you the explicit form. The decorator returns a `FunctionTool` you can pass into `tools=[...]` the same way as a plain callable, but with knobs the implicit form does not expose.
+
+```python
+from typing import Annotated
+from pydantic import Field
+from agent_framework import tool
+
+@tool(
+    name="lookup_weather",
+    description="Fetch the current temperature and conditions for a city.",
+)
+def get_weather(
+    location: Annotated[str, Field(description="City and country.")],
+) -> str:
+    """Internal docstring; not used because description is set explicitly."""
+    ...
+```
+
+A few things worth pointing out. `name=` overrides the function's Python name, useful when the function is called something the model would not pick well (`_internal_get_weather_v2`) or when you want to expose the same callable under different names to different agents. `description=` overrides the docstring as the tool's description, which is the right move when the docstring serves a different audience (your team's developers) than the model.
+
+The decorator also exposes a few production knobs that the implicit form does not. `approval_mode="always_require"` is the one we will use in the [next article on human-in-the-loop](/blog/human-in-the-loop-with-function-approvals-in-microsoft-agent-framework/) to mark a tool as requiring explicit approval before each call. `max_invocations=N` caps how many times the model can call this tool within a single run, useful for tools with cost or rate-limit implications. `kind=` lets you tag the tool with an arbitrary category that middleware can filter on.
+
+```python
+@tool(approval_mode="always_require")
+def cancel_order(
+    order_id: Annotated[str, Field(description="ID of the order to cancel.")],
+) -> str:
+    """Cancel a customer order. Cannot be undone."""
+    ...
+```
+
+Decorated and undecorated tools coexist in the same `tools=[...]` list. Use the plain form when defaults are fine, and reach for `@tool` when you need to override a default. Wrapping every tool in `@tool` "just in case" adds noise without buying anything; only decorate when there is a reason.
+
 ## Errors and what the model sees
 
 When a function tool raises an exception, MAF catches it and converts it into an error message that goes back to the model in place of a successful tool result. The model sees something to the effect of "the tool you called raised this error" and decides what to do next: retry with different arguments, apologize to the user, or ignore the result and proceed.
@@ -219,11 +256,9 @@ def get_weather(location: Annotated[str, Field(description="City.")]) -> str:
 
 Both styles are valid. Raising tends to be cleaner when there are several distinct failure modes, because the model gets a structured signal that something went wrong. Returning a string tends to be cleaner when the "error" is actually expected behavior, like a not-found case in a search tool.
 
-Schema validation errors are handled the same way. If the model passes `days=14` to a tool that requires `days <= 7`, MAF rejects the call and the model gets a validation error back, which it can use to retry with a valid value.
+Schema validation errors are handled the same way. If the model passes `days=14` to a tool that requires `days <= 7`, MAF rejects the call and returns a validation error, which the model can use to retry with a valid value.
 
-## Pitfalls
-
-A handful of issues come up often enough to be worth flagging.
+Before we conclude, there are a few things we must pay attention to.
 
 `Optional[T]` is not the same as a parameter with a default value. `Optional[str]` means the parameter can be `None`, which the model must explicitly decide to pass. A parameter with `= None` as its default is *omitted* unless the model has a reason to pass it. In most tool designs, you want the second, not the first.
 
@@ -242,5 +277,5 @@ Function tools are deceptively simple on the surface and surprisingly nuanced be
 In the next article, we will look at how an agent handles a conversation rather than a single turn. We have been calling `agent.run(...)` once and printing the result, but real applications have multi-turn conversations, and they often want to stream the response as it is generated. We will dig into `AgentSession`, streaming responses, and how the two interact when the agent is also calling tools.
 
 {{< notice "info" >}}
-**Updated 26th April 2026 for breaking API changes.** Microsoft Agent Framework's Python package was reorganized after this article was first published. The method for constructing an agent in the chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
+**Updated 27th April 2026.** Two changes since the first publication. First, the Microsoft Agent Framework Python package was reorganized in version 1.2.0; the method for constructing an agent on a chat client changed from `chat_client.create_agent(...)` to `chat_client.as_agent(...)`. The `Multiple tools` example has been updated to match. Second, a new section on the `@tool` decorator was added between `Multiple tools` and `Errors and what the model sees`, covering the explicit form for naming, description, `approval_mode`, and `max_invocations` overrides. Other articles in this series also include changes to imports and constructors; see the [client comparison article](/blog/choosing-the-right-microsoft-agent-framework-client/) for the current set of clients and how to use them.
 {{< /notice >}}

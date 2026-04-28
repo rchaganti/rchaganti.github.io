@@ -3,7 +3,7 @@
 
 In the [previous article](/blog/workflow-fundamentals-in-microsoft-agent-framework/), we walked through the four primitives that make a Microsoft Agent Framework (MAF) workflow tick: executors, edges, events, and the superstep-based execution model. That model has two payoffs we have not yet collected. The first is *visualization*: because the graph is statically defined at build time, MAF can render it for you in a couple of standard formats. The second is *checkpointing*: because execution proceeds in discrete supersteps, the runtime can pause cleanly between them and resume later from exactly where it left off.
 
-Both features matter for production workflows. A graph you cannot see is hard to review and even harder to onboard new engineers. A long-running workflow that cannot survive a process restart is fragile. This article is about how MAF handles each.
+Both features matter for production workflows. A graph you cannot see is hard to review and even harder to use when onboarding new engineers. A long-running workflow that cannot survive a process restart is fragile. This article is about how MAF handles each.
 
 ## Visualizing a workflow
 
