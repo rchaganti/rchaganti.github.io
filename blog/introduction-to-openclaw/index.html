@@ -18,10 +18,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Agent skills vs Model Context Protocol - [How] do you choose? | Ravikanth Chaganti</title>
+  <title>Introduction to OpenClaw | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Anthropic introduced Agent Skills in October 2025, just a year after they introduced Model Context Protocol (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company produced two standards that seem to be competing has fueled heated debate on social media, Hacker News, and developer blogs. Some claim that MCP is dead, while others argue that the comparison itself is moot. The truth is more nuanced than that. You can build powerful agents with either or both. For anyone building enterprise-grade agent-powered systems, understanding where these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short is essential.">
+  <meta name="description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
+I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -30,36 +31,38 @@
   
 
   
-  <meta property="og:title" content="Agent skills vs Model Context Protocol - [How] do you choose?">
-  <meta property="og:description" content="Anthropic introduced Agent Skills in October 2025, just a year after they introduced Model Context Protocol (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company produced two standards that seem to be competing has fueled heated debate on social media, Hacker News, and developer blogs. Some claim that MCP is dead, while others argue that the comparison itself is moot. The truth is more nuanced than that. You can build powerful agents with either or both. For anyone building enterprise-grade agent-powered systems, understanding where these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short is essential.">
+  <meta property="og:title" content="Introduction to OpenClaw">
+  <meta property="og:description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
+I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/agent-skills-vs-model-context-protocol-how-do-you-choose/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/introduction-to-openclaw/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
-  <meta property="og:image" content="https://ravichaganti.com/images/agent-mcp.png">
+  <meta property="og:image" content="https://ravichaganti.com/images/openclaw.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Agent skills vs Model Context Protocol - [How] do you choose?">
+  <meta property="og:image:alt" content="Introduction to OpenClaw">
 
   
   
-    <meta property="article:published_time" content="2026-02-06T00:00:00Z">
-    <meta property="article:modified_time" content="2026-02-06T00:00:00Z">
+    <meta property="article:published_time" content="2026-05-08T00:00:00Z">
+    <meta property="article:modified_time" content="2026-05-08T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
-    <meta property="article:section" content="Skills">
+    <meta property="article:section" content="Agents">
     
   
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Agent skills vs Model Context Protocol - [How] do you choose?">
-  <meta name="twitter:description" content="Anthropic introduced Agent Skills in October 2025, just a year after they introduced Model Context Protocol (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company produced two standards that seem to be competing has fueled heated debate on social media, Hacker News, and developer blogs. Some claim that MCP is dead, while others argue that the comparison itself is moot. The truth is more nuanced than that. You can build powerful agents with either or both. For anyone building enterprise-grade agent-powered systems, understanding where these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short is essential.">
-  <meta name="twitter:image" content="https://ravichaganti.com/images/agent-mcp.png">
+  <meta name="twitter:title" content="Introduction to OpenClaw">
+  <meta name="twitter:description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
+I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
+  <meta name="twitter:image" content="https://ravichaganti.com/images/openclaw.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/agent-skills-vs-model-context-protocol-how-do-you-choose/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/introduction-to-openclaw/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -88,12 +91,12 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Agent skills vs Model Context Protocol - [How] do you choose?",
-  "description": "Anthropic introduced Agent Skills in October 2025, just a year after they introduced Model Context Protocol (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company …",
-  "articleBody": "\"Anthropic introduced Agent Skills in October 2025, just a year after they introduced Model Context Protocol (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company produced two standards that seem to be competing has fueled heated debate on social media, Hacker News, and developer blogs. Some claim that MCP is dead, while others argue that the comparison itself is moot. The truth is more nuanced than that. You can build powerful agents with either or both. For anyone building enterprise-grade agent-powered systems, understanding where these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short is essential.\\nLet us start with a quick overview of each standard.\\nModel Context Protocol (MCP) Every AI application that wants to communicate with an external service or access external data requires its own integration. This is an N x M integration problem. With MCP, this is reduced to N + M. You build one MCP server per external service, one MCP client per AI application, and they all interoperate through a universal JSON-RPC 2.0 protocol. Anthropic calls it \\u0026ldquo;USB-C for AI applications\\u0026rdquo;.\\nThe MCP architecture has three components. MCP hosts are AI applications such as VS Code, Claude Code, Goose, and ChatGPT. Each MCP host contains one or more MCP Clients that maintain a 1:1 connection to an MCP server. An MCP server exposes tools, resources, and prompts. These MCP servers can be run locally via stdio transport or remotely via streamable HTTP. When a client connects to an MCP server, it calls tools/list to discover available tools. The LLM then decides when to call tools/call to invoke specific tools based on the tool descriptions loaded into its context window.\\nMCP saw extraordinary adoption since its announcement in November 2024. The open specification underwent multiple revisions, adding or improving security requirements and introducing new features. The MCP registry is the official centralized metadata repository for publicly accessible MCP servers. The SDK availability for different programming languages enabled developers to quickly adopt and implement MCP servers and clients. Every major AI company has come out in support of MCP. OpenAI integrated MCP into ChatGPT and the Agents SDK. Google confirmed support in Gemini, ADK, and Cloud databases. Microsoft built it into VS Code, Copilot, and Microsoft Agent Framework. AWS embedded it in Bedrock and AgentCore. You throw a stone, and it literally falls on an MCP server in a public MCP registry. There is one for almost every popular service on the public internet.\\nAgent Skills Anthropic introduced Agent Skills in October 2025 to give Claude repeatable, domain-specific expertise. In December 2025, the company released the Agent Skills specification as an open standard.\\nAt its core, a Skill is a directory containing a SKILL.md file with YAML frontmatter, optional scripts, templates, reference documents, and other assets such as images. The SKILL.md contains the name, description, and detailed instructions that teach an agent how to perform a specific task: a company\\u0026rsquo;s code review checklist, a financial modeling methodology, a brand guidelines enforcement workflow, or a legal contract review procedure. The standard defines packaging and metadata but leaves execution semantics to each platform. Skills run in whatever execution environment the host agent provides. The agent reads the SKILL.md like a human reading a procedure manual, then follows the instructions using whatever tools it has available (bash, file system, code execution).\\nAt the heart of Skills is the principle of progressive disclosure. Instead of loading all skill content into the context window upfront, the system works in three phases. In the discovery phase, only the skill name and description load into the system prompt. In the activation phase, when a user\\u0026rsquo;s request matches a skill\\u0026rsquo;s domain, the full SKILL.md instructions load into context. Finally, when in the execution phase, the agent reads additional files (scripts, references, templates) from the skill directory only as needed, using file system operations rather than context window space. This means the amount of knowledge bundled into a skill is effectively unbounded, because the agent navigates it like a reference manual rather than consuming it all at once.\\nMany agent platforms, including Claude Code, OpenAI Codex, Cursor, Gemini CLI, VS Code, GitHub Copilot, Amp, Goose, OpenCode, and Letta, have adopted the Agent Skills standard. Vercel introduced a Skills ecosystem platform.\\nMCP vs Skills To decide whether MCP vs skills or both, we need to first understand what each cannot do.\\nMCP provides an agent or an AI application with a set of tools to work with external services and data. But it cannot teach the agent the procedural knowledge. Consider an example. You can give your agent git tools to work with your project repository. This does not give the agent knowledge of your organization\\u0026rsquo;s branching strategy, code review checklist, pull request templates, or issue templates. This is the procedural knowledge buried in your organization\\u0026rsquo;s document libraries or in your team as tribal knowledge. This procedural knowledge is what Skills provide.\\nGiving an agent Skills does not automagically give it the ability to perform actions. It is like giving someone a recipe for baking a cake without any utensils. They will know the procedural knowledge to bake a cake, but won\\u0026rsquo;t actually be able to bake one. Agent skills cannot physically perform any actions. Skills are inert knowledge that depends on the agent having other capabilities to actually take action. MCP is the other capability that Skills need.\\nThis narrative highlights the complementary relationship between Skills and MCP. To decide whether to leverage this relationship or choose between them, we need to examine a few key tenets.\\nSecurity This is the most important tenet for enterprise adoption.\\nSkills are text files with options scripts that live (and execute) in-process as the agent\\u0026rsquo;s execution environment. There is no process isolation or a new network boundary. This poses a risk of prompt injection through malicious skill content. A malicious skill could instruct an agent to execute some arbitrary code, read sensitive files, or exfiltrate data through the agent\\u0026rsquo;s responses. The skills specification doesn\\u0026rsquo;t prescribe how credentials should be handled, how skills should be isolated from one another, or how code execution should be sandboxed. This design choice makes the spec flexible but delegates security decisions entirely to implementers. Different implementations can make vastly different security choices.\\nAnthropic\\u0026rsquo;s documentation cautions against using skills from untrusted sources without a thorough audit of their contents. You must treat Skills installation with the same rigor as installing software on production systems.\\nSkills do not expand an agent\\u0026rsquo;s attack surface beyond what it already has. If your agent already has bash access and can read files, a Skill doesn\\u0026rsquo;t add new capabilities. Instead, it just provides instructions for using existing ones.\\nMCP, on the other hand, runs as a separate process with its own runtime, filesystem access, and credential scope. This architectural separation means each server can be sandboxed, containerized, or run under a dedicated OS user, receiving only the secrets and permissions needed for its specific integration. This is a fundamentally stronger isolation model than Agent Skills provides. This stronger isolation does not mean that MCP is more secure. authzed.com has documented a timeline of MCP security breaches. The MCP spec recommends human-in-the-loop oversight using SHOULD rather than MUST, making it advisory rather than mandatory. Gartner has explicitly warned that \\u0026ldquo;MCP introduces new security, stability, and governance risks.\\u0026rdquo;\\nAgent Skills are optimized for rapid capability expansion, allowing you to control all content. MCP is optimized for production deployments with strict security requirements around external service access.\\nAuthentication and Authorization As Skills are in progress, they inherit whatever auth context the agent already has. If the agent has access to environment variables with API keys, or if it\\u0026rsquo;s running in a context with OAuth tokens already available, Skills can reference those credentials through the tools the agent invokes. There\\u0026rsquo;s no auth protocol to implement. Skills are inert knowledge, and any auth-dependent actions happen through whatever tools the agent has access to (which might themselves be MCP tools). Enterprises need to handle Skills governance through platform admin controls. Administrators can centrally provision which Skills are available, control access, and monitor usage. Claude and OpenAI\\u0026rsquo;s Codex offer such controls. There\\u0026rsquo;s no OAuth flow to manage, no token exchange to implement, no per-skill authorization boundary. This is both a strength and a limitation.\\nMCP\\u0026rsquo;s authentication story is anything but perfect. The first version of the MCP specification shipped without mandatory authentication. This led to major security exposures. The next version mandated OAuth 2.1 with PKCE and mandated every MCP server to implement a full OAuth authorization server, which is an unrealistic requirement for enterprises. Later versions removed the need for an authorization server, classified MCP servers as OAuth resource servers, mandated protected resource metadata and resource indicators, and replaced Dynamic Client Registration with Client ID Metadata Documents. Each MCP server connection requires its own OAuth flow, which is operationally burdensome at scale. The community argues that this is still unnecessary complexity for enterprise environments.\\nFor enterprise IT operations teams, the auth story creates a stark asymmetry: Skills are trivial to govern through existing IT controls (file access, git permissions, admin provisioning), while MCP requires dedicated auth infrastructure (OAuth servers, token management, gateway proxying) that adds significant operational complexity. This is precisely why the MCP Gateway market has emerged so rapidly.\\nContext window and token cost Agent Skills uses progressive disclosure to minimize context impact. As described above, only skill metadata loads at startup (50–100 tokens per skill), full instructions load only when activated (typically under 5,000 tokens), and additional reference files are accessed through the filesystem rather than the context window. Even with a large library of 100 skills, the total always-present context overhead is roughly 5,000–10,000 tokens.\\nMCP\\u0026rsquo;s context window impact is its most documented operational problem. MCP clients typically load all tool definitions from all connected servers upfront via the tools/list call. Each tool definition might consume 50–1,000+ tokens depending on schema complexity. Anthropic has published mitigation strategies: a meta-tool pattern that uses two gateway tools (one for discovery, one for execution) to achieve 85–95% token reduction, and a code-execution pattern in which the agent writes code to interact with MCP servers in a sandbox, achieving 80–99% token reduction. These are architectural workarounds that add complexity and are not the default behavior of MCP clients.\\nAgent Skills\\u0026rsquo; progressive disclosure directly addresses MCP\\u0026rsquo;s biggest practical pain point. Skills represent Anthropic learning from MCP\\u0026rsquo;s deployment challenges and building a knowledge-loading system that treats context budget as a first-class design constraint. Skills have a low token-cost profile compared with the linear scaling of token cost with the number of connected MCP servers. For enterprise deployments with dozens of integrations, the cost differential is substantial. An IT operations platform that connects to 15 external services via MCP could easily consume 50,000–100,000 tokens per session for tool definitions alone. The same operational knowledge encoded as Skills would cost a fraction of what it would in context usage. Skills alone wouldn\\u0026rsquo;t provide external connectivity. You\\u0026rsquo;d still need something (MCP, direct API calls, or CLI tools) to actually reach the external services.\\nEase of deployment Skills are lightweight folders that you can version-control and deploy with well-known tools in the IT operations space. The barrier to entry is as low as writing a Markdown file. The maintenance burden is near-zero compared to running software.\\nBuilding an MCP server means implementing the JSON-RPC 2.0 protocol, defining tool schemas with JSON Schema, handling transport (stdio or Streamable HTTP), managing error handling, and implementing OAuth 2.1 authentication. SDKs for many programming languages, and building a simple MCP server with an SDK takes minutes. But production-grade servers with proper error handling, authentication, rate limiting, and observability require substantial engineering investment.\\nThe operational cost of developing, deploying, and maintaining an MCP server is significantly higher than writing a text file with instructions.\\nAdoption blockers The Agent Skills specification is intentionally minimal, defining only the structure and format of a Skill. This leaves the execution semantics, progressive disclosure mechanisms, and other capabilities to the agent\\u0026rsquo;s runtime. This leads to different implementations across different platforms. This forces enterprises to evaluate each platform\\u0026rsquo;s implementation independently. Unlike MCP, there is no centralized official registry for the discovery and distribution of Skills. Skill effectiveness varies by model. There is no standard testing framework, no CI/CD integration for skill validation, and no industry-standard metrics for skill reliability.\\nMCP\\u0026rsquo;s security track record isn\\u0026rsquo;t particularly encouraging for enterprise adoption. The authentication complexity and the emergence of MCP gateways as essential infrastructure reflect the gap between the spec\\u0026rsquo;s auth design and enterprise operational reality. For enterprise adoption, the ability to observe and debug is most critical. The MCP specification includes no standardized distributed tracing, correlation IDs, cost attribution, or structured logging. Debugging MCP tool failures requires understanding the JSON-RPC protocol, inspecting transport-level messages, and correlating across process boundaries. Gateway vendors are filling this gap, but observability is not built into the protocol.\\nWhen to use each Use Agent Skills when you need to encode organizational expertise, workflows, and best practices into a reusable, portable format. Skills are the right choice for procedural consistency — your team\\u0026rsquo;s code review process, your company\\u0026rsquo;s financial modeling approach, your legal department\\u0026rsquo;s contract review checklist. They\\u0026rsquo;re also appropriate when you want to share domain knowledge across multiple agents and platforms without vendor lock-in, and when token efficiency is a priority.\\nUse MCP when agents need to interact with external systems such as databases, APIs, SaaS tools, file systems, and cloud services. When the task requires reading or writing data to or from systems outside the agent\\u0026rsquo;s native environment, MCP provides a standardized connectivity layer. MCP is also the right choice when you want process-level isolation between the agent and external tools, and when you want to share tool capabilities across multiple AI platforms (one MCP server serves all MCP clients).\\nUse both together when agents need not only access to external systems but also access in accordance with your organization\\u0026rsquo;s specific methods. This is the most powerful pattern: MCP connections for tool access combined with Skills that teach the agent how to use those tools effectively in your context. An MCP server grants Claude access to your Jira instance, and a Skill teaches Claude your team\\u0026rsquo;s sprint-planning methodology, backlog grooming criteria, and ticket template conventions.\\nConsider Skills + direct CLI/API calls (without MCP) when you\\u0026rsquo;re working at an individual developer scale. The overhead of configuring an MCP server outweighs the benefit, and a Skill documenting how to use curl or a CLI tool directly is more practical. This is the workflow driving much of the \\u0026ldquo;Skills replace MCP\\u0026rdquo; sentiment online, and it\\u0026rsquo;s a valid architectural choice for individual developers or small teams where MCP\\u0026rsquo;s universality isn\\u0026rsquo;t needed.\\nConclusion The Agent Skills vs MCP debate is not about which standard wins. It is about recognizing that Anthropic deliberately built two standards because it identified two distinct, unsolved problems in the agentic stack, and that solving one does not eliminate the other. Skills deliver token efficiency, ease of authoring, portability of organizational knowledge, and minimal operational complexity, but they cannot independently reach the outside world. MCP delivers universal external connectivity, process isolation, and ecosystem breadth, but carries significant overhead in security management, authentication complexity, context window consumption, and operational infrastructure.\\nAnthropic built Skills after MCP, and Skills\\u0026rsquo; progressive disclosure design directly addresses MCP\\u0026rsquo;s biggest practical weakness (context window bloat). The two standards don\\u0026rsquo;t compete. They represent Anthropic learning from its first standard and the construction of a complementary layer to address a problem that MCP doesn\\u0026rsquo;t solve.\\nFor enterprise IT operations, the actionable takeaway is: invest in Skills to encode your operational playbooks, runbooks, and institutional expertise into portable, token-efficient packages. Deploy MCP selectively for external integrations that genuinely require standardized connectivity, and invest in MCP gateway infrastructure (auth proxying, observability, rate limiting) before going to production. Treat context window budget as a first-class architectural constraint. And use both together where the combination makes workflows both connected and intelligent.\\nI love how Block\\u0026rsquo;s goose team concluded: \\u0026ldquo;The existence of both is a good sign. It means the ecosystem is maturing. We\\u0026rsquo;re no longer arguing about whether agents should have tools or instructions. We\\u0026rsquo;re building systems that assume you need both. That\\u0026rsquo;s progress, not replacement.\\u0026rdquo;\\nWhat is your take on this?\\nIn the next article, I will share my thoughts on context graphs and how Skills and MCP shape and populate the graph with reality.\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/agent-skills-vs-model-context-protocol-how-do-you-choose\/",
-  "datePublished": "2026-02-06T00:00:00Z",
-  "dateModified": "2026-02-06T00:00:00Z",
+  "headline": "Introduction to OpenClaw",
+  "description": "I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 …",
+  "articleBody": "\"I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.\\nI am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.\\nWhile traditional large language model (LLM) interfaces function as reactive, session-bound silos, OpenClaw operates as a persistent, local-first gateway that transforms reasoning models into proactive entities capable of system-level execution and multi-channel communication. The underlying philosophy of OpenClaw is rooted in the democratization of agentic AI. It addresses a critical tension in the modern AI landscape: the trade-off between the power of cloud-hosted models and the privacy of local data. OpenClaw resolves this by serving as a self-hosted gateway, where the \\u0026ldquo;brain\\u0026rdquo; (the LLM) can be either local or remote, while the \\u0026ldquo;body\\u0026rdquo; (the execution environment, memory, and credentials) remains entirely under the user\\u0026rsquo;s control.\\nArchitecture The fundamental unit of the OpenClaw architecture is the Gateway, a long-lived background process typically running on Node.js or Bun.2 This Gateway serves as the centralized control plane, managing the intersection of messaging platforms, AI models, local toolsets, and persistent state. By operating as a continuous daemon, the Gateway ensures that the agent remains available to process incoming signals or execute scheduled tasks even when the user is not actively engaged.\\nImage Credit: Gemini The Gateway comprises five primary subsystems that handle the lifecycle of an agentic interaction. These subsystems are designed for high modularity, allowing the framework to remain lightweight while supporting massive extensibility.\\nChannel adapters: Normalizes inbound communication from diverse platforms by translating protocol-specific payloads (e.g., WhatsApp, Telegram) into a unified internal format. Session Manager: Resolves sender identities and maintains conversation context by mapping unique peer identifiers to specific agent sessions and state directories. Queue Manager: Manages concurrency and serializes execution turns to prevent race conditions when multiple incoming messages are handled during tool execution. Agent Runtime: The reasoning engine and tool-invocation loop that assembles the prompt context and executes the \\u0026ldquo;call model → execute tool\\u0026rdquo; cycle. Control Plane: Provides an interface for configuration and external clients via a WebSocket API (default port 18789) for the CLI, web UI, and device nodes. This lean architecture enables OpenClaw to run on constrained hardware, such as a Raspberry Pi. A defining conceptual pillar of OpenClaw is its \\u0026ldquo;local-first\\u0026rdquo; data model. Unlike cloud assistants that store history in proprietary databases, OpenClaw persists all relevant data to the host\\u0026rsquo;s filesystem, specifically under the ~/.openclaw directory.\\nFull turn workflow The lifecycle of a single user request follows a deterministic \\u0026ldquo;Dual-Loop\\u0026rdquo; execution pattern. The outer loop manages session state, while the inner loop handles the iterative \\u0026ldquo;Reason → Act\\u0026rdquo; cycle.\\nImage Credit: Gemini As the scope of automation expands, a single monolithic agent often becomes inefficient due to context window limitations and reasoning pollution. OpenClaw addresses this through advanced orchestration patterns that allow for specialized division of labor.\\nMulti-agent pattern In complex environments, a single agent delegates tasks to specialized sub-agents. These sub-agents are ephemeral workers who prevent context pollution in the main conversation.\\nImage Credit: Gemini When using a multi-agent pattern, you will come across agents and sub-agents.\\nAgents are persistent personas with their own \\u0026ldquo;soul\\u0026rdquo; (SOUL.md), workspace, memory, and session history. They are the primary interface for users and maintain the long-term context of projects and preferences. Sub-agents are temporary, stateless workers spawned via the sessions_spawn tool to handle a specific, bounded task. OpenClaw\\u0026rsquo;s primary user interface is not a standalone application but the existing messaging ecosystem. This choice is strategic, as it places the AI assistant in the same social context as human colleagues and friends, significantly reducing interaction friction. The Gateway acts as a multi-channel router, allowing a single agent or a team of agents to be accessible across dozens of platforms simultaneously. This routing architecture enables sophisticated use cases, such as an enterprise that uses a single WhatsApp number to provide general customer support while routing executive direct messages (DMs) to a highly privileged, private assistant. When enabled, the pairing mode will prompt unknown senders to provide a pairing code before processing any of their requests.\\nOpenClaw supports a vast array of channels. By normalizing these disparate protocols through the Channel Adapter subsystem, OpenClaw allows developers to write a single automation script or skill that functions identically, whether triggered by a WhatsApp message or a Slack command.\\nOpenClaw Skills Conceptually, a \\u0026ldquo;Skill\\u0026rdquo; in OpenClaw is more than just a plugin; it is a packaged unit of procedural knowledge and tool access. Adhering to the AgentSkills specification, a skill is defined as a directory containing an SKILL.md file, which uses YAML front matter to declare its requirements and Markdown to provide the agent with instructions for using the bundled tools. The declarative nature of the skill format is central to OpenClaw\\u0026rsquo;s ability to minimize token usage and improve reasoning. When the agent starts a turn, it scans the metadata of available skills to build a \\u0026ldquo;capability index.\\u0026rdquo; It injects the full instructions for a skill into the prompt only when it determines the skill is relevant to the current task. This process is known as progressive disclosure. I have written about skills in a couple of earlier articles.\\nOn ClawHub, you can find a wide range of skills, from basic file management to complex integrations such as the Gog skill for Google Workspace and the Github skill for managing CI/CD pipelines. The Skill Workshop plugin of OpenClaw allows the agent to observe its own successful multi-step workflows and codify them into new skills.\\nOpenClaw Autonomy The transition from a \\u0026ldquo;chatbot\\u0026rdquo; to an \\u0026ldquo;autonomous agent\\u0026rdquo; is primarily facilitated by OpenClaw\\u0026rsquo;s proactivity systems. These mechanisms allow the agent to break the cycle of human-triggered prompts and act based on internal schedules or external environmental changes.\\nThe Heartbeat is a recurring \\u0026ldquo;turn\\u0026rdquo; of the agent that occurs by default every 30 minutes.14 During a heartbeat, the Gateway injects the contents of a HEARTBEAT.md file into the agent\\u0026rsquo;s context. This file functions as a standing order or a checklist of tasks that the agent should perform without being asked. OpenClaw\\u0026rsquo;s Cron system provides precise, scheduled execution enabled by the croner library. Identity Stack OpenClaw agents don\\u0026rsquo;t have \\u0026ldquo;built-in\\u0026rdquo; personalities. Instead, identity is assembled from Markdown files that are injected into the LLM\\u0026rsquo;s system prompt at the start of every session. This is called the bootstrap.\\n1 2 3 4 5 6 7 8 9 10 ~/.openclaw/agents/\\u0026lt;agentId\\u0026gt;/ ├── SOUL.md → WHO the agent IS (personality, tone, expertise) ├── IDENTITY.md → WHAT the agent IS (name, avatar, \\u0026#34;creature type\\u0026#34;) ├── AGENTS.md → WHAT the agent DOES (rules, workflows, policies) ├── USER.md → WHO it serves (your name, preferences, context) ├── MEMORY.md → WHAT it REMEMBERS (long-term curated knowledge) ├── HEARTBEAT.md → WHEN it acts proactively (schedule, triggers) └── memory/ └── YYYY-MM-DD.md → Daily activity logs Every time a new session starts (or the agent \\u0026ldquo;wakes up\\u0026rdquo; from a heartbeat), OpenClaw:\\nReads all identity files from the agent\\u0026rsquo;s workspace Assembles them into a system prompt Injects the system prompt into the LLM call The LLM now \\u0026ldquo;knows\\u0026rdquo; its personality, rules, user context, and recent history Because LLMs are stateless (each API call is independent), this bootstrap is what creates the illusion of a persistent, consistent personality.\\nPersonal assistant use cases Here is what I have experimented with and am still building on this knowledge.\\nMorning Briefings: An agent monitors RSS feeds, weather, calendar, and GitHub activity to deliver a concise, context-aware briefing at 6:30 AM every day. Expense Management: A photograph of a receipt is sent to the agent via WhatsApp; the agent automatically parses the data and logs it in a spreadsheet. Smart Home Environment: Proactive routines that dim lights, lock doors, and check security cameras based on the user\\u0026rsquo;s natural language standing orders. Summary OpenClaw represents a fundamental architectural shift from AI as a service to AI as infrastructure. By providing a local-first, multi-channel gateway, it empowers users to move beyond simple chat interactions and into a world of autonomous, proactive coordination. This part is a quick overview of OpenClaw: its architecture and features. In the future parts of this series, we will start with deploying OpenClaw as a Docker container and onboarding the WhatsApp channel, setting up identity and personality, exploring tools and skills, using MCP servers and plugins, and finally building a multi-agent workflow. Stay tuned!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/",
+  "datePublished": "2026-05-08T00:00:00Z",
+  "dateModified": "2026-05-08T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -107,20 +110,20 @@
   
   "image": {
     "@type": "ImageObject",
-    "url": "https:\/\/ravichaganti.com\/images\/agent-mcp.png",
+    "url": "https:\/\/ravichaganti.com\/images\/openclaw.png",
     "width": 1200,
     "height": 630
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/agent-skills-vs-model-context-protocol-how-do-you-choose\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/"
   },
   
-  "articleSection": "\"Skills\"",
+  "articleSection": "\"Agents\"",
   
   
   
-  "timeRequired": "PT13M",
+  "timeRequired": "PT7M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -153,14 +156,14 @@
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "Skills",
-      "item": "https:\/\/ravichaganti.com\/categories/skills/"
+      "name": "Agents",
+      "item": "https:\/\/ravichaganti.com\/categories/agents/"
     },
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Agent skills vs Model Context Protocol - [How] do you choose?",
-      "item": "https:\/\/ravichaganti.com\/blog\/agent-skills-vs-model-context-protocol-how-do-you-choose\/"
+      "name": "Introduction to OpenClaw",
+      "item": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/"
     }
     
     
@@ -582,14 +585,14 @@
               <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
               
               <li><span class="mx-2">/</span></li>
-              <li><a href="/categories/skills/" class="hover:text-primary dark:hover:text-blue-400">Skills</a></li>
+              <li><a href="/categories/agents/" class="hover:text-primary dark:hover:text-blue-400">Agents</a></li>
               
             </ol>
           </nav>
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Agent skills vs Model Context Protocol - [How] do you choose?
+            Introduction to OpenClaw
           </h1>
 
           
@@ -601,7 +604,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-02-06">February 6, 2026</time>
+              <time datetime=" 2026-05-08">May 8, 2026</time>
             </div>
 
             
@@ -612,7 +615,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>13 min read</span>
+              <span>7 min read</span>
             </div>
             
 
@@ -624,22 +627,22 @@
           <div class="flex flex-wrap gap-2 mb-6">
             
             
-            <a href="/categories/skills/"
+            <a href="/categories/agents/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              Skills
+              Agents
             </a>
             
-            <a href="/categories/mcp/"
+            <a href="/categories/openclaw/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              MCP
+              OpenClaw
             </a>
             
             
             
             
-            <a href="/series/agents/"
+            <a href="/series/openclaw/"
               class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
-              📚 Series: Agents
+              📚 Series: OpenClaw
             </a>
             
             
@@ -649,7 +652,7 @@
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Agent Skills and MCP are a hot topic. Understanding these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short, is essential for anyone building agent-powered systems.
+            OpenClaw is an open-source, self-hosted AI agent framework that turns your machine into a persistent, autonomous personal assistant. 
           </div>
           
         </header>
@@ -697,19 +700,17 @@
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#model-context-protocol-mcp">Model Context Protocol (MCP)</a></li>
-    <li><a href="#agent-skills">Agent Skills</a></li>
-    <li><a href="#mcp-vs-skills">MCP vs Skills</a>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#full-turn-workflow">Full turn workflow</a></li>
+    <li><a href="#multi-agent-pattern">Multi-agent pattern</a></li>
+    <li><a href="#openclaw-skills">OpenClaw Skills</a></li>
+    <li><a href="#openclaw-autonomy">OpenClaw Autonomy</a>
       <ul>
-        <li><a href="#security">Security</a></li>
-        <li><a href="#authentication-and-authorization">Authentication and Authorization</a></li>
-        <li><a href="#context-window-and-token-cost">Context window and token cost</a></li>
-        <li><a href="#ease-of-deployment">Ease of deployment</a></li>
-        <li><a href="#adoption-blockers">Adoption blockers</a></li>
+        <li><a href="#identity-stack">Identity Stack</a></li>
       </ul>
     </li>
-    <li><a href="#when-to-use-each">When to use each</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#personal-assistant-use-cases">Personal assistant use cases</a></li>
+    <li><a href="#summary">Summary</a></li>
   </ul>
 </nav>
       </nav>
@@ -784,58 +785,127 @@
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>Anthropic <a href="https://claude.com/blog/skills">introduced Agent Skills</a> in October 2025, just a year after they <a href="https://www.anthropic.com/news/model-context-protocol">introduced Model Context Protocol</a> (MCP). Today, both Agent Skills and MCP are open standards. The fact that a single company produced two standards that seem to be competing has fueled heated debate on social media, Hacker News, and developer blogs. Some claim that MCP is dead, while others argue that the comparison itself is moot. The truth is more nuanced than that. You can build powerful agents with either or both. For anyone building enterprise-grade agent-powered systems, understanding where these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short is essential.</p>
-<p>Let us start with a quick overview of each standard.</p>
-<h2 id="model-context-protocol-mcp">Model Context Protocol (MCP)</h2>
-<p>Every AI application that wants to communicate with an external service or access external data requires its own integration. This is an N x M integration problem. With MCP, this is reduced to N + M. You build one MCP server per external service, one MCP client per AI application, and they all interoperate through a universal JSON-RPC 2.0 protocol. Anthropic calls it &ldquo;<a href="https://modelcontextprotocol.io/docs/getting-started/intro">USB-C for AI applications</a>&rdquo;.</p>
-<p>The MCP architecture has three components. MCP hosts are AI applications such as VS Code, Claude Code, Goose, and ChatGPT. Each MCP host contains one or more <a href="https://modelcontextprotocol.io/docs/learn/client-concepts">MCP Clients</a> that maintain a 1:1 connection to an MCP server. An <a href="https://modelcontextprotocol.io/docs/learn/server-concepts">MCP server</a> exposes tools, resources, and prompts. These MCP servers can be run <a href="https://modelcontextprotocol.io/docs/learn/architecture#transport-layer">locally via stdio transport or remotely via streamable HTTP</a>. When a client connects to an MCP server, it calls <code>tools/list</code> to discover available tools. The LLM then decides when to call <code>tools/call</code> to invoke specific tools based on the tool descriptions loaded into its context window.</p>
-<p>MCP saw extraordinary adoption since its announcement in November 2024. The <a href="https://modelcontextprotocol.io/specification/2025-11-25">open specification</a> underwent multiple revisions, adding or improving security requirements and introducing new features. The <a href="https://modelcontextprotocol.io/registry/about">MCP registry</a> is the official centralized metadata repository for publicly accessible MCP servers. The SDK availability for different <a href="https://modelcontextprotocol.io/docs/sdk">programming languages</a> enabled developers to quickly adopt and implement MCP servers and clients. Every major AI company has come out in support of MCP. OpenAI integrated MCP into ChatGPT and the Agents SDK. Google confirmed support in Gemini, ADK, and Cloud databases. Microsoft built it into VS Code, Copilot, and Microsoft Agent Framework. AWS embedded it in Bedrock and AgentCore. You throw a stone, and it literally falls on an MCP server in a public MCP registry. There is one for almost every popular service on the public internet.</p>
-<h2 id="agent-skills">Agent Skills</h2>
-<p>Anthropic introduced Agent Skills in October 2025 to give Claude repeatable, domain-specific expertise. In December 2025, the company released the Agent Skills specification as <a href="https://agentskills.io">an open standard</a>.</p>
-<p>At its core, a Skill is a directory containing a SKILL.md file with YAML frontmatter, optional scripts, templates, reference documents, and other assets such as images. The SKILL.md contains the name, description, and detailed instructions that teach an agent how to perform a specific task: a company&rsquo;s code review checklist, a financial modeling methodology, a brand guidelines enforcement workflow, or a legal contract review procedure. The standard defines packaging and metadata but leaves execution semantics to each platform. Skills run in whatever execution environment the host agent provides. The agent reads the SKILL.md like a human reading a procedure manual, then follows the instructions using whatever tools it has available (bash, file system, code execution).</p>
-<p>At the heart of Skills is the principle of progressive disclosure. Instead of loading all skill content into the context window upfront, the system works in three phases. In the discovery phase, only the skill name and description load into the system prompt. In the activation phase, when a user&rsquo;s request matches a skill&rsquo;s domain, the full SKILL.md instructions load into context. Finally, when in the execution phase, the agent reads additional files (scripts, references, templates) from the skill directory only as needed, using file system operations rather than context window space. This means the amount of knowledge bundled into a skill is effectively unbounded, because the agent navigates it like a reference manual rather than consuming it all at once.</p>
-<p>Many agent platforms, including Claude Code, OpenAI Codex, Cursor, Gemini CLI, VS Code, GitHub Copilot, Amp, Goose, OpenCode, and Letta, have adopted the Agent Skills standard. Vercel introduced a <a href="https://skills.sh/">Skills ecosystem platform</a>.</p>
-<h2 id="mcp-vs-skills">MCP vs Skills</h2>
-<p>To decide whether MCP vs skills or both, we need to first understand what each cannot do.</p>
-<p>MCP provides an agent or an AI application with a set of tools to work with external services and data. But it cannot teach the agent the procedural knowledge. Consider an example. You can give your agent <code>git</code> tools to work with your project repository. This does not give the agent knowledge of your organization&rsquo;s branching strategy, code review checklist, pull request templates, or issue templates. This is the procedural knowledge buried in your organization&rsquo;s document libraries or in your team as tribal knowledge. This procedural knowledge is what Skills provide.</p>
-<p>Giving an agent Skills does not automagically give it the ability to perform actions. It is like giving someone a recipe for baking a cake without any utensils. They will know the procedural knowledge to bake a cake, but won&rsquo;t actually be able to bake one. Agent skills cannot physically perform any actions. Skills are inert knowledge that depends on the agent having <em>other</em> capabilities to actually take action. MCP is the <em>other</em> capability that Skills need.</p>
-<p>This narrative highlights the complementary relationship between Skills and MCP. To decide whether to leverage this relationship or choose between them, we need to examine a few key tenets.</p>
-<h3 id="security">Security</h3>
-<p>This is the most important tenet for enterprise adoption.</p>
-<p>Skills are text files with options scripts that live (and execute) in-process as the agent&rsquo;s execution environment. There is no process isolation or a new network boundary. This poses a risk of prompt injection through malicious skill content. A malicious skill could instruct an agent to execute some arbitrary code, read sensitive files, or exfiltrate data through the agent&rsquo;s responses. The skills specification doesn&rsquo;t prescribe how credentials should be handled, how skills should be isolated from one another, or how code execution should be sandboxed. This design choice makes the spec flexible but delegates security decisions entirely to implementers. Different implementations can make vastly different security choices.</p>
-<blockquote>
-<p>Anthropic&rsquo;s <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview#security-considerations">documentation cautions</a> against using skills from untrusted sources without a thorough audit of their contents. You must treat Skills installation with the same rigor as installing software on production systems.</p>
-</blockquote>
-<p>Skills do not expand an agent&rsquo;s attack surface beyond what it already has.  If your agent already has bash access and can read files, a Skill doesn&rsquo;t add new capabilities. Instead, it just provides instructions for using existing ones.</p>
-<p>MCP, on the other hand, runs as a separate process with its own runtime, filesystem access, and credential scope. This architectural separation means each server can be sandboxed, containerized, or run under a dedicated OS user, receiving only the secrets and permissions needed for its specific integration. This is a fundamentally stronger isolation model than Agent Skills provides. This stronger isolation does not mean that MCP is more secure. authzed.com has documented <a href="https://authzed.com/blog/timeline-mcp-breaches">a timeline of MCP security breaches</a>. The MCP spec recommends human-in-the-loop oversight using SHOULD rather than MUST, making it advisory rather than mandatory. <a href="https://www.gartner.com/en/documents/7189330">Gartner has explicitly</a> warned that &ldquo;MCP introduces new security, stability, and governance risks.&rdquo;</p>
-<p>Agent Skills are optimized for rapid capability expansion, allowing you to control all content. MCP is optimized for production deployments with strict security requirements around external service access.</p>
-<h3 id="authentication-and-authorization">Authentication and Authorization</h3>
-<p>As Skills are in progress, they inherit whatever auth context the agent already has. If the agent has access to environment variables with API keys, or if it&rsquo;s running in a context with OAuth tokens already available, Skills can reference those credentials through the tools the agent invokes. There&rsquo;s no auth protocol to implement. Skills are inert knowledge, and any auth-dependent actions happen through whatever tools the agent has access to (which might themselves be MCP tools). Enterprises need to handle Skills governance through platform admin controls. Administrators can centrally provision which Skills are available, control access, and monitor usage. Claude and OpenAI&rsquo;s Codex offer such controls. There&rsquo;s no OAuth flow to manage, no token exchange to implement, no per-skill authorization boundary. This is both a strength and a limitation.</p>
-<p>MCP&rsquo;s authentication story is anything but perfect. The first version of the MCP specification shipped without mandatory authentication. This led to major security exposures. The next version mandated OAuth 2.1 with PKCE and mandated every MCP server to implement a full OAuth authorization server, which is an unrealistic requirement for enterprises. Later versions removed the need for an authorization server, classified MCP servers as OAuth resource servers, mandated protected resource metadata and resource indicators, and replaced Dynamic Client Registration with Client ID Metadata Documents. Each MCP server connection requires its own OAuth flow, which is operationally burdensome at scale. The community argues that this is still unnecessary complexity for enterprise environments.</p>
-<p>For enterprise IT operations teams, the auth story creates a stark asymmetry: Skills are trivial to govern through existing IT controls (file access, git permissions, admin provisioning), while MCP requires dedicated auth infrastructure (OAuth servers, token management, gateway proxying) that adds significant operational complexity. This is precisely why the MCP Gateway market has emerged so rapidly.</p>
-<h3 id="context-window-and-token-cost">Context window and token cost</h3>
-<p>Agent Skills uses progressive disclosure to minimize context impact. As described above, only skill metadata loads at startup (50–100 tokens per skill), full instructions load only when activated (typically under 5,000 tokens), and additional reference files are accessed through the filesystem rather than the context window. Even with a large library of 100 skills, the total always-present context overhead is roughly 5,000–10,000 tokens.</p>
-<p>MCP&rsquo;s context window impact is its most documented operational problem. MCP clients typically load all tool definitions from all connected servers upfront via the <code>tools/list</code> call. Each tool definition might consume 50–1,000+ tokens depending on schema complexity. Anthropic has published mitigation strategies: a meta-tool pattern that uses two gateway tools (one for discovery, one for execution) to achieve 85–95% token reduction, and a code-execution pattern in which the agent writes code to interact with MCP servers in a sandbox, achieving 80–99% token reduction. These are architectural workarounds that add complexity and are not the default behavior of MCP clients.</p>
-<p>Agent Skills&rsquo; progressive disclosure directly addresses MCP&rsquo;s biggest practical pain point. Skills represent Anthropic learning from MCP&rsquo;s deployment challenges and building a knowledge-loading system that treats context budget as a first-class design constraint. Skills have a low token-cost profile compared with the linear scaling of token cost with the number of connected MCP servers. For enterprise deployments with dozens of integrations, the cost differential is substantial. An IT operations platform that connects to 15 external services via MCP could easily consume 50,000–100,000 tokens per session for tool definitions alone. The same operational knowledge encoded as Skills would cost a fraction of what it would in context usage. Skills alone wouldn&rsquo;t provide external connectivity. You&rsquo;d still need <em>something</em> (MCP, direct API calls, or CLI tools) to actually reach the external services.</p>
-<h3 id="ease-of-deployment">Ease of deployment</h3>
-<p>Skills are lightweight folders that you can version-control and deploy with well-known tools in the IT operations space. The barrier to entry is as low as writing a Markdown file. The maintenance burden is near-zero compared to running software.</p>
-<p>Building an MCP server means implementing the JSON-RPC 2.0 protocol, defining tool schemas with JSON Schema, handling transport (stdio or Streamable HTTP), managing error handling, and implementing OAuth 2.1 authentication. SDKs for many programming languages, and building a simple MCP server with an SDK takes minutes. But production-grade servers with proper error handling, authentication, rate limiting, and observability require substantial engineering investment.</p>
-<p>The operational cost of developing, deploying, and maintaining an MCP server is significantly higher than writing a text file with instructions.</p>
-<h3 id="adoption-blockers">Adoption blockers</h3>
-<p>The Agent Skills specification is intentionally minimal, defining only the structure and format of a Skill. This leaves the execution semantics, progressive disclosure mechanisms, and other capabilities to the agent&rsquo;s runtime. This leads to different implementations across different platforms. This forces enterprises to evaluate each platform&rsquo;s implementation independently. Unlike MCP, there is no centralized official registry for the discovery and distribution of Skills. Skill effectiveness varies by model. There is no standard testing framework, no CI/CD integration for skill validation, and no industry-standard metrics for skill reliability.</p>
-<p>MCP&rsquo;s security track record isn&rsquo;t particularly encouraging for enterprise adoption. The authentication complexity and the emergence of MCP gateways as essential infrastructure reflect the gap between the spec&rsquo;s auth design and enterprise operational reality. For enterprise adoption, the ability to observe and debug is most critical. The MCP specification includes no standardized distributed tracing, correlation IDs, cost attribution, or structured logging. Debugging MCP tool failures requires understanding the JSON-RPC protocol, inspecting transport-level messages, and correlating across process boundaries. Gateway vendors are filling this gap, but observability is not built into the protocol.</p>
-<h2 id="when-to-use-each">When to use each</h2>
-<p>Use Agent Skills when you need to encode organizational expertise, workflows, and best practices into a reusable, portable format. Skills are the right choice for procedural consistency — your team&rsquo;s code review process, your company&rsquo;s financial modeling approach, your legal department&rsquo;s contract review checklist. They&rsquo;re also appropriate when you want to share domain knowledge across multiple agents and platforms without vendor lock-in, and when token efficiency is a priority.</p>
-<p>Use MCP when agents need to interact with external systems such as databases, APIs, SaaS tools, file systems, and cloud services. When the task requires reading or writing data to or from systems outside the agent&rsquo;s native environment, MCP provides a standardized connectivity layer. MCP is also the right choice when you want process-level isolation between the agent and external tools, and when you want to share tool capabilities across multiple AI platforms (one MCP server serves all MCP clients).</p>
-<p>Use both together when agents need not only access to external systems but also access <em>in accordance with your organization&rsquo;s specific methods</em>. This is the most powerful pattern: MCP connections for tool access combined with Skills that teach the agent how to use those tools effectively in your context. An MCP server grants Claude access to your Jira instance, and a Skill teaches Claude your team&rsquo;s sprint-planning methodology, backlog grooming criteria, and ticket template conventions.</p>
-<p>Consider Skills + direct CLI/API calls (without MCP) when you&rsquo;re working at an individual developer scale. The overhead of configuring an MCP server outweighs the benefit, and a Skill documenting how to use curl or a CLI tool directly is more practical. This is the workflow driving much of the &ldquo;Skills replace MCP&rdquo; sentiment online, and it&rsquo;s a valid architectural choice for individual developers or small teams where MCP&rsquo;s universality isn&rsquo;t needed.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>The Agent Skills vs MCP debate is not about which standard wins. It is about recognizing that Anthropic deliberately built two standards because it identified two distinct, unsolved problems in the agentic stack, and that solving one does not eliminate the other. Skills deliver token efficiency, ease of authoring, portability of organizational knowledge, and minimal operational complexity, but they cannot independently reach the outside world. MCP delivers universal external connectivity, process isolation, and ecosystem breadth, but carries significant overhead in security management, authentication complexity, context window consumption, and operational infrastructure.</p>
-<p>Anthropic built Skills <em>after</em> MCP, and Skills&rsquo; progressive disclosure design directly addresses MCP&rsquo;s biggest practical weakness (context window bloat). The two standards don&rsquo;t compete. They represent Anthropic learning from its first standard and the construction of a complementary layer to address a problem that MCP doesn&rsquo;t solve.</p>
-<p>For enterprise IT operations, the actionable takeaway is: invest in Skills to encode your operational playbooks, runbooks, and institutional expertise into portable, token-efficient packages. Deploy MCP selectively for external integrations that genuinely require standardized connectivity, and invest in MCP gateway infrastructure (auth proxying, observability, rate limiting) before going to production. Treat context window budget as a first-class architectural constraint. And use both together where the combination makes workflows both connected <em>and</em> intelligent.</p>
-<p>I love how Block&rsquo;s <a href="https://block.github.io/goose/blog/2025/12/22/agent-skills-vs-mcp/">goose team concluded</a>: &ldquo;<em>The existence of both is a good sign. It means the ecosystem is maturing. We&rsquo;re no longer arguing about whether agents should have tools or instructions. We&rsquo;re building systems that assume you need both. That&rsquo;s progress, not replacement.</em>&rdquo;</p>
-<p>What is your take on this?</p>
-<p>In the next article, I will share my thoughts on context graphs and how Skills and MCP shape and populate the graph with reality.</p>
+          <p>I have been running and experimenting with <a href="https://openclaw.ai/">OpenClaw</a> for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to <strong>Moltbot</strong> (January 2026) and then <strong>OpenClaw</strong> due to trademark considerations.</p>
+<p>I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.</p>
+<p>While traditional large language model (LLM) interfaces function as reactive, session-bound silos, OpenClaw operates as a persistent, local-first gateway that transforms reasoning models into proactive entities capable of system-level execution and multi-channel communication. The underlying philosophy of OpenClaw is rooted in the democratization of agentic AI. It addresses a critical tension in the modern AI landscape: the trade-off between the power of cloud-hosted models and the privacy of local data. OpenClaw resolves this by serving as a self-hosted gateway, where the &ldquo;brain&rdquo; (the LLM) can be either local or remote, while the &ldquo;body&rdquo; (the execution environment, memory, and credentials) remains entirely under the user&rsquo;s control.</p>
+<h2 id="architecture">Architecture</h2>
+<p>The fundamental unit of the OpenClaw architecture is the Gateway, a long-lived background process typically running on Node.js or Bun.2 This Gateway serves as the centralized control plane, managing the intersection of messaging platforms, AI models, local toolsets, and persistent state. By operating as a continuous daemon, the Gateway ensures that the agent remains available to process incoming signals or execute scheduled tasks even when the user is not actively engaged.</p>
+<p><figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/openclaw_arch.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
+    <img src="/images/openclaw_arch.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
+    Image Credit: Gemini
+  </figcaption></figure>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const lightbox = GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+        autoplayVideos: true,
+        zoomable: true,
+        draggable: true,
+        closeButton: true,
+        moreLength: 0
+      });
+    });
+  </script></p>
+<p>The Gateway comprises five primary subsystems that handle the lifecycle of an agentic interaction. These subsystems are designed for high modularity, allowing the framework to remain lightweight while supporting massive extensibility.</p>
+<ul>
+<li><strong>Channel adapters</strong>: Normalizes inbound communication from diverse platforms by translating protocol-specific payloads (e.g., WhatsApp, Telegram) into a unified internal format.</li>
+<li><strong>Session Manager</strong>: Resolves sender identities and maintains conversation context by mapping unique peer identifiers to specific agent sessions and state directories.</li>
+<li><strong>Queue Manager</strong>: Manages concurrency and serializes execution turns to prevent race conditions when multiple incoming messages are handled during tool execution.</li>
+<li><strong>Agent Runtime</strong>: The reasoning engine and tool-invocation loop that assembles the prompt context and executes the &ldquo;call model → execute tool&rdquo; cycle.</li>
+<li><strong>Control Plane</strong>: Provides an interface for configuration and external clients via a WebSocket API (default port 18789) for the CLI, web UI, and device nodes.</li>
+</ul>
+<p>This lean architecture enables OpenClaw to run on constrained hardware, such as a Raspberry Pi. A defining conceptual pillar of OpenClaw is its &ldquo;local-first&rdquo; data model. Unlike cloud assistants that store history in proprietary databases, OpenClaw persists all relevant data to the host&rsquo;s filesystem, specifically under the <code>~/.openclaw</code> directory.</p>
+<h2 id="full-turn-workflow">Full turn workflow</h2>
+<p>The lifecycle of a single user request follows a deterministic &ldquo;Dual-Loop&rdquo; execution pattern. The outer loop manages session state, while the inner loop handles the iterative &ldquo;Reason → Act&rdquo; cycle.</p>
+<figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/openclaw_fullturn.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
+    <img src="/images/openclaw_fullturn.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
+    Image Credit: Gemini
+  </figcaption></figure>
+
+<p>As the scope of automation expands, a single monolithic agent often becomes inefficient due to context window limitations and reasoning pollution. OpenClaw addresses this through advanced orchestration patterns that allow for specialized division of labor.</p>
+<h2 id="multi-agent-pattern">Multi-agent pattern</h2>
+<p>In complex environments, a single agent delegates tasks to specialized sub-agents. These sub-agents are ephemeral workers who prevent context pollution in the main conversation.</p>
+<figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
+  <a href="/images/openclaw_multiagent.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
+    <img src="/images/openclaw_multiagent.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
+    Image Credit: Gemini
+  </figcaption></figure>
+
+<p>When using a multi-agent pattern, you will come across agents and sub-agents.</p>
+<ul>
+<li><em>Agents</em> are persistent personas with their own &ldquo;soul&rdquo; (SOUL.md), workspace, memory, and session history. They are the primary interface for users and maintain the long-term context of projects and preferences.</li>
+<li><em>Sub-agents</em> are temporary, stateless workers spawned via the <code>sessions_spawn</code> tool to handle a specific, bounded task.</li>
+</ul>
+<p>OpenClaw&rsquo;s primary user interface is not a standalone application but the existing messaging ecosystem. This choice is strategic, as it places the AI assistant in the same social context as human colleagues and friends, significantly reducing interaction friction. The Gateway acts as a multi-channel router, allowing a single agent or a team of agents to be accessible across dozens of platforms simultaneously. This routing architecture enables sophisticated use cases, such as an enterprise that uses a single WhatsApp number to provide general customer support while routing executive direct messages (DMs) to a highly privileged, private assistant. When enabled, the pairing mode will prompt unknown senders to provide a pairing code before processing any of their requests.</p>
+<p>OpenClaw supports a vast array of channels. By normalizing these disparate protocols through the Channel Adapter subsystem, OpenClaw allows developers to write a single automation script or skill that functions identically, whether triggered by a WhatsApp message or a Slack command.</p>
+<h2 id="openclaw-skills">OpenClaw Skills</h2>
+<p>Conceptually, a &ldquo;Skill&rdquo; in OpenClaw is more than just a plugin; it is a packaged unit of procedural knowledge and tool access. Adhering to the <a href="https://agentskills.io">AgentSkills</a> specification, a skill is defined as a directory containing an SKILL.md file, which uses YAML front matter to declare its requirements and Markdown to provide the agent with instructions for using the bundled tools. The declarative nature of the skill format is central to OpenClaw&rsquo;s ability to minimize token usage and improve reasoning. When the agent starts a turn, it scans the metadata of available skills to build a &ldquo;capability index.&rdquo; It injects the full instructions for a skill into the prompt only when it determines the skill is relevant to the current task. This process is known as progressive disclosure. I have written about skills in a <a href="https://ravichaganti.com/categories/skills/">couple of earlier articles</a>.</p>
+<p>On <a href="https://clawhub.ai/">ClawHub</a>, you can find a wide range of skills, from basic file management to complex integrations such as the <em>Gog</em> skill for Google Workspace and the <em>Github</em> skill for managing CI/CD pipelines. The <a href="https://docs.openclaw.ai/plugins/skill-workshop">Skill Workshop plugin</a> of OpenClaw allows the agent to observe its own successful multi-step workflows and codify them into new skills.</p>
+<h2 id="openclaw-autonomy">OpenClaw Autonomy</h2>
+<p>The transition from a &ldquo;chatbot&rdquo; to an &ldquo;autonomous agent&rdquo; is primarily facilitated by OpenClaw&rsquo;s proactivity systems. These mechanisms allow the agent to break the cycle of human-triggered prompts and act based on internal schedules or external environmental changes.</p>
+<ul>
+<li>The <em><strong>Heartbeat</strong></em> is a recurring &ldquo;turn&rdquo; of the agent that occurs by default every 30 minutes.14 During a heartbeat, the Gateway injects the contents of a HEARTBEAT.md file into the agent&rsquo;s context. This file functions as a standing order or a checklist of tasks that the agent should perform without being asked.</li>
+<li>OpenClaw&rsquo;s <em><strong>Cron</strong></em> system provides precise, scheduled execution enabled by the croner library.</li>
+</ul>
+<h3 id="identity-stack">Identity Stack</h3>
+<p>OpenClaw agents don&rsquo;t have &ldquo;built-in&rdquo; personalities. Instead, identity is assembled from <strong>Markdown files</strong> that are injected into the LLM&rsquo;s system prompt at the start of every session. This is called the <strong>bootstrap</strong>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">~/.openclaw/agents/&lt;agentId&gt;/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">├── SOUL.md      → WHO the agent IS <span class="o">(</span>personality, tone, expertise<span class="o">)</span>
+</span></span><span class="line"><span class="cl">├── IDENTITY.md    → WHAT the agent IS <span class="o">(</span>name, avatar, <span class="s2">&#34;creature type&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">├── AGENTS.md     → WHAT the agent DOES <span class="o">(</span>rules, workflows, policies<span class="o">)</span>
+</span></span><span class="line"><span class="cl">├── USER.md      → WHO it serves <span class="o">(</span>your name, preferences, context<span class="o">)</span>
+</span></span><span class="line"><span class="cl">├── MEMORY.md     → WHAT it REMEMBERS <span class="o">(</span>long-term curated knowledge<span class="o">)</span>
+</span></span><span class="line"><span class="cl">├── HEARTBEAT.md   → WHEN it acts proactively <span class="o">(</span>schedule, triggers<span class="o">)</span>
+</span></span><span class="line"><span class="cl">└── memory/
+</span></span><span class="line"><span class="cl">  └── YYYY-MM-DD.md → Daily activity logs
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Every time a new session starts (or the agent &ldquo;wakes up&rdquo; from a heartbeat), OpenClaw:</p>
+<ol>
+<li><strong>Reads</strong> all identity files from the agent&rsquo;s workspace</li>
+<li><strong>Assembles</strong> them into a system prompt</li>
+<li><strong>Injects</strong> the system prompt into the LLM call</li>
+<li>The LLM now &ldquo;knows&rdquo; its personality, rules, user context, and recent history</li>
+</ol>
+<p>Because LLMs are stateless (each API call is independent), this bootstrap is what creates the <em>illusion</em> of a persistent, consistent personality.</p>
+<h2 id="personal-assistant-use-cases">Personal assistant use cases</h2>
+<p>Here is what I have experimented with and am still building on this knowledge.</p>
+<ul>
+<li><strong>Morning Briefings</strong>: An agent monitors RSS feeds, weather, calendar, and GitHub activity to deliver a concise, context-aware briefing at 6:30 AM every day.</li>
+<li><strong>Expense Management</strong>: A photograph of a receipt is sent to the agent via WhatsApp; the agent automatically parses the data and logs it in a spreadsheet.</li>
+<li><strong>Smart Home Environment</strong>: Proactive routines that dim lights, lock doors, and check security cameras based on the user&rsquo;s natural language standing orders.</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>OpenClaw represents a fundamental architectural shift from AI as a service to AI as infrastructure. By providing a local-first, multi-channel gateway, it empowers users to move beyond simple chat interactions and into a world of autonomous, proactive coordination. This part is a quick overview of OpenClaw: its architecture and features. In the future parts of this series, we will start with deploying OpenClaw as a Docker container and onboarding the WhatsApp channel, setting up identity and personality, exploring tools and skills, using MCP servers and plugins, and finally building a multi-agent workflow. Stay tuned!</p>
 
         </div>
 
@@ -860,7 +930,7 @@
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fagent-skills-vs-model-context-protocol-how-do-you-choose%2F&text=Agent&#43;skills&#43;vs&#43;Model&#43;Context&#43;Protocol&#43;-&#43;%5BHow%5D&#43;do&#43;you&#43;choose%3F"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&text=Introduction&#43;to&#43;OpenClaw"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -871,7 +941,7 @@
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fagent-skills-vs-model-context-protocol-how-do-you-choose%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -882,7 +952,7 @@
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fagent-skills-vs-model-context-protocol-how-do-you-choose%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -893,7 +963,7 @@
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fagent-skills-vs-model-context-protocol-how-do-you-choose%2F&title=Agent&#43;skills&#43;vs&#43;Model&#43;Context&#43;Protocol&#43;-&#43;%5BHow%5D&#43;do&#43;you&#43;choose%3F"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&title=Introduction&#43;to&#43;OpenClaw"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -904,7 +974,7 @@
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fagent-skills-vs-model-context-protocol-how-do-you-choose%2F&t=Agent&#43;skills&#43;vs&#43;Model&#43;Context&#43;Protocol&#43;-&#43;%5BHow%5D&#43;do&#43;you&#43;choose%3F"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&t=Introduction&#43;to&#43;OpenClaw"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -914,7 +984,7 @@
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/agent-skills-vs-model-context-protocol-how-do-you-choose\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -931,9 +1001,9 @@
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Agent skills vs Model Context Protocol - [How] do you choose?',
-        text: 'Agent Skills and MCP are a hot topic. Understanding these standards genuinely overlap, where they serve fundamentally different purposes, and where each falls short, is essential for anyone building agent-powered systems.',
-        url: 'https:\/\/ravichaganti.com\/blog\/agent-skills-vs-model-context-protocol-how-do-you-choose\/'
+        title: 'Introduction to OpenClaw',
+        text: 'OpenClaw is an open-source, self-hosted AI agent framework that turns your machine into a persistent, autonomous personal assistant. ',
+        url: 'https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1246,19 +1316,17 @@
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#model-context-protocol-mcp">Model Context Protocol (MCP)</a></li>
-    <li><a href="#agent-skills">Agent Skills</a></li>
-    <li><a href="#mcp-vs-skills">MCP vs Skills</a>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#full-turn-workflow">Full turn workflow</a></li>
+    <li><a href="#multi-agent-pattern">Multi-agent pattern</a></li>
+    <li><a href="#openclaw-skills">OpenClaw Skills</a></li>
+    <li><a href="#openclaw-autonomy">OpenClaw Autonomy</a>
       <ul>
-        <li><a href="#security">Security</a></li>
-        <li><a href="#authentication-and-authorization">Authentication and Authorization</a></li>
-        <li><a href="#context-window-and-token-cost">Context window and token cost</a></li>
-        <li><a href="#ease-of-deployment">Ease of deployment</a></li>
-        <li><a href="#adoption-blockers">Adoption blockers</a></li>
+        <li><a href="#identity-stack">Identity Stack</a></li>
       </ul>
     </li>
-    <li><a href="#when-to-use-each">When to use each</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#personal-assistant-use-cases">Personal assistant use cases</a></li>
+    <li><a href="#summary">Summary</a></li>
   </ul>
 </nav>
   </nav>
