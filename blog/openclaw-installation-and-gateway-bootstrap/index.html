@@ -18,11 +18,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>Introduction to OpenClaw | Ravikanth Chaganti</title>
+  <title>OpenClaw installation and gateway bootstrap | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
-I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
+  <meta name="description" content="In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the gateway&rsquo;s health. Let us get started.
+Building and running the OpenClaw container
+I chose to run OpenClaw inside a container to ensure I can freely experiment with different features, including file system access. Before you can run OpenClaw in a container, you need to build the image from source. Let us start by preparing a few directories.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,23 +32,24 @@ I am starting a new series of articles for those who want to get started with Op
   
 
   
-  <meta property="og:title" content="Introduction to OpenClaw">
-  <meta property="og:description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
-I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
+  <meta property="og:title" content="OpenClaw installation and gateway bootstrap">
+  <meta property="og:description" content="In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the gateway&rsquo;s health. Let us get started.
+Building and running the OpenClaw container
+I chose to run OpenClaw inside a container to ensure I can freely experiment with different features, including file system access. Before you can run OpenClaw in a container, you need to build the image from source. Let us start by preparing a few directories.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/introduction-to-openclaw/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
   <meta property="og:image" content="https://ravichaganti.com/images/openclaw.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Introduction to OpenClaw">
+  <meta property="og:image:alt" content="OpenClaw installation and gateway bootstrap">
 
   
   
-    <meta property="article:published_time" content="2026-05-08T00:00:00Z">
-    <meta property="article:modified_time" content="2026-05-08T00:00:00Z">
+    <meta property="article:published_time" content="2026-05-09T00:00:00Z">
+    <meta property="article:modified_time" content="2026-05-09T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
     <meta property="article:section" content="Agents">
     
@@ -55,14 +57,15 @@ I am starting a new series of articles for those who want to get started with Op
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Introduction to OpenClaw">
-  <meta name="twitter:description" content="I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.
-I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.">
+  <meta name="twitter:title" content="OpenClaw installation and gateway bootstrap">
+  <meta name="twitter:description" content="In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the gateway&rsquo;s health. Let us get started.
+Building and running the OpenClaw container
+I chose to run OpenClaw inside a container to ensure I can freely experiment with different features, including file system access. Before you can run OpenClaw in a container, you need to build the image from source. Let us start by preparing a few directories.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/openclaw.png">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/introduction-to-openclaw/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -91,12 +94,12 @@ I am starting a new series of articles for those who want to get started with Op
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Introduction to OpenClaw",
-  "description": "I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 …",
-  "articleBody": "\"I have been running and experimenting with OpenClaw for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to Moltbot (January 2026) and then OpenClaw due to trademark considerations.\\nI am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.\\nWhile traditional large language model (LLM) interfaces function as reactive, session-bound silos, OpenClaw operates as a persistent, local-first gateway that transforms reasoning models into proactive entities capable of system-level execution and multi-channel communication. The underlying philosophy of OpenClaw is rooted in the democratization of agentic AI. It addresses a critical tension in the modern AI landscape: the trade-off between the power of cloud-hosted models and the privacy of local data. OpenClaw resolves this by serving as a self-hosted gateway, where the \\u0026ldquo;brain\\u0026rdquo; (the LLM) can be either local or remote, while the \\u0026ldquo;body\\u0026rdquo; (the execution environment, memory, and credentials) remains entirely under the user\\u0026rsquo;s control.\\nArchitecture The fundamental unit of the OpenClaw architecture is the Gateway, a long-lived background process typically running on Node.js or Bun.2 This Gateway serves as the centralized control plane, managing the intersection of messaging platforms, AI models, local toolsets, and persistent state. By operating as a continuous daemon, the Gateway ensures that the agent remains available to process incoming signals or execute scheduled tasks even when the user is not actively engaged.\\nImage Credit: Gemini The Gateway comprises five primary subsystems that handle the lifecycle of an agentic interaction. These subsystems are designed for high modularity, allowing the framework to remain lightweight while supporting massive extensibility.\\nChannel adapters: Normalizes inbound communication from diverse platforms by translating protocol-specific payloads (e.g., WhatsApp, Telegram) into a unified internal format. Session Manager: Resolves sender identities and maintains conversation context by mapping unique peer identifiers to specific agent sessions and state directories. Queue Manager: Manages concurrency and serializes execution turns to prevent race conditions when multiple incoming messages are handled during tool execution. Agent Runtime: The reasoning engine and tool-invocation loop that assembles the prompt context and executes the \\u0026ldquo;call model → execute tool\\u0026rdquo; cycle. Control Plane: Provides an interface for configuration and external clients via a WebSocket API (default port 18789) for the CLI, web UI, and device nodes. This lean architecture enables OpenClaw to run on constrained hardware, such as a Raspberry Pi. A defining conceptual pillar of OpenClaw is its \\u0026ldquo;local-first\\u0026rdquo; data model. Unlike cloud assistants that store history in proprietary databases, OpenClaw persists all relevant data to the host\\u0026rsquo;s filesystem, specifically under the ~/.openclaw directory.\\nFull turn workflow The lifecycle of a single user request follows a deterministic \\u0026ldquo;Dual-Loop\\u0026rdquo; execution pattern. The outer loop manages session state, while the inner loop handles the iterative \\u0026ldquo;Reason → Act\\u0026rdquo; cycle.\\nImage Credit: Gemini As the scope of automation expands, a single monolithic agent often becomes inefficient due to context window limitations and reasoning pollution. OpenClaw addresses this through advanced orchestration patterns that allow for specialized division of labor.\\nMulti-agent pattern In complex environments, a single agent delegates tasks to specialized sub-agents. These sub-agents are ephemeral workers who prevent context pollution in the main conversation.\\nImage Credit: Gemini When using a multi-agent pattern, you will come across agents and sub-agents.\\nAgents are persistent personas with their own \\u0026ldquo;soul\\u0026rdquo; (SOUL.md), workspace, memory, and session history. They are the primary interface for users and maintain the long-term context of projects and preferences. Sub-agents are temporary, stateless workers spawned via the sessions_spawn tool to handle a specific, bounded task. OpenClaw\\u0026rsquo;s primary user interface is not a standalone application but the existing messaging ecosystem. This choice is strategic, as it places the AI assistant in the same social context as human colleagues and friends, significantly reducing interaction friction. The Gateway acts as a multi-channel router, allowing a single agent or a team of agents to be accessible across dozens of platforms simultaneously. This routing architecture enables sophisticated use cases, such as an enterprise that uses a single WhatsApp number to provide general customer support while routing executive direct messages (DMs) to a highly privileged, private assistant. When enabled, the pairing mode will prompt unknown senders to provide a pairing code before processing any of their requests.\\nOpenClaw supports a vast array of channels. By normalizing these disparate protocols through the Channel Adapter subsystem, OpenClaw allows developers to write a single automation script or skill that functions identically, whether triggered by a WhatsApp message or a Slack command.\\nOpenClaw Skills Conceptually, a \\u0026ldquo;Skill\\u0026rdquo; in OpenClaw is more than just a plugin; it is a packaged unit of procedural knowledge and tool access. Adhering to the AgentSkills specification, a skill is defined as a directory containing an SKILL.md file, which uses YAML front matter to declare its requirements and Markdown to provide the agent with instructions for using the bundled tools. The declarative nature of the skill format is central to OpenClaw\\u0026rsquo;s ability to minimize token usage and improve reasoning. When the agent starts a turn, it scans the metadata of available skills to build a \\u0026ldquo;capability index.\\u0026rdquo; It injects the full instructions for a skill into the prompt only when it determines the skill is relevant to the current task. This process is known as progressive disclosure. I have written about skills in a couple of earlier articles.\\nOn ClawHub, you can find a wide range of skills, from basic file management to complex integrations such as the Gog skill for Google Workspace and the Github skill for managing CI/CD pipelines. The Skill Workshop plugin of OpenClaw allows the agent to observe its own successful multi-step workflows and codify them into new skills.\\nOpenClaw Autonomy The transition from a \\u0026ldquo;chatbot\\u0026rdquo; to an \\u0026ldquo;autonomous agent\\u0026rdquo; is primarily facilitated by OpenClaw\\u0026rsquo;s proactivity systems. These mechanisms allow the agent to break the cycle of human-triggered prompts and act based on internal schedules or external environmental changes.\\nThe Heartbeat is a recurring \\u0026ldquo;turn\\u0026rdquo; of the agent that occurs by default every 30 minutes.14 During a heartbeat, the Gateway injects the contents of a HEARTBEAT.md file into the agent\\u0026rsquo;s context. This file functions as a standing order or a checklist of tasks that the agent should perform without being asked. OpenClaw\\u0026rsquo;s Cron system provides precise, scheduled execution enabled by the croner library. Identity Stack OpenClaw agents don\\u0026rsquo;t have \\u0026ldquo;built-in\\u0026rdquo; personalities. Instead, identity is assembled from Markdown files that are injected into the LLM\\u0026rsquo;s system prompt at the start of every session. This is called the bootstrap.\\n1 2 3 4 5 6 7 8 9 10 ~/.openclaw/agents/\\u0026lt;agentId\\u0026gt;/ ├── SOUL.md → WHO the agent IS (personality, tone, expertise) ├── IDENTITY.md → WHAT the agent IS (name, avatar, \\u0026#34;creature type\\u0026#34;) ├── AGENTS.md → WHAT the agent DOES (rules, workflows, policies) ├── USER.md → WHO it serves (your name, preferences, context) ├── MEMORY.md → WHAT it REMEMBERS (long-term curated knowledge) ├── HEARTBEAT.md → WHEN it acts proactively (schedule, triggers) └── memory/ └── YYYY-MM-DD.md → Daily activity logs Every time a new session starts (or the agent \\u0026ldquo;wakes up\\u0026rdquo; from a heartbeat), OpenClaw:\\nReads all identity files from the agent\\u0026rsquo;s workspace Assembles them into a system prompt Injects the system prompt into the LLM call The LLM now \\u0026ldquo;knows\\u0026rdquo; its personality, rules, user context, and recent history Because LLMs are stateless (each API call is independent), this bootstrap is what creates the illusion of a persistent, consistent personality.\\nPersonal assistant use cases Here is what I have experimented with and am still building on this knowledge.\\nMorning Briefings: An agent monitors RSS feeds, weather, calendar, and GitHub activity to deliver a concise, context-aware briefing at 6:30 AM every day. Expense Management: A photograph of a receipt is sent to the agent via WhatsApp; the agent automatically parses the data and logs it in a spreadsheet. Smart Home Environment: Proactive routines that dim lights, lock doors, and check security cameras based on the user\\u0026rsquo;s natural language standing orders. Summary OpenClaw represents a fundamental architectural shift from AI as a service to AI as infrastructure. By providing a local-first, multi-channel gateway, it empowers users to move beyond simple chat interactions and into a world of autonomous, proactive coordination. This part is a quick overview of OpenClaw: its architecture and features. In the future parts of this series, we will start with deploying OpenClaw as a Docker container and onboarding the WhatsApp channel, setting up identity and personality, exploring tools and skills, using MCP servers and plugins, and finally building a multi-agent workflow. Stay tuned!\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/",
-  "datePublished": "2026-05-08T00:00:00Z",
-  "dateModified": "2026-05-08T00:00:00Z",
+  "headline": "OpenClaw installation and gateway bootstrap",
+  "description": "In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the …",
+  "articleBody": "\"In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the gateway\\u0026rsquo;s health. Let us get started.\\nBuilding and running the OpenClaw container I chose to run OpenClaw inside a container to ensure I can freely experiment with different features, including file system access. Before you can run OpenClaw in a container, you need to build the image from source. Let us start by preparing a few directories.\\n1 2 3 4 5 # OpenClaw config \\u0026amp; agent data mkdir \\u0026#34;$env:USERPROFILE\\\\.openclaw\\u0026#34; -Force # Your workspace (finance, productivity, knowledge files) mkdir \\u0026#34;$env:USERPROFILE\\\\workspace\\u0026#34; -Force We will then create a .env file for storing API keys and other secrets.\\n1 2 3 4 @\\u0026#34; GEMINI_API_KEY=your_actual_key_here OPENCLAW_GATEWAY_TOKEN=openclaw-secret-token \\u0026#34;@ | Out-File -FilePath \\u0026#34;$env:USERPROFILE\\\\.openclaw\\\\.env\\u0026#34; -Encoding UTF8 \\u0026gt; When you open the dashboard in your browser, it will ask for a token. Use openclaw-secret-token to log in. Replace your_actual_key_here with your actual key from Google AI Studio or which ever provider you choose to use.\\nWe will now need to seed the gateway\\u0026rsquo;s initial configuration.\\nCreate %USERPROFILE%\\\\.openclaw\\\\openclaw.json and paste the following JSON blob.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 { \\u0026#34;gateway\\u0026#34;: { \\u0026#34;mode\\u0026#34;: \\u0026#34;local\\u0026#34;, \\u0026#34;bind\\u0026#34;: \\u0026#34;lan\\u0026#34;, \\u0026#34;controlUi\\u0026#34;: { \\u0026#34;allowedOrigins\\u0026#34;: [\\u0026#34;http://localhost:18789\\u0026#34;, \\u0026#34;http://127.0.0.1:18789\\u0026#34;] } }, \\u0026#34;agents\\u0026#34;: { \\u0026#34;defaults\\u0026#34;: { \\u0026#34;model\\u0026#34;: { \\u0026#34;primary\\u0026#34;: \\u0026#34;google/gemini-2.5-pro\\u0026#34;, \\u0026#34;fallbacks\\u0026#34;: [\\u0026#34;google/gemini-2.5-flash\\u0026#34;] }, \\u0026#34;models\\u0026#34;: { \\u0026#34;google/gemini-2.5-pro\\u0026#34;: { \\u0026#34;alias\\u0026#34;: \\u0026#34;Gemini Pro\\u0026#34; }, \\u0026#34;google/gemini-2.5-flash\\u0026#34;: { \\u0026#34;alias\\u0026#34;: \\u0026#34;Gemini Flash\\u0026#34; } } } } } We are now ready to build the container image from the OpenClaw source code. We\\u0026rsquo;ll build the container image locally, directly from the OpenClaw source repository.\\n1 2 3 4 5 6 7 8 9 # Clone the repository git clone https://github.com/openclaw/openclaw.git \\u0026#34;$env:USERPROFILE\\\\openclaw-source\\u0026#34; Set-Location \\u0026#34;$env:USERPROFILE\\\\openclaw-source\\u0026#34; # Build the Docker image docker build -t openclaw:local -f Dockerfile . # Return to your home directory Set-Location \\u0026#34;$env:USERPROFILE\\u0026#34; Building this image takes a while. On my local PC with 16GB of memory, it took close to 10 minutes. Once the image is ready, you can launch the container.\\n1 2 3 4 5 6 7 8 docker run -d ` --name openclaw ` --restart unless-stopped ` -v \\u0026#34;$env:USERPROFILE\\\\.openclaw:/home/node/.openclaw\\u0026#34; ` -v \\u0026#34;$env:USERPROFILE\\\\workspace:/home/node/workspace\\u0026#34; ` -p 18789:18789 ` --env-file \\u0026#34;$env:USERPROFILE\\\\.openclaw\\\\.env\\u0026#34; ` openclaw:local dist/index.js gateway run Here is a quick explanation of the flags we used.\\nFlag Purpose --restart unless-stopped Auto-restart on crash or reboot -v ...\\\\.openclaw:/home/node/.openclaw Persist config, agents, memory, credentials -v ...\\\\workspace:/home/node/workspace Persist your data (finance, tasks, notes) -p 18789:18789 Map container port to host for dashboard access --env-file Injects API keys into the container Once the container starts, you should see logs similar to what is shown below.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 2026-05-08 16:51:33.696 | 2026-05-08T11:21:33.695+00:00 [gateway] loading configuration… 2026-05-08 16:51:33.808 | 2026-05-08T11:21:33.807+00:00 [gateway] resolving authentication… 2026-05-08 16:51:33.840 | 2026-05-08T11:21:33.839+00:00 [gateway] starting... 2026-05-08 16:51:35.335 | 2026-05-08T11:21:35.334+00:00 [gateway] auto-enabled plugins for this runtime without writing config: 2026-05-08 16:51:35.335 | - google/gemini-2.5-pro model configured, enabled automatically. 2026-05-08 16:51:35.687 | 2026-05-08T11:21:35.686+00:00 [gateway] starting HTTP server... 2026-05-08 16:51:35.693 | 2026-05-08T11:21:35.692+00:00 [gateway] ⚠️ Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks. 2026-05-08 16:51:36.090 | 2026-05-08T11:21:36.090+00:00 [health-monitor] started (interval: 300s, startup-grace: 60s, channel-connect-grace: 120s) 2026-05-08 16:51:38.291 | 2026-05-08T11:21:38.291+00:00 [gateway] agent model: google/gemini-2.5-pro (thinking=medium, fast=off) 2026-05-08 16:51:38.298 | 2026-05-08T11:21:38.297+00:00 [gateway] http server listening (7 plugins: browser, canvas, device-pair, file-transfer, memory-core, phone-control, talk-voice; 4.4s) 2026-05-08 16:51:38.304 | 2026-05-08T11:21:38.304+00:00 [gateway] log file: /tmp/openclaw/openclaw-2026-05-08.log 2026-05-08 16:51:38.361 | 2026-05-08T11:21:38.360+00:00 [gateway] starting channels and sidecars... 2026-05-08 16:51:38.822 | 2026-05-08T11:21:38.821+00:00 [browser/server] Browser control listening on http://127.0.0.1:18791/ (auth=token) 2026-05-08 16:51:38.870 | 2026-05-08T11:21:38.869+00:00 [gateway] ready 2026-05-08 16:51:38.895 | 2026-05-08T11:21:38.894+00:00 [heartbeat] started 2026-05-08 16:51:39.744 | 2026-05-08T11:21:39.743+00:00 [gateway] update available (latest): v2026.5.7 (current v2026.5.6). Run: openclaw update You can check the gateway\\u0026rsquo;s health by running node dist/index.js gateway health inside the container.\\n1 2 3 PS C:\\\\\\u0026gt; docker exec openclaw node dist/index.js gateway health Gateway Health OK (31ms) At this point, the gateway dashboard UI should be accessible at \\u0026ldquo;http://127.0.0.1:18789/\\u0026rdquo;. In the UI, enter the token from the .env file.\\nAt this time, we have the OpenClaw gateway running in a container. Because the .openclaw directory is mounted as a volume, you can edit config files directly on Windows with any text editor. The changes are reflected inside the container instantly (OpenClaw watches for config changes and hot-reloads).\\nHere is a quick, handy tip. I have added a few custom functions to my PowerShell profile to access a few aspects of OpenClaw state.\\n1 2 3 function oc { docker exec openclaw node dist/index.js @args } function oc-it { docker exec -it openclaw node dist/index.js @args } function oc-logs { docker logs -f openclaw } With these handy functions, I can now run oc gateway health instead of the complete docker exec command.\\n1 2 3 PS C:\\\\Users\\\\ravik\\u0026gt; oc gateway health Gateway Health OK (28ms) In the next part, we shall complete onboarding and integrating WhatsApp channel.\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/openclaw-installation-and-gateway-bootstrap\/",
+  "datePublished": "2026-05-09T00:00:00Z",
+  "dateModified": "2026-05-09T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -116,14 +119,14 @@ I am starting a new series of articles for those who want to get started with Op
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/openclaw-installation-and-gateway-bootstrap\/"
   },
   
   "articleSection": "\"Agents\"",
   
   
   
-  "timeRequired": "PT7M",
+  "timeRequired": "PT4M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -162,8 +165,8 @@ I am starting a new series of articles for those who want to get started with Op
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "Introduction to OpenClaw",
-      "item": "https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/"
+      "name": "OpenClaw installation and gateway bootstrap",
+      "item": "https:\/\/ravichaganti.com\/blog\/openclaw-installation-and-gateway-bootstrap\/"
     }
     
     
@@ -592,7 +595,7 @@ I am starting a new series of articles for those who want to get started with Op
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            Introduction to OpenClaw
+            OpenClaw installation and gateway bootstrap
           </h1>
 
           
@@ -604,7 +607,7 @@ I am starting a new series of articles for those who want to get started with Op
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-05-08">May 8, 2026</time>
+              <time datetime=" 2026-05-09">May 9, 2026</time>
             </div>
 
             
@@ -615,7 +618,7 @@ I am starting a new series of articles for those who want to get started with Op
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>7 min read</span>
+              <span>4 min read</span>
             </div>
             
 
@@ -652,7 +655,7 @@ I am starting a new series of articles for those who want to get started with Op
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            OpenClaw is an open-source, self-hosted AI agent framework that turns your machine into a persistent, autonomous personal assistant.
+            The best way to understand OpenClaw is to try it. The safest way to do that is to run it inside a container.
           </div>
           
         </header>
@@ -703,10 +706,9 @@ I am starting a new series of articles for those who want to get started with Op
               </span>
               <div class="flex-grow">
                 
-                  <span class="font-bold text-secondary dark:text-purple-400">
+                  <a href="https://ravichaganti.com/blog/introduction-to-openclaw/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
                     Introduction to OpenClaw
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
+                  </a>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">May 8, 2026</p>
               </div>
@@ -718,9 +720,10 @@ I am starting a new series of articles for those who want to get started with Op
               </span>
               <div class="flex-grow">
                 
-                  <a href="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                  <span class="font-bold text-secondary dark:text-purple-400">
                     OpenClaw installation and gateway bootstrap
-                  </a>
+                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
+                  </span>
                 
                 <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">May 9, 2026</p>
               </div>
@@ -733,26 +736,24 @@ I am starting a new series of articles for those who want to get started with Op
           
           
             
+          
+            
               
             
           
-            
-          
-
-          
-          
-            <div></div>
-          
 
           
           
             
-            <a href="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">OpenClaw installation and gateway bootstrap</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <a href="https://ravichaganti.com/blog/introduction-to-openclaw/" class="flex items-center text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
+              <span class="truncate">Introduction to OpenClaw</span>
             </a>
+          
+
+          
           
         </div>
       </nav>
@@ -794,17 +795,7 @@ I am starting a new series of articles for those who want to get started with Op
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
         <nav id="TableOfContents">
   <ul>
-    <li><a href="#architecture">Architecture</a></li>
-    <li><a href="#full-turn-workflow">Full turn workflow</a></li>
-    <li><a href="#multi-agent-pattern">Multi-agent pattern</a></li>
-    <li><a href="#openclaw-skills">OpenClaw Skills</a></li>
-    <li><a href="#openclaw-autonomy">OpenClaw Autonomy</a>
-      <ul>
-        <li><a href="#identity-stack">Identity Stack</a></li>
-      </ul>
-    </li>
-    <li><a href="#personal-assistant-use-cases">Personal assistant use cases</a></li>
-    <li><a href="#summary">Summary</a></li>
+    <li><a href="#building-and-running-the-openclaw-container">Building and running the OpenClaw container</a></li>
   </ul>
 </nav>
       </nav>
@@ -879,17 +870,227 @@ I am starting a new series of articles for those who want to get started with Op
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>I have been running and experimenting with <a href="https://openclaw.ai/">OpenClaw</a> for a while. Unless you just returned from a trip to a cave, you will already know what OpenClaw is. The project originally emerged in late 2025 under the name Clawdbot, authored by the Austrian developer Peter Steinberger. It was renamed to <strong>Moltbot</strong> (January 2026) and then <strong>OpenClaw</strong> due to trademark considerations.</p>
-<p>I am starting a new series of articles for those who want to get started with OpenClaw but do not know where to start or how. This series will provide an introduction to OpenClaw, get you started with running OpenClaw, and incrementally build a multi-agent system that uses OpenClaw at its core.</p>
-<p>While traditional large language model (LLM) interfaces function as reactive, session-bound silos, OpenClaw operates as a persistent, local-first gateway that transforms reasoning models into proactive entities capable of system-level execution and multi-channel communication. The underlying philosophy of OpenClaw is rooted in the democratization of agentic AI. It addresses a critical tension in the modern AI landscape: the trade-off between the power of cloud-hosted models and the privacy of local data. OpenClaw resolves this by serving as a self-hosted gateway, where the &ldquo;brain&rdquo; (the LLM) can be either local or remote, while the &ldquo;body&rdquo; (the execution environment, memory, and credentials) remains entirely under the user&rsquo;s control.</p>
-<h2 id="architecture">Architecture</h2>
-<p>The fundamental unit of the OpenClaw architecture is the Gateway, a long-lived background process typically running on Node.js or Bun.2 This Gateway serves as the centralized control plane, managing the intersection of messaging platforms, AI models, local toolsets, and persistent state. By operating as a continuous daemon, the Gateway ensures that the agent remains available to process incoming signals or execute scheduled tasks even when the user is not actively engaged.</p>
+          <p>In the first part of this series, we looked at what OpenClaw is, its architecture, and its features. In this hands-on part of the series, we will build and run OpenClaw as a container and verify the gateway&rsquo;s health. Let us get started.</p>
+<h2 id="building-and-running-the-openclaw-container">Building and running the OpenClaw container</h2>
+<p>I chose to run OpenClaw inside a container to ensure I can freely experiment with different features, including file system access. Before you can run OpenClaw in a container, you need to build the image from source. Let us start by preparing a few directories.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># OpenClaw config &amp; agent data</span>
+</span></span><span class="line"><span class="cl"><span class="n">mkdir</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw&#34;</span> <span class="n">-Force</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Your workspace (finance, productivity, knowledge files)</span>
+</span></span><span class="line"><span class="cl"><span class="n">mkdir</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\workspace&#34;</span> <span class="n">-Force</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We will then create a .env file for storing API keys and other secrets.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="sh">@&#34;
+</span></span></span><span class="line"><span class="cl"><span class="sh">GEMINI_API_KEY=your_actual_key_here
+</span></span></span><span class="line"><span class="cl"><span class="sh">OPENCLAW_GATEWAY_TOKEN=openclaw-secret-token
+</span></span></span><span class="line"><span class="cl"><span class="sh">&#34;@</span> <span class="p">|</span> <span class="nb">Out-File</span> <span class="n">-FilePath</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw\.env&#34;</span> <span class="n">-Encoding</span> <span class="n">UTF8</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>&gt; When you open the dashboard in your browser, it will ask for a token. Use <code>openclaw-secret-token</code> to log in. Replace <code>your_actual_key_here</code> with your actual key from Google AI Studio or which ever provider you choose to use.</p>
+<p>We will now need to seed the gateway&rsquo;s initial configuration.</p>
+<p>Create <code>%USERPROFILE%\.openclaw\openclaw.json</code> and paste the following JSON blob.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;gateway&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;mode&#34;</span><span class="p">:</span> <span class="s2">&#34;local&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;bind&#34;</span><span class="p">:</span> <span class="s2">&#34;lan&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;controlUi&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;allowedOrigins&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;http://localhost:18789&#34;</span><span class="p">,</span> <span class="s2">&#34;http://127.0.0.1:18789&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;agents&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;defaults&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;model&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;primary&#34;</span><span class="p">:</span> <span class="s2">&#34;google/gemini-2.5-pro&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;fallbacks&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;google/gemini-2.5-flash&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;models&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;google/gemini-2.5-pro&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;alias&#34;</span><span class="p">:</span> <span class="s2">&#34;Gemini Pro&#34;</span> <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;google/gemini-2.5-flash&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;alias&#34;</span><span class="p">:</span> <span class="s2">&#34;Gemini Flash&#34;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We are now ready to build the container image from the OpenClaw source code. We&rsquo;ll build the container image locally, directly from the OpenClaw source repository.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="c"># Clone the repository</span>
+</span></span><span class="line"><span class="cl"><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">openclaw</span><span class="p">/</span><span class="n">openclaw</span><span class="p">.</span><span class="py">git</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\openclaw-source&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Set-Location</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\openclaw-source&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Build the Docker image</span>
+</span></span><span class="line"><span class="cl"><span class="n">docker</span> <span class="n">build</span> <span class="n">-t</span> <span class="n">openclaw</span><span class="err">:</span><span class="n">local</span> <span class="o">-f</span> <span class="n">Dockerfile</span> <span class="p">.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># Return to your home directory</span>
+</span></span><span class="line"><span class="cl"><span class="nb">Set-Location</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Building this image takes a while. On my local PC with 16GB of memory, it took close to 10 minutes. Once the image is ready, you can launch the container.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">docker</span> <span class="n">run</span> <span class="n">-d</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="p">-</span><span class="n">-name</span> <span class="n">openclaw</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="p">-</span><span class="n">-restart</span> <span class="nb">unless-stopped</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="n">-v</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw:/home/node/.openclaw&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="n">-v</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\workspace:/home/node/workspace&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="n">-p</span> <span class="mf">18789</span><span class="err">:</span><span class="mf">18789</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="p">-</span><span class="n">-env</span><span class="o">-file</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw\.env&#34;</span> <span class="p">`</span>
+</span></span><span class="line"><span class="cl">  <span class="n">openclaw</span><span class="err">:</span><span class="n">local</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="n">gateway</span> <span class="n">run</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Here is a quick explanation of the flags we used.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Flag</th>
+          <th>Purpose</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--restart unless-stopped</code></td>
+          <td>Auto-restart on crash or reboot</td>
+      </tr>
+      <tr>
+          <td><code>-v ...\.openclaw:/home/node/.openclaw</code></td>
+          <td>Persist config, agents, memory, credentials</td>
+      </tr>
+      <tr>
+          <td><code>-v ...\workspace:/home/node/workspace</code></td>
+          <td>Persist your data (finance, tasks, notes)</td>
+      </tr>
+      <tr>
+          <td><code>-p 18789:18789</code></td>
+          <td>Map container port to host for dashboard access</td>
+      </tr>
+      <tr>
+          <td><code>--env-file</code></td>
+          <td>Injects API keys into the container</td>
+      </tr>
+  </tbody>
+</table>
+<p>Once the container starts, you should see logs similar to what is shown below.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">33.696</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">33.695</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">loading</span> <span class="n">configuration</span><span class="err">…</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">33.808</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">33.807</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">resolving</span> <span class="n">authentication</span><span class="err">…</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">33.840</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">33.839</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">starting</span><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">35.335</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">35.334</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">auto</span><span class="o">-</span><span class="n">enabled</span> <span class="n">plugins</span> <span class="k">for</span> <span class="n">this</span> <span class="n">runtime</span> <span class="n">without</span> <span class="n">writing</span> <span class="n">config</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">35.335</span> <span class="o">|</span> <span class="o">-</span> <span class="n">google</span><span class="o">/</span><span class="n">gemini</span><span class="o">-</span><span class="mf">2.5</span><span class="o">-</span><span class="n">pro</span> <span class="n">model</span> <span class="n">configured</span><span class="p">,</span> <span class="n">enabled</span> <span class="n">automatically</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">35.687</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">35.686</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">starting</span> <span class="n">HTTP</span> <span class="n">server</span><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">35.693</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">35.692</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="err">⚠️</span>  <span class="n">Gateway</span> <span class="n">is</span> <span class="n">binding</span> <span class="n">to</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">loopback</span> <span class="n">address</span><span class="o">.</span> <span class="n">Ensure</span> <span class="n">authentication</span> <span class="n">is</span> <span class="n">configured</span> <span class="n">before</span> <span class="n">exposing</span> <span class="n">to</span> <span class="n">public</span> <span class="n">networks</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">36.090</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">36.090</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">health</span><span class="o">-</span><span class="n">monitor</span><span class="p">]</span> <span class="n">started</span> <span class="p">(</span><span class="n">interval</span><span class="p">:</span> <span class="mi">300</span><span class="n">s</span><span class="p">,</span> <span class="n">startup</span><span class="o">-</span><span class="n">grace</span><span class="p">:</span> <span class="mi">60</span><span class="n">s</span><span class="p">,</span> <span class="n">channel</span><span class="o">-</span><span class="n">connect</span><span class="o">-</span><span class="n">grace</span><span class="p">:</span> <span class="mi">120</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.291</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.291</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">agent</span> <span class="n">model</span><span class="p">:</span> <span class="n">google</span><span class="o">/</span><span class="n">gemini</span><span class="o">-</span><span class="mf">2.5</span><span class="o">-</span><span class="n">pro</span> <span class="p">(</span><span class="n">thinking</span><span class="o">=</span><span class="n">medium</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="n">off</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.298</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.297</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">http</span> <span class="n">server</span> <span class="n">listening</span> <span class="p">(</span><span class="mi">7</span> <span class="n">plugins</span><span class="p">:</span> <span class="n">browser</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">device</span><span class="o">-</span><span class="n">pair</span><span class="p">,</span> <span class="n">file</span><span class="o">-</span><span class="n">transfer</span><span class="p">,</span> <span class="n">memory</span><span class="o">-</span><span class="n">core</span><span class="p">,</span> <span class="n">phone</span><span class="o">-</span><span class="n">control</span><span class="p">,</span> <span class="n">talk</span><span class="o">-</span><span class="n">voice</span><span class="p">;</span> <span class="mf">4.4</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.304</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.304</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="nb">log</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">openclaw</span><span class="o">/</span><span class="n">openclaw</span><span class="o">-</span><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mf">08.</span><span class="n">log</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.361</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.360</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">starting</span> <span class="n">channels</span> <span class="ow">and</span> <span class="n">sidecars</span><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.822</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.821</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">browser</span><span class="o">/</span><span class="n">server</span><span class="p">]</span> <span class="n">Browser</span> <span class="n">control</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">18791</span><span class="o">/</span> <span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.870</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.869</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">ready</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.895</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.894</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">heartbeat</span><span class="p">]</span> <span class="n">started</span>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">39.744</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">39.743</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">update</span> <span class="n">available</span> <span class="p">(</span><span class="n">latest</span><span class="p">):</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.7</span> <span class="p">(</span><span class="n">current</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.6</span><span class="p">)</span><span class="o">.</span> <span class="n">Run</span><span class="p">:</span> <span class="n">openclaw</span> <span class="n">update</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>You can check the gateway&rsquo;s health by running <code>node dist/index.js gateway health</code> inside the container.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\&gt;</span> docker <span class="nb">exec</span> openclaw node dist/index.js gateway health
+</span></span><span class="line"><span class="cl">Gateway Health
+</span></span><span class="line"><span class="cl">OK <span class="o">(</span>31ms<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>At this point, the gateway dashboard UI should be accessible at &ldquo;http://127.0.0.1:18789/&rdquo;. In the UI, enter the token from the <code>.env</code> file.</p>
 <p><figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
-  <a href="/images/openclaw_arch.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
-    <img src="/images/openclaw_arch.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
-    Image Credit: Gemini
-  </figcaption></figure>
+  <a href="/images/openclaw_control.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
+    <img src="/images/openclaw_control.png" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a></figure>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   
@@ -911,95 +1112,34 @@ I am starting a new series of articles for those who want to get started with Op
       });
     });
   </script></p>
-<p>The Gateway comprises five primary subsystems that handle the lifecycle of an agentic interaction. These subsystems are designed for high modularity, allowing the framework to remain lightweight while supporting massive extensibility.</p>
-<ul>
-<li><strong>Channel adapters</strong>: Normalizes inbound communication from diverse platforms by translating protocol-specific payloads (e.g., WhatsApp, Telegram) into a unified internal format.</li>
-<li><strong>Session Manager</strong>: Resolves sender identities and maintains conversation context by mapping unique peer identifiers to specific agent sessions and state directories.</li>
-<li><strong>Queue Manager</strong>: Manages concurrency and serializes execution turns to prevent race conditions when multiple incoming messages are handled during tool execution.</li>
-<li><strong>Agent Runtime</strong>: The reasoning engine and tool-invocation loop that assembles the prompt context and executes the &ldquo;call model → execute tool&rdquo; cycle.</li>
-<li><strong>Control Plane</strong>: Provides an interface for configuration and external clients via a WebSocket API (default port 18789) for the CLI, web UI, and device nodes.</li>
-</ul>
-<p>This lean architecture enables OpenClaw to run on constrained hardware, such as a Raspberry Pi. A defining conceptual pillar of OpenClaw is its &ldquo;local-first&rdquo; data model. Unlike cloud assistants that store history in proprietary databases, OpenClaw persists all relevant data to the host&rsquo;s filesystem, specifically under the <code>~/.openclaw</code> directory.</p>
-<h2 id="full-turn-workflow">Full turn workflow</h2>
-<p>The lifecycle of a single user request follows a deterministic &ldquo;Dual-Loop&rdquo; execution pattern. The outer loop manages session state, while the inner loop handles the iterative &ldquo;Reason → Act&rdquo; cycle.</p>
-<figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
-  <a href="/images/openclaw_fullturn.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
-    <img src="/images/openclaw_fullturn.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
-    Image Credit: Gemini
-  </figcaption></figure>
-
-<p>As the scope of automation expands, a single monolithic agent often becomes inefficient due to context window limitations and reasoning pollution. OpenClaw addresses this through advanced orchestration patterns that allow for specialized division of labor.</p>
-<h2 id="multi-agent-pattern">Multi-agent pattern</h2>
-<p>In complex environments, a single agent delegates tasks to specialized sub-agents. These sub-agents are ephemeral workers who prevent context pollution in the main conversation.</p>
-<figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
-  <a href="/images/openclaw_multiagent.png" class="glightbox" data-gallery="post-images" data-glightbox="description: Image Credit: Gemini" style="display: block; height: 100%;">
-    <img src="/images/openclaw_multiagent.png" alt="Image Credit: Gemini" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a><figcaption style="text-align: center; margin-top: 0.75rem; font-size: 0.875rem; color: #6b7280; font-style: italic;">
-    Image Credit: Gemini
-  </figcaption></figure>
-
-<p>When using a multi-agent pattern, you will come across agents and sub-agents.</p>
-<ul>
-<li><em>Agents</em> are persistent personas with their own &ldquo;soul&rdquo; (SOUL.md), workspace, memory, and session history. They are the primary interface for users and maintain the long-term context of projects and preferences.</li>
-<li><em>Sub-agents</em> are temporary, stateless workers spawned via the <code>sessions_spawn</code> tool to handle a specific, bounded task.</li>
-</ul>
-<p>OpenClaw&rsquo;s primary user interface is not a standalone application but the existing messaging ecosystem. This choice is strategic, as it places the AI assistant in the same social context as human colleagues and friends, significantly reducing interaction friction. The Gateway acts as a multi-channel router, allowing a single agent or a team of agents to be accessible across dozens of platforms simultaneously. This routing architecture enables sophisticated use cases, such as an enterprise that uses a single WhatsApp number to provide general customer support while routing executive direct messages (DMs) to a highly privileged, private assistant. When enabled, the pairing mode will prompt unknown senders to provide a pairing code before processing any of their requests.</p>
-<p>OpenClaw supports a vast array of channels. By normalizing these disparate protocols through the Channel Adapter subsystem, OpenClaw allows developers to write a single automation script or skill that functions identically, whether triggered by a WhatsApp message or a Slack command.</p>
-<h2 id="openclaw-skills">OpenClaw Skills</h2>
-<p>Conceptually, a &ldquo;Skill&rdquo; in OpenClaw is more than just a plugin; it is a packaged unit of procedural knowledge and tool access. Adhering to the <a href="https://agentskills.io">AgentSkills</a> specification, a skill is defined as a directory containing an SKILL.md file, which uses YAML front matter to declare its requirements and Markdown to provide the agent with instructions for using the bundled tools. The declarative nature of the skill format is central to OpenClaw&rsquo;s ability to minimize token usage and improve reasoning. When the agent starts a turn, it scans the metadata of available skills to build a &ldquo;capability index.&rdquo; It injects the full instructions for a skill into the prompt only when it determines the skill is relevant to the current task. This process is known as progressive disclosure. I have written about skills in a <a href="https://ravichaganti.com/categories/skills/">couple of earlier articles</a>.</p>
-<p>On <a href="https://clawhub.ai/">ClawHub</a>, you can find a wide range of skills, from basic file management to complex integrations such as the <em>Gog</em> skill for Google Workspace and the <em>Github</em> skill for managing CI/CD pipelines. The <a href="https://docs.openclaw.ai/plugins/skill-workshop">Skill Workshop plugin</a> of OpenClaw allows the agent to observe its own successful multi-step workflows and codify them into new skills.</p>
-<h2 id="openclaw-autonomy">OpenClaw Autonomy</h2>
-<p>The transition from a &ldquo;chatbot&rdquo; to an &ldquo;autonomous agent&rdquo; is primarily facilitated by OpenClaw&rsquo;s proactivity systems. These mechanisms allow the agent to break the cycle of human-triggered prompts and act based on internal schedules or external environmental changes.</p>
-<ul>
-<li>The <em><strong>Heartbeat</strong></em> is a recurring &ldquo;turn&rdquo; of the agent that occurs by default every 30 minutes.14 During a heartbeat, the Gateway injects the contents of a HEARTBEAT.md file into the agent&rsquo;s context. This file functions as a standing order or a checklist of tasks that the agent should perform without being asked.</li>
-<li>OpenClaw&rsquo;s <em><strong>Cron</strong></em> system provides precise, scheduled execution enabled by the croner library.</li>
-</ul>
-<h3 id="identity-stack">Identity Stack</h3>
-<p>OpenClaw agents don&rsquo;t have &ldquo;built-in&rdquo; personalities. Instead, identity is assembled from <strong>Markdown files</strong> that are injected into the LLM&rsquo;s system prompt at the start of every session. This is called the <strong>bootstrap</strong>.</p>
+<p>At this time, we have the OpenClaw gateway running in a container. Because the <code>.openclaw</code> directory is mounted as a volume, you can edit config files directly on Windows with any text editor. The changes are reflected inside the container instantly (OpenClaw watches for config changes and hot-reloads).</p>
+<p>Here is a quick, handy tip. I have added a few custom functions to my PowerShell profile to access a few aspects of OpenClaw state.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">~/.openclaw/agents/&lt;agentId&gt;/
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">├── SOUL.md      → WHO the agent IS <span class="o">(</span>personality, tone, expertise<span class="o">)</span>
-</span></span><span class="line"><span class="cl">├── IDENTITY.md    → WHAT the agent IS <span class="o">(</span>name, avatar, <span class="s2">&#34;creature type&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">├── AGENTS.md     → WHAT the agent DOES <span class="o">(</span>rules, workflows, policies<span class="o">)</span>
-</span></span><span class="line"><span class="cl">├── USER.md      → WHO it serves <span class="o">(</span>your name, preferences, context<span class="o">)</span>
-</span></span><span class="line"><span class="cl">├── MEMORY.md     → WHAT it REMEMBERS <span class="o">(</span>long-term curated knowledge<span class="o">)</span>
-</span></span><span class="line"><span class="cl">├── HEARTBEAT.md   → WHEN it acts proactively <span class="o">(</span>schedule, triggers<span class="o">)</span>
-</span></span><span class="line"><span class="cl">└── memory/
-</span></span><span class="line"><span class="cl">  └── YYYY-MM-DD.md → Daily activity logs
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">exec</span> <span class="n">openclaw</span> <span class="n">node</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="nv">@args</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc-it</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">exec</span> <span class="n">-it</span> <span class="n">openclaw</span> <span class="n">node</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="nv">@args</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc-logs</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">logs</span> <span class="o">-f</span> <span class="n">openclaw</span> <span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Every time a new session starts (or the agent &ldquo;wakes up&rdquo; from a heartbeat), OpenClaw:</p>
-<ol>
-<li><strong>Reads</strong> all identity files from the agent&rsquo;s workspace</li>
-<li><strong>Assembles</strong> them into a system prompt</li>
-<li><strong>Injects</strong> the system prompt into the LLM call</li>
-<li>The LLM now &ldquo;knows&rdquo; its personality, rules, user context, and recent history</li>
-</ol>
-<p>Because LLMs are stateless (each API call is independent), this bootstrap is what creates the <em>illusion</em> of a persistent, consistent personality.</p>
-<h2 id="personal-assistant-use-cases">Personal assistant use cases</h2>
-<p>Here is what I have experimented with and am still building on this knowledge.</p>
-<ul>
-<li><strong>Morning Briefings</strong>: An agent monitors RSS feeds, weather, calendar, and GitHub activity to deliver a concise, context-aware briefing at 6:30 AM every day.</li>
-<li><strong>Expense Management</strong>: A photograph of a receipt is sent to the agent via WhatsApp; the agent automatically parses the data and logs it in a spreadsheet.</li>
-<li><strong>Smart Home Environment</strong>: Proactive routines that dim lights, lock doors, and check security cameras based on the user&rsquo;s natural language standing orders.</li>
-</ul>
-<h2 id="summary">Summary</h2>
-<p>OpenClaw represents a fundamental architectural shift from AI as a service to AI as infrastructure. By providing a local-first, multi-channel gateway, it empowers users to move beyond simple chat interactions and into a world of autonomous, proactive coordination. This part is a quick overview of OpenClaw: its architecture and features. In the future parts of this series, we will start with deploying OpenClaw as a Docker container and onboarding the WhatsApp channel, setting up identity and personality, exploring tools and skills, using MCP servers and plugins, and finally building a multi-agent workflow. Stay tuned!</p>
+</div><p>With these handy functions, I can now run <code>oc gateway health</code> instead of the complete <code>docker exec</code> command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\U</span>sers<span class="se">\r</span>avik&gt; oc gateway health
+</span></span><span class="line"><span class="cl">Gateway Health
+</span></span><span class="line"><span class="cl">OK <span class="o">(</span>28ms<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In the next part, we shall complete onboarding and integrating WhatsApp channel.</p>
 
         </div>
 
@@ -1024,7 +1164,7 @@ I am starting a new series of articles for those who want to get started with Op
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&text=Introduction&#43;to&#43;OpenClaw"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fopenclaw-installation-and-gateway-bootstrap%2F&text=OpenClaw&#43;installation&#43;and&#43;gateway&#43;bootstrap"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -1035,7 +1175,7 @@ I am starting a new series of articles for those who want to get started with Op
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fopenclaw-installation-and-gateway-bootstrap%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -1046,7 +1186,7 @@ I am starting a new series of articles for those who want to get started with Op
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fopenclaw-installation-and-gateway-bootstrap%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -1057,7 +1197,7 @@ I am starting a new series of articles for those who want to get started with Op
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&title=Introduction&#43;to&#43;OpenClaw"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fopenclaw-installation-and-gateway-bootstrap%2F&title=OpenClaw&#43;installation&#43;and&#43;gateway&#43;bootstrap"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1068,7 +1208,7 @@ I am starting a new series of articles for those who want to get started with Op
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fintroduction-to-openclaw%2F&t=Introduction&#43;to&#43;OpenClaw"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fopenclaw-installation-and-gateway-bootstrap%2F&t=OpenClaw&#43;installation&#43;and&#43;gateway&#43;bootstrap"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1078,7 +1218,7 @@ I am starting a new series of articles for those who want to get started with Op
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/openclaw-installation-and-gateway-bootstrap\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1095,9 +1235,9 @@ I am starting a new series of articles for those who want to get started with Op
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'Introduction to OpenClaw',
-        text: 'OpenClaw is an open-source, self-hosted AI agent framework that turns your machine into a persistent, autonomous personal assistant.',
-        url: 'https:\/\/ravichaganti.com\/blog\/introduction-to-openclaw\/'
+        title: 'OpenClaw installation and gateway bootstrap',
+        text: 'The best way to understand OpenClaw is to try it. The safest way to do that is to run it inside a container.',
+        url: 'https:\/\/ravichaganti.com\/blog\/openclaw-installation-and-gateway-bootstrap\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1151,18 +1291,18 @@ I am starting a new series of articles for those who want to get started with Op
     
     
       
-        
-      
     
+      
+        
       
     
 
     
     
       
+        
+        
       
-        
-        
       
     
   
@@ -1172,49 +1312,49 @@ I am starting a new series of articles for those who want to get started with Op
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/introduction-to-openclaw/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous in OpenClaw: Introduction to OpenClaw">
           <div class="flex items-start gap-3">
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </div>
-            <div class="flex-1">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Previous Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the first post</p>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous in OpenClaw</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Introduction to OpenClaw
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">OpenClaw is an open-source, self-hosted AI agent framework that turns your machine into a persistent, autonomous personal assistant.</p>
+              
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
 
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in OpenClaw: OpenClaw installation and gateway bootstrap">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in OpenClaw</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                OpenClaw installation and gateway bootstrap
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">The best way to understand OpenClaw is to try it. The safest way to do that is to run it inside a container.</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -1415,15 +1555,15 @@ I am starting a new series of articles for those who want to get started with Op
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/openclaw-installation-and-gateway-bootstrap/" class="no-underline block group">
+  <a href="https://ravichaganti.com/blog/introduction-to-openclaw/" class="no-underline block group">
     
     <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      OpenClaw installation and gateway bootstrap
+      Introduction to OpenClaw
     </h4>
 
     
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-05-09">
-      May 9, 2026
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-05-08">
+      May 8, 2026
     </time>
   </a>
 </article>
@@ -1449,17 +1589,7 @@ I am starting a new series of articles for those who want to get started with Op
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#architecture">Architecture</a></li>
-    <li><a href="#full-turn-workflow">Full turn workflow</a></li>
-    <li><a href="#multi-agent-pattern">Multi-agent pattern</a></li>
-    <li><a href="#openclaw-skills">OpenClaw Skills</a></li>
-    <li><a href="#openclaw-autonomy">OpenClaw Autonomy</a>
-      <ul>
-        <li><a href="#identity-stack">Identity Stack</a></li>
-      </ul>
-    </li>
-    <li><a href="#personal-assistant-use-cases">Personal assistant use cases</a></li>
-    <li><a href="#summary">Summary</a></li>
+    <li><a href="#building-and-running-the-openclaw-container">Building and running the OpenClaw container</a></li>
   </ul>
 </nav>
   </nav>
