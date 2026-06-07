@@ -57,7 +57,7 @@ There are three different flows I encoded into AGENTS.md. As a pair programmer, 
 
 In this workflow, the developer starts with a feature request or specification. The agent infers that, creates a plan, identifies areas to handover, and generates the necessary scaffold or boilerplate.
 
-```mermaid {width="500px"}
+```mermaid {width="600px"}
 graph TD
     Start([Developer makes a request]) --> Plan[Agent: Understand, plan, explain approach<br><i>share rationale for the plan</i>]
     
@@ -85,7 +85,7 @@ graph TD
 
 Bug fixing workflow is similar to the feature development.
 
-```mermaid {width="500px"}
+```mermaid {width="600px"}
 graph TD
     Start([Developer reports a bug]) --> Analyze[Agent: Analyze the bug<br>• Reproduce / understand the issue<br>• Trace code to identify root cause<br>• Assess blast radius]
     
@@ -109,7 +109,7 @@ graph TD
 
 In this workflow, agent generates the code and then attempts to interview the developer to evaluate their understanding of the generated code.
 
-```mermaid {width="500px"}
+```mermaid {width="600px"}
 graph TD
     Start([Agent completes code generation task]) --> Identify[Agent: Identify 3-5 key code flows<br><i>critical paths, non-obvious logic, error handling, data transformations</i>]
     
