@@ -1051,45 +1051,45 @@
 <h2 id="sessions">Sessions</h2>
 <p>A session in Google ADK is a single, ongoing interaction between the user and your agent. Think of it as one chat thread. It contains the chronological history of everything that happened (as Events) and a scratchpad of data relevant to this conversation (State). A <code>Session</code> object is the container for one conversation thread. Some of the key properties of the <code>Session</code> object are:</p>
 <table>
-  <thead>
-      <tr>
-          <th>Property</th>
-          <th>Type</th>
-          <th>Purpose</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>id</code></td>
-          <td><code>str</code></td>
-          <td>Unique identifier for this specific conversation</td>
-      </tr>
-      <tr>
-          <td><code>app_name</code></td>
-          <td><code>str</code></td>
-          <td>Which agent application does this belong to</td>
-      </tr>
-      <tr>
-          <td><code>user_id</code></td>
-          <td><code>str</code></td>
-          <td>Which user owns this conversation</td>
-      </tr>
-      <tr>
-          <td><code>state</code></td>
-          <td><code>dict</code></td>
-          <td>Key-value scratchpad</td>
-      </tr>
-      <tr>
-          <td><code>events</code></td>
-          <td><code>list[Event]</code></td>
-          <td>Chronological history of all interactions</td>
-      </tr>
-      <tr>
-          <td><code>last_update_time</code></td>
-          <td><code>float</code></td>
-          <td>Timestamp of the most recent event</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Property</th>
+					<th>Type</th>
+					<th>Purpose</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td><code>id</code></td>
+					<td><code>str</code></td>
+					<td>Unique identifier for this specific conversation</td>
+			</tr>
+			<tr>
+					<td><code>app_name</code></td>
+					<td><code>str</code></td>
+					<td>Which agent application does this belong to</td>
+			</tr>
+			<tr>
+					<td><code>user_id</code></td>
+					<td><code>str</code></td>
+					<td>Which user owns this conversation</td>
+			</tr>
+			<tr>
+					<td><code>state</code></td>
+					<td><code>dict</code></td>
+					<td>Key-value scratchpad</td>
+			</tr>
+			<tr>
+					<td><code>events</code></td>
+					<td><code>list[Event]</code></td>
+					<td>Chronological history of all interactions</td>
+			</tr>
+			<tr>
+					<td><code>last_update_time</code></td>
+					<td><code>float</code></td>
+					<td>Timestamp of the most recent event</td>
+			</tr>
+	</tbody>
 </table>
 <p>To create and manage sessions, we use the <code>SessionService</code>.</p>
 <div class="highlight"><div class="chroma">
@@ -1204,42 +1204,42 @@
 <p>We will dive into <code>Runner</code> and its architecture in a later part of this series.</p>
 </blockquote>
 <table>
-  <thead>
-      <tr>
-          <th>Field</th>
-          <th>Purpose</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td><code>id</code></td>
-          <td>Unique identifier for this specific event</td>
-      </tr>
-      <tr>
-          <td><code>invocation_id</code></td>
-          <td>Groups all events from one user-request-to-final-response cycle</td>
-      </tr>
-      <tr>
-          <td><code>author</code></td>
-          <td><code>'user'</code> or agent name (e.g., <code>'WeatherAgent'</code>)</td>
-      </tr>
-      <tr>
-          <td><code>content</code></td>
-          <td>The payload (text, function calls, or function responses)</td>
-      </tr>
-      <tr>
-          <td><code>actions</code></td>
-          <td>Side effects (state_delta, artifact_delta, transfer_to_agent, escalate)</td>
-      </tr>
-      <tr>
-          <td><code>timestamp</code></td>
-          <td>When this event was created</td>
-      </tr>
-      <tr>
-          <td><code>partial</code></td>
-          <td><code>True</code> if this is a streaming chunk, not yet complete</td>
-      </tr>
-  </tbody>
+	<thead>
+			<tr>
+					<th>Field</th>
+					<th>Purpose</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td><code>id</code></td>
+					<td>Unique identifier for this specific event</td>
+			</tr>
+			<tr>
+					<td><code>invocation_id</code></td>
+					<td>Groups all events from one user-request-to-final-response cycle</td>
+			</tr>
+			<tr>
+					<td><code>author</code></td>
+					<td><code>'user'</code> or agent name (e.g., <code>'WeatherAgent'</code>)</td>
+			</tr>
+			<tr>
+					<td><code>content</code></td>
+					<td>The payload (text, function calls, or function responses)</td>
+			</tr>
+			<tr>
+					<td><code>actions</code></td>
+					<td>Side effects (state_delta, artifact_delta, transfer_to_agent, escalate)</td>
+			</tr>
+			<tr>
+					<td><code>timestamp</code></td>
+					<td>When this event was created</td>
+			</tr>
+			<tr>
+					<td><code>partial</code></td>
+					<td><code>True</code> if this is a streaming chunk, not yet complete</td>
+			</tr>
+	</tbody>
 </table>
 <p>Besides the <code>content</code>, the <code>actions</code> field contains an important piece of information that decides the next step in the event loop. The <code>actions</code> field is where state changes and control flow signals live. State is never updated in-place. Every state change flows through an Event&rsquo;s <code>state_delta</code>. When the <code>SessionService</code> processes <code>append_event(session, event)</code>, it reads <code>event.actions.state_delta</code> and applies those changes to the persisted state. This is the only reliable path for state updates.</p>
 <p>In an earlier article on <a href="http://localhost:1313/blog/building-a-multi-agent-linkedin-newsletter-system-with-google-adk/">building a multi-agent workflow</a> using Google ADK, we saw how <code>event.actions.escalate</code> was used to signal the workflow&rsquo;s termination.</p>
@@ -2686,6 +2686,9 @@
 
   
   <script src="/js/cookie-consent.js"></script>
+
+  
+  
 
   
   
