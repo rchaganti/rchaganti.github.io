@@ -13,7 +13,7 @@ Without an orchestration harness to parse its outputs, intercept its errors, and
 
 {{< figure src="/images/harness01.png" width=400 caption="Harness Engineering [Image credit: Gemini Nano Banana]">}}  {{< load-photoswipe >}}
 
-The most important aspect of agent harness is the knowledge and memory available to the agent. With pre-trained knowledge of a model alone, an agent will be like a **Kūpa-maṇḍūka** ([A frog in a well](https://en.wikipedia.org/wiki/Kupamanduka))! Vedanta, a primary school of Indian philosophy, describes life's journey as going from ignorance to knowledge. Humans have a systematic way of acquiring memory. Similar principles have been applied in building agentic memory as well. Agent memory is an evolving field and has already seen significant advances from where it was in 2002.
+The most important aspect of agent harness is the knowledge and memory available to the agent. With pre-trained knowledge of a model alone, an agent will be like a **Kūpa-maṇḍūka** ([A frog in a well](https://en.wikipedia.org/wiki/Kupamanduka))! Vedanta, a primary school of Indian philosophy, describes life's journey as going from ignorance to knowledge. Humans have a systematic way of acquiring knowledge and memory. Similar principles have been applied in building agentic memory as well. Agent memory is an evolving field and has already seen significant advances from where it was in 2002.
 
 ## Knowledge Graphs and Agent Wikis
 
