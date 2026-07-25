@@ -1,7 +1,7 @@
 # The Future of Agentic Architectures Might Just Be Written in Our Past
 
 
-As the AI ecosystem transitions from conversational chatbots to Agentic AI, our core engineering challenge has fundamentally shifted. The primary bottleneck is no longer the model. It is what we provide and how we provide it that generates the desired outcome. It is **harness engineering**. An effective agent harness serves as an operational nervous system around a foundation model. The question is: how do we design production infrastructure that takes abstract, pre-trained parameters and refines them into active, context-aware, and purposeful real-world action?
+As the AI ecosystem transitions from conversational chatbots to Agentic AI, our core engineering challenge has fundamentally shifted. The primary bottleneck is no longer the model. It is what we provide, the knowledge, and how we provide it that generates the desired outcome. **Harness engineering** describes this as the the practice of designing the complete software environment around an AI model, encompassing tools, guardrails, and feedback loops to make autonomous agents reliable. An effective agent harness serves as an operational nervous system around a foundation model. The question is: how do we design production infrastructure that takes abstract, pre-trained parameters and refines them into active, context-aware, and purposeful real-world action?
 
 While these engineering challenges feel cutting-edge, the foundational questions behind them are not new. Knowledge is central to building powerful agentic systems and has been a key part of almost every civilization. Centuries before digital systems, classical Indian text traditions spent millennia exploring this exact transformation: how cognitive beings build internal relational graphs, maintain persistent logs, and refine knowledge across time. By tracing the evolution of modern harness architectures, we can see how closely our most advanced engineering frameworks mirror these ancient insights. 
 
@@ -13,13 +13,15 @@ Without an orchestration harness to parse its outputs, intercept its errors, and
 
 {{< figure src="/images/harness01.png" width=400 caption="Harness Engineering [Image credit: Gemini Nano Banana]">}}  {{< load-photoswipe >}}
 
-The most important aspect of agent harness is the knowledge and memory available to the agent. With pre-trained knowledge of a model alone, an agent will be like a **Kūpa-maṇḍūka** ([A frog in a well](https://en.wikipedia.org/wiki/Kupamanduka))! 
+The most important aspect of agent harness is the knowledge and memory available to the agent. With pre-trained knowledge of a model alone, an agent will be like a **Kūpa-maṇḍūka** ([A frog in a well](https://en.wikipedia.org/wiki/Kupamanduka))! Vedanta, a primary school of Indian philosophy, describes life's journey as going from ignorance to knowledge. Humans have a systematic way of acquiring memory. Similar principles have been applied in building agentic memory as well. Agent memory is an evolving field and has already seen significant advances from where it was in 2002.
 
-## Relational memory and state: Knowledge Graphs and Agent Wikis
+## Knowledge Graphs and Agent Wikis
 
 Humans do not store flat, isolated facts; we build internal knowledge graphs where concepts, entities, and events are linked across time. We also keep journals and logs—external sources of truth that prevent cognitive overload and preserve state.
 
-An effective agent harness relies on identical constructs, which is like an operational nervous system (illustrated below). It integrates Knowledge Graphs (GraphRAG) and Agent Wikis.
+An effective agent harness relies on identical constructs, which is like an operational nervous system. It integrates Knowledge Graphs (GraphRAG) and Agent Wikis.
+
+{{< figure src="/images/harness02.png" width=400 caption="Knowledge Graphs and Wikis [Image credit: Gemini Nano Banana]">}}
 
 In the *Yoga Sutras*, Patanjali describes human memory not as static files, but as interconnected nodes where traversing one node activates related connections. This active relational inquiry is ***Anusandhana***. Similarly, the *Padma Purana* describes the ***Agra-Sandhani***: the immutable, persistent ledger maintained by *Chitragupta* that records every change in the system's state and events.
 
@@ -27,11 +29,11 @@ In the *Yoga Sutras*, Patanjali describes human memory not as static files, but 
 
 - **Agent Wiki / Memory Bank (Agra-Sandhani):** Logs state, user preferences, and system rules across runs, preventing state amnesia.
 
-{{< figure src="/images/harness02.png" width=400 caption="Knowledge Graphs and Wikis [Image credit: Gemini Nano Banana]">}}
-
 ## Knowledge refinement framework
 
-How does an agent scale past its initial configuration to make fluid, autonomous decisions under volatile conditions? In the *Mahabharata*, Sage Sanatsujata outlines an elegant, four-stage developmental framework showing how capability is systematically acquired and refined over time:
+In the modern agentic systems, an agent must acquire knowledge. How does an agent scale past its initial configuration to make fluid, autonomous decisions under volatile conditions? Is this something we can learn from how humans acquire knowledge? 
+
+In the *Mahabharata*, Sage Sanatsujata outlines an elegant, four-stage developmental framework showing how capability is systematically acquired and refined over time:
 
 {{< sloka source="Mahabharata, Udyoga Parva (44.16)" translation="A student acquires one-fourth [of knowledge] in time, one-fourth by association with the teacher, one-fourth by their own enthusiasm and endeavor, and one-fourth by discussion." >}}
 
@@ -40,7 +42,7 @@ How does an agent scale past its initial configuration to make fluid, autonomous
 
 {{< /sloka >}}
 
-When applied to modern agentic systems, this scriptural framework maps identically onto the four evolutionary layers of an agent's knowledge lifecycle:
+When applied to modern agentic systems, this framework maps identically onto the four evolutionary layers of an agent's knowledge lifecycle:
 
 {{< figure src="/images/harness03.png" width=400 caption="Knowledge refinement framework [Image credit: Gemini Nano Banana]">}}
 
@@ -51,6 +53,8 @@ When applied to modern agentic systems, this scriptural framework maps identical
 - **Through Discussion and Protocol: Multi-Agent Collaboration.** Orchestration via open protocols (like MCP), where specialized agents (Coder, Security, Auditor) share context and critique performance just as peers collaborate.
 
 - **Over Time: Production Telemetry.** Continuous optimization forged in production as the harness logs execution telemetry (updating the *Agra-Sandhani*), processes corrections, and refines the knowledge base over time.
+
+The most important part of acquiring knowledge is to ensure it is not stale. 
 
 ### Preventing Knowledge Degradation
 
@@ -74,7 +78,7 @@ As we push the boundaries of enterprise AI, we are discovering that the architec
 
 ***The future of agentic architectures might just be written in our past.***
 
-How are you approaching the evolution of Harness Engineering in your current workflows? Are you focusing more on optimizing the orchestration layers or scaling the underlying models? Let’s discuss in the comments below.
+This article touched just one part of the modern agent harnesses. These agent harnesses map to human behavior and human cognitive abilities very closely. When thinking about building powerful harnesses, we are not inventing but applying what we have been practicing. In the future parts of this series, we shall dive into knowledge graphs and agent wikis and how a combination of these powers the modern agent harness.
 
-In the future parts of this series, we shall dive into knowledge graphs and agent wikis and how a combination of these powers the modern agent harness.
+How are you approaching the evolution of Harness Engineering in your current workflows? Are you focusing more on optimizing the orchestration layers or scaling the underlying models? Let’s discuss in the comments below.
 
