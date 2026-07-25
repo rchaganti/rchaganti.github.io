@@ -50,7 +50,7 @@ When applied to modern agentic systems, this framework maps identically onto the
 
 - **Through Endeavor: Self-Reflection.** Internal inference loops where the harness forces the model to self-critique, inspect token usage, and catch errors *before* committing actions.
 
-- **Through Discussion and Protocol: Multi-Agent Collaboration.** Orchestration via open protocols (like MCP), where specialized agents (Coder, Security, Auditor) share context and critique performance just as peers collaborate.
+- **Through Discussion and Protocol: Multi-Agent Collaboration.** Orchestration via open protocols, where specialized agents (Coder, Security, Auditor) share context and critique performance just as peers collaborate.
 
 - **Over Time: Production Telemetry.** Continuous optimization forged in production as the harness logs execution telemetry (updating the *Agra-Sandhani*), processes corrections, and refines the knowledge base over time.
 
