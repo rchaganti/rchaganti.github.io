@@ -53,31 +53,37 @@ graph TD
 ### Key Foundations & Alliances
 Let us map out the open standards, specifications, and projects hosted under each foundation or driven by key industry vendors.
 
-####  Linux Foundation – Agentic AI Foundation (AAIF)
-The **Agentic AI Foundation (AAIF)** was established under the Linux Foundation to host foundational projects for agent tool interaction, developer context, and data plane proxying:
+####  Agentic AI Foundation (AAIF)
+The AAIF was established under the Linux Foundation to host foundational projects for agent tool interaction, developer context, and data plane proxying:
 * **Model Context Protocol (MCP):** Donated by Anthropic. A universal standard for connecting AI models to data sources, local files, and external tools (`mcp.json`).
 * **Goose:** Donated by Block. An open-source, local-first AI agent execution framework.
 * **AGENTS.md:** Donated by OpenAI. A standardized file format providing repository-level instructions to coding agents.
 * **agentgateway:** Donated by Solo.io and community maintainers. An open-source, high-performance Rust-based AI-native proxy/gateway built specifically to route MCP, A2A, and LLM inference traffic at the network edge.
 
-#### Linux Foundation – AGNTCY Alliance
-I have written about this [earlier as a series of articles](https://ravichaganti.com/series/agntcy/). Donated by Cisco with founding ecosystem partners including Dell Technologies, Google Cloud, Oracle, Red Hat, LangChain, and LlamaIndex, AGNTCY provides a complete horizontal infrastructure stack for multi-agent discovery, encrypted transport, identity, and invocation:
-* **OASF (Open Agentic Schema Framework):** A standardized, attribute-based taxonomy separating root actions (skills) from context (domains) with numeric IDs.
-* **Agent Directory Service (ADS):** A federated, peer-to-peer Kademlia Distributed Hash Table (DHT) for capability-based agent discovery.
-* **SLIM (Secure Low-Latency Interactive Messaging):** High-throughput gRPC transport with RFC 9420 MLS end-to-end encryption and relay gateways.
-* **Identity & Trust:** W3C Decentralized Identifiers (DIDs), Verifiable Credentials, and Tool-Based Access Control (TBAC).
-* **ACP (Agent Connect Protocol):** An OpenAPI 3.1.1 compliant REST API specification for stateful Thread management and Run execution.
+#### Linux Foundation
+- **AGNTCY**: I have written about this [earlier as a series of articles](https://ravichaganti.com/series/agntcy/). Donated by Cisco with founding ecosystem partners including Dell Technologies, Google Cloud, Oracle, Red Hat, LangChain, and LlamaIndex, AGNTCY provides a complete horizontal infrastructure stack for multi-agent discovery, encrypted transport, identity, and invocation:
 
-#### Linux Foundation – A2A Protocol
-Originally introduced by Google and ecosystem partners, A2A is an open specification for peer-to-peer agent messaging:
-* **A2A Wire Protocol:** Defines task lifecycle message envelopes (`AgentRequest`, `AgentResponse`).
-* **`AgentCard` Spec:** A JSON metadata descriptor specifying HTTP web service endpoints, supported input/output media modes, and OAuth2 security schemes.
+  * **OASF (Open Agentic Schema Framework):** A standardized, attribute-based taxonomy separating root actions (skills) from context (domains) with numeric IDs.
 
-#### Cross-Industry Technical Steering Committees – Agent Plugins
-Created by maintainers from Google, OpenAI, Microsoft, Amazon, Cursor, and Vercel:
-* **Agent Plugins Specification:** A portable package format (`plugin.json`) that bundles Agent Skills (`skills/SKILL.md`) and MCP servers (`mcp.json`) into a single, vendor-neutral directory structure compatible across different IDEs and agent clients. 
+  * **Agent Directory Service (ADS):** A federated, peer-to-peer Kademlia Distributed Hash Table (DHT) for capability-based agent discovery.
 
-#### Open Community Initiatives – Agent Skills
+  * **SLIM (Secure Low-Latency Interactive Messaging):** High-throughput gRPC transport with RFC 9420 MLS end-to-end encryption and relay gateways.
+
+  * **Identity & Trust:** W3C Decentralized Identifiers (DIDs), Verifiable Credentials, and Tool-Based Access Control (TBAC).
+
+  * **ACP (Agent Connect Protocol):** An OpenAPI 3.1.1 compliant REST API specification for stateful Thread management and Run execution.
+
+- **A2A Protocol**: Originally introduced by Google and ecosystem partners, A2A is an open specification for peer-to-peer agent messaging:
+
+  * **A2A Wire Protocol:** Defines task lifecycle message envelopes (`AgentRequest`, `AgentResponse`).
+
+  * **AgentCard Spec:** A JSON metadata descriptor specifying HTTP web service endpoints, supported input/output media modes, and OAuth2 security schemes.
+
+#### Cross-Industry Initiatives
+Created by maintainers from leading AI labs and innovators:
+* **Agent Resource Discovery (ARD / `ai-catalog.json`):** Backed by an industry coalition (Google, Microsoft, Cisco, NVIDIA, Hugging Face, Snowflake). Defines a domain-anchored manifest format (`/.well-known/ai-catalog.json`) for publishing local domain agent and tool catalogs.
+* **Agent Plugins Specification:** A portable package format (`plugin.json`) that bundles Agent Skills (`skills/SKILL.md`) and MCP servers (`mcp.json`) into a single, vendor-neutral directory structure compatible across different IDEs and agent clients.
+
 * **Agent Skills Specification:** A directory format featuring a mandatory `SKILL.md`file (YAML frontmatter + Markdown steps). Uses progressive disclosure so agents scan lightweight metadata at boot and load full instructions/scripts into the context window only when a task matches.
 
 #### Open Knowledge Format (OKF)
@@ -115,10 +121,9 @@ sequenceDiagram
     Supplier-->>Client: Stream task result & state checkpoint
 ```
 
-1. **Packaging & Tools:** Agent Plugins bundles MCP servers (`mcp.json`) and Agent Skills (`SKILL.md`) into a single portable `.plugin` package.
-2. **Discovery & Directory:** **AGNTCY's OASF Schema** indexes the plugin's capability into the Agent Directory Service (ADS) via `dirctl`.
-3. **Edge Ingress:** agentgateway proxies incoming network requests at the enterprise perimeter, handling token rate-limiting and TLS termination.
-4. **Transport & Invocation:** Traffic routes cleanly into AGNTCY's ACP Invocation Gateway over SLIM RFC 9420 MLS encrypted channels.
+1. **Discovery (ARD + ADS):** Domain hosts publish `ai-catalog.json` (ARD), while federated networks publish OASF records into the P2P Directory (ADS).
+2. **Packaging**: Agent Plugins bundles MCP servers (`mcp.json`) and Agent Skills (`SKILL.md`).
+3. **Ingress & Transport:** `agentgateway`handles edge rate-limiting, proxying traffic into AGNTCY's ACP Invocation Gateway over SLIM RFC 9420 MLS encrypted channels.
 
 Despite this synergy, there are genuine areas of overlap that require coordination:
 
@@ -144,9 +149,9 @@ Despite this synergy, there are genuine areas of overlap that require coordinati
 
 To ensure the multi-agent ecosystem moves toward seamless interoperability rather than fragmentation, I recommend 4 concrete steps for convergence:
 
-1. Allow A2A AgentCard URLs to be referenced as standard locators inside OASF records published to the Agent Directory Service.
-2. Formally adopt Agent Plugins bundle CIDs as the primary package locator format inside OASF layer 1 records.
-3. Standardize SLIMA2A and configure agentgateway to proxy ACP OpenAPI routes natively.
+1. Standardize "ARD-over-ADS" so domain `ai-catalog.json` files are automatically indexed into the peer-to-peer Kademlia DHT.
+2. Allow A2A AgentCard URLs and agent-plugins.org CIDs to serve as canonical artifact locators inside OASF records.
+3. Configure agentgateway to natively proxy ACP routes (/threads) and carry A2A message envelopes over SLIM encrypted channels. 
 4. Align AAIF, AGNTCY, agentgateway, and Agent Plugins steering committees around shared taxonomy definitions and validation APIs.
 
 Developers and enterprises implementing autonomous multi-agent systems must understand and carefully evaluate the competing and complementing dynamics of different open standards. How is your team structuring your AI agent stack today? Are you adopting MCP, Agent Plugins, or building on AGNTCY?
