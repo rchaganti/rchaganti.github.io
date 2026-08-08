@@ -1083,8 +1083,7 @@
 </span></span><span class="line"><span class="cl">                  TargetInstance ISA &#39;Win32_NTLogEvent&#39; AND
 </span></span><span class="line"><span class="cl">                  TargetInstance.LogFile=&#39;Application&#39; AND
 </span></span><span class="line"><span class="cl">                  targetInstance.EventCode=3355&#34;
-</span></span><span class="line"><span class="cl">$watcher.WaitForNextEvent()
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">$watcher.WaitForNextEvent()</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Or, Register-WMIEvent — available in PowerShell v2 — can do the same job.</p>
 <div class="highlight"><div class="chroma">
@@ -1100,8 +1099,7 @@
 </span></span><span class="line"><span class="cl">          TargetInstance ISA &#39;Win32_NTLogEvent&#39; AND
 </span></span><span class="line"><span class="cl">          TargetInstance.LogFile=&#39;Application&#39; AND
 </span></span><span class="line"><span class="cl">          TargetInstance.EventCode=3355&#34;
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived or something useful here&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived or something useful here&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The WMI query here simple. We just want to monitor Application log for any event with event code 3355. Both the above methods have a drawback. They are only <a href="http://msdn.microsoft.com/en-us/library/aa392396(v=vs.85).aspx#using_temporary_event_consumers">temporary event consumers</a>. A temporary event consumer exists only as long as the host is alive. The moment we close the PowerShell host, we lose these event subscriptions. However, I did not know when this even will happen again. So, I need the WMI event subscription to survive system reboots.</p>
 <h3 id="create-a-permanent-wmi-event-consumer-in-powershell">Create a permanent WMI event consumer in PowerShell</h3>
@@ -1148,8 +1146,7 @@ You need to have the knowledge of WMI Query language to create WMI event consume
 </span></span><span class="line"><span class="cl">            -CommandLineTemplate &#34;cmd.exe /c `&#34;C:\debug\event.cmd`&#34;&#34;            
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">#Bind the filter and consumer together         
-</span></span><span class="line"><span class="cl">New-WmiFilterToConsumerBinding -Filter $filter -Consumer $consumer -Verbose
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">New-WmiFilterToConsumerBinding -Filter $filter -Consumer $consumer -Verbose</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above code is really self-explanatory. Whenever there is an event ID with a code 3355, this permanent WMI event consumer will trigger C:\debug\event.cmd which in turn starts a trace or some kind of logging.</p>
 <p>This is it for today. Hope this is helpful.</p>
@@ -1725,6 +1722,7 @@ You need to have the knowledge of WMI Query language to create WMI event consume
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

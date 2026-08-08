@@ -1062,8 +1062,7 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DirectoryContainsFile&#39; AND TargetInstance.GroupComponent=&#39;Win32_Directory.Name=&#34;&#34;C:\\\\Scripts&#34;&#34;&#39;&#34;
 </span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {
 </span></span><span class="line"><span class="cl">        Write-Host &#34;A new file $($event.SourceEventArgs.NewEvent.TargetInstance.PartComponent) got created&#34;
-</span></span><span class="line"><span class="cl">    }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    }</span></span></code></pre></td></tr></table>
 </div>
 </div><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
   <a href="/images/monitor1-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
@@ -1082,8 +1081,7 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
 </span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {
 </span></span><span class="line"><span class="cl">        $event.SourceEventArgs.NewEvent.TargetInstance | Select -Expand FileName, Extension, Name | Out-Host
-</span></span><span class="line"><span class="cl">    }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>And, this is what we see in the output.</p>
 <figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
@@ -1102,8 +1100,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$query = &#34;Select * from __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA &#39;CIM_DataFile&#39; AND TargetInstance.Drive=&#39;C:&#39; AND TargetInstance.Path=&#39;\\Scripts\\&#39;&#34;
-</span></span><span class="line"><span class="cl">$eventFilter = New-WmiEventFilter -Name &#34;FileMonitor&#34; -Query $query
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">$eventFilter = New-WmiEventFilter -Name &#34;FileMonitor&#34; -Query $query</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, we need to create a event consumer. In this case, a log file consumer.</p>
 <div class="highlight"><div class="chroma">
@@ -1113,8 +1110,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$eventConsumer = New-WmiEventConsumer -ConsumerType LogFile -Name NewFileCreated -FileName C:\Logs\FileMonitor.log `
-</span></span><span class="line"><span class="cl"> -Text &#34;New File has been created: %TargetInstance.Name%&#34;
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"> -Text &#34;New File has been created: %TargetInstance.Name%&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once we have both filter and consumer, we can bind them together to create the permanent event consumer.</p>
 <div class="highlight"><div class="chroma">
@@ -1124,8 +1120,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#This is how we create a binding
-</span></span><span class="line"><span class="cl">New-WmiFilterToConsumerBinding -Filter $eventFilter -Consumer $eventConsumer
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">New-WmiFilterToConsumerBinding -Filter $eventFilter -Consumer $eventConsumer</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is it. Now, whenever a file gets created in the C:\Scripts folder, we’ll see a entry in the log file at C:\Logs\FileMonitor.log. It’d look like:</p>
 <figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
@@ -1706,6 +1701,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

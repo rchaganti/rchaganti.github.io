@@ -981,8 +981,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nv">$headers</span> <span class="p">=</span> <span class="vm">@</span><span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;Content-Type&#34;</span> <span class="p">=</span> <span class="s2">&#34;application/json&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;api-key&#34;</span>      <span class="p">=</span> <span class="nv">$apiKey</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We are using API version <code>2024-07-01</code>, which is the latest stable version that supports all the features we need for this article. There is a newer <code>2025-09-01</code> version available as well, but <code>2024-07-01</code> is well-tested and sufficient for our purposes here. We also define a <code>$headers</code> hash table that we will reuse across all REST calls.</p>
 <h2 id="creating-an-index">Creating an Index</h2>
@@ -1142,8 +1141,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexDefinition</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexDefinition</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Let us look at some design decisions in this schema.</p>
 <p>The <code>id</code> field is marked as the key and is not searchable because you typically do not need to search by ID, and you can filter on it directly. The <code>name</code> and <code>description</code> fields use the <code>en.lucene</code> analyzer, the English-language analyzer from Apache Lucene. This provides better search results for English text than the default standard analyzer, which handles stemming, stop words, and other language-specific processing. For example, searching for &ldquo;running&rdquo; will also match documents containing &ldquo;run&rdquo; or &ldquo;runs&rdquo;.</p>
@@ -1176,8 +1174,7 @@
 </span></span><span class="line"><span class="cl">                      <span class="s2">&#34;name&#34;</span><span class="err">:</span>  <span class="s2">&#34;products&#34;</span>
 </span></span><span class="line"><span class="cl">                  <span class="p">}</span>
 </span></span><span class="line"><span class="cl">              <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>To see the full schema of the index we just created, use the following.</p>
 <div class="highlight"><div class="chroma">
@@ -1191,8 +1188,7 @@
 <pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nb">Invoke-RestMethod</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes/products?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Get</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="loading-data---push">Loading data - Push</h2>
 <p>Azure AI Search provides two methods for loading data into an index. The push method lets you upload JSON documents directly to the index. This is the most straightforward approach and works regardless of where your source data resides. You construct JSON documents in your application and POST them to the index.</p>
@@ -1341,8 +1337,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes/products/docs/index?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$documents</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$documents</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The response includes a status for each document. A <code>statusCode</code> of 200 indicates the document was updated successfully, while 201 means it was created. If any document fails, you will see the error details in the response. This is an important detail for production systems &ndash; the push API can partially succeed, so you should always inspect the per-document status.</p>
 <p>You can push up to 1,000 documents or 16 MB per batch, whichever limit is reached first. For large data sets, you should batch your uploads accordingly.</p>
@@ -1370,8 +1365,7 @@
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;documentCount&#34;</span><span class="err">:</span>  <span class="mf">5</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;storageSize&#34;</span><span class="err">:</span>  <span class="mf">0</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;vectorIndexSize&#34;</span><span class="err">:</span>  <span class="mf">0</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>You should see <code>documentCount</code> as 5 in the response.</p>
 <h2 id="loading-data---pull">Loading data - Pull</h2>
@@ -1429,8 +1423,7 @@
 </span></span><span class="line"><span class="cl"><span class="c"># Create a blob container</span>
 </span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="n">az</span> <span class="n">storage</span> <span class="n">container</span> <span class="n">create</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-name</span> <span class="nv">$storageContainer</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-connection-string</span> <span class="nv">$storageConnection</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-connection-string</span> <span class="nv">$storageConnection</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, let us upload some sample JSON documents to the container. We will use a simple dataset of a few articles. Create a few JSON files locally and upload them.</p>
 <div class="highlight"><div class="chroma">
@@ -1522,8 +1515,7 @@
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-name</span> <span class="nv">$file</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-connection-string</span> <span class="nv">$storageConnection</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-overwrite</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="creating-the-index">Creating the Index</h3>
 <p>We need a new index that matches the structure of our article documents.</p>
@@ -1648,8 +1640,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$articlesIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$articlesIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="creating-the-data-source-connection">Creating the Data Source Connection</h3>
 <p>The data source tells Azure AI Search how to connect to your blob storage.</p>
@@ -1694,8 +1685,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/datasources?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$dataSource</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$dataSource</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>type</code> field specifies the data source type. Azure AI Search supports several types, including <code>azureblob</code>, <code>azuretable</code>, <code>azuresql</code>, <code>cosmosdb</code>, <code>adlsgen2</code>, and <code>onelake</code>. The <code>container</code> object specifies the blob container name. You can optionally set a <code>query</code> to filter the indexer to a specific folder path within the container.</p>
 <p>Note that in a production environment, you would want to use managed identity authentication instead of connection strings. The search service&rsquo;s system-assigned managed identity can be granted the Storage Blob Data Reader role on the storage account, eliminating the need to store connection strings.</p>
@@ -1750,8 +1740,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexers?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few important things to note here.</p>
 <p>The <code>parsingMode</code> is set to <code>json</code> because our blobs contain individual JSON documents. Other parsing modes include <code>jsonArray</code> (for blobs containing a JSON array of documents), <code>jsonLines</code> (for newline-delimited JSON), <code>delimitedText</code> (for CSV files), and the default mode that treats each blob as a single text document.</p>
@@ -1804,8 +1793,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">                 <span class="p">],</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;metrics&#34;</span><span class="err">:</span>  <span class="n">null</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Look for <code>&quot;status&quot;: &quot;success&quot;</code> in the response. The <code>itemsProcessed</code> count should match the number of blobs in your container. If you see failures, the <code>errors</code> array will contain details about what went wrong.</p>
 <p>To run the indexer on demand (outside of its schedule), use the following.</p>
@@ -1820,8 +1808,7 @@
 <pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nb">Invoke-RestMethod</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexers/articles-blob-indexer/run?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="push-vs-pull-when-to-use-which">Push vs. Pull: When to Use Which</h2>
 <p>Now that we have seen both methods in action, when should you use one over the other?</p>
@@ -1917,8 +1904,7 @@
 </span></span><span class="line"><span class="cl">                     <span class="s2">&#34;hot-swappable&#34;</span>
 </span></span><span class="line"><span class="cl">                 <span class="p">]</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>search</code> parameter contains the query text. Azure AI Search runs this against all searchable fields by default. The <code>select</code> parameter controls which fields are returned in the results, similar to a SQL SELECT statement.</p>
 <h3 id="filtering">Filtering</h3>
@@ -1968,8 +1954,7 @@
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="err">:</span>  <span class="s2">&#34;Dell XPS 15 Laptop&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;category&#34;</span><span class="err">:</span>  <span class="s2">&#34;Laptops&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;price&#34;</span><span class="err">:</span>  <span class="mf">1899.99</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The filter uses OData syntax. Common operators include <code>eq</code> (equals), <code>ne</code> (not equals), <code>gt</code> (greater than), <code>lt</code> (less than), <code>ge</code> (greater than or equal), <code>le</code> (less than or equal), <code>and</code>, <code>or</code>, and <code>not</code>. For collection fields like <code>tags</code>, you can use <code>tags/any(t: t eq 'wireless')</code> to match documents where any tag equals &ldquo;wireless&rdquo;.</p>
 <h3 id="faceted-search">Faceted Search</h3>
@@ -2061,8 +2046,7 @@
 </span></span><span class="line"><span class="cl">                         <span class="s2">&#34;count&#34;</span><span class="err">:</span>  <span class="mf">1</span>
 </span></span><span class="line"><span class="cl">                     <span class="p">}</span>
 </span></span><span class="line"><span class="cl">                 <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Setting <code>count</code> to <code>true</code> includes the total number of matching documents. The response includes a <code>@search.facets</code> object with arrays of value-count pairs for each faceted field.</p>
 <h3 id="sorting-and-paging">Sorting and Paging</h3>
@@ -2144,8 +2128,7 @@
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;category&#34;</span><span class="err">:</span>  <span class="s2">&#34;Monitors&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;price&#34;</span><span class="err">:</span>  <span class="mf">1299.99</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>orderby</code> parameter takes a comma-separated list of sortable fields with optional <code>asc</code> (default) or <code>desc</code> direction. The <code>top</code> parameter limits the number of results (default is 50, maximum is 1,000). The <code>skip</code> parameter is used for pagination &ndash; to get the second page of 3 results, set <code>skip</code> to 3.</p>
 <h3 id="querying-the-articles-index">Querying the Articles Index</h3>
@@ -2187,8 +2170,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This query introduces hit highlighting. The <code>highlight</code> parameter specifies which fields should return highlighted snippets where the search terms were found. The <code>highlightPreTag</code> and <code>highlightPostTag</code> define the HTML tags that wrap the matched terms. Hit highlighting is useful for building search result pages where you want to show users why a particular document matched their query.</p>
 <h2 id="managing-indexes-and-indexers">Managing Indexes and Indexers</h2>
@@ -2244,8 +2226,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes/products?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Put</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$updatedIndex</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">name</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$updatedIndex</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">name</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Note that the PUT request for index update requires the complete schema &ndash; all existing fields plus the new ones. You cannot send just the new field.</p>
 <h3 id="resetting-and-re-running-an-indexer">Resetting and Re-running an Indexer</h3>
@@ -2275,8 +2256,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nb">Invoke-RestMethod</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexers/articles-blob-indexer/run?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="deleting-documents">Deleting Documents</h3>
 <p>To remove specific documents from the index using the push API, use the <code>delete</code> action.</p>
@@ -2337,8 +2317,7 @@
 </span></span><span class="line"><span class="cl">                      <span class="s2">&#34;statusCode&#34;</span><span class="err">:</span>  <span class="mf">200</span>
 </span></span><span class="line"><span class="cl">                  <span class="p">}</span>
 </span></span><span class="line"><span class="cl">              <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="deleting-resources">Deleting Resources</h3>
 <p>To clean up, you can delete individual resources in the correct order &ndash; indexer first, then the data source, and finally the index.</p>
@@ -2389,8 +2368,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">&gt;</span> <span class="nb">Invoke-RestMethod</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes/products?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Delete</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="summary">Summary</h2>
 <p>In this article, we covered the fundamental data operations in Azure AI Search. We created search indexes with carefully designed schemas, loaded data using both the push method (direct JSON upload) and the pull method (indexer from Blob Storage), and queried the data using full-text search, filters, facets, and sorting. All of this was done using the REST API and PowerShell, keeping things at the infrastructure level.</p>
@@ -3026,6 +3004,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

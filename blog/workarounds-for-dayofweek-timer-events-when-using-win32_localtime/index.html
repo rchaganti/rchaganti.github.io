@@ -1078,8 +1078,7 @@ I created a support incident with MS and reported this bug to them. I got a resp
 </span></span><span class="line"><span class="cl">          (TargetInstance.Minute=0) AND
 </span></span><span class="line"><span class="cl">          (TargetInstance.Second=0)&#34;            
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Observe how I used DayOfWeek property twice in the query. This is the workaround. This event fires only when DayOfWeek is used this way. However, the side effect of this is: the event fires on both Thursday (4) and Friday (5). We can workaround this in a couple of ways.</p>
 <p><strong>1. You can check for DayOfWeek in the -Action script block as shown here.</strong></p>
@@ -1104,8 +1103,7 @@ I created a support incident with MS and reported this bug to them. I got a resp
 </span></span><span class="line"><span class="cl">          (TargetInstance.Minute=41) AND
 </span></span><span class="line"><span class="cl">          (TargetInstance.Second=0)&#34;            
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { if ($MyEvent.SourceEventArgs.NewEvent.TargetInstance.DayOfWeek -eq 5) { write-Host &#34;Event Arrived&#34; } }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { if ($MyEvent.SourceEventArgs.NewEvent.TargetInstance.DayOfWeek -eq 5) { write-Host &#34;Event Arrived&#34; } }</span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>2. You can provide some dummy DayOfWeek value, anything outside 0-6</strong>. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1131,8 +1129,7 @@ I created a support incident with MS and reported this bug to them. I got a resp
 </span></span><span class="line"><span class="cl">          (TargetInstance.Minute=41) AND
 </span></span><span class="line"><span class="cl">          (TargetInstance.Second=0)&#34;            
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Event Arrived&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This way event fires on Thursday as desired and the second check for DayOfWeek=9 will never fire. This is it.</p>
 
@@ -1707,6 +1704,7 @@ I created a support incident with MS and reported this bug to them. I got a resp
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

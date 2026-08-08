@@ -1291,8 +1291,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">location</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">temperature_c</span><span class="si">}</span><span class="s2">°C, </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">conditions</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Advice: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">advice</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The change from a prose-returning agent is small but meaningful. We declare a <code>WeatherReport</code> Pydantic model, pass the <em>class</em> (not an instance) as <code>response_format</code>, and read the parsed object from <code>result.value</code>. The agent&rsquo;s underlying prose answer is no longer the primary surface; what comes back is a fully validated <code>WeatherReport</code> instance with typed fields you can pass directly into the rest of your application.</p>
 <p>The original <code>result.text</code> is still there if you need it for logging, but it now contains the JSON the model emitted rather than a sentence.</p>
@@ -1337,8 +1336,7 @@
 </span></span><span class="line"><span class="cl">        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="n">description</span><span class="o">=</span><span class="s2">&#34;Active weather hazards, if any.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">advice</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;One-sentence recommendation for the user.&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">advice</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;One-sentence recommendation for the user.&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth noticing. <code>Literal[&quot;low&quot;, &quot;medium&quot;, &quot;high&quot;]</code> becomes a JSON Schema enum and constrains the model to one of those three strings; you will not see &ldquo;moderate&rdquo; or &ldquo;MEDIUM&rdquo; sneak in. <code>list[Hazard]</code> lets the model emit zero, one, or several hazards, each itself validated against the <code>Hazard</code> schema. <code>default_factory=list</code> means the field is optional from the model&rsquo;s perspective; if there are no hazards, the model can omit the field, and Pydantic fills in an empty list. <code>Field(description=...)</code> is the same hint we used for function-tool parameters; it goes into the prompt and improves the reliability with which each field is filled.</p>
 <p>For models that already have a meaningful structure in your application, structured outputs are often a one-line change: take the Pydantic model you are using elsewhere, pass it as <code>response_format</code>, and the agent answers in your existing types.</p>
@@ -1385,8 +1383,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;Weather in Bengaluru?&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">report</span><span class="p">:</span> <span class="n">WeatherReport</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">report</span><span class="p">:</span> <span class="n">WeatherReport</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The flow inside the run is straightforward. The model decides to call <code>get_temperature</code>. The tool runs and returns 28.4. The result goes back into the conversation, and then the model produces the final response, constrained by the schema. The tool&rsquo;s return value can be anything (a <code>float</code>, a <code>dict</code>, a Pydantic model); only the agent&rsquo;s final reply is shape-constrained.</p>
 <p>The instructions still matter, especially when you have both. A line like &ldquo;use <code>get_temperature</code> first, then fill in the <code>WeatherReport</code> fields&rdquo; makes the model far more likely to actually call the tool, rather than guessing values directly. Without that nudge, the schema constraint is so strong that the model can be tempted to skip the tool entirely and fabricate its way to a valid answer.</p>
@@ -1407,8 +1404,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="n">final</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">report</span><span class="p">:</span> <span class="n">WeatherReport</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">value</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">report</span><span class="p">:</span> <span class="n">WeatherReport</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">value</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The async loop yields chunks of the JSON as it is written, which is useful for showing progress in a UI (&ldquo;the model is generating the response&hellip;&rdquo;). The fully parsed <code>WeatherReport</code> is only available after <code>get_final_response()</code> resolves. If your application only cares about the parsed object, do not bother streaming; if it wants both progress feedback and the typed result, the pattern above gives you both.</p>
 <p>A natural extension is to render the partial JSON in the UI as it streams, so the user sees fields populating in real time. That requires a partial-JSON parser on the receiving side and is more work than it sounds, but it produces the most polished interactive experience.</p>
@@ -2098,6 +2094,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

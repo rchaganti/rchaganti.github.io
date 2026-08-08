@@ -1235,8 +1235,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
 </span></span><span class="line"><span class="cl">Parameters:
 </span></span><span class="line"><span class="cl">  - customer_id: string  (the customer to look up)
 </span></span><span class="line"><span class="cl">  - question:    string  (the natural-language question)
-</span></span><span class="line"><span class="cl">Returns: string
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Returns: string</span></span></code></pre></td></tr></table>
 </div>
 </div><p>That is a perfectly good interface for an agent that mostly answers free-form questions. For agents whose behavior decomposes naturally into distinct operations, a multi-tool surface is sometimes cleaner: each operation becomes its own MCP tool with its own parameter schema, and the calling agent selects the appropriate one. We will see both shapes below.</p>
 <p>What consumers do <em>not</em> see is everything that happens inside the agent-run. Tool calls the agent makes, function calls, MCP calls of its own, the model conversation, all of that is internal. The MCP boundary is the agent&rsquo;s input and output, nothing more.</p>
@@ -1248,8 +1247,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install mcp
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install mcp</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The example below uses <code>OpenAIChatClient</code> against an Azure OpenAI deployment. The Azure path requires either an <code>azure_endpoint=...</code> argument or an <code>AZURE_OPENAI_ENDPOINT</code> environment variable; without one of those, the constructor raises. Set it in your <code>.env</code> file alongside the model variables.</p>
 <p>Now we can write a server that wraps a single MAF agent.</p>
@@ -1330,8 +1328,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;stdio&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;stdio&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth pulling out. The MAF agent is built exactly as it would be in any other MAF script; the MCP layer does not change anything about how you construct the agent or its tools. The <code>@mcp.tool()</code> decorator turns the <code>ask_weather</code> function into an MCP tool, and <code>FastMCP</code> derives the tool&rsquo;s schema from the function signature: a single string parameter <code>question</code>, return type <code>str</code>. The docstring becomes the tool description.</p>
 <p>Inside the function, we simply forward the call to the agent and return the agent&rsquo;s text response. The consumer sees a clean, single-purpose tool. Behind the scenes, every call to that tool can fan out into model calls, function tool calls, MCP-client calls, whatever the agent decides to do, but the consumer never has to think about any of it.</p>
@@ -1379,8 +1376,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">get_weather_alerts</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;List any active weather alerts for a city.&#34;&#34;&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">weather_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Are there any active weather alerts for </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">?&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Each function becomes a separately documented tool. The calling model picks the right one based on the question, the same way it would for a hand-written tool, and you get the benefit of distinct names, descriptions, and parameter schemas.</p>
 <p>The trade-off is brittleness. Splitting into many tools makes the server&rsquo;s prompt-to-prompt behavior more constrained: each entry point essentially fixes the prompt template the agent is run with. Lean on multi-tool surfaces when the operations really are distinct; if they all collapse to &ldquo;answer a question about weather,&rdquo; a single tool is cleaner.</p>
@@ -1400,8 +1396,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;streamable-http&#34;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&#34;0.0.0.0&#34;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">mcp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="s2">&#34;streamable-http&#34;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&#34;0.0.0.0&#34;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The server now listens on <code>http://0.0.0.0:8080/mcp</code> and accepts MCP requests over the streamable-HTTP transport. Anything that speaks MCP over HTTP can call it: a Foundry-backed agent via <code>FoundryChatClient.get_mcp_tool(...)</code>, a local MAF agent via <code>MCPStreamableHTTPTool</code>, an Anthropic API caller, or any other MCP client.</p>
 <p>HTTP also unlocks the standard set of HTTP concerns: TLS, authentication, rate limiting, and reverse proxies. None of those are MCP-specific, but they all become your problem the moment your agent is reachable over the network. Most teams put the HTTP server behind their existing API gateway and let the gateway handle auth and TLS, leaving the MCP server itself focused on routing tool calls into the agent.</p>
@@ -2092,6 +2087,7 @@ The opposite direction is just as useful and gets less attention. A Microsoft Ag
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

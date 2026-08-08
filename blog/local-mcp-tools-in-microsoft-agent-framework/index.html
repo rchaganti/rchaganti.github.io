@@ -1238,8 +1238,7 @@
 </span></span><span class="line"><span class="cl">uvx --version
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Sanity-check that the time server starts</span>
-</span></span><span class="line"><span class="cl">uvx mcp-server-time
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">uvx mcp-server-time</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The first call to <code>uvx mcp-server-time</code> downloads and caches the <code>mcp-server-time</code> package from PyPI; subsequent runs are fast. When you run the server directly like this, it speaks MCP over stdin and stdout and waits for a client to connect, so the process will sit and do nothing visible until you stop it with Ctrl+C. That is expected. In the example below, MAF will be the client, and it will start and stop the server for us via <code>MCPStdioTool</code>.</p>
 <p>If you prefer a permanent install over running through <code>uvx</code> every time, run <code>uv tool install mcp-server-time</code>. That puts a <code>mcp-server-time</code> binary on your <code>PATH</code>, and you can pass <code>command=&quot;mcp-server-time&quot;</code> and <code>args=[]</code> to <code>MCPStdioTool</code> instead of using <code>uvx</code>.</p>
@@ -1324,8 +1323,7 @@
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth pointing out. The <code>async with</code> block matters: <code>MCPStdioTool</code> starts the subprocess when the context is entered and stops it cleanly when the context exits. If you skip the <code>async with</code> and use the tool plain, you risk leaving the subprocess running after the script exits, especially when an exception fires.</p>
 <p><code>name</code> is the name MAF uses internally to refer to the server, which is helpful when more than one MCP server is attached. The <code>command</code> and <code>args</code> are what you would type at the shell to launch the server. Anything that produces a stdio MCP server will work, whether it is a Python <code>uvx</code>-launched server, a Node.js <code>npx -y @modelcontextprotocol/server-everything</code> server, or a binary you built yourself.</p>
@@ -1369,8 +1367,7 @@
 </span></span><span class="line"><span class="cl">    <span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;How many open issues does microsoft/agent-framework have?&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The shape mirrors the stdio case. Same <code>async with</code> lifecycle, same <code>tools=[...]</code> parameter on the agent. The differences are at construction time: <code>url</code> instead of <code>command</code>, and a <code>header_provider</code> callable that returns the headers dict for each call. The callable form is more flexible than a static dict because it lets you refresh tokens, rotate credentials, or add per-call metadata. If the server requires more elaborate auth, like signing requests, you can layer that on top of the HTTP transport.</p>
 <p>A practical note: HTTP MCP servers tend to have higher per-call latency than stdio servers, because every tool invocation crosses the network. For interactive agents, this matters. If a tool that takes 50 ms locally takes 500 ms remotely, an agent that calls it five times in a turn now spends an extra two seconds waiting. We will see how to surface this to the user when we cover observability later in the series.</p>
@@ -1394,8 +1391,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;mcp-server-github&#34;</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl">    <span class="n">allowed_tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;search_issues&#34;</span><span class="p">,</span> <span class="s2">&#34;create_issue&#34;</span><span class="p">,</span> <span class="s2">&#34;list_repositories&#34;</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="k">as</span> <span class="n">github_tool</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent now sees only those three tools, regardless of what else the server exposes. This pattern is also a good practice for security: even if the server exposes a tool that performs a destructive action, the agent cannot choose to call it if the tool is not in the allow-list.</p>
 <p>If you need the inverse, exposing all but a few, MAF supports that too with a <code>denied_tools</code> argument; in practice, allow-lists age better, because new server versions may add tools that you have not vetted yet.</p>
@@ -1426,8 +1422,7 @@
 </span></span><span class="line"><span class="cl">        <span class="n">name</span><span class="o">=</span><span class="s2">&#34;ScheduleAgent&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You schedule meetings. Use the time tool for time-zone math; use get_active_user_id for the current user.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">time_tool</span><span class="p">,</span> <span class="n">get_active_user_id</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent does not distinguish the two kinds of tool. It sees a flat list, picks whichever is right for the question, and MAF handles the routing. The lessons from the function tools article still apply: keep descriptions sharp, do not overload the list with too many similar tools, and audit what the agent has access to before you ship.</p>
 <h2 id="lifecycle-and-connection-management">Lifecycle and connection management</h2>
@@ -1448,8 +1443,7 @@
 </span></span><span class="line"><span class="cl">        <span class="c1"># Make `time_tool` available to your request handlers, e.g.</span>
 </span></span><span class="line"><span class="cl">        <span class="c1"># via a module-level variable, dependency injection, or your</span>
 </span></span><span class="line"><span class="cl">        <span class="c1"># framework&#39;s lifespan hook.</span>
-</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">serve_forever</span><span class="p">(</span><span class="n">time_tool</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">serve_forever</span><span class="p">(</span><span class="n">time_tool</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The exact wiring depends on your application framework, but the principle is the same: lifecycle of the MCP connection should match the lifecycle of the application, not the lifecycle of an individual request. For HTTP MCP servers, the same advice applies, with the additional concern that the server may close the connection on its end. Be ready to reconnect transparently if the underlying transport link drops, especially for services expected to stay up overnight.</p>
 <h2 id="pitfalls">Pitfalls</h2>
@@ -2140,6 +2134,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -1290,8 +1290,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth pulling out. The provider is constructed with a path on disk; nothing else. It is passed to <code>as_agent</code> via <code>context_providers=[...]</code>, which is the same parameter every other provider uses. Inside the run, the framework asks the provider to load any messages associated with the session ID, hands them to the agent as part of the conversation, runs the model, and then calls the provider&rsquo;s <code>after_run</code> to save the new turns back.</p>
 <p>Run the script once, and the agent learns the favorite color. Run it again the next day with the same <code>session_id=&quot;alice&quot;</code>, and the agent will remember. The conversation file on disk is the source of truth; the in-memory <code>AgentSession</code> becomes a per-process cache.</p>
@@ -1335,8 +1334,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">session</span> <span class="o">=</span> <span class="n">AgentSession</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="s2">&#34;alice&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;Recommend a movie. Use what you remember about my taste.&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The shape is identical to the <code>FileHistoryProvider</code> case. The behavior is different. Before each run, Mem0 searches its store for memories relevant to the current input and prepends them to the conversation as context messages. After each run, it extracts new memorable facts from the conversation and stores them. The agent&rsquo;s prompt does not need to grow with the size of the user&rsquo;s history; only the <em>relevant</em> parts get pulled in at each turn.</p>
 <p>The <code>user_id</code> parameter is what scopes memory to a specific person. Pass different IDs for different users, and each gets their own memory store. The optional <code>agent_id</code> and <code>application_id</code> further partition the store, which is useful when one Mem0 backend serves several agents or apps.</p>
@@ -1360,8 +1358,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&#34;redis://localhost:6379&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">index_name</span><span class="o">=</span><span class="s2">&#34;alice_memories&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">user_id</span><span class="o">=</span><span class="s2">&#34;alice&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The provider creates (or reuses) a Redis search index, indexes embeddings of past memories, and, at runtime, pulls back the top matches for the current input. Settings like <code>vector_algorithm</code>, <code>vector_distance_metric</code>, and the embedding model are passed as optional parameters; the defaults are sensible.</p>
 <p>While Mem0 owns the embedding strategy and storage, Redis provides both. That is a feature for teams that already operate Redis and want memory to live alongside the rest of their state, and it is a tax for teams that do not. Mem0, Redis, and <code>AzureAISearchContextProvider</code> (also in <code>agent_framework.azure</code>) are interchangeable from the agent&rsquo;s perspective; the choice is operational.</p>
@@ -1439,8 +1436,7 @@
 </span></span><span class="line"><span class="cl">        <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="c1"># Nothing to persist; this provider is read-only.</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth noticing. <code>source_id</code> is the provider&rsquo;s identity during the run; the framework uses it to attribute messages that this provider added, so other providers can filter them out. Inside <code>before_run</code>, the provider has access to a <code>SessionContext</code> whose <code>extend_instructions</code> adds to the system prompt for the current run, <code>extend_messages</code> appends conversation messages, <code>extend_tools</code> exposes additional tools to the model, and <code>extend_middleware</code> registers middleware just for this run. The <code>state</code> dictionary is a per-run scratchpad shared with <code>after_run</code> and useful for measuring or logging across the two hooks.</p>
 <p>Plug it in the same way as any other provider:</p>
@@ -1477,8 +1473,7 @@
 </span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;What time would be a good time to schedule a meeting?&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">session</span><span class="o">=</span><span class="n">AgentSession</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="s2">&#34;bob&#34;</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The same pattern scales up. A provider that calls a vector store, a SQL database, a fancy retrieval pipeline, or a remote service all looks like this; the only difference is what <code>before_run</code> reads and what <code>after_run</code> writes.</p>
 <h2 id="composing-multiple-providers">Composing multiple providers</h2>
@@ -1504,8 +1499,7 @@
 </span></span><span class="line"><span class="cl">        <span class="n">Mem0ContextProvider</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;MEM0_API_KEY&#34;</span><span class="p">],</span> <span class="n">user_id</span><span class="o">=</span><span class="s2">&#34;alice&#34;</span><span class="p">),</span>
 </span></span><span class="line"><span class="cl">        <span class="n">UserProfileProvider</span><span class="p">(</span><span class="n">profiles</span><span class="p">),</span>
 </span></span><span class="line"><span class="cl">    <span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The framework runs them in order. <code>before_run</code> fires on each provider in the order they were registered; <code>after_run</code> fires in reverse, so a provider that wraps the run can clean up after the providers it wraps. The <code>source_id</code> on each provider lets you tell whose context is whose: when you are debugging a confused-looking prompt, the messages are attributed by source, so you can see which provider injected what.</p>
 <p>Two practical rules. First, keep the list short. Every provider runs on every turn, and every turn is interactive latency. Three or four providers are comfortable; ten is a smell. Second, give each provider a meaningful <code>source_id</code> (Mem0 and Redis default to <code>&quot;mem0&quot;</code>/<code>&quot;redis&quot;</code>, but in a multi-Mem0 setup or in your own subclasses, set it explicitly). The ID is the only thing that distinguishes two providers in trace output.</p>
@@ -2192,6 +2186,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

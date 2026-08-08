@@ -929,8 +929,7 @@
 </span></span><span class="line"><span class="cl">$ .<span class="se">\.</span>venv<span class="se">\S</span>cripts<span class="se">\A</span>ctivate.ps1
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Once activated, you will see the prompt change</span>
-</span></span><span class="line"><span class="cl"><span class="o">(</span>.venv<span class="o">)</span> PS C:<span class="se">\&gt;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="o">(</span>.venv<span class="o">)</span> PS C:<span class="se">\&gt;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>It is a good practice to list all program dependencies in a requirements.txt, so let&rsquo;s create one.</p>
 <div class="highlight"><div class="chroma">
@@ -940,8 +939,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">openai
-</span></span><span class="line"><span class="cl">python-dotenv
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">python-dotenv</span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>openai</code> is the Python library to interact with the OpenAI-compatible API. The <code>python-dotenv</code> helps manage environment variables. We can run the <code>pip install -r requirements.txt</code> command within the virtual environment to install these dependencies. At the basic level, there are two types of LLM interactions &ndash; <em>completion</em> and <em>chat completion</em>. The completion is a one-time message/prompt to the LLM, whereas using chat completion, you can converse with the LLM. Let&rsquo;s start with the legacy completion API. The newer models do not support legacy completion. Therefore, the following example uses <code>gpt-35-turbo-instruct</code>.</p>
 <blockquote>
@@ -996,8 +994,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">prompt</span><span class="o">=</span><span class="n">start_phrase</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">30</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">start_phrase</span><span class="o">+</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">start_phrase</span><span class="o">+</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>load_dotenv()</code> function loads all key-value pairs in the <code>.env</code> file as environment variables, which are then retrieved using the <code>os.getenv()</code> function. We can create an Azure OpenAI client using the <code>AzureOpenAI()</code> function in the <code>openai</code> library. This function has several parameters. For the example in this article, we need to set <code>api_key</code>, <code>api_version</code>, and <code>azure_endpoint</code> parameters.</p>
 <p>The <code>client.completions.create()</code> function sends the prompt string to the API and retrieves the generated response. This function has several parameters that we can use to tweak the LLM&rsquo;s behavior and response. For now, we must supply the <code>model</code>, <code>prompt</code>, and <code>max_tokens</code>. The <code>max_tokens</code> parameter tells the LLM how many tokens it should generate. The <code>response</code> from the LLM will be a complex JSON object. We can retrieve the text from the generated response using <code>response.choices[0].text</code>. Why <code>choices[0]</code>? We shall see that in a bit.</p>
@@ -1012,8 +1009,7 @@
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="o">(</span>.venv<span class="o">)</span> PS C:<span class="se">\&gt;</span> python.exe .<span class="se">\0</span>1_completion.py
 </span></span><span class="line"><span class="cl">What would be the tagline <span class="k">if</span> Microsoft Azure was an ice cream shop?
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="s2">&#34;Chill out with Microsoft Azure - serving the coolest cloud flavors!&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Chill out with Microsoft Azure - serving the coolest cloud flavors!&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is nice! But if you notice ChatGPT or other such applications, more than one response to the prompt is returned, and you can choose from the options. The same behavior can be achieved using the Azure OpenAI library by supplying a parameter <code>n</code> with an integer as a value. This parameter represents the number of completions to generate for each prompt. Here is the modified program.</p>
 <div class="highlight"><div class="chroma">
@@ -1073,8 +1069,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">start_phrase</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">choice</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">choice</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>When we execute this, we shall see two responses. We can iterate over the response object and retrieve the generated text.</p>
 <div class="highlight"><div class="chroma">
@@ -1092,8 +1087,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="s2">&#34;Satisfy your cravings for the cloud and creamy treat at Microsoft Azure: The Scoop of Innovation!&#34;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="s2">&#34;Indulge in the coolness of Microsoft Azure, where tech meets treats!&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Indulge in the coolness of Microsoft Azure, where tech meets treats!&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is it for today. This is a good start. We will look at streaming completion responses in the next article in this series.</p>
 
@@ -1640,6 +1634,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

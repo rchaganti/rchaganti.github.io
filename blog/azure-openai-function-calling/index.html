@@ -953,8 +953,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;city_name&#34;</span><span class="p">:</span> <span class="n">city_name</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;temperature&#34;</span><span class="p">:</span> <span class="n">respJson</span><span class="p">[</span><span class="s2">&#34;main&#34;</span><span class="p">][</span><span class="s2">&#34;temp&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This function retrieves weather data for a given city using the OpenWeatherMap API. It accepts the city name as input, constructs the API URL, makes the request, and returns the JSON response containing the temperature. Besides the logic, the structure of this function is important to consider as a tool. The function must have a doc string that describes its purpose. It needs to return a JSON object. Once we have this function, we can look at the code that interacts with the LLM.</p>
 <h3 id="implementing-tool-calling">Implementing tool calling</h3>
@@ -1124,8 +1123,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 </span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">final_response</span><span class="o">.</span><span class="n">choices</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
 </span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="c1"># If no tool calls are required, return the initial response</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">response_message</span><span class="o">.</span><span class="n">content</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">response_message</span><span class="o">.</span><span class="n">content</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We defined a system prompt that tells the LLM to use the tools when available. We add the user-supplied prompt to it and then invoke the API to get a response. If the user&rsquo;s prompt includes a question about the weather at some location, the LLM determines that the get_weather tools must be invoked and indicates the same in response to the user. The response handling function, <code>get_response</code>, must handle this, call the tool with the identified arguments, and send the response back to the LLM as the response from the tool call.</p>
 <div class="highlight"><div class="chroma">
@@ -1139,8 +1137,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">conversation_history</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
 </span></span><span class="line"><span class="cl">   <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;assistant&#34;</span><span class="p">,</span> 
 </span></span><span class="line"><span class="cl">   <span class="s2">&#34;tool_calls&#34;</span><span class="p">:</span> <span class="p">[</span><span class="n">tool_call</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">response_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">})</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>I want to re-iterate that calling tools indicated by the LLM is the application&rsquo;s responsibility. LLM never calls the tools directly.</p>
 <p>Once the tool call response, along with the prior conversation history, is provided to the LLM, the LLM&rsquo;s final response includes the answer to the user&rsquo;s prompt.</p>
@@ -1156,8 +1153,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">  <span class="n">question</span> <span class="o">=</span> <span class="s2">&#34;What&#39;s the weather like in Bengaluru?&#34;</span>
 </span></span><span class="line"><span class="cl">  <span class="n">response</span> <span class="o">=</span> <span class="n">get_response</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">  <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Here is the response for a user prompt &ldquo;<em>What&rsquo;s the weather like in Bengaluru?</em>&rdquo;</p>
 <div class="highlight"><div class="chroma">
@@ -1169,8 +1165,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="o">(</span>.venv<span class="o">)</span> PS C:<span class="se">\&gt;</span> python.exe .<span class="se">\0</span>5_function_calling.py
 </span></span><span class="line"><span class="cl">get_current_time called with location: Bengaluru
-</span></span><span class="line"><span class="cl">The current temperature in Bengaluru is approximately 23°C.
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">The current temperature in Bengaluru is approximately 23°C.</span></span></code></pre></td></tr></table>
 </div>
 </div><p>If the prompt does not contain any request for weather information, LLM would behave normally.</p>
 <div class="highlight"><div class="chroma">
@@ -1180,8 +1175,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="o">(</span>.venv<span class="o">)</span> PS C:<span class="se">\&gt;</span> python.exe .<span class="se">\0</span>5_function_calling.py
-</span></span><span class="line"><span class="cl">I currently don<span class="s1">&#39;t have access to real-time traffic information. You can check platforms such as Google Maps, Waze, or local traffic apps for up-to-date traffic conditions in Bengaluru. Let me know if there&#39;</span>s anything <span class="k">else</span> I can assist you with!
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">I currently don<span class="s1">&#39;t have access to real-time traffic information. You can check platforms such as Google Maps, Waze, or local traffic apps for up-to-date traffic conditions in Bengaluru. Let me know if there&#39;</span>s anything <span class="k">else</span> I can assist you with!</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a good start. This example showed only one tool definition. However, you can provide any number of tools, and as long as those tools are adequately described, the LLM will be able to indicate what tools to call iteratively. In the next article in this series, we will look at that.</p>
 
@@ -1738,6 +1732,7 @@ Azure OpenAI&rsquo;s function calling capability lets you connect your language 
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

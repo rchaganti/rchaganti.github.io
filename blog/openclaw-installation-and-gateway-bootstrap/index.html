@@ -889,8 +889,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 </span></span><span class="line"><span class="cl"><span class="n">mkdir</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw&#34;</span> <span class="n">-Force</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c"># Your workspace (finance, productivity, knowledge files)</span>
-</span></span><span class="line"><span class="cl"><span class="n">mkdir</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\workspace&#34;</span> <span class="n">-Force</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">mkdir</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\workspace&#34;</span> <span class="n">-Force</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We will then create a .env file for storing API keys and other secrets.</p>
 <div class="highlight"><div class="chroma">
@@ -904,8 +903,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 <pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="sh">@&#34;
 </span></span></span><span class="line"><span class="cl"><span class="sh">GEMINI_API_KEY=your_actual_key_here
 </span></span></span><span class="line"><span class="cl"><span class="sh">OPENCLAW_GATEWAY_TOKEN=openclaw-secret-token
-</span></span></span><span class="line"><span class="cl"><span class="sh">&#34;@</span> <span class="p">|</span> <span class="nb">Out-File</span> <span class="n">-FilePath</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw\.env&#34;</span> <span class="n">-Encoding</span> <span class="n">UTF8</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="sh">&#34;@</span> <span class="p">|</span> <span class="nb">Out-File</span> <span class="n">-FilePath</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw\.env&#34;</span> <span class="n">-Encoding</span> <span class="n">UTF8</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>&gt; When you open the dashboard in your browser, it will ask for a token. Use <code>openclaw-secret-token</code> to log in. Replace <code>your_actual_key_here</code> with your actual key from Google AI Studio or which ever provider you choose to use.</p>
 <p>We will now need to seed the gateway&rsquo;s initial configuration.</p>
@@ -955,8 +953,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 </span></span><span class="line"><span class="cl">      <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We are now ready to build the container image from the OpenClaw source code. We&rsquo;ll build the container image locally, directly from the OpenClaw source repository.</p>
 <div class="highlight"><div class="chroma">
@@ -980,8 +977,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 </span></span><span class="line"><span class="cl"><span class="n">docker</span> <span class="n">build</span> <span class="n">-t</span> <span class="n">openclaw</span><span class="err">:</span><span class="n">local</span> <span class="o">-f</span> <span class="n">Dockerfile</span> <span class="p">.</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c"># Return to your home directory</span>
-</span></span><span class="line"><span class="cl"><span class="nb">Set-Location</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">Set-Location</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Building this image takes a while. On my local PC with 16GB of memory, it took close to 10 minutes. Once the image is ready, you can launch the container.</p>
 <div class="highlight"><div class="chroma">
@@ -1003,8 +999,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 </span></span><span class="line"><span class="cl">  <span class="n">-v</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\workspace:/home/node/workspace&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">  <span class="n">-p</span> <span class="mf">18789</span><span class="err">:</span><span class="mf">18789</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">  <span class="p">-</span><span class="n">-env</span><span class="o">-file</span> <span class="s2">&#34;</span><span class="nv">$env:USERPROFILE</span><span class="s2">\.openclaw\.env&#34;</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">  <span class="n">openclaw</span><span class="err">:</span><span class="n">local</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="n">gateway</span> <span class="n">run</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  <span class="n">openclaw</span><span class="err">:</span><span class="n">local</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="n">gateway</span> <span class="n">run</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Here is a quick explanation of the flags we used.</p>
 <table>
@@ -1073,8 +1068,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 </span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.822</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.821</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">browser</span><span class="o">/</span><span class="n">server</span><span class="p">]</span> <span class="n">Browser</span> <span class="n">control</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">18791</span><span class="o">/</span> <span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.870</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.869</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">ready</span>
 </span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">38.895</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">38.894</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">heartbeat</span><span class="p">]</span> <span class="n">started</span>
-</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">39.744</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">39.743</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">update</span> <span class="n">available</span> <span class="p">(</span><span class="n">latest</span><span class="p">):</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.7</span> <span class="p">(</span><span class="n">current</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.6</span><span class="p">)</span><span class="o">.</span> <span class="n">Run</span><span class="p">:</span> <span class="n">openclaw</span> <span class="n">update</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span> <span class="mi">16</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span><span class="mf">39.744</span> <span class="o">|</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">08</span><span class="n">T11</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mf">39.743</span><span class="o">+</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="p">[</span><span class="n">gateway</span><span class="p">]</span> <span class="n">update</span> <span class="n">available</span> <span class="p">(</span><span class="n">latest</span><span class="p">):</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.7</span> <span class="p">(</span><span class="n">current</span> <span class="n">v2026</span><span class="o">.</span><span class="mf">5.6</span><span class="p">)</span><span class="o">.</span> <span class="n">Run</span><span class="p">:</span> <span class="n">openclaw</span> <span class="n">update</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can check the gateway&rsquo;s health by running <code>node dist/index.js gateway health</code> inside the container.</p>
 <div class="highlight"><div class="chroma">
@@ -1086,8 +1080,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\&gt;</span> docker <span class="nb">exec</span> openclaw node dist/index.js gateway health
 </span></span><span class="line"><span class="cl">Gateway Health
-</span></span><span class="line"><span class="cl">OK <span class="o">(</span>31ms<span class="o">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">OK <span class="o">(</span>31ms<span class="o">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>At this point, the gateway dashboard UI should be accessible at &ldquo;http://127.0.0.1:18789/&rdquo;. In the UI, enter the token from the <code>.env</code> file.</p>
 <p><figure class="figure " style="max-width: 450; height: 50%; margin: 1.5rem auto;">
@@ -1126,8 +1119,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">exec</span> <span class="n">openclaw</span> <span class="n">node</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="nv">@args</span> <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc-it</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">exec</span> <span class="n">-it</span> <span class="n">openclaw</span> <span class="n">node</span> <span class="n">dist</span><span class="p">/</span><span class="n">index</span><span class="p">.</span><span class="py">js</span> <span class="nv">@args</span> <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc-logs</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">logs</span> <span class="o">-f</span> <span class="n">openclaw</span> <span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">oc-logs</span> <span class="p">{</span> <span class="n">docker</span> <span class="n">logs</span> <span class="o">-f</span> <span class="n">openclaw</span> <span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With these handy functions, I can now run <code>oc gateway health</code> instead of the complete <code>docker exec</code> command.</p>
 <div class="highlight"><div class="chroma">
@@ -1139,8 +1131,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\U</span>sers<span class="se">\r</span>avik&gt; oc gateway health
 </span></span><span class="line"><span class="cl">Gateway Health
-</span></span><span class="line"><span class="cl">OK <span class="o">(</span>28ms<span class="o">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">OK <span class="o">(</span>28ms<span class="o">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the next part, we shall complete onboarding and integrating WhatsApp channel.</p>
 
@@ -1697,6 +1688,7 @@ I chose to run OpenClaw inside a container to ensure I can freely experiment wit
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

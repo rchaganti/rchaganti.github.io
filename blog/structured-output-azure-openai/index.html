@@ -982,8 +982,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
 </span></span><span class="line"><span class="cl"><span class="n">stuctured_output</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">parsed</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">stuctured_output</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>First, we must import the <code>BaseModel</code> from <code>pydantic</code> and define the structured output schema as a <code>pydantic</code> base model.</p>
 <div class="highlight"><div class="chroma">
@@ -995,8 +994,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">TravelPlan</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span>
-</span></span><span class="line"><span class="cl">    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We must change the <code>client.chat.completions.create</code> to <code>client.beta.chat.completins.parse</code> and add <code>response_format</code> as a parameter. If you access <code>response.choices[0].message.parsed</code>, you will extract the information returned by the model.</p>
 <div class="highlight"><div class="chroma">
@@ -1006,8 +1004,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ python .<span class="se">\0</span>7_structured_output-basics.py
-</span></span><span class="line"><span class="cl"><span class="nv">city_name</span><span class="o">=</span><span class="s1">&#39;London&#39;</span> <span class="nv">date</span><span class="o">=</span><span class="s1">&#39;Next week&#39;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">city_name</span><span class="o">=</span><span class="s1">&#39;London&#39;</span> <span class="nv">date</span><span class="o">=</span><span class="s1">&#39;Next week&#39;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Accessing <code>response.choices[0].message.content</code> retrieves the JSON output for the extracted information.</p>
 <p>If we need to modify the earlier example of a travel planner program that suggests clothes to wear based on the weather at a location, we repeat what we did in the above example.</p>
@@ -1025,8 +1022,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
 </span></span><span class="line"><span class="cl">    <span class="n">location</span><span class="p">:</span> <span class="nb">str</span>
 </span></span><span class="line"><span class="cl">    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span>
 </span></span><span class="line"><span class="cl">    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span>
-</span></span><span class="line"><span class="cl">    <span class="n">cloth_suggestions</span><span class="p">:</span> <span class="nb">str</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">cloth_suggestions</span><span class="p">:</span> <span class="nb">str</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>And, change the <code>get_model_response</code> function to replace <code>client.chat.completions.create</code> with <code>client.beta.chat.completions.parse</code> and add <code>response_format</code> as an argument with <code>Suggestion</code> as the value. When you run this program, the model generates structured output as specified in the response format.</p>
 <div class="highlight"><div class="chroma">
@@ -1040,8 +1036,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ python .<span class="se">\0</span>7_structured_output-function_call.py
 </span></span><span class="line"><span class="cl">Tool call: parse_day with arguments: <span class="o">{</span><span class="s2">&#34;day_string&#34;</span>:<span class="s2">&#34;next week&#34;</span><span class="o">}</span>
 </span></span><span class="line"><span class="cl">Tool call: get_weather with arguments: <span class="o">{</span><span class="s2">&#34;city_name&#34;</span>:<span class="s2">&#34;Austin&#34;</span>,<span class="s2">&#34;date&#34;</span>:<span class="s2">&#34;2024-08-25&#34;</span><span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="o">{</span><span class="s2">&#34;location&#34;</span>:<span class="s2">&#34;Austin&#34;</span>,<span class="s2">&#34;date&#34;</span>:<span class="s2">&#34;2024-08-25&#34;</span>,<span class="s2">&#34;temperature&#34;</span>:35.5,<span class="s2">&#34;cloth_suggestions&#34;</span>:<span class="s2">&#34;The temperature in Austin next week is expected to be around 35.5°C. This is hot weather, so I recommend carrying light layers such as t-shirts and short-sleeve shirts.&#34;</span><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="o">{</span><span class="s2">&#34;location&#34;</span>:<span class="s2">&#34;Austin&#34;</span>,<span class="s2">&#34;date&#34;</span>:<span class="s2">&#34;2024-08-25&#34;</span>,<span class="s2">&#34;temperature&#34;</span>:35.5,<span class="s2">&#34;cloth_suggestions&#34;</span>:<span class="s2">&#34;The temperature in Austin next week is expected to be around 35.5°C. This is hot weather, so I recommend carrying light layers such as t-shirts and short-sleeve shirts.&#34;</span><span class="o">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Structured output can be very useful for multi-step workflows. In the next part of the series, we will see parallel tool calling in Azure OpenAI.</p>
 
@@ -1598,6 +1593,7 @@ Structured outputs tell an LLM to follow the schema represented by the response_
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

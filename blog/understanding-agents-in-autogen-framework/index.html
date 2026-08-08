@@ -860,8 +860,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ pip install <span class="s2">&#34;autogen-core&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ pip install <span class="s2">&#34;autogen-core&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>AutoGen core is the event-driven actor framework for creating agentic workflows. This package provides message-passing, event-driven agents, as well as local and distributed agent runtimes. In the <a href="https://en.wikipedia.org/wiki/Actor_model">actor model</a>, an actor is an entity that, in response to a message it receives, can concurrently send a finite number of messages to other actors, create a finite number of new actors, and designate the behavior to be used for the next message it receives. These actions could be carried out in parallel.</p>
 <p>Let us first define the agent and its logic for handling messages.</p>
@@ -972,8 +971,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
 </span></span><span class="line"><span class="cl">                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">publish_message</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">),</span> <span class="n">DefaultTopicId</span><span class="p">())</span>
 </span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="se">\n</span><span class="s2">Checker:</span><span class="se">\n</span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="si">}</span><span class="s2"> exists in the generated prime numbers, continue to next.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">publish_message</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">),</span> <span class="n">DefaultTopicId</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">publish_message</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">),</span> <span class="n">DefaultTopicId</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>Message</code> data class defines the messages passed between agents. The <code>Generator</code> agent generates a random number, while the <code>Checker</code> agent verifies whether the random number received as a message is prime. Each agent defines a method for handling messages. This is indicated using the <code>@message_handler</code> decorator. The method you designate as the message handler must be asynchronous and must have three arguments: <code>self</code>, <code>message</code>, and <code>context</code>.</p>
 <p>The agent runtime is a key component of the AutoGen framework. This provides the communication infrastructure required for agent-to-agent communication. The runtime handles agent creation and agents&rsquo; lifecycle. In this example, we use a <code>SingleThreadedAgentRuntime,</code> which is most suitable for development and standalone applications. This runtime processes all messages using a single <code>asyncio</code> queue. We can create a runtime using the <code>SingleThreadedAgentRuntime()</code> method. Once a runtime is created, we need to register the agents.</p>
@@ -1002,8 +1000,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
 </span></span><span class="line"><span class="cl">    <span class="n">runtime</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;checker&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="k">lambda</span><span class="p">:</span> <span class="n">Checker</span><span class="p">(</span><span class="n">run_until</span><span class="o">=</span><span class="k">lambda</span> <span class="n">count</span><span class="p">:</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Within each agent&rsquo;s registration, we supply a lambda function that is used as an action when a message is received. The <code>Generator</code> agent uses <code>random.randint(1, 15)</code> as the lambda while the <code>Checker</code> agent checks for the condition <code>count &gt;= 5</code>.</p>
 <div class="highlight"><div class="chroma">
@@ -1049,8 +1046,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
 </span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">runtime</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">AgentId</span><span class="p">(</span><span class="s2">&#34;checker&#34;</span><span class="p">,</span> <span class="s2">&#34;default&#34;</span><span class="p">))</span>
 </span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">runtime</span><span class="o">.</span><span class="n">stop_when_idle</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>To start the runtime, we need to call <code>runtime.start()</code>. The <code>send_message</code> method can be used to initiate the conversation between the agents. In this example, we send <code>Message(1)</code> as the initial message. <code>runtime.stop_when_idle()</code> specifies that the runtime should stop when it is idle.</p>
 <div class="highlight"><div class="chroma">
@@ -1488,8 +1484,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
 </span></span><span class="line"><span class="cl">Checker:
 </span></span><span class="line"><span class="cl">We got <span class="m">5</span> prime numbers, stopping.
 </span></span><span class="line"><span class="cl">--------------------------------------------------------------------------------
-</span></span><span class="line"><span class="cl">Prime numbers generated: <span class="o">[</span>11, 7, 2, 3, 13<span class="o">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Prime numbers generated: <span class="o">[</span>11, 7, 2, 3, 13<span class="o">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a quick tour of how you can build agents with AutoGen core. We will explore more about different agent patterns in the upcoming articles of this series.</p>
 
@@ -2040,6 +2035,7 @@ However, what is an agent in the context of AutoGen? How do agents communicate w
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

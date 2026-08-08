@@ -1196,8 +1196,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl"><span class="n">synthesizer</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">as_agent</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;Synthesizer&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You synthesize ideas. Combine the best elements into actionable plans.&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The heart of a <code>GroupChat</code> workflow is the speaker selection function. This function decides who speaks next based on the current state of the conversation. The framework hands it a <code>GroupChatState</code> (immutable dataclass) imported from <code>agent_framework.orchestrations</code>:</p>
 <table>
@@ -1250,8 +1249,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="c1"># Select based on round index</span>
 </span></span><span class="line"><span class="cl">    <span class="n">participant_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">participants</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">participant_names</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">participant_names</span><span class="p">)]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">participant_names</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">participant_names</span><span class="p">)]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As defined in this function, the next participant name is returned. To terminate the conversation, this function returns <code>None</code>.</p>
 <p>With the speaker selection in place, let us build the workflow.</p>
@@ -1270,8 +1268,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">set_select_speakers_func</span><span class="p">(</span><span class="n">select_speaker</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>set_select_speakers_func(func)</code> method sets the speaker selection function. <code>participants([...])</code> registers the agents that can participate, and <code>build()</code>creates the executable workflow. We will use the well-known pattern for running the workflow.</p>
 <div class="highlight"><div class="chroma">
@@ -1313,8 +1310,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">WorkflowRunState</span><span class="o">.</span><span class="n">IDLE</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">✅ Group chat completed!&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&#34;output&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">output_data</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">            <span class="n">output_data</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>event.data</code> on the <code>output</code> event contains the full conversation as a list of messages:</p>
 <div class="highlight"><div class="chroma">
@@ -1344,8 +1340,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">]&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">60</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Here&rsquo;s the complete code for a brainstorming <code>GroupChat</code>.</p>
 <div class="highlight"><div class="chroma">
@@ -1543,8 +1538,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Here&rsquo;s what you can expect when you run this workflow.</p>
 <div class="highlight"><div class="chroma">
@@ -1626,8 +1620,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
 </span></span><span class="line"><span class="cl">GROUP CHAT <span class="nv">TRANSCRIPT</span>
 </span></span><span class="line"><span class="cl"><span class="o">============================================================</span>
-</span></span><span class="line"><span class="cl">.....
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">.....</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The round-robin method for speaker selection is simple but does not necessarily reflect real-world brainstorming. In the following sections, we will look at slightly more advanced methods for selecting a speaker in a <code>GroupChat</code> workflow.</p>
 <h3 id="conditional-selection-based-on-consent">Conditional selection based on consent</h3>
@@ -1677,8 +1670,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="s2">&#34;concern&#34;</span> <span class="ow">in</span> <span class="n">last_message</span> <span class="ow">or</span> <span class="s2">&#34;risk&#34;</span> <span class="ow">in</span> <span class="n">last_message</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;Creative&#34;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;Synthesizer&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;Synthesizer&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this pattern, based on the <code>creative</code> or <code>critic</code> agent&rsquo;s response, we choose the next speaker. Again, this may not always be the right thing. Imagine a chatty, opinionated co-worker in a brainstorming session. They end up taking a lot of time. To address this, we can use a weighted selection where a few agents are selected more often than others.</p>
 <h3 id="priority-based-selection"><strong>Priority-Based Selection</strong></h3>
@@ -1702,8 +1694,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="c1"># Pattern: Creative, Critic, Creative, Synthesizer, repeat</span>
 </span></span><span class="line"><span class="cl">    <span class="n">pattern</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;Creative&#34;</span><span class="p">,</span> <span class="s2">&#34;Critic&#34;</span><span class="p">,</span> <span class="s2">&#34;Creative&#34;</span><span class="p">,</span> <span class="s2">&#34;Synthesizer&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">pattern</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">pattern</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this example, the <code>creative</code> agent is given greater weight than the others.</p>
 <h3 id="last-speaker-exclusion">Last speaker exclusion</h3>
@@ -1749,8 +1740,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">    <span class="n">available</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">participant_names</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">last_speaker</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="c1"># Simple rotation among available speakers</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">available</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">available</span><span class="p">)]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">available</span><span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">available</span><span class="p">)]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this method, from the message history, we identify who spoke last and remove that speaker from the list of potential participants.</p>
 <h3 id="llm-based-speaker-selection">LLM-based speaker selection</h3>
@@ -1796,8 +1786,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_max_rounds</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this approach, the <code>moderator</code> agent becomes the manager of the conversation and selects the appropriate agent based on the goal. This agent has access to the full conversation history, returns the name of the next speaker, and can make dynamic decisions based on context.</p>
 <p>In addition to speaker selection, identifying and implementing an appropriate termination condition is important. There are multiple ways to do this.</p>
@@ -1814,8 +1803,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">select_speaker</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">GroupChatState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">current_round</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># End after 10 rounds</span>
-</span></span><span class="line"><span class="cl">  <span class="c1"># ... selection logic</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  <span class="c1"># ... selection logic</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="implementing-a-custom-termination-condition">Implementing a custom termination condition</h3>
 <p>We can use <code>with_termination_condition()</code> for complex logic.</p>
@@ -1852,8 +1840,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">participants</span><span class="p">([</span><span class="n">creative</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">synthesizer</span><span class="p">])</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">with_termination_condition</span><span class="p">(</span><span class="n">check_consensus</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As shown in the LLM-based speaker selection example, one additional way to terminate a conversation is to specify a maximum number of rounds using <code>with_max_rounds()</code>.</p>
 <p>The <code>GroupChat</code> workflow pattern enables dynamic, turn-based conversations between multiple AI agents. Key takeaways.</p>
@@ -2491,6 +2478,7 @@ But what happens when you need agents to discuss, debate, and build on each othe
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

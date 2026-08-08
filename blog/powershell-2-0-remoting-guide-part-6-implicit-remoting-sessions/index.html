@@ -983,8 +983,7 @@ In this part of the remoting series, we will look at a feature called implicit r
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
 </span></span><span class="line"><span class="cl">Invoke-Command -Session $s -ScriptBlock {Add-PSSnapin Microsoft.SharePoint.PowerShell}
-</span></span><span class="line"><span class="cl">Import-PSSession -Session $s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Import-PSSession -Session $s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, within the local session, we have access to AD cmdlets from one computer and SharePoint 2010 cmdlets from another machine. This makes it easy to manage both from the same computer and local session without worrying much about creating / destroying sessions.</p>
 <p><strong>Nice. So, how do we use implicit remoting?</strong></p>
@@ -996,8 +995,7 @@ In this part of the remoting series, we will look at a feature called implicit r
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
-</span></span><span class="line"><span class="cl">Import-PSSession -Session $s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Import-PSSession -Session $s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>By default, Import-PSSession imports all commands except for commands that have the same names as commands in the current session. To import all the commands, use the AllowClobber parameter.</p>
 <p>If you import a command with the same name as a command in the current session, the imported command hides or replaces the original commands. Essentially, imported commands take precedence over the local commands with same name. Irrespective of whether those commands were loaded after importing a session or before. However, aliases are an exception. Original aliases in the local session take precedence over imported aliases.</p>
@@ -1009,8 +1007,7 @@ In this part of the remoting series, we will look at a feature called implicit r
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Import-PSSession -Session $s -Prefix RS
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Import-PSSession -Session $s -Prefix RS</span></span></code></pre></td></tr></table>
 </div>
 </div><p>will prefix RS to all the cmdlets imported from a remote computer. So, if Get-Command was imported using this method, the local session will have Get-RSCommand and when you use this cmdlet, PowerShell implicitly runs this command inside the remote session.</p>
 <p>As we discussed earlier in this post, PowerShell manages implicit remoting in the background. So, the behavior of Invoke-Command — creates/destroys a PS session every time we execute a remote command — exists with implicit remoting too. Hence, you will see that executing remote commands over this method a bit slow. To work around this, import-PSSession adds a -asJob parameter to all the commands imported in to the local session.</p>
@@ -1026,8 +1023,7 @@ In this part of the remoting series, we will look at a feature called implicit r
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
 </span></span><span class="line"><span class="cl">Import-PSSession -Session $s -Prefix RS            
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Get-RSProcess -asJob
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Get-RSProcess -asJob</span></span></code></pre></td></tr></table>
 </div>
 </div><p>will run Get-Process on the remote computer as a background job. The original Get-Process has no -asJob parameter.</p>
 <p><strong>How do we import modules or snap-ins in to local session?</strong></p>
@@ -1040,8 +1036,7 @@ In this part of the remoting series, we will look at a feature called implicit r
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
 </span></span><span class="line"><span class="cl">Invoke-Command -Session $s -ScriptBlock {Import-Module ActiveDirectory}
-</span></span><span class="line"><span class="cl">Import-PSSession -Session $s -Module ActiveDirectory
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Import-PSSession -Session $s -Module ActiveDirectory</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the above example, we first create a PS session, import active directory module using Invoke-Command and then import the session in to the local session. This makes all the active directory cmdlets available in the local session.</p>
 <p>This is the end of part 6 of the remoting series. In the next post, I will talk about how we can save the imported session to hard disk.</p>
@@ -1602,6 +1597,7 @@ In this part of the remoting series, we will look at a feature called implicit r
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -1027,8 +1027,7 @@ In the earlier parts of this series, we created the storage account, virtual net
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;backendPort&#34;</span><span class="p">:</span> <span class="mi">3389</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;enableFloatingIP&#34;</span><span class="p">:</span> <span class="bp">false</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>If you look at line number 11, we added <em>DependsOn</em> property to define that the <em>inboundNatRules</em> depend on the load balancer configuration. This is straightforward and very easy to define. You can use template language functions such as <em>ResourceId()</em> or <em>concat()</em> as well within the value of <em>DependsOn</em> and dynamically build these dependencies. You can provide more than one value here as a comma-separated list.</p>
 <div class="highlight"><div class="chroma">
@@ -1042,8 +1041,7 @@ In the earlier parts of this series, we created the storage account, virtual net
 <pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;dependsOn&#34;</span><span class="p">:</span> <span class="p">[</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;Microsoft.Network/loadBalancers/loadBalancer&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;Microsoft.Network/virtualNetworks/vNet1&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="using-references">Using References</h4>
 <p>The second method is to define reference to the dependent resource. Let us create a virtual network interface the AD VM in our scenario. This depends on the virtual network resource that we already created.</p>
@@ -1090,8 +1088,7 @@ In the earlier parts of this series, we created the storage account, virtual net
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">]</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Observe line number 9. We used the reference() function to get a reference to the virtual network object we created and get the subnet name from there and use it to construct the <em>IPConfiguration</em> name. When ARM engine finds this reference, it creates an implicit dependency on the virtual network that we referenced. There is no need here to specify <em>DependsOn</em> property.</p>
 <p>Note that we cannot use the reference() function as a part of the resource instance name. This is because the ARM engine must know the names of the resource instances before the deployment can start.</p>
@@ -1286,8 +1283,7 @@ In the earlier parts of this series, we created the storage account, virtual net
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This example is quite long. It is the virtual machine resource instance that we need for the domain controller. Apart from all the virtual machine properties such as storage profile and OS profile, we have something interesting at line number 61. We have another resources element within the VM resource definition. As with the top-level resources element, this is also a JSON array and contains the resource definition for the <a href="http://www.powershellmagazine.com/2014/08/05/understanding-azure-vm-dsc-extension/">VM DSC extension</a>. It is obvious that VM DSC extension without a VM is meaningless. By defining this as a child or nested resource inside the VM resource definition, we are creating an implicit dependency between the VM and the VM DSC extension. When ARM engine looks at this in the template, it schedules VM creation before the DSC extension. BTW, this VM DSC extension has the DSC configuration required to build the domain controller in this deployment.</p>
 <p>Always make sure you that you create enough flexibility within the template for someone else to take this and deploy the template in their own environment.To this extent, I have used a parameter called <em>assetLocation</em> (line 75) in the DSC extension properties. You can call this whatever you want. This parameter specifies where all the template assets such as DSC configuration scripts and any additional template files are stored.</p>
@@ -1860,6 +1856,7 @@ In the earlier parts of this series, we created the storage account, virtual net
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

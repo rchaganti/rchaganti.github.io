@@ -819,8 +819,7 @@
 </span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">outputFormats</span><span class="p">.</span><span class="nx">LLMS</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">mediaType</span> <span class="p">=</span> <span class="s2">&#34;text/plain&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">baseName</span> <span class="p">=</span> <span class="s2">&#34;llms&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">isPlainText</span> <span class="p">=</span> <span class="kc">true</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="nx">isPlainText</span> <span class="p">=</span> <span class="kc">true</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Next, we tell Hugo which pages should generate these formats:</p>
 <div class="highlight"><div class="chroma">
@@ -832,8 +831,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="p">[</span><span class="nx">outputs</span><span class="p">]</span>
 </span></span><span class="line"><span class="cl">  <span class="nx">home</span> <span class="p">=</span> <span class="p">[</span><span class="s2">&#34;HTML&#34;</span><span class="p">,</span> <span class="s2">&#34;JSON&#34;</span><span class="p">,</span> <span class="s2">&#34;LLMS&#34;</span><span class="p">]</span> <span class="c"># Home page gets HTML, search JSON, and llms.txt</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">page</span> <span class="p">=</span> <span class="p">[</span><span class="s2">&#34;HTML&#34;</span><span class="p">,</span> <span class="s2">&#34;Markdown&#34;</span><span class="p">]</span>     <span class="c"># Individual posts get HTML and index.md</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  <span class="nx">page</span> <span class="p">=</span> <span class="p">[</span><span class="s2">&#34;HTML&#34;</span><span class="p">,</span> <span class="s2">&#34;Markdown&#34;</span><span class="p">]</span>     <span class="c"># Individual posts get HTML and index.md</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once we have the output format defined, we need to provide Hugo with a template. These templates use Go language&rsquo;s <a href="https://pkg.go.dev/text/template">text templating feature</a>.</p>
 <h2 id="creating-the-markdown-template">Creating the Markdown Template</h2>
@@ -848,8 +846,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gh"># {{ .Title }}
 </span></span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">{{ .RawContent }}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">{{ .RawContent }}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Using <code>.RawContent</code> ensures we get the original Markdown without any HTML rendering, providing the cleanest possible input for an AI.</p>
 <h2 id="generating-the-llmstxt">Generating the llms.txt</h2>
@@ -875,8 +872,7 @@
 </span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">{{- range where .Site.RegularPages &#34;Type&#34; &#34;in&#34; (slice &#34;blog&#34;) }}
 </span></span><span class="line"><span class="cl"><span class="k">-</span> [<span class="nt">{{ .Title }}</span>](<span class="na">{{ .RelPermalink }}index.md</span>): {{ .Params.excerpt | default .Summary | plainify }}
-</span></span><span class="line"><span class="cl">{{- end }}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">{{- end }}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Note the link format: <code>{{ .RelPermalink }}index.md</code>. This points the agent directly to the Markdown version we generated in Step 2.</p>
 <h2 id="verification">Verification</h2>
@@ -903,8 +899,7 @@
 </span></span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="gu">## Blog Posts
 </span></span></span><span class="line"><span class="cl"><span class="k">-</span> [<span class="nt">GitHub Agentic Workflows</span>](<span class="na">/blog/github-agentic-workflows/index.md</span>): Write automation in natural language...
-</span></span><span class="line"><span class="cl"><span class="k">-</span> [<span class="nt">Implementing llms.txt in Hugo</span>](<span class="na">/blog/hugo-llms/index.md</span>): Extend Hugo to support AI agents...
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">- [<span class="nt">Implementing llms.txt in Hugo</span>](<span class="na">/blog/hugo-llms/index.md</span>): Extend Hugo to support AI agents...</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Implementing support for <code>llms.txt</code> is a small change with high impact. It signals that your site is agent-ready and AI-friendly, making it trivial for tools like LLMs, search agents, and automated workflows to consume your technical knowledge without the overhead of HTML parsing.</p>
 <p>If you are building technical documentation or a blog in 2026, this should be part of your standard stack.</p>
@@ -1427,6 +1422,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

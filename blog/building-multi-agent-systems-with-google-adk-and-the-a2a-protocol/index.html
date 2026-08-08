@@ -1139,8 +1139,7 @@
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    
 </span></span><span class="line"><span class="cl">    <span class="c1"># Handle conversion through USD as intermediate when direct rate unavailable</span>
-</span></span><span class="line"><span class="cl">    <span class="c1"># ... implementation continues</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="c1"># ... implementation continues</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent definition follows the standard ADK pattern. We specify the model (Gemini 2.0 Flash in this case), give the agent a name and description, provide detailed instructions about its capabilities, and attach the tools it can use. The description is particularly important in an A2A context because it becomes part of the agent card and helps consuming agents understand when to delegate tasks to this agent.</p>
 <div class="highlight"><div class="chroma">
@@ -1184,8 +1183,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="s2">- If a currency is not supported, let the user know and suggest alternatives
 </span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">convert_currency</span><span class="p">,</span> <span class="n">get_exchange_rate</span><span class="p">,</span> <span class="n">list_supported_currencies</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The single line of code below transforms this standard ADK agent into an A2A-compatible service:</p>
 <div class="highlight"><div class="chroma">
@@ -1197,8 +1195,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">google.adk.a2a.utils.agent_to_a2a</span> <span class="kn">import</span> <span class="n">to_a2a</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">a2a_app</span> <span class="o">=</span> <span class="n">to_a2a</span><span class="p">(</span><span class="n">root_agent</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8001</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">a2a_app</span> <span class="o">=</span> <span class="n">to_a2a</span><span class="p">(</span><span class="n">root_agent</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8001</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>to_a2a()</code> function performs several important tasks behind the scenes. First, it creates a FastAPI application that implements the A2A protocol endpoints. Second, it analyzes the agent&rsquo;s configuration—its name, description, instructions, and tools—and automatically generates an agent card that describes these capabilities in the A2A format. Third, it sets up the message handling pipeline that receives A2A requests, translates them into ADK&rsquo;s internal format, runs the agent, and translates the responses back to A2A format.</p>
 <p>The resulting <code>a2a_app</code> is a standard ASGI application that can be served using any ASGI server. We use <code>uvicorn</code> in our example:</p>
@@ -1207,8 +1204,7 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">uvicorn <span class="s2">&#34;07-a2a-protocol.remote_a2a.currency_agent.agent:a2a_app&#34;</span> --host localhost --port <span class="m">8001</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">uvicorn <span class="s2">&#34;07-a2a-protocol.remote_a2a.currency_agent.agent:a2a_app&#34;</span> --host localhost --port <span class="m">8001</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once running, the agent card becomes available at <code>http://localhost:8001/.well-known/agent-card.json</code>. This auto-generated card includes the agent&rsquo;s name, description, supported input and output modes, and a skills array derived from the agent&rsquo;s tools and instructions. Other agents can fetch this card to discover what the currency agent can do.</p>
 <h3 id="consuming-the-remote-agent">Consuming the remote agent</h3>
@@ -1240,8 +1236,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="s2">    - List supported currencies for conversion
 </span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">agent_card</span><span class="o">=</span><span class="sa">f</span><span class="s2">&#34;http://localhost:8001</span><span class="si">{</span><span class="n">AGENT_CARD_WELL_KNOWN_PATH</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>RemoteA2aAgent</code> requires three pieces of information: a name to identify it within the local agent system, a description that helps the root agent understand when to delegate to it, and the URL of the agent card. The <code>AGENT_CARD_WELL_KNOWN_PATH</code> constant provides the standard path (<code>/.well-known/agent-card.json</code>), ensuring consistency with the A2A specification.</p>
 <p>When the travel assistant is initialized, it doesn&rsquo;t connect to the remote agent immediately. Instead, it stores the agent card URL and fetches the card lazily when needed. This design allows the local agent to start even if the remote service is temporarily unavailable, and ensures the agent card information is always up to date.</p>
@@ -1275,8 +1270,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="s2">3. List all available destinations using list_destinations
 </span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_destination_info</span><span class="p">,</span> <span class="n">calculate_trip_budget</span><span class="p">,</span> <span class="n">list_destinations</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The root agent brings everything together. Its instruction set explains the available sub-agents and provides guidance on when to use each one. The <code>sub_agents</code> array includes both the local <code>travel_info_agent</code> and the remote <code>currency_agent</code>, and from the root agent&rsquo;s perspective, they&rsquo;re used in exactly the same way:</p>
 <div class="highlight"><div class="chroma">
@@ -1334,8 +1328,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="s2">3. Present both values to the user
 </span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&#34;&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">sub_agents</span><span class="o">=</span><span class="p">[</span><span class="n">travel_info_agent</span><span class="p">,</span> <span class="n">currency_agent</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>When a user asks, &ldquo;What&rsquo;s the exchange rate from USD to EUR?&rdquo;, the root agent recognizes this as a currency-related query and delegates to the <code>currency_agent</code>. Behind the scenes, the ADK framework handles A2A communication: it formats the request per the A2A protocol, sends it to the remote server, waits for the response, and returns the result via the root agent. The user sees a seamless interaction, unaware that part of the processing happened on a different server.</p>
 <h3 id="communication-flow">Communication flow</h3>
@@ -2025,6 +2018,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

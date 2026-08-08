@@ -1111,8 +1111,7 @@ For linking different external templates within the main template, we need to de
 </span></span><span class="line"><span class="cl">      }
 </span></span><span class="line"><span class="cl">    }
 </span></span><span class="line"><span class="cl">  ]
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above template is just another ARM JSON template. It has the same syntax. We have defined parameters that are needed for updating the virtual network to use the custom DNS that we just configured. let us save this as <em>vnet-with-dns-server.json</em> and store it at a location that is accessible to the ARM deployment engine. I chose to store it in a <a href="https://github.com/rchaganti/azure-quickstart-templates/blob/master/201-vm-domain-join/vnet-with-dns-server.json">public Github repository</a>.</p>
 <p>Now, we need to link this template to the main ARM template that we have been authoring. Here is how it is done in the main template.</p>
@@ -1187,8 +1186,7 @@ For linking different external templates within the main template, we need to de
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Within this resource instance, we defined a dependency (line number 6) on the PowerShell DSC extension that creates the AD forest. We don’t want the linked template to execute until the DNS service is created in the DC VM. Line number 11 defines the link our external template that will configure the custom DNS settings. _vnet-with-dns-server.json _has a few parameters defined for collecting required custom DNS configuration.</p>
 <p>Within the main template, we need to pass the parameter values to the external template. This is done using the parameters element within the <em>Microsoft.Resources/deployments</em> resource instance. For the parameter values, we use either what is already gathered from the user using the main template or what is defined in the variables element of the main template. This is how state can be shared between multiple templates. If we need to return some data from the linked template to the main template, we can do so using the outputs element within the linked template. In our scenario, we don’t need any information from the linked template and therefore we will not use the outputs element.</p>
@@ -1766,6 +1764,7 @@ For linking different external templates within the main template, we need to de
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

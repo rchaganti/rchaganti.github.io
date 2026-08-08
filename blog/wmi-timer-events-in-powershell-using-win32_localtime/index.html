@@ -1079,8 +1079,7 @@ Coming to the subject of this post, in WMI, there are 3 types of events possible
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Setup WQL query
 </span></span><span class="line"><span class="cl">$query = &#34;SELECT * FROM __InstanceModificationEvent WHERE TargetInstance ISA &#39;Win32_LocalTime&#39;&#34;
 </span></span><span class="line"><span class="cl">#Register WMI Event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Second&#34; -Action { Write-Host &#34;Event Received&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Second&#34; -Action { Write-Host &#34;Event Received&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>will result in displaying “Event Received” message at the console every one second. This is because the event fires every one second and that is the smallest time segment supported. Now, this won’t be very useful unless you want to flood your consumer with a bunch of useless messages every one second. Let us look at another example:</p>
 <div class="highlight"><div class="chroma">
@@ -1100,8 +1099,7 @@ Coming to the subject of this post, in WMI, there are 3 types of events possible
 </span></span><span class="line"><span class="cl">                              AND TargetInstance.Minute=30
 </span></span><span class="line"><span class="cl">                              AND TargetInstance.Second=0&#34;
 </span></span><span class="line"><span class="cl">#Register WMI Event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Day-14.30PM&#34; -Action { Write-Host &#34;Event Received&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Day-14.30PM&#34; -Action { Write-Host &#34;Event Received&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this example, we use WQL query to register for a WMI event that fires every day at 14.30 hours. Note that the hours value is in 24 hour format. Now, this is useful. I can use the -Action script block to do something better like running a backup script when this event fires. Similarly, you can also create event registrations for events occurring on specific day of every quarter (Quarter) or specific week (WeekInMonth) of every month.</p>
 <p>WMI Timer events can be used to create some very advanced scheduling jobs. Register-WMIEvent creates a temporary consumer but just imagine being able to create a permanent consumer and use that for scheduling several administrative tasks. I will update this post once Trevor (@pcgeek86) releases his PowerEvents module and show you some cool tricks.</p>
@@ -1126,8 +1124,7 @@ Coming to the subject of this post, in WMI, there are 3 types of events possible
 </span></span><span class="line"><span class="cl">                              AND TargetInstance.Minute=16
 </span></span><span class="line"><span class="cl">                              AND TargetInstance.Second=0&#34;
 </span></span><span class="line"><span class="cl">#Register WMI Event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Tuesday-12-16PM&#34; -Action { Write-Host &#34;Start backup&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $Query -SourceIdentifier &#34;Event-Every-Tuesday-12-16PM&#34; -Action { Write-Host &#34;Start backup&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a dissappointing bug and I am going to check if MS has any answer. Their documentation for Win32_LocalTime uses a WQL query that has DayOfWeek property. I’d experimented with the same query in PowerShell, VBScript &amp; C#. It worked no where. So, timer events are quite useful in creating advanced scheduling jobs but the current bug is keeping it away from “real” world use.</p>
 <p>I will update this post with the details I find out or get from Microsoft. Keep watching this space.</p>
@@ -1703,6 +1700,7 @@ Coming to the subject of this post, in WMI, there are 3 types of events possible
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

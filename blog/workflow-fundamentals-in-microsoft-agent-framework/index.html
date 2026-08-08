@@ -1287,8 +1287,7 @@ This article is about the other ten percent. The orchestration builders are conv
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Running this prints <code>Result: 10</code>.</p>
 <p>Each executor subclasses <code>Executor</code>. The processing logic is a method decorated with <code>@handler</code>. The decorator inspects the type annotations on the method to figure out which input types the executor can accept and which output types it can produce. <code>Doubler.double</code> accepts an <code>int</code> and produces an <code>int</code>; <code>Stringifier.stringify</code> accepts an <code>int</code>, sends <code>str</code> messages downstream, and is allowed to yield <code>str</code> workflow outputs (the second <code>str</code> in <code>WorkflowContext[str, str]</code>).</p>
@@ -1316,8 +1315,7 @@ This article is about the other ten percent. The orchestration builders are conv
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s2">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;number&#34;</span><span class="p">,</span> <span class="s2">&#34;value&#34;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s2">&#34;kind&#34;</span><span class="p">:</span> <span class="s2">&#34;number&#34;</span><span class="p">,</span> <span class="s2">&#34;value&#34;</span><span class="p">:</span> <span class="n">message</span><span class="p">})</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>Router</code> accepts both <code>str</code> and <code>int</code> messages. The runtime dispatches each incoming message to the matching handler based on its type.</p>
 <p>A handler can also produce no output messages at all. That is the right shape for a &ldquo;side-effect&rdquo; executor that, for example, writes to a database or emits a custom event but does not feed anything downstream:</p>
@@ -1332,8 +1330,7 @@ This article is about the other ten percent. The orchestration builders are conv
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Audit</span><span class="p">(</span><span class="n">Executor</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="nd">@handler</span>
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">log_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">WorkflowContext</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[audit] saw: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[audit] saw: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>WorkflowContext[None]</code> annotation tells the framework that this executor produces no downstream messages. It can still observe input, write to logs, mutate external state, or call <code>ctx.add_event(...)</code> to emit a custom event into the run&rsquo;s event stream.</p>
 <p>Every executor has an <code>id</code> (set via the constructor or auto-generated). The id is what shows up in <code>executor_invoked</code> / <code>executor_completed</code> events and is the handle you use to set explicit edges between executors. For graphs with more than a few nodes, set the ids deliberately so the event stream is readable.</p>
@@ -1348,8 +1345,7 @@ This article is about the other ten percent. The orchestration builders are conv
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">WorkflowBuilder</span><span class="p">(</span><span class="n">start_executor</span><span class="o">=</span><span class="n">a</span><span class="p">)</span> \
 </span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> \
-</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A <em>conditional</em> edge attaches a predicate. The message only flows to the target if the predicate returns true:</p>
 <div class="highlight"><div class="chroma">
@@ -1359,8 +1355,7 @@ This article is about the other ten percent. The orchestration builders are conv
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">text_path</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&#34;kind&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;text&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">number_path</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&#34;kind&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;number&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">router</span><span class="p">,</span> <span class="n">number_path</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&#34;kind&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;number&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is the building block that lets you create branching workflows: one source, several possible targets, the edges&rsquo; conditions decide which one fires for any given message.</p>
 <p>For <em>fan-out</em> (one source, multiple parallel targets), the builder has a convenience method:</p>
@@ -1369,8 +1364,7 @@ This article is about the other ten percent. The orchestration builders are conv
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_out_edges</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">])</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_out_edges</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">])</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The message produced by <code>start</code> is delivered to all three workers in the same superstep, and they run in parallel. The inverse, <em>fan-in</em>, is the corresponding shape:</p>
 <div class="highlight"><div class="chroma">
@@ -1378,8 +1372,7 @@ This article is about the other ten percent. The orchestration builders are conv
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_in_edges</span><span class="p">([</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">],</span> <span class="n">aggregator</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">.</span><span class="n">add_fan_in_edges</span><span class="p">([</span><span class="n">worker_a</span><span class="p">,</span> <span class="n">worker_b</span><span class="p">,</span> <span class="n">worker_c</span><span class="p">],</span> <span class="n">aggregator</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>aggregator</code> executor only fires when all three workers have produced output. Its handler receives a list of the workers&rsquo; messages, in source-id order. This is exactly how the concurrent orchestration builder works under the hood: a fan-out from the input to the participant agents, and a fan-in to the aggregator.</p>
 <p>For more elaborate routing — picking one of several targets based on a more nuanced rule — <code>add_switch_case_edge_group</code> and <code>add_multi_selection_edge_group</code> give you <code>switch</code> semantics and a multi-target select rule, respectively. Reach for those when the conditional-edge form starts to get unwieldy.</p>
@@ -2146,6 +2139,7 @@ This article is about the other ten percent. The orchestration builders are conv
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

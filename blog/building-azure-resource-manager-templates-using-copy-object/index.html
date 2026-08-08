@@ -1077,8 +1077,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 </span></span><span class="line"><span class="cl">            <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;Type of environment where this deployment should occur. This has an impact on the number of VMs to be depoloyed.&#34;</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Within the new parameters, we have the <em>dnsName</em> parameter that will be for external access. The <em>environmentType</em> parameter is used to capture whether the user is deploying this template for dev, test, or production. However, based on this selection, we need a way to find out the number of VMs we need in the domain. That is, we need know the instance count for each environment. Remember our discussion on free-form vs known configurations? We don’t want to leave such choices to the end user. So, the place where this decision can be made will be in the variables element.</p>
 <div class="highlight"><div class="chroma">
@@ -1122,8 +1121,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">},</span>
 </span></span><span class="line"><span class="cl">    <span class="nt">&#34;selectedDeployment&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Within the variables element, we defined new variables for making it easier to select the environment type. The <em>deploymentSize</em> variable defines a JSON object. Within this, we are associating <em>instancesCount</em> to every deployment type.</p>
 <div class="highlight"><div class="chroma">
@@ -1151,8 +1149,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 </span></span><span class="line"><span class="cl">    <span class="nt">&#34;Production&#34;</span><span class="p">:</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">        <span class="nt">&#34;instancesCount&#34;</span><span class="p">:</span> <span class="mi">3</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We use the <em>selectedDeployment</em> variable to retrieve the value of <em>deploymentSize</em> variable. This is done by associating the value of environmentType parameter and looking up for that in the <em>deploymentSize</em> variable.</p>
 <div class="highlight"><div class="chroma">
@@ -1160,8 +1157,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;selectedDeployment&#34;</span><span class="err">:</span> <span class="s2">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;selectedDeployment&#34;</span><span class="err">:</span> <span class="s2">&#34;[variables(&#39;deploymentSize&#39;)[parameters(&#39;environmentType&#39;)]]&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This works because <em>deploymentSize</em> is a JSON object similar to a dictionary. We can index into it using one of the key names. So, in this case, the key names will match the value passed to the <em>environmentType</em> parameter and indexing into that will give us the right object within _deploymentSize. _Once we have the selectedDeployment variable populated, we can access the <em>instancesCount</em> value by dot-referencing the property name. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1169,8 +1165,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="p">[</span><span class="n">variables</span><span class="p">(</span><span class="s1">&#39;selectedDeployment&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">instancesCount</span><span class="p">]</span><span class="s2">&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="p">[</span><span class="n">variables</span><span class="p">(</span><span class="s1">&#39;selectedDeployment&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">instancesCount</span><span class="p">]</span><span class="s2">&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This should not be alien to us. We use <em>variables()</em> function and pass the <em>selectedDeployment</em> variable name to it. The resulting object has the <em>instancesCount</em> property which can then be retrieved using dot-referencing. Now that we figured this out, let us go back to the discussion around multiple instance creation within a template.</p>
 <h4 id="working-with-copy-object">Working with Copy Object</h4>
@@ -1186,8 +1181,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;copy&#34;: { 
 </span></span><span class="line"><span class="cl">    &#34;name&#34;: &#34;copy loop name&#34;, 
 </span></span><span class="line"><span class="cl">    &#34;count&#34;: &#34;integer value&#34; 
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <em>name</em> property within the <em>copy</em> element defines a name for the iterator which can later be used for defining dependencies. The _count _property defines the number of times the iterator has to run. In our case, we will set the value of count property to the <em>instancesCount</em> value we retrieve from the <em>selectedDeployment.</em></p>
 <p>We place this inside the resource definition. In our scenario, we will use the copy object within <em>Microsoft.Network/loadBalancers/inboundNatRules</em> resource type. Let us first see the new resources that we need to enable public IP and load balancer configuration. We will then review the resource definition to understand how we use the copy object.</p>
@@ -1378,8 +1372,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 </span></span><span class="line"><span class="cl">            <span class="nt">&#34;enableFloatingIP&#34;</span><span class="p">:</span> <span class="kc">false</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this updated resource collection, we have added three resource types. A public IP address to assign it to the load balancer, a load balancer that will act as a container for the VM endpoints, and finally, RDP endpoints based on the number of VM instances we need.</p>
 <p>Observe the highlighted lines in the resource collection. The copy object that we used within the inboundNATRules resource type tells ARM how many instances we need to create based on the VM count we need.</p>
@@ -1394,8 +1387,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;copy&#34;</span><span class="p">:</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;lbRdpNatLoop&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;count&#34;</span><span class="p">:</span> <span class="s2">&#34;[variables(&#39;selectedDeployment&#39;).instancesCount]&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">},</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">},</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Within an ARM template, for each resource type and its instances, the <em>name</em> property should carry a unique value. Without this, you will see an error during deployment that multiple instances cannot use the same name. So, if you look at line number 77, we are dynamically constructing the value for <em>name.</em></p>
 <div class="highlight"><div class="chroma">
@@ -1403,8 +1395,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(&#39;/loadbalancer/&#39;,&#39;VM-&#39;, copyIndex(1),&#39;-RDP&#39;)]&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As you see here, we are concatenating ‘/loadbalancer/’ with ‘VM-‘ and then using the <a href="https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#copyindex"><em>copyIndex()</em></a> function and finally add ‘-RDP’. The <em>copyIndex()</em> function gives us the iteration number. So, if we are creating three VM endpoints within this resource definition, we get iteration values 0, 1, and 2. The index always starts from 0. However, if we want to offset it to different value than zero, we can specify the value inside the <em>copyIndex()</em> function. In my example, I am using 1 so that the values the template receives will be 1, 2, and 3. Since we are using the iteration number within the name value, we always get an unique identifier.</p>
 <p>Another function that we are using within this template update is the <em><a href="https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#add">add()</a></em> function. This function, as its name suggests, adds integers. I am using this function to dynamically derive the frontend port number for the VM RDP endpoint.</p>
@@ -1413,8 +1404,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;frontendPort&#34;: &#34;[add(3389, copyIndex(1))]&#34;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;frontendPort&#34;: &#34;[add(3389, copyIndex(1))]&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We are doing this since all VM RDP endpoints should be accessible through the load balancer. By using add function, we are adding the iteration value to the RDP port (3389) to derive a unique value.</p>
 <p>Now that we have completed our discussion on the copy object and its usage, let us move on to see the ARM template update that creates storage account, virtual network, public IP, load balancer, and finally the VM RDP endpoints. We are not creating an RDP endpoint for the DC VM.</p>
@@ -1747,8 +1737,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can go ahead and deploy this update by clicking on the button below. </p>
 <div style="margin: 1.5rem 0;">
@@ -2330,6 +2319,7 @@ In this part, we will extend the template to add publicIP, load balancer, and RD
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

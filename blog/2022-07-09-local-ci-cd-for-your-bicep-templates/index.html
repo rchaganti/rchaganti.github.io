@@ -1144,8 +1144,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mkdir c:<span class="se">\t</span>emp<span class="se">\m</span>yBicepProject
 </span></span><span class="line"><span class="cl"><span class="nb">cd</span> C:<span class="se">\t</span>emp<span class="se">\m</span>yBicepProject
-</span></span><span class="line"><span class="cl">git init .
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">git init .</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once a repository is created, you will see a hidden .git folder and a folder called hooks within that. To initiate a script after a commit is complete, we need to place a post-commit script in the hooks folder. Here is what we will use as a post commit script.</p>
 <div class="highlight"><div class="chroma">
@@ -1159,8 +1158,7 @@
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/bin/bash
 </span></span></span><span class="line"><span class="cl"><span class="nv">message</span><span class="o">=</span><span class="k">$(</span>git log -1 --format<span class="o">=</span>%s<span class="k">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">exec</span> powershell.exe -NoProfile -ExecutionPolicy Bypass -File <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">/.git/hooks/post-commit.ps1&#34;</span> -CommitMessage <span class="s2">&#34;\&#39;</span><span class="nv">$message</span><span class="s2">\&#39;&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">exec</span> powershell.exe -NoProfile -ExecutionPolicy Bypass -File <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">/.git/hooks/post-commit.ps1&#34;</span> -CommitMessage <span class="s2">&#34;\&#39;</span><span class="nv">$message</span><span class="s2">\&#39;&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a simple shell script and calls a PowerShell script that does the real magic. We can save this as post-commit (no extension) within the hooks folder. We will now look at the post-commit.ps1 script.</p>
 <div class="highlight"><div class="chroma">
@@ -1322,8 +1320,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="k">else</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">Write-Host</span> <span class="s2">&#34;No action specified&#34;</span> <span class="n">-ForegroundColor</span> <span class="n">Red</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above PowerShell script takes one argument &ndash; CommitMessage. Whatever commit message we specify along with the <code>git commit -m</code> command gets passed as an argument to this PowerShell script. For the purpose of providing a choice of task to execute, we can use a fixed format for the commit message.</p>
 <div class="highlight"><div class="chroma">
@@ -1331,8 +1328,7 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[Action] [Resource-Group] Commit Message
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[Action] [Resource-Group] Commit Message</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The first part within the [] describes an action. We can set it to Build or Deploy.</p>
 <p>If the action is set to Deploy, the second part within the [] provides the resource group to which the deployment will be performed. The rest of the commit message can be ignored. So, the post-commit.ps1 script uses the action to identify what needs to be executed. In case of Bicep, the build step includes linting as well as build. Therefore, we can combine that into a validation or linting step and perform deployment only if the linting completes successfully.</p>
@@ -1369,8 +1365,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">properties</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">accessTier</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Cool&#39;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This template adheres to all the following linter rules and therefor we should not see any errors during the linting / build process.</p>
 <div class="highlight"><div class="chroma">
@@ -1450,8 +1445,7 @@
 </span></span><span class="line"><span class="cl">      <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once you have all these files created, it is time to perform our first commit.</p>
 <p><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
@@ -2062,6 +2056,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

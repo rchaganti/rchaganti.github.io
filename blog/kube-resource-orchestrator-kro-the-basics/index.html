@@ -806,8 +806,7 @@
 </span></span><span class="line"><span class="cl">$ helm install kro oci://ghcr.io/kro-run/kro/kro <span class="se">\
 </span></span></span><span class="line"><span class="cl">  --namespace kro <span class="se">\
 </span></span></span><span class="line"><span class="cl">  --create-namespace <span class="se">\
-</span></span></span><span class="line"><span class="cl">  --version<span class="o">=</span><span class="si">${</span><span class="nv">KRO_VERSION</span><span class="si">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">  --version<span class="o">=</span><span class="si">${</span><span class="nv">KRO_VERSION</span><span class="si">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>helm install</code> command creates a new namespace called <code>kro</code>.</p>
 <div class="highlight"><div class="chroma">
@@ -831,8 +830,7 @@
 </span></span><span class="line"><span class="cl">deployment.apps/kro   1/1     <span class="m">1</span>            <span class="m">1</span>           4d2h
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">NAME                            DESIRED   CURRENT   READY   AGE
-</span></span><span class="line"><span class="cl">replicaset.apps/kro-b667bd485   <span class="m">1</span>         <span class="m">1</span>         <span class="m">1</span>       4d2h
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">replicaset.apps/kro-b667bd485   <span class="m">1</span>         <span class="m">1</span>         <span class="m">1</span>       4d2h</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once the necessary resources are created, it is time to define a custom API. This custom API is called a <code>ResourceGraphDefinition</code> or <code>rgd</code>.</p>
 <p>The following YAML spec is the general schema for a <code>ResourceGraphDefinition</code>.</p>
@@ -875,8 +873,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">status</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c">#Status fields to add to your application instance status</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">resources</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># An array of Kubernetes objects or custom resources such as another rgd that you want to provision</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># An array of Kubernetes objects or custom resources such as another rgd that you want to provision</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>For a working example, we will use what is provided in the documentation for now and build something better in a later post.</p>
 <div class="highlight"><div class="chroma">
@@ -1042,8 +1039,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="nt">service</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">${service.metadata.name}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="nt">port</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                          </span><span class="nt">number</span><span class="p">:</span><span class="w"> </span><span class="m">80</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">                          </span><span class="nt">number</span><span class="p">:</span><span class="w"> </span><span class="m">80</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this example, we have a deployment object with an nginx <code>Pod</code>, a <code>ClusterIP</code> service, and an ingress. You can use the interpolation syntax to refer to the values of different spec fields. For example, <code>${schema.spec.ingress.enabled}</code> gives you the value associated with <code>ingress.enabled</code> from the spec section of the schema.</p>
 <p>Although all three are defined in a sequence, there is a dependency. You want the deployment to be ready before creating the service, and similarly, you want the service to be ready before creating an <code>Ingress</code>. In this example, these dependencies can be identified by referring to other objects. For example, the <code>service</code> resource definition uses <code>selector: ${deployment.spec.selector.matchLabels}</code> in its <code>spec</code>. The <code>ingress</code> resource uses <code>name: ${service.metadata.name}</code> in the <code>spec.rules.paths.backend.service</code>. <code>kro</code> uses these clues to build a Directed Acyclic Graph (DAG) for the resources defined in the <code>rgd</code>. You can provision this custom API using the <code>kubectl apply</code> command.</p>
@@ -1062,8 +1058,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">$ kubectl get rgd my-application -owide
 </span></span><span class="line"><span class="cl">NAME             APIVERSION   KIND          STATE    TOPOLOGICALORDER                     AGE
-</span></span><span class="line"><span class="cl">my-application   v1alpha1     Application   Active   <span class="o">[</span><span class="s2">&#34;deployment&#34;</span>,<span class="s2">&#34;service&#34;</span>,<span class="s2">&#34;ingress&#34;</span><span class="o">]</span>   64s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">my-application   v1alpha1     Application   Active   <span class="o">[</span><span class="s2">&#34;deployment&#34;</span>,<span class="s2">&#34;service&#34;</span>,<span class="s2">&#34;ingress&#34;</span><span class="o">]</span>   64s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>If everything goes as expected, you should see the <code>rgd</code> in active state and the topological order in which the resources will be provisioned. <code>kro</code> deploys your custom application API definition as a custom resource.</p>
 <div class="highlight"><div class="chroma">
@@ -1073,8 +1068,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl get Applications
-</span></span><span class="line"><span class="cl">No resources found in default namespace.
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">No resources found in default namespace.</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Remember? Application is the value of the Kind field in our example. So, you have a resource named Applications. Alright. To realize the application through the custom API, you need to create an instance of the custom API.</p>
 <div class="highlight"><div class="chroma">
@@ -1096,8 +1090,7 @@
 </span></span><span class="line"><span class="cl">spec:
 </span></span><span class="line"><span class="cl">  name: my-awesome-app
 </span></span><span class="line"><span class="cl">  ingress:
-</span></span><span class="line"><span class="cl">    enabled: <span class="nb">true</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    enabled: true</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can provide values of all configurable fields from the resource definition within the spec section of the instance. Once again, you can use <code>kubectl apply</code> command to provision this instance.</p>
 <div class="highlight"><div class="chroma">
@@ -1115,8 +1108,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">$ k get Applications
 </span></span><span class="line"><span class="cl">NAME                      STATE         SYNCED   AGE
-</span></span><span class="line"><span class="cl">my-application-instance   IN_PROGRESS   False    5s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">my-application-instance   IN_PROGRESS   False    5s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The state of the custom resource instance will remain in progress until all the resources within the group are created successfully.</p>
 <div class="highlight"><div class="chroma">
@@ -1144,8 +1136,7 @@
 </span></span><span class="line"><span class="cl">pod/my-awesome-app-9ccb8f99d-zkszm   1/1     Running   <span class="m">0</span>             3m18s
 </span></span><span class="line"><span class="cl">service/my-awesome-app-service   ClusterIP   10.99.199.102    &lt;none&gt;        80/TCP         3m13s
 </span></span><span class="line"><span class="cl">deployment.apps/my-awesome-app   3/3     <span class="m">3</span>            <span class="m">3</span>           3m18s
-</span></span><span class="line"><span class="cl">replicaset.apps/my-awesome-app-9ccb8f99d   <span class="m">3</span>         <span class="m">3</span>         <span class="m">3</span>       3m18s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">replicaset.apps/my-awesome-app-9ccb8f99d   <span class="m">3</span>         <span class="m">3</span>         <span class="m">3</span>       3m18s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>As you see from this example, <code>kro</code> was able to create our resource graph definition as a custom resource and create an instance of that custom resource while taking care of the dependencies. You can also see the custom fields that are added to the custom resource instance&rsquo;s status.</p>
 <div class="highlight"><div class="chroma">
@@ -1227,8 +1218,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">reason</span><span class="p">:</span><span class="w"> </span><span class="l">NewReplicaSetAvailable</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;True&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">Progressing</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l">ACTIVE</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l">ACTIVE</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a basic example and we shall look at something more useful that helps understand different aspects of using <code>kro</code> in a future post.</p>
 
@@ -1744,6 +1734,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

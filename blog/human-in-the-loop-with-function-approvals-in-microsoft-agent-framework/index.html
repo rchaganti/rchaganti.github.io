@@ -1229,8 +1229,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Cancel a customer order. Once cancelled, the action cannot be undone.&#34;&#34;&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="c1"># Real implementation would call your order system.</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Order </span><span class="si">{</span><span class="n">order_id</span><span class="si">}</span><span class="s2"> cancelled: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;Order </span><span class="si">{</span><span class="n">order_id</span><span class="si">}</span><span class="s2"> cancelled: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Two values are accepted: <code>&quot;always_require&quot;</code> (every call pauses for approval) and <code>&quot;never_require&quot;</code> (the default behavior; the framework auto-invokes the tool). The mode lives on the tool, not on the agent, which means the same tool behaves the same way wherever it is wired up.</p>
 <p>Approval-required tools are passed to the agent the same way as any other tool:</p>
@@ -1247,8 +1246,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;OrderAssistant&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">instructions</span><span class="o">=</span><span class="s2">&#34;You are an order management assistant. Cancel orders only when explicitly asked.&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">cancel_order</span><span class="p">,</span> <span class="n">get_order_status</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The model sees both tools in its catalog. It does not know which ones require approval. From its perspective, both are normal tool calls; the framework intercepts the approval-required ones before they execute.</p>
 <p>When the model decides to call <code>cancel_order</code>, the run does not actually invoke the function. Instead, the framework completes the run early, leaving the call pending. The result object carries the pending call on its <code>user_input_requests</code> field.</p>
@@ -1281,8 +1279,7 @@
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;  Arguments: </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">function_call</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;  Request id: </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="k">else</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Agent answered without needing approval:&#34;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Agent answered without needing approval:&#34;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things are worth understanding about this shape. <code>user_input_requests</code> is a list because the model can request multiple tool calls in a single turn; each call gets its own request. The request carries the function call as a <code>Content</code> object, including the tool name and the arguments the model wanted to pass. The ID is what your code uses later to construct the response.</p>
 <p>The session captures the conversation up to and including the tool-call request. When you eventually approve or reject and resume, the framework picks up exactly where it left off.</p>
@@ -1314,8 +1311,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Resume the agent run with the approval responses as input.</span>
 </span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">approvals</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once the responses are returned, the framework executes the approved tools (skipping the rejected ones), feeds the results into the conversation, and lets the model continue producing the final reply. The result of this second <code>agent.run</code> is the agent&rsquo;s actual response, the same as a normal run.</p>
 <p>Rejected tools do not silently disappear. The framework records a &ldquo;tool was rejected&rdquo; message in the conversation, and the model sees that signal on its next turn. The model usually responds appropriately,  apologizing, suggesting an alternative, or asking for clarification, but the exact behavior depends on the prompt. For tools where rejection has a meaningful follow-up (&ldquo;the cancellation was rejected, would you like to escalate?&rdquo;), Include guidance in the agent&rsquo;s instructions about how to handle a rejected approval.</p>
@@ -1333,8 +1329,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">approved</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">function_call</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">function_call</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The two forms are equivalent; <code>to_function_approval_response</code> is the convenient shortcut.</p>
 <h2 id="per-tool-approval-on-mcp-servers">Per-tool approval on MCP servers</h2>
@@ -1352,8 +1347,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;https://your-github-mcp-endpoint.example.com/mcp&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">approval_mode</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;always_require&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;create_issue&#34;</span><span class="p">,</span> <span class="s2">&#34;delete_issue&#34;</span><span class="p">,</span> <span class="s2">&#34;merge_pr&#34;</span><span class="p">]},</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this form, the read-only tools auto-invoke and the destructive ones pause for approval, all from the same hosted server. Local MCP tools (<code>MCPStdioTool</code>, <code>MCPStreamableHTTPTool</code>) accept the same parameter in their constructors. The request-and-response shape on the agent side is identical: pending requests appear in <code>user_input_requests</code>, and you resume by passing approval responses back through <code>agent.run</code>.</p>
 <p>The dict form is the right default for any agent that uses an MCP server with a mix of safe and unsafe operations. Allow-listing the safe ones via <code>approval_mode={&quot;always_require&quot;: [...]}</code> is less brittle than policing the model&rsquo;s choices through the prompt alone.</p>
@@ -2035,6 +2029,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

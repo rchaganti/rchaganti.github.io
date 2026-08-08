@@ -996,8 +996,7 @@ In the last part, we completed creation of storage account required for backing 
 </span></span><span class="line"><span class="cl">   <span class="nt">&#34;&lt;variable-name&gt;&#34;</span><span class="p">:</span> <span class="p">{</span> 
 </span></span><span class="line"><span class="cl">       <span class="err">&lt;variable-complex-type-value&gt;</span> 
 </span></span><span class="line"><span class="cl">   <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In general, variables is a JSON object which contains pairs of variable names and values. The variable value can be a complex type such as another JSON object. We will see these as examples as we add the variables needed to complete virtual network configuration.</p>
 <div class="highlight"><div class="chroma">
@@ -1017,8 +1016,7 @@ In the last part, we completed creation of storage account required for backing 
 </span></span><span class="line"><span class="cl">    <span class="nt">&#34;vNetSubnet1Prefix&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.0/24&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="nt">&#34;vNetSubnet1ID&#34;</span><span class="p">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="nt">&#34;dnsServerPrivateIp&#34;</span><span class="p">:</span> <span class="s2">&#34;10.0.0.8&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>For the virtual network required for our scenario, we defined a variable called <em>vNetPrefix</em> and set a value “10.0.0.0/16”. This is the overall virtual network address scope. Within this vNet, we intend to create one subnet with address prefix “10.0.0.0/24” and this is represented using the variable _vNetSubnet1Prefix. _I have added another variable named <em>dnsServerPrivateIp</em> to reserve an IP address for the AD domain controller VM. This is because we don’t want a DHCP assigned IP for the AD DC.</p>
 <p>You will also see that we are using another function within this variables element called <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#concat">concat()</a>.</em></p>
@@ -1027,8 +1025,7 @@ In the last part, we completed creation of storage account required for backing 
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;vNetSubnet1Name&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;vNetSubnet1Name&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceGroup().Location, &#39;-&#39;, parameters(&#39;vNetName&#39;), &#39;-&#39;, &#39;Subnet&#39;)]&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This function can take ‘n’ strings and concatenate them together. In the example above, we are retrieving the resource group location and then concatenate that with ‘-‘ and the value of the <em>vNetName</em> parameter. This variable value is then used to derive the value of the variable <em>vNetSubnet1ID.</em></p>
 <div class="highlight"><div class="chroma">
@@ -1036,8 +1033,7 @@ In the last part, we completed creation of storage account required for backing 
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;vNetSubnet1ID&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;vNetSubnet1ID&#34;</span><span class="err">:</span> <span class="s2">&#34;[concat(resourceId(&#39;Microsoft.Network/virtualNetworks&#39;,parameters(&#39;vNetName&#39;)),&#39;/subnets/&#39;,variables(&#39;vNetSubnet1Name&#39;))]&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As I’d mentioned earlier, variables values can be generated dynamically based on other values. If you observe the above code snippet, we are constructing the <em>vNetSubnet1ID</em> by retrieving the resource ID for the virtual network that we are creating. The <em>resourceId()</em> function returns the unique identifier of a resource and it won’t be available until the vNet is created. This shows us that the values of variables can be derived from other related configuration settings. We have used the <em>concat()</em> function again here to concatenate the resource Id value of the vNet with ‘/subnets/’ and the value of the <em>vNetSubnet1Name</em> variable that we derived in last step. Similar to <em>parameters()</em> function, the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-authoring-templates/#variables">variables()</a></em> function gives us the value of the variable name specified.</p>
 <div class="highlight"><div class="chroma">
@@ -1045,8 +1041,7 @@ In the last part, we completed creation of storage account required for backing 
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="s2">&#34;[variables(&#39;vNetSubnet1Name&#39;)]&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <em>variables()</em> function can be used with the variables element as well as the resource definitions and outputs element. Like any other expression in template language, anytime you want to use this function, it must be enclosed in square brackets ([]).</p>
 <p>We will see more about creating variables with complex value types in a later part but fundamentals that you learned here are applicable even to complex types. Now that we have the variables needed for the vNet creation, let us go ahead and add the virtual network resource definition to our template.</p>
@@ -1203,8 +1198,7 @@ In the last part, we completed creation of storage account required for backing 
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>        
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>I added a <em>vNetName</em> parameter to the parameters element so that user deploying this template can provide that as input. We can go ahead and test if this is template is valid or not.</p>
 <div class="highlight"><div class="chroma">
@@ -1212,8 +1206,7 @@ In the last part, we completed creation of storage account required for backing 
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Test-AzureRmResourceGroupDeployment</span> <span class="n">-ResourceGroupName</span> <span class="n">myARMDemo</span> <span class="n">-TemplateFile</span> <span class="p">.\</span><span class="nb">arm-series_Storage</span><span class="n">-VirtualNet</span><span class="p">.</span><span class="py">json</span> <span class="n">-storageAccountName</span> <span class="n">myARMDemo</span> <span class="n">-storageAccountType</span> <span class="n">Standard_LRS</span> <span class="n">-vNetName</span> <span class="n">myARMDemo</span> <span class="n">-Verbose</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Test-AzureRmResourceGroupDeployment</span> <span class="n">-ResourceGroupName</span> <span class="n">myARMDemo</span> <span class="n">-TemplateFile</span> <span class="p">.\</span><span class="nb">arm-series_Storage</span><span class="n">-VirtualNet</span><span class="p">.</span><span class="py">json</span> <span class="n">-storageAccountName</span> <span class="n">myARMDemo</span> <span class="n">-storageAccountType</span> <span class="n">Standard_LRS</span> <span class="n">-vNetName</span> <span class="n">myARMDemo</span> <span class="n">-Verbose</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once the validation is complete, we can go ahead and deploy the same to ensure it is deploy-able. To test this immediately, click on the deploy to Azure button below.</p>
 <div style="margin: 1.5rem 0;">
@@ -1785,6 +1778,7 @@ In the last part, we completed creation of storage account required for backing 
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

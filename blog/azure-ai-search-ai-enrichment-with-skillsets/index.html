@@ -985,8 +985,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl"><span class="nv">$storageConnection</span> <span class="p">=</span> <span class="p">(</span><span class="n">az</span> <span class="n">storage</span> <span class="n">account</span> <span class="nb">show-connection</span><span class="n">-string</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-name</span> <span class="nv">$storageAccount</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-resource-group</span> <span class="nv">$resourceGroup</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-query</span> <span class="n">connectionString</span> <span class="n">-o</span> <span class="n">tsv</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="p">-</span><span class="n">-query</span> <span class="n">connectionString</span> <span class="n">-o</span> <span class="n">tsv</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="built-in-cognitive-skills">Built-in Cognitive Skills</h2>
 <p>Azure AI Search includes built-in skills that call Foundry Tools (formerly Azure Cognitive Services) behind the scenes. These include Language Detection, Entity Recognition, Key Phrase Extraction, Sentiment Analysis, OCR, PII Detection, and Text Translation. For small workloads (up to 20 transactions per indexer per day), these are free. For larger workloads, you attach a Foundry resource for billing.</p>
@@ -1150,8 +1149,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$enrichedIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$enrichedIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The new fields are <code>language</code> (a simple string), <code>keyPhrases</code> (a collection, since a document can have many key phrases), and organizations (also a collection of extracted organization names).</p>
 <p>Note that the <code>content</code> field explicitly sets <code>filterable</code>, <code>sortable</code>, and <code>facetable</code> to <code>false</code>. This is important. When these properties are not specified, Azure AI Search defaults them to <code>true</code> for <code>Edm.String</code> fields. With filtering or sorting enabled, the service tries to index the entire field value as a single term. For short fields like <code>author</code> or <code>category</code>, this is fine. For the <code>content</code> field, which can contain thousands of words, the term exceeds the 32,766-byte limit, causing the indexer to fail with an error such as &ldquo;Field &lsquo;content&rsquo; contains a term that is too large to process.&rdquo; The fix is always the same: set <code>filterable</code>, <code>sortable</code>, and <code>facetable</code> to <code>false</code> on large text fields and let the analyzer handle tokenization for search.</p>
@@ -1308,8 +1306,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/skillsets?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$skillset</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$skillset</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Notice the skill chaining. The Language Detection skill runs first and writes the detected language code to <code>/document/languageCode</code>. Both the Key Phrase Extraction and Entity Recognition skills reference this language code as an input. Azure AI Search figures out the execution order based on these input-output dependencies, so the Language Detection skill always runs before the skills that depend on its output.</p>
 <p>The Entity Recognition skill uses the <code>categories</code> parameter to limit extraction to organizations only. Without this, it would extract all entity types (Person, Location, DateTime, etc.), which would require separate collection fields for each category.</p>
@@ -1426,8 +1423,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexers?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$indexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>fieldMappings</code> handle the raw source fields (just like in Part 2), and the <code>outputFieldMappings</code> handle the enriched fields produced by the skillset. The <code>sourceFieldName</code> in output field mappings uses the enriched document tree path.</p>
 <p>Let us check the indexer status.</p>
@@ -1464,8 +1460,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;initialTrackingState&#34;</span><span class="err">:</span>  <span class="s2">&#34;{\r\n  \&#34;</span><span class="n">lastFullEnumerationStartTime</span><span class="p">\</span><span class="s2">&#34;: \&#34;</span><span class="mf">0001</span><span class="p">-</span><span class="mf">01</span><span class="p">-</span><span class="n">01T00</span><span class="err">:</span><span class="mf">00</span><span class="err">:</span><span class="n">00Z</span><span class="p">\</span><span class="s2">&#34;,\r\n  \&#34;</span><span class="n">lastAttemptedEnumerationStartTime</span><span class="p">\</span><span class="s2">&#34;: \&#34;</span><span class="mf">2026</span><span class="p">-</span><span class="mf">03</span><span class="p">-</span><span class="n">11T00</span><span class="err">:</span><span class="mf">43</span><span class="err">:</span><span class="mf">31</span><span class="p">.</span><span class="n">032Z</span><span class="p">\</span><span class="s2">&#34;,\r\n  \&#34;</span><span class="n">nameHighWaterMark</span><span class="p">\</span><span class="s2">&#34;: null\r\n}&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="s2">&#34;finalTrackingState&#34;</span><span class="err">:</span>  <span class="s2">&#34;{\&#34;</span><span class="n">LastFullEnumerationStartTime</span><span class="p">\</span><span class="s2">&#34;:\&#34;</span><span class="mf">2026</span><span class="p">-</span><span class="mf">03</span><span class="p">-</span><span class="n">11T00</span><span class="err">:</span><span class="mf">43</span><span class="err">:</span><span class="mf">01.0326443</span><span class="p">+</span><span class="mf">00</span><span class="err">:</span><span class="mf">00</span><span class="p">\</span><span class="s2">&#34;,\&#34;</span><span class="n">LastAttemptedEnumerationStartTime</span><span class="p">\</span><span class="s2">&#34;:\&#34;</span><span class="mf">2026</span><span class="p">-</span><span class="mf">03</span><span class="p">-</span><span class="n">11T00</span><span class="err">:</span><span class="mf">43</span><span class="err">:</span><span class="mf">01.0326443</span><span class="p">+</span><span class="mf">00</span><span class="err">:</span><span class="mf">00</span><span class="p">\</span><span class="s2">&#34;,\&#34;</span><span class="n">NameHighWaterMark</span><span class="p">\</span><span class="s2">&#34;:null}&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">   <span class="p">....</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="seeing-enrichment-in-search-results">Seeing Enrichment in Search Results</h3>
 <p>Now let us query the index and see what the enrichment actually produced. This is the payoff. Without enrichment, our articles only had the fields we loaded manually: title, content, author, category, and date. Now each document also has a detected language, extracted key phrases, and recognized organizations, all populated automatically by the skillset.</p>
@@ -1502,8 +1497,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The response shows the enriched fields alongside the original data. Here is what a typical result looks like:</p>
 <div class="highlight"><div class="chroma">
@@ -1577,8 +1571,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">            <span class="s2">&#34;GitHub&#34;</span>
 </span></span><span class="line"><span class="cl">        <span class="p">]</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Notice what happened. The raw <code>content</code> field was plain text with no structure. The skillset analyzed it and extracted structured metadata: <code>language</code> tells us the content is English, <code>keyPhrases</code> pulls out the important concepts, and <code>organizations</code> identifies company and product names. None of this data existed in the original documents. The enrichment pipeline created it.</p>
 <h3 id="querying-enriched-fields">Querying Enriched Fields</h3>
@@ -1619,8 +1612,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nb">Write-Output</span> <span class="s2">&#34;Total documents: </span><span class="p">$(</span><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@odata.count&#39;</span><span class="p">)</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@search.facets&#39;</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@search.facets&#39;</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The facets response tells you how many documents mention each key phrase and organization:</p>
 <div class="highlight"><div class="chroma">
@@ -1664,8 +1656,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">        <span class="p">{</span> <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;GitHub&#34;</span><span class="p">,</span> <span class="nt">&#34;count&#34;</span><span class="p">:</span> <span class="mi">2</span> <span class="p">},</span>
 </span></span><span class="line"><span class="cl">        <span class="p">{</span> <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;Google&#34;</span><span class="p">,</span> <span class="nt">&#34;count&#34;</span><span class="p">:</span> <span class="mi">1</span> <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is the kind of data that drives a filter sidebar in a search application. A user could click &ldquo;Anthropic&rdquo; and see only documents that mention that organization, or narrow results to articles about &ldquo;vector search.&rdquo;</p>
 <p><strong>Filtering on enriched fields</strong> lets you scope search results using the AI-extracted metadata.</p>
@@ -1704,8 +1695,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>organizations/any()</code> lambda syntax filters on collection fields. This returns only documents where the Entity Recognition skill identified &ldquo;Microsoft&rdquo; as an organization in the text. You could not do this with a simple text search for &ldquo;Microsoft&rdquo; because that would also match documents where &ldquo;Microsoft&rdquo; appears in passing or in a different context (like &ldquo;Microsoft Word document format&rdquo;).</p>
 <p><strong>Combining full-text search with enriched filters</strong> is where this pattern really shines:</p>
@@ -1746,8 +1736,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This gives you the precision of structured filtering (only documents where the AI recognized OpenAI as an entity) combined with the flexibility of full-text search (relevance-ranked results for the query term &ldquo;retrieval&rdquo;).</p>
 <h2 id="processing-real-pdfs-with-ocr">Processing Real PDFs with OCR</h2>
@@ -1787,8 +1776,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-name</span> <span class="nv">$file</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-connection-string</span> <span class="nv">$storageConnection</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="p">-</span><span class="n">-overwrite</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="creating-the-pdf-index">Creating the PDF Index</h3>
 <p>The index for PDF content differs from the articles index. PDFs do not have predefined fields such as <code>author</code> or <code>category</code>. Instead, we rely on blob metadata and the enrichment pipeline to populate the index. The <code>metadata_storage_name</code> field gives us the file name, and everything else comes from the skillset.</p>
@@ -1921,8 +1909,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfIndex</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">10</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>content</code> field explicitly sets <code>filterable</code>, <code>sortable</code>, and <code>facetable</code> to <code>false</code>. This is critical for PDF documents. When Azure AI Search cracks a PDF, the extracted text can be tens of thousands of words. If filtering or sorting is enabled on a string field, the service indexes the entire field value as a single term for those operations. Any term larger than 32,766 bytes causes the indexer to fail with &ldquo;Field &lsquo;content&rsquo; contains a term that is too large to process.&rdquo; You will frequently see this error when indexing PDFs, Word documents, or other large text. The fix is always the same: disable filtering, sorting, and faceting on large text fields and rely on the full-text search analyzer for tokenization.</p>
 <h3 id="the-ocr-skill-and-text-merging">The OCR Skill and Text Merging</h3>
@@ -2084,8 +2071,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/skillsets?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfSkillset</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfSkillset</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>There are a few things to note about this skillset. The OCR skill has its context set to <code>/document/normalized_images/*</code>, which means it executes once for each image in the document. The wildcard <code>*</code> acts as a for-each operator. The Text Merger skill then runs at the <code>/document</code> context and combines the original <code>content</code> with all the OCR text fragments.</p>
 <p>After merging, downstream skills like Language Detection and Key Phrase Extraction work with the merged content, which includes both the original text and any text extracted from images. This means your search index captures everything in the document, not just the machine-readable text.</p>
@@ -2214,8 +2200,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexers?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Post</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
-</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfIndexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$pdfIndexer</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things are different from the articles indexer. The <code>parsingMode</code> is <code>default</code> instead of <code>json</code> because PDFs are not JSON. The <code>id</code> field uses <code>metadata_storage_path</code> with a <code>base64Encode</code> mapping function because blob paths can contain characters that are not valid in document keys. The <code>content</code> field is mapped from <code>/document/mergedContent</code> (the merged OCR + text output) rather than <code>/document/content</code> (the raw cracked text), so our index gets the complete text including anything extracted from images.</p>
 <p>Check the indexer status:</p>
@@ -2234,8 +2219,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Method</span> <span class="n">Get</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">$status</span><span class="p">.</span><span class="py">lastResult</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$status</span><span class="p">.</span><span class="py">lastResult</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>When processing large PDFs, you may see warnings in the indexer status that say &ldquo;Skill input &rsquo;text&rsquo; was too large. Truncated text to &lsquo;50000&rsquo; characters&rdquo;. This is expected. Built-in cognitive skills have a 50,000-character input limit. For documents larger than that, the skill processes the first 50,000 characters and skips the rest. The key phrases and entities you get are still useful because the most important content is usually in the first half of a document. For complete coverage of very large documents, you would use the Text Split skill to chunk the content first; we will cover this in the next article.</p>
 <h3 id="seeing-pdf-enrichment-results">Seeing PDF Enrichment Results</h3>
@@ -2273,8 +2257,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Headers</span> <span class="nv">$headers</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="py">value</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Here is what you should see:</p>
 <div class="highlight"><div class="chroma">
@@ -2388,8 +2371,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">        <span class="p">],</span>
 </span></span><span class="line"><span class="cl">        <span class="nt">&#34;persons&#34;</span><span class="p">:</span> <span class="p">[]</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The enrichment pipeline cracked these PDFs, extracted text (including OCR from figures), detected the language, pulled key phrases capturing the core concepts of each paper, and identified the organizations and authors mentioned in the text. All of this happened automatically during indexing.</p>
 <p>Now we can search across these papers using the enriched fields.</p>
@@ -2498,8 +2480,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">    <span class="n">-Body</span> <span class="nv">$query</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nb">Write-Output</span> <span class="s2">&#34;Total papers: </span><span class="p">$(</span><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@odata.count&#39;</span><span class="p">)</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@search.facets&#39;</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">$results</span><span class="p">.</span><span class="s1">&#39;@search.facets&#39;</span> <span class="p">|</span> <span class="nb">ConvertTo-Json</span> <span class="n">-Depth</span> <span class="mf">5</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is the complete enrichment story. Raw PDFs went in. Structured, queryable metadata came out. You can filter by organization, search by key phrases, facet by author, and combine all of these with full-text search across the document content. The enrichment pipeline turned unstructured documents into a searchable knowledge base.</p>
 <h2 id="cleaning-up">Cleaning Up</h2>
@@ -2569,8 +2550,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
 </span></span><span class="line"><span class="cl">        <span class="n">-Uri</span> <span class="s2">&#34;</span><span class="nv">$searchEndpoint</span><span class="s2">/indexes/</span><span class="nv">${name}</span><span class="s2">?api-version=</span><span class="nv">$apiVersion</span><span class="s2">&#34;</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="n">-Method</span> <span class="n">Delete</span> <span class="p">`</span>
 </span></span><span class="line"><span class="cl">        <span class="n">-Headers</span> <span class="nv">$headers</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="summary">Summary</h2>
 <p>In this article, we explored AI enrichment in Azure AI Search. We covered the enriched document tree and how skills read from and write to it using path expressions. We built a skill set that integrates Language Detection, Key Phrase Extraction, and Entity Recognition, demonstrating how Azure AI Search resolves the execution order based on input-output dependencies. We walked through the critical distinction between field mappings (for raw source data) and output field mappings (for enriched content).</p>
@@ -3198,6 +3178,7 @@ In the real world, your data is messy. You have PDFs with embedded images, scann
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -976,8 +976,7 @@ Once you have enabled remoting on all your computers, you can use Invoke-Command
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The ScriptBlock parameter can be used to specify a list of commands you want to run on the remote computer.  ComputerName parameter is not required for running commands on the local machine. If you want to run the same command on multiple remote computers, you can supply the computer names as a comma separated list to ComputerName parameter or use a text file as shown in the example here</p>
 <div class="highlight"><div class="chroma">
@@ -985,8 +984,7 @@ Once you have enabled remoting on all your computers, you can use Invoke-Command
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE,SP2010-DB -ScriptBlock{ Get-Process }</span></span></code></pre></td></tr></table>
 </div>
 </div>  <p>
     or
@@ -1004,8 +1002,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$procName = &#34;powerShell&#34;
-</span></span><span class="line"><span class="cl">Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {param ($Name) Get-Process -Name $Name} -ArgumentList $procName
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {param ($Name) Get-Process -Name $Name} -ArgumentList $procName</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above example may be a simple one but it shows how to use -ArgumentList parameter to pass local variables to the remote session.</p>
 <h4 id="invoke-command-to-execute-scripts-on-remote-computers">Invoke-Command to execute scripts on remote computer(s)</h4>
@@ -1015,8 +1012,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -FilePath C:\scripts\Test.PS1</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Make a note that the script you provide as FilePath must exist on the local machine or at a place accessible to the local machine.</p>
 <h4 id="using--session-parameter-for-better-performance-and-sharing-data-between-commands">Using -Session parameter for better performance and sharing data between commands</h4>
@@ -1026,8 +1022,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, $s contains the session details for the persistent connection. We can use $s to invoke a command on the remote computer and the syntax for that will be</p>
 <div class="highlight"><div class="chroma">
@@ -1035,8 +1030,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Commad -Session $s -ScriptBlock {get-Process}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Commad -Session $s -ScriptBlock {get-Process}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>$s contains all the variables you create / modify when you execute commands on the remote computer. So, subsequent command execution with $s as the session will have access to all of the variables created / updated on the remote computer. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1048,8 +1042,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = new-pssession -computername SP2010-WFE
 </span></span><span class="line"><span class="cl">Invoke-Command -Session $s -ScriptBlock {$fileCount = (Get-ChildItem C:\ -Recurse).Count}
-</span></span><span class="line"><span class="cl">invoke-command -session $s -scriptblock {$fileCount}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">invoke-command -session $s -scriptblock {$fileCount}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We could access $fileCount variable only because we used a persistent session to run the command. This would not have been possible if used -ComputerName to invoke the remote command.</p>
 <h4 id="running-remote-command-as-a-background-job">Running remote command as a background job</h4>
@@ -1059,8 +1052,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock {(Get-ChildItem C:\ -Recurse).Count} -asJob</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once you run this, you will see the job details listed as shown here:</p>
 <figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
@@ -1074,8 +1066,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Get-Job -id 1 | Receive-Job
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Get-Job -id 1 | Receive-Job</span></span></code></pre></td></tr></table>
 </div>
 </div><p>A complete discussion on Background jobs deserves a series of posts. I will plan to do that next. If you don’t want to wait and learn about it right away, you can read about it @ <a href="http://technet.microsoft.com/en-us/library/dd315273.aspx" target="_blank"><a href="http://technet.microsoft.com/en-us/library/dd315273.aspx">http://technet.microsoft.com/en-us/library/dd315273.aspx</a></a></p>
 <h4 id="specifying-credentials-required-for-remoting">Specifying credentials required for remoting</h4>
@@ -1087,8 +1078,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$cred = Get-Credential
-</span></span><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process} -Credential $cred
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Invoke-Command -ComputerName SP2010-WFE -ScriptBlock { Get-Process} -Credential $cred</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the example above, Get-Credential prompts for the credentials to access remote computer and uses the same while calling Invoke-Command cmdlet.</p>
 <p>This is the end of this article on Invoke-Command. Invoke-Command has many other parameters which are not discussed here. They are more advanced and used in specific scenarios. I will discuss those use cases as we proceed further in this series of posts on PowerShell 2.0 remoting.</p>
@@ -1649,6 +1639,7 @@ Invoke-Command -ComputerName (get-content c:\scripts\servers.txt) -ScriptBlock {
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

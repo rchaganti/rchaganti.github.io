@@ -1241,8 +1241,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">  properties: {
 </span></span><span class="line"><span class="cl">  	accessTier: &#39;Hot&#39;
 </span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">}]
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}]</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Add some output to this using what you learned in the <a href="/blog/bicep-basics-beyond-basics-output/">previous part about using output</a> in Bicep.</p>
 <div class="highlight"><div class="chroma">
@@ -1250,8 +1249,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">output saId array = [for i in range(0, saCount): resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, &#39;${i}stg${uniqueString(resourceGroup().id)}&#39;)]
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">output saId array = [for i in range(0, saCount): resourceId(&#39;Microsoft.Storage/storageAccounts&#39;, &#39;${i}stg${uniqueString(resourceGroup().id)}&#39;)]</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, save this as storageAccount.bicep. Congratulations. You just created a Bicep module! Now, to the important part. How do you consume this in another Bicep file?</p>
 <h2 id="consuming-a-module">Consuming a module</h2>
@@ -1271,8 +1269,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">	params: {
 </span></span><span class="line"><span class="cl">		&lt;param-name&gt;: &lt;param-value&gt;
 </span></span><span class="line"><span class="cl">	}
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>module-identifier, similar to a resource identifier, will be used to reference the module object in other parts of the Bicep file as needed. The <code>name</code> property within the module will be used as a name for the nested deployment within the generated ARM template. This property is mandatory. And, then the <code>params</code> property will be used to supply a list of parameter values to the module.</p>
 <p>Here is how you can consume the <code>storageAccount</code> module you created earlier.</p>
@@ -1295,8 +1292,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">  }
 </span></span><span class="line"><span class="cl">}
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">output stgResourceId array = stgModule.outputs.saId
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">output stgResourceId array = stgModule.outputs.saId</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Save this example as main.bicep. Note that it is not necessary that you always store the module files at the same level as the main Bicep file. You can store all modules in a different folder and use that relative path. For example:</p>
 <div class="highlight"><div class="chroma">
@@ -1318,8 +1314,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">  }
 </span></span><span class="line"><span class="cl">}
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">output stgResourceId array = stgModule.outputs.saId
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">output stgResourceId array = stgModule.outputs.saId</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Also, make sure you use the Unix type path. Bicep does not support Windows backslash for cross-platform compatibility reasons. You can compile the main.bicep using <code>bicep build</code>. Here is how the generated ARM JSON will look like.</p>
 <div class="highlight"><div class="chroma">
@@ -1489,8 +1484,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">      <span class="nt">&#34;value&#34;</span><span class="p">:</span> <span class="s2">&#34;[reference(resourceId(&#39;Microsoft.Resources/deployments&#39;, &#39;storageDeploy&#39;), &#39;2019-10-01&#39;).outputs.saId.value]&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="module-iterations">Module iterations</h2>
 <p>You can use modules with iterations as well. It is straight forward to do this based on what you learned in <a href="/blog/bicep-basics-beyond-basics-iterations/">the earlier part about iterations in Bicep</a>.</p>
@@ -1509,8 +1503,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">  params: {
 </span></span><span class="line"><span class="cl">    &lt;parameter-name&gt;: &lt;parameter-value&gt;
 </span></span><span class="line"><span class="cl">  }
-</span></span><span class="line"><span class="cl">}]
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}]</span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can quickly build an example that uses module iteration. Start with a module first. This module will be used to create a virtual network and a subnet within that.</p>
 <div class="highlight"><div class="chroma">
@@ -1566,8 +1559,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">  }
 </span></span><span class="line"><span class="cl">}
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">output vnetId string = resourceId(&#39;Microsoft.Network/virtualNetworks&#39;, vNetName)
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">output vnetId string = resourceId(&#39;Microsoft.Network/virtualNetworks&#39;, vNetName)</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Save this as vnet.bicep.</p>
 <p>To consume this, create a main bicep file.</p>
@@ -1634,8 +1626,7 @@ Reusability and repeatability are two basics requirements when you want to imple
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">output</span> <span class="n">vNetId</span> <span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">vNet</span><span class="p">:</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">id</span><span class="p">:</span> <span class="n">resourceId</span><span class="p">(</span><span class="s1">&#39;Microsoft.Network/virtualNetworks&#39;</span><span class="p">,</span><span class="n">network</span><span class="o">.</span><span class="n">vNetName</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}]</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}]</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The variable <code>vNet</code> will hold a collection of virtual networks that need to be created. Using the collection iteration along with module declaration, you can supply the necessary parameter values needed for the module parameters.</p>
 <p>As you start building complex templates, you will find modules very helpful. This is it for today. You will learn about conditional deployments in the next part of this series.</p>
@@ -2323,6 +2314,7 @@ Reusability and repeatability are two basics requirements when you want to imple
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

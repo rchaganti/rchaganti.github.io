@@ -1305,8 +1305,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth pulling out. <code>FoundryChatClient</code> is the same chat client you would use for any Foundry-deployed model; the only difference here is that we ask it to produce an MCP tool configuration before constructing the agent. <code>chat_client.get_mcp_tool(...)</code> returns a tool object that goes into <code>tools=[...]</code> exactly the same way a function tool or a local MCP tool would.</p>
 <p>What is happening underneath: the <code>get_mcp_tool</code> call attaches the MCP server reference to the chat client&rsquo;s request. When the agent runs and the model decides to call a tool from that server, Foundry&rsquo;s responses API mediates the call. Your process never opens an HTTP connection to the MCP server; Foundry does.</p>
@@ -1324,8 +1323,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;https://your-github-mcp-endpoint.example.com/mcp&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;Authorization&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;Bearer </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;GITHUB_MCP_TOKEN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>For long-lived service credentials that should not live in your application, the <code>project_connection_id</code> form is preferable: register the server in Foundry once with its credentials, and reference the connection by id from your code.</p>
 <div class="highlight"><div class="chroma">
@@ -1339,8 +1337,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">github_tool</span> <span class="o">=</span> <span class="n">chat_client</span><span class="o">.</span><span class="n">get_mcp_tool</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">project_connection_id</span><span class="o">=</span><span class="s2">&#34;conn_abc123&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this form, your application code never sees the credential, and rotating it does not require a redeploy. This is the form to reach for in production.</p>
 <h2 id="tool-selection-and-approvals">Tool selection and approvals</h2>
@@ -1358,8 +1355,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;https://your-github-mcp-endpoint.example.com/mcp&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">allowed_tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;search_issues&#34;</span><span class="p">,</span> <span class="s2">&#34;create_issue&#34;</span><span class="p">,</span> <span class="s2">&#34;list_repositories&#34;</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this, the agent sees only those three tools, regardless of what else the server publishes. The pattern is the same advice we gave in the local-MCP case, with the same reasoning: smaller catalogs mean better selection, and an allow-list is the minimum bar for tools that have side effects.</p>
 <p>The other parameter worth knowing about is <code>approval_mode</code>, which gates whether the model&rsquo;s tool calls are auto-invoked or paused for a human-in-the-loop decision. Three forms are accepted:</p>
@@ -1406,8 +1402,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
 </span></span><span class="line"><span class="cl">    <span class="n">name</span><span class="o">=</span><span class="s2">&#34;github&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">url</span><span class="o">=</span><span class="s2">&#34;...&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">approval_mode</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;always_require&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;create_issue&#34;</span><span class="p">,</span> <span class="s2">&#34;delete_issue&#34;</span><span class="p">]},</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The third form is the most useful in practice: read-only tools auto-invoke, destructive tools pause for approval. The agent run pauses with a <code>user_input_requests</code> entry on the response, and your application surfaces the request to a human (or to a different system) before resuming. The approval flow itself is the topic of a future article in this series, but the configuration that enables it is right here on the hosted MCP tool.</p>
 <h2 id="when-to-choose-hosted-vs-local">When to choose hosted vs local</h2>
@@ -2101,6 +2096,7 @@ When the agent runs against Microsoft Foundry, there is a second option. Foundry
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

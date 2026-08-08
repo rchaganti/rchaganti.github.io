@@ -1075,8 +1075,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT * FROM eventclass WITHIN interval WHERE property = value
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT * FROM eventclass WITHIN interval WHERE property = value</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The polling interval value is specified as number of seconds and is a floating point number. So, we can specify values smaller than one second. However, specifying a polling interval smaller than one second (for example, 0.1) may cause system slow down due to the resource intensive nature of event queries. The recommended values for the polling interval really depend on the event calss. Do not use a small value here unless you really need the event notification be delivered immediately.</p>
 <h4 id="group">GROUP</h4>
@@ -1086,8 +1085,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT * FROM EventClass [WHERE property = value] GROUP WITHIN interval
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT * FROM EventClass [WHERE property = value] GROUP WITHIN interval</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The WHERE, BY, and HAVING clauses are optional.</p>
 <p>This is especially useful when we don’t want to receive an event notification every time the event fires. For example, when monitoring a system, we may not want to receive a notification every time an specific event log gets generated. Instead, we can use GROUP clause to specify a grouping interval and receive only one notification for all the desired event logs generated within the grouping interval. Something similar to this:</p>
@@ -1102,8 +1100,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Build a WMI query for receiving an event
 </span></span><span class="line"><span class="cl">$query = &#34;Select * from __instanceCreationEvent WHERE TargetInstance ISA &#39;Win32_NTLogEvent&#39; ANDTargetInstance.EventCode=1980 GROUP WITHIN 300&#34;
 </span></span><span class="line"><span class="cl">#Register the event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="having">HAVING</h4>
 <p>In the above imaginary example, we will receive an event notification for all the events received within the grouping interval. But, what if we want to receive the event notification only when ten such event logs are generated within the grouping interval? This is where HAVING plays an important role. Let us look at how we can modify the above sample code to use HAVING keyword.</p>
@@ -1118,8 +1115,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Build a WMI query for receiving an event
 </span></span><span class="line"><span class="cl">$query = &#34;Select * from __instanceCreationEvent WHERE TargetInstance ISA &#39;Win32_NTLogEvent&#39; ANDTargetInstance.EventCode=1980 GROUP WITHIN 300 HAVING NumberOfEvents &gt; 10&#34;
 </span></span><span class="line"><span class="cl">#Register the event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>I mentioned earlier that by using GROUP returns a property called <strong>NumberOfEvents</strong> that contains the number of events received during the grouping interval. Now, we use that property along with HAVING keyword to filter event notifications. Here is the syntax:</p>
 <div class="highlight"><div class="chroma">
@@ -1129,8 +1125,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">SELECT</span> \<span class="o">*</span> <span class="n">FROM</span> <span class="n">EventClass</span> <span class="p">[</span><span class="n">WHERE</span> <span class="n">property</span> <span class="o">=</span> <span class="n">value</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">GROUP</span> <span class="n">WITHIN</span> <span class="n">interval</span> <span class="n">HAVING</span> <span class="n">NumberOfEvents</span> <span class="n">operator</span> <span class="n">constant</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">GROUP</span> <span class="n">WITHIN</span> <span class="n">interval</span> <span class="n">HAVING</span> <span class="n">NumberOfEvents</span> <span class="n">operator</span> <span class="n">constant</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>So, using the HAVING query as shown above, an event notification is delivered only when WMI receives more than 10 events in the grouping interval.</p>
 <h4 id="by">BY</h4>
@@ -1142,8 +1137,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT \* FROM EventClass [WHERE property = value]
-</span></span><span class="line"><span class="cl">GROUP WITHIN interval [BY property_list]
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">GROUP WITHIN interval [BY property_list]</span></span></code></pre></td></tr></table>
 </div>
 </div><p>For example, The following example groups all events received in 300 seconds by the TargetInstance.SourceName property.</p>
 <div class="highlight"><div class="chroma">
@@ -1161,8 +1155,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
 </span></span><span class="line"><span class="cl">                                                GROUP WITHIN 300 BY TargetInstance.SourceName `
 </span></span><span class="line"><span class="cl">                                                HAVING NumberOfEvents &gt; 10&#34;
 </span></span><span class="line"><span class="cl">#Register the event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action {Write-Host &#34;Eventlog Arrived&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the above example, the events are grouped by the TargetInstance.SourceName property and an event notification is delivered only if the number of events received during the grouping interval exceeds 10.</p>
 <p>So far, we looked at all the important keywords that can be used while building WMI event queries. But, if you have observed, I kept using the words *<strong>eventclass*</strong> and *<strong>TargetInstance*</strong>. What are these?</p>
@@ -1743,6 +1736,7 @@ INSTANCE-STATE = “TARGETINSTANCE” / “PREVIOUSINSTANCE”</p>
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

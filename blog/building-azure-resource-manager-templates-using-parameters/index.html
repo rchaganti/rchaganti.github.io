@@ -1001,8 +1001,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">Login-AzureRmAccount</span>
-</span></span><span class="line"><span class="cl"><span class="nb">New-AzureRmResourceGroup</span> <span class="n">-Name</span> <span class="n">MyARMDemo</span> <span class="n">-Location</span> <span class="s1">&#39;West US&#39;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">New-AzureRmResourceGroup</span> <span class="n">-Name</span> <span class="n">MyARMDemo</span> <span class="n">-Location</span> <span class="s1">&#39;West US&#39;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Note: An Azure resource group can contain <a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-overview/#resource-groups">resources from different regions</a>.</p>
 <h4 id="adding-parameters">Adding Parameters</h4>
@@ -1068,8 +1067,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the above JSON template, we added parameters sub-element to the first two mandatory elements which are <em>$schema</em> and <em>contentVersion.</em> Within the parameters element, we have two parameters needed for creating storage account. Here is the generic syntax for adding parameters.</p>
 <div class="highlight"><div class="chroma">
@@ -1103,8 +1101,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 </span></span><span class="line"><span class="cl">         <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;&lt;optional-description-of-the parameter&gt;&#34;</span> 
 </span></span><span class="line"><span class="cl">     <span class="p">}</span>
 </span></span><span class="line"><span class="cl">   <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We will be using more or less every property within the parameters element within the scenario we are developing. So, don’t worry if you don’t immediately see all of them used right away. The <em>storageAccountName</em> parameter is of string <em>type</em> and we set the <em>defaultValue</em> to ‘myARMDemo’. So, when a user deploys this template it is not mandatory to supply the parameter value. The value of <em>type</em> property should be a valid JSON type and one of the below mentioned types.</p>
 <ul>
@@ -1207,8 +1204,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 </span></span><span class="line"><span class="cl">            <span class="p">}</span>
 </span></span><span class="line"><span class="cl">        <span class="p">}</span>        
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As we learned earlier, resources element in the ARM template is a JSON array. It is a collection of comma-separated JSON objects where each JSON object represents an instance of a resource type. For a resource type, we need to configure the <em>name</em> property to identify the resource instance within the group. Note the way we are retrieving the value of <em>storageAccountName</em> parameter and assigning it to the <em>name</em> property of storage account resource. We use the <a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#parameters"><em>parameters()</em></a> function. We supply the name of the parameter to this function to retrieve its value. Also note that the functions and expressions within the JSON syntax must be enclosed within square brackets.</p>
 <div class="highlight"><div class="chroma">
@@ -1216,8 +1212,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;name&#34;: &#34;[parameters(&#39;storageAccountName&#39;)]&#34;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;name&#34;: &#34;[parameters(&#39;storageAccountName&#39;)]&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <em>type</em> property is used to define the resource provider (Microsoft.Storage) and resource type (storageAccounts) within the provider. The value of <em>location</em> property identifies the region where we want to deploy the resource type. In the case of our ARM template, we are using the <em><a href="https://azure.microsoft.com/en-in/documentation/articles/resource-group-template-functions/#resourcegroup">resourceGroup()</a></em> function to define the location for our storage account. This function returns three attributes — <em>id, name,</em> and <em>location</em> — for the resource group within which the resource type is getting deployed. We use dot-reference to retrieve the value of location attribute.</p>
 <div class="highlight"><div class="chroma">
@@ -1225,8 +1220,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;location&#34;: &#34;[ResourceGroup().Location]&#34;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;location&#34;: &#34;[ResourceGroup().Location]&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The properties element within the resource definition is a JSON object that identifies all the resource specific properties. We need to configure the storage account type setting and this is collected using the <em>storageAccountType</em> parameter. Similar to how we assigned value to the <em>name</em> property, we use the <em>parameters()</em> function to get the value of <em>storageAccountType.</em></p>
 <div class="highlight"><div class="chroma">
@@ -1238,8 +1232,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
 </span></span><span class="line"><span class="cl">   &#34;accountType&#34;: &#34;[parameters(&#39;storageAccountType&#39;)]&#34;
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this, we have a ARM template that can be used to deploy a storage account. But, how do we know whether this is valid or not. We can either use the <a href="https://msdn.microsoft.com/en-us/library/azure/dn790547.aspx">REST API</a> for this or PowerShell cmdlets.</p>
 <pre class="lang:ps decode:true" title="Validate ARM template">Test-AzureRmResourceGroupDeployment -ResourceGroupName myARMDemo -TemplateFile .\2-0_Template_Storage.json -storageAccountName myARMDemo -storageAccountType Standard_LRS -Verbose</pre>
@@ -1824,6 +1817,7 @@ We will incrementally build this scenario by learning different aspects of ARM t
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

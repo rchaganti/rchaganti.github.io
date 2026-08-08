@@ -990,8 +990,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 </span></span><span class="line"><span class="cl"><span class="n">Invoke</span><span class="o">-</span><span class="n">Command</span> <span class="o">-</span><span class="n">Session</span> <span class="o">$</span><span class="n">s</span> <span class="o">-</span><span class="n">ScriptBlock</span> <span class="p">{</span><span class="n">Add</span><span class="o">-</span><span class="n">PSSnapin</span> <span class="n">Microsoft</span><span class="o">.</span><span class="n">SharePoint</span><span class="o">.</span><span class="n">PowerShell</span><span class="p">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1">#$s has the PowerShell cmdlets now</span>
-</span></span><span class="line"><span class="cl"><span class="n">Invoke</span><span class="o">-</span><span class="n">Command</span> <span class="o">-</span><span class="n">Session</span> <span class="o">$</span><span class="n">s</span> <span class="o">-</span><span class="n">ScriptBlock</span> <span class="p">{</span><span class="n">Get</span><span class="o">-</span><span class="n">SPWeb</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">sp2010</span><span class="o">-</span><span class="n">wfe</span><span class="p">:</span><span class="mi">999</span><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">Invoke</span><span class="o">-</span><span class="n">Command</span> <span class="o">-</span><span class="n">Session</span> <span class="o">$</span><span class="n">s</span> <span class="o">-</span><span class="n">ScriptBlock</span> <span class="p">{</span><span class="n">Get</span><span class="o">-</span><span class="n">SPWeb</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">sp2010</span><span class="o">-</span><span class="n">wfe</span><span class="p">:</span><span class="mi">999</span><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>If you look at the above code, we will have to use a persistent session so that we can use SharePoint cmdlets in subsequent Invoke-Command calls.</p>
 <p>Another caveat will be the unavailability of remote computer cmdlets in the local PowerShell session — in this case, the SharePoint 2010 cmdlets. This — essentially – means that we cannot use Get-Help or Get-Command cmdlets against the SharePoint 2010 cmdlets in the local session unless we pass that as a script block to Invoke-Command.</p>
@@ -1004,8 +1003,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Enter-PSSession -ComputerName SP2010-WFE
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Enter-PSSession -ComputerName SP2010-WFE</span></span></code></pre></td></tr></table>
 </div>
 </div><figure class="figure " style="max-width: 50%; height: 50%; margin: 1.5rem auto;">
   <a href="/images/remoting5-1.png" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
@@ -1018,8 +1016,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Add-PSSnapin Microsoft.SharePoint.PowerShell
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Add-PSSnapin Microsoft.SharePoint.PowerShell</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once the snap-in loaded, you will have access to all the SharePoint 2010 cmdlets as if they are available on the local computer. You can verify that by using Get-Help against one of the SharePoint 2010 cmdlets.</p>
 <div class="highlight"><div class="chroma">
@@ -1027,8 +1024,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Get-Help Get-SPWeb -Full
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Get-Help Get-SPWeb -Full</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Enter-PSSession when used with -ComputerName parameter, creates a PSSession in the background and uses that throughout the life of a remote session.</p>
 <p><strong>How do I exit a interactive session?</strong></p>
@@ -1042,8 +1038,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$s = New-PSSession -ComputerName SP2010-WFE
-</span></span><span class="line"><span class="cl">Enter-PSSession -Session $s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Enter-PSSession -Session $s</span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>Can I enter an existing PSSession?</strong></p>
 <p>Yes. You can use Get-PSSession cmdlet to see a list of all available/opened PS Sessions and then use Enter-PSSession as shown above to start interactive remoting. As you see here, I will pipe Get-PSSession output to Format-List cmdlet to get all session details.</p>
@@ -1068,8 +1063,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
 </span></span><span class="line"><span class="cl">Enter-PSSession -Name Session1            
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">$s = Get-PSSession -Id 1
-</span></span><span class="line"><span class="cl">Enter-PSSession -Session $s
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Enter-PSSession -Session $s</span></span></code></pre></td></tr></table>
 </div>
 </div><p>All of the above options start interactive session using the persistent session “session1”. It is just more than one way to do the same thing.</p>
 <p>Alright. This brings us to the end of this part on Interactive remoting sessions. In this next part, I will talk about something called implicit remoting. Stay tuned..!</p>
@@ -1630,6 +1624,7 @@ To understand the advantages of interactive remoting in PowerShell 2.0, let us f
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -1075,8 +1075,7 @@ Just as there is a WMI class that represents each type of system resource that c
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Get all classes that are WMI event classes
 </span></span><span class="line"><span class="cl">#filter class names for Win32 classes
-</span></span><span class="line"><span class="cl">Get-WMIObject -Query &#34;Select * from meta_class Where (__This ISA &#39;__Event&#39;) AND (__Class like &#39;win32%&#39;)&#34;
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Get-WMIObject -Query &#34;Select * from meta_class Where (__This ISA &#39;__Event&#39;) AND (__Class like &#39;win32%&#39;)&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This will list all WMI event classes that start with Win32 prefix. You will see many more if you remove the second condition in the WHERE clause but for starters, this is good enough. If you execute the above PowerShell command, you will see a WMI class named <a href="http://msdn.microsoft.com/en-us/library/aa394374(VS.85).aspx">Win32_ProcessStartTrace</a>. This class indicates the new process started event. We can use this WMI class to subscribe to all process start events. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1086,8 +1085,7 @@ Just as there is a WMI class that represents each type of system resource that c
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Register-WmiEvent -Class Win32_ProcessStartTrace -SourceIdentifier &#34;Process Started&#34; `
-</span></span><span class="line"><span class="cl">                  -Action { Write-Host &#34;$($Event.SourceEventArgs.NewEvent.ProcessName) just started&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">                  -Action { Write-Host &#34;$($Event.SourceEventArgs.NewEvent.ProcessName) just started&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p><strong>Note:</strong> You have to open the PowerShell console in elevated mode. Else, you will see an access denied message everytime you try using Register-WMIEvent</p>
@@ -1108,8 +1106,7 @@ Just as there is a WMI class that represents each type of system resource that c
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Register-WMIEvent using -Query
 </span></span><span class="line"><span class="cl">Register-WmiEvent -Query &#34;Select * from Win32_ProcessStartTrace WHERE ProcessName=&#39;notepad.exe&#39;&#34; `
-</span></span><span class="line"><span class="cl">                  -Action {Write-Host &#34;New notepad process created&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">                  -Action {Write-Host &#34;New notepad process created&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The WQL statement we used should be familiar to you by now. There are many other ways to monitor process creation using WMI events and WQL. What I showed above is just one way of doing it. We shall see the other methods soon.</p>
 <p><strong>WMI Event Types</strong></p>
@@ -1691,6 +1688,7 @@ Just as there is a WMI class that represents each type of system resource that c
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

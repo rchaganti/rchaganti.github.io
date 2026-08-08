@@ -852,8 +852,7 @@
 </span></span><span class="line"><span class="cl"><span class="k">-</span> [<span class="nt">Webhooks</span>](<span class="na">https://docs.stripe.com/webhooks</span>): Receive event notifications
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="gu">## SDKs
-</span></span></span><span class="line"><span class="cl"><span class="k">-</span> [<span class="nt">Node.js SDK</span>](<span class="na">https://docs.stripe.com/sdks/node</span>): Server-side Node.js integration
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">- [<span class="nt">Node.js SDK</span>](<span class="na">https://docs.stripe.com/sdks/node</span>): Server-side Node.js integration</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In seconds, the agent curates a map of exactly where to find information about payment Intents and Apple Pay. It didn&rsquo;t have to crawl the entire Stripe docs site, parse HTML navigation menus, or guess which pages are relevant.</p>
 <p>A valid <code>llms.txt</code> file contains a single H1 heading (the project name), a blockquote summary, and H2 sections with curated link lists. Each link uses the format <code>- [Title](URL): Description</code>. The file lives at the site root and requires zero infrastructure. Stripe, Anthropic, Cloudflare, and dozens of other companies now host <code>llms.txt</code> files. The standard is community-driven and growing as companies recognize AI-discoverability as a competitive advantage.</p>
@@ -915,8 +914,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="k">-</span> All payment code goes in <span class="sb">`src/services/payment/`</span>
 </span></span><span class="line"><span class="cl"><span class="k">-</span> Stripe keys must be loaded from Secret Manager via <span class="sb">`src/config/secrets.ts`</span>
 </span></span><span class="line"><span class="cl"><span class="k">-</span> All payment amounts are in cents (integer), never floating point
-</span></span><span class="line"><span class="cl"><span class="k">-</span> Must emit <span class="sb">`payment.created`</span> and <span class="sb">`payment.completed`</span> events via <span class="sb">`src/events/`</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">- Must emit <span class="sb">`payment.created`</span> and <span class="sb">`payment.completed`</span> events via <span class="sb">`src/events/`</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now the agent knows that the Stripe client should go in <code>src/clients/stripe.ts</code>, the payment logic should go in <code>src/services/payment/</code>, environment variables should go through <code>env.ts</code>, and amounts should be integers in cents. Without this, the agent might have placed files in the wrong directories, used <code>process.env.STRIPE_SECRET_KEY</code> directly, or represented amounts as floating-point numbers, all valid code, but every line violates the team&rsquo;s conventions.</p>
 <p>For large monorepos, <code>AGENTS.md</code> files can be nested. A monorepo might look like:</p>
@@ -943,8 +941,7 @@
 </span></span><span class="line"><span class="cl">│       └── AGENTS.md            ← Inventory-specific: DB conventions
 </span></span><span class="line"><span class="cl">└── packages/
 </span></span><span class="line"><span class="cl">    └── ui/
-</span></span><span class="line"><span class="cl">        └── AGENTS.md            ← Frontend: React patterns, CSS approach
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        └── AGENTS.md            ← Frontend: React patterns, CSS approach</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The closest <code>AGENTS.md</code> in the directory tree takes precedence. This is similar to how <code>.gitignore</code> scoping works. As of early 2026, <code>AGENTS.md</code> has been adopted by over 60,000 open-source projects and is supported by virtually every major AI coding agent.</p>
 <h3 id="markdown-first-documentation">Markdown-First Documentation</h3>
@@ -995,8 +992,7 @@
 </span></span><span class="line"><span class="cl"><span class="s">```</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="gu">## Confirm the PaymentIntent
-</span></span></span><span class="line"><span class="cl">...
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">...</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent gets the same knowledge at a fraction of the token cost, in a format it can parse natively. Markdown strips away the signal-to-noise ratio with HTML, delivering pure content. This pattern works with any docs-as-code pipeline. If you build documentation with Hugo, Docusaurus, or MkDocs, the Markdown source files already exist. You just need to make them accessible via HTTP. Documentation platforms like Mintlify, ReadMe, and GitBook are also beginning to offer Markdown endpoints.</p>
 <h3 id="openapi-specifications">OpenAPI Specifications</h3>
@@ -1081,8 +1077,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">schema</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;#/components/schemas/PaymentIntent&#39;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">&#39;400&#39;</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">Invalid request — check parameters</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">Invalid request — check parameters</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this spec, the agent generates type-safe TypeScript code with confidence. It knows the <code>amount</code> is an integer (not a float — consistent with what <code>AGENTS.md</code> also specified), <code>currency</code> is a string, and <code>payment_method_types</code> is an array. No more guessing. Modern agent frameworks (LangChain, Google Agent Development Kit, etc.) can automatically convert OpenAPI specs into callable tools. The agent doesn&rsquo;t just <em>read</em> the spec — it uses it to <em>act</em>.</p>
 <h3 id="mcp-servers">MCP Servers</h3>
@@ -1111,8 +1106,7 @@
 </span></span><span class="line"><span class="cl">  <span class="o">[</span>2<span class="o">]</span> <span class="s2">&#34;Using secrets from Secret Manager&#34;</span> <span class="o">(</span>cloud.google.com/run/docs/configuring/secrets<span class="o">)</span>
 </span></span><span class="line"><span class="cl">      <span class="s2">&#34;Cloud Run integrates with Secret Manager to securely provide secrets...&#34;</span>
 </span></span><span class="line"><span class="cl">  <span class="o">[</span>3<span class="o">]</span> <span class="s2">&#34;Configuring service accounts&#34;</span> <span class="o">(</span>cloud.google.com/run/docs/securing/service-identity<span class="o">)</span>
-</span></span><span class="line"><span class="cl">      ...
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">      ...</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent then fetches the full content of the most relevant documents:</p>
 <div class="highlight"><div class="chroma">
@@ -1142,8 +1136,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  gcloud run deploy checkout-service <span class="se">\
 </span></span></span><span class="line"><span class="cl">    --image gcr.io/company/checkout:latest <span class="se">\
-</span></span></span><span class="line"><span class="cl">    --set-secrets <span class="nv">STRIPE_KEY</span><span class="o">=</span>stripe-secret-key:latest
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">    --set-secrets <span class="nv">STRIPE_KEY</span><span class="o">=</span>stripe-secret-key:latest</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The agent now has the exact, current Cloud Run deployment syntax and not what was in its training data from months ago, but what&rsquo;s live in Google&rsquo;s docs right now. It does the same with the Microsoft Learn MCP server when it needs to verify Azure-specific patterns.</p>
 <h3 id="agent-skills-files">Agent Skills Files</h3>
@@ -1160,8 +1153,7 @@
 <pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">Available skills:
 </span></span><span class="line"><span class="cl">  <span class="k">-</span> deploy-to-staging: &#34;Deploy a service to the Cloud Run staging environment&#34;
 </span></span><span class="line"><span class="cl">  <span class="k">-</span> run-load-tests: &#34;Run load tests against a staging service&#34;  
-</span></span><span class="line"><span class="cl">  <span class="k">-</span> database-migration: &#34;Apply and verify database schema migrations&#34;
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  - database-migration: &#34;Apply and verify database schema migrations&#34;</span></span></code></pre></td></tr></table>
 </div>
 </div><p>During stage 1 (Discovery), the agent sees that <code>deploy-to-staging</code> matches the developer&rsquo;s request. It activates the skill. It is hardly 20 tokens.</p>
 <p>In the second stage, activation, the agent reads the full <code>SKILL.md</code>:</p>
@@ -1228,8 +1220,7 @@
 </span></span><span class="line"><span class="cl"><span class="gu">## Rollback
 </span></span></span><span class="line"><span class="cl">If smoke tests fail:
 </span></span><span class="line"><span class="cl">  <span class="sb">`gcloud run services update-traffic checkout-service \
-</span></span></span><span class="line"><span class="cl"><span class="sb">    --to-revisions=LATEST=0,&lt;previous-revision&gt;=100`</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="sb">    --to-revisions=LATEST=0,&lt;previous-revision&gt;=100`</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>In the final stage, as needed, the agent checks <code>scripts/pci-check.sh</code> to understand what the compliance check does and opens <code>scripts/smoke-test.sh</code> to see which endpoints it validates. This layered loading is critical. If the agent loaded the full contents of all 15 skills at startup, it would consume thousands of tokens of irrelevant context, degrading its performance on the actual task. Progressive disclosure works like how humans process information. You scan chapter titles (Layer 1), open the relevant chapter (Layer 2), and check the appendix only if you need a deep dive (Layer 3). The agent does the same. Skills are used by Claude Code, Gemini CLI, Kiro, and various agent frameworks. The open-standard structure (Markdown + optional scripts/resources) makes them portable.</p>
 <h3 id="rag-pipelines">RAG Pipelines</h3>
@@ -1282,8 +1273,7 @@
 </span></span><span class="line"><span class="cl">  <span class="s2">&#34;Decision: All payment amounts stored as integers in cents.
 </span></span></span><span class="line"><span class="cl"><span class="s2">   Context: We experienced rounding errors with floating-point USD amounts.
 </span></span></span><span class="line"><span class="cl"><span class="s2">   Consequences: All APIs accept/return amounts in cents; frontend
-</span></span></span><span class="line"><span class="cl"><span class="s2">   handles display formatting.&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="s2">   handles display formatting.&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is gold. The agent now adds a <code>sanitize()</code> call to its logging middleware, implements idempotency keys for payment creation (something it might not have done otherwise), and double-confirms that it&rsquo;s using integer cents, <em>with the organizational context for why</em>.</p>
 <p>The most powerful pattern is Agentic RAG, where the agent dynamically decides <em>when</em> and <em>from which sources</em> to retrieve. The agent in our example demonstrated this naturally. It consulted <code>llms.txt</code>, <code>AGENTS.md</code>, Markdown docs, an <code>OpenAPI</code> spec, MCP servers, a skill file, <em>and</em> the RAG pipeline, orchestrating across all seven layers within a single task.</p>
@@ -1862,6 +1852,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

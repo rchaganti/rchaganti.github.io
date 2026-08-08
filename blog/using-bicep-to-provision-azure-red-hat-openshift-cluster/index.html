@@ -1152,8 +1152,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.Storage&#39;</span> --wait
 </span></span><span class="line"><span class="cl">az provider register --namespace <span class="s1">&#39;Microsoft.Authorization&#39;</span> --wait
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">ARO_RP_SP_OBJECT_ID</span><span class="o">=</span><span class="k">$(</span>az ad sp list --display-name <span class="s2">&#34;Azure Red Hat OpenShift RP&#34;</span> --query <span class="o">[</span>0<span class="o">]</span>.id -o tsv<span class="k">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nv">ARO_RP_SP_OBJECT_ID</span><span class="o">=</span><span class="k">$(</span>az ad sp list --display-name <span class="s2">&#34;Azure Red Hat OpenShift RP&#34;</span> --query <span class="o">[</span>0<span class="o">]</span>.id -o tsv<span class="k">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We need to create a resource group where the ARO cluster will reside.</p>
 <div class="highlight"><div class="chroma">
@@ -1165,8 +1164,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nv">RESOURCEGROUP</span><span class="o">=</span>aro
 </span></span><span class="line"><span class="cl"><span class="nv">LOCATION</span><span class="o">=</span>eastus
-</span></span><span class="line"><span class="cl">az group create --name <span class="nv">$RESOURCEGROUP</span> --location <span class="nv">$LOCATION</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">az group create --name <span class="nv">$RESOURCEGROUP</span> --location <span class="nv">$LOCATION</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The user account must have at least contributor and user access administrator permissions to provision an ARO cluster. We shall create a service principal, which will be assigned the necessary roles at the subscription scope later using the Bicep template.</p>
 <div class="highlight"><div class="chroma">
@@ -1202,8 +1200,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span><span class="line"><span class="cl">az role assignment create --role <span class="s1">&#39;Contributor&#39;</span> <span class="se">\
 </span></span></span><span class="line"><span class="cl">                          --scope /subscriptions/<span class="nv">$SUBSCRIPTION_ID</span> <span class="se">\
 </span></span></span><span class="line"><span class="cl">                          --assignee-object-id <span class="nv">$SP_OBJECT_ID</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl">                          --assignee-principal-type <span class="s1">&#39;ServicePrincipal&#39;</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">                          --assignee-principal-type <span class="s1">&#39;ServicePrincipal&#39;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above commands create a service principal and then set the necessary environment variables for the values we are interested in. We also perform the role assignments to ensure the service principal has the necessary permissions.</p>
 <p>We need a Red Hat pull secret to enable Operator Hub within the ARO cluster. The content of this pull secret must be available as pull-secret.txt at the same location as the Bicep template.</p>
@@ -1400,8 +1397,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Enabled&#39;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="s">&#39;Disabled&#39;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="p">])</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerEncryptionAtHost</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="kd">param</span><span class="w"> </span><span class="nv">workerEncryptionAtHost</span><span class="w"> </span><span class="nv">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&#39;Disabled&#39;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The parameters in this template help us customize the ARO cluster deployment. There are customizations such as FIPS and encryption at the host disabled by default. The API server and ingress visibility are configured to be public. This template creates three control plane nodes and three worker nodes by default. We cannot change the number of control plane nodes, but the worker count can be customized using the <code>workerCount</code> parameter.</p>
 <p>Before provisioning any resource dependencies, we need to set up a few variables.</p>
@@ -1426,8 +1422,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">workerSubnetId</span><span class="p">=</span><span class="nf">resourceId</span><span class="p">(</span><span class="s">&#39;Microsoft.Network/virtualNetworks/subnets&#39;</span><span class="p">,</span><span class="w"> </span><span class="nv">clusterVnetName</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;worker&#39;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">pullSecret</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">loadTextContent</span><span class="p">(</span><span class="s">&#39;pull-secret.txt&#39;</span><span class="p">,</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="kd">var</span><span class="w"> </span><span class="nv">pullSecret</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nf">loadTextContent</span><span class="p">(</span><span class="s">&#39;pull-secret.txt&#39;</span><span class="p">,</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The first variable &ndash; <code>contributorRoleDefinitionId</code> &ndash; is used to retrieve the resource ID of the Contributor role definition. We need this later when we assign permissions on the virtual network resource. The remaining variables defined using the built-in <code>subscriptionResourceId</code> and resourceId functions are used later in the resource definitions.</p>
 <p>To provision an ARO cluster, we need a virtual network with two subnets &ndash; <em>controlplane</em> and <em>worker</em>. We create this by provisioning a virtual network resource.</p>
@@ -1508,8 +1503,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">]</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This definition creates a virtual network resource with subnets for the control plane and worker nodes. Next, we must use the <em>roleAssignments</em> extension resource to assign contributor access to the service principal and OpenShift Resource Provider on the virtual network resource.</p>
 <div class="highlight"><div class="chroma">
@@ -1553,8 +1547,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalId</span><span class="p">:</span><span class="w"> </span><span class="nv">rpObjectId</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">principalType</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;ServicePrincipal&#39;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With this, we are all set to create an ARO cluster. The following definition helps us with that.</p>
 <div class="highlight"><div class="chroma">
@@ -1656,8 +1649,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">dependsOn</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nv">clusterVnetName_resource</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is straightforward. The ARO resource requires us to specify the <code>clusterProfile</code>, <code>networkProfile</code>, <code>servicePrincipalProfile</code>, <code>masterProfile</code>, <code>workerProfiles</code>, <code>apiserverProfile</code>, and <code>ingressProfiles</code>. Once this ARO cluster is provisioned, we can retrieve the console and API server URLs using the outputs.</p>
 <div class="highlight"><div class="chroma">
@@ -1673,8 +1665,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterName</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">name</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterApiServerUrl</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">apiserverProfile</span><span class="p">.</span><span class="nv">url</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nv">clusterConsoleUrl</span><span class="p">:</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">provisioningState</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&#39;Succeeded&#39;</span><span class="w"> </span><span class="p">?</span><span class="w"> </span><span class="nv">clusterName_resource</span><span class="p">.</span><span class="nv">properties</span><span class="p">.</span><span class="nv">consoleProfile</span><span class="p">.</span><span class="nv">url</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This template is ready to be deployed. We can use the <code>az deployment group create</code> command to deploy the template.</p>
 <div class="highlight"><div class="chroma">
@@ -1706,8 +1697,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadClientId</span><span class="o">=</span><span class="nv">$SP_CLIENT_ID</span> <span class="se">\
 </span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadObjectId</span><span class="o">=</span><span class="nv">$SP_OBJECT_ID</span> <span class="se">\
 </span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">aadClientSecret</span><span class="o">=</span><span class="nv">$SP_CLIENT_SECRET</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">rpObjectId</span><span class="o">=</span><span class="nv">$ARO_RP_SP_OBJECT_ID</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl">                           --parameters <span class="nv">rpObjectId</span><span class="o">=</span><span class="nv">$ARO_RP_SP_OBJECT_ID</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The resource group we provisioned gets used as the base resource group. This base resource group houses the virtual network and the ARO cluster. The ARO resource provider creates another resource group called the infrastructure resource group. In the Bicep template, this infrastructure group is identified using the <code>resourceGroupId</code> variable. This infrastructure group can only be managed by the resource provider. The ARO RP provisions a Network Security Group (NSG) within this resource group. We cannot add or remove any inbound or outbound security rules to/from this NSG. This is because all service principals except the one used to create the cluster are denied any API access to this resource group.</p>
 <p><img src="/images/aro-nsg-deny.png" alt=""></p>
@@ -1739,8 +1729,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
 </span></span><span class="line"><span class="cl">      <span class="nt">&#34;clusterName&#34;</span><span class="p">:</span> <span class="s2">&#34;hub&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><img src="/images/aro-connect.png" alt=""></p>
 <p>ARO does not yet support shutting down a cluster. Therefore, we must monitor the usage of the cluster and take the necessary actions, such as deleting the cluster or shutting down virtual machines, as needed.</p>
@@ -2323,6 +2312,7 @@ Examples in this article use Azure CLI for interacting with Azure resources and 
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

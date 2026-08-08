@@ -1276,8 +1276,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">second</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What is my name?&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The second call has no idea what was said in the first. The agent responds with something polite and apologetic, but it does not know the user&rsquo;s name because the second run does not see the first run&rsquo;s message history. Every call is a fresh conversation.</p>
 <p>That is the right default. State should be opt-in, not implicit; otherwise, concurrent runs of the same agent would overwrite each other&rsquo;s history. To make a conversation actually behave like a conversation, you bring in a session.</p>
@@ -1356,8 +1355,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">second</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&#34;What is my name?&#34;</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The second call now sees the first one in the session&rsquo;s history, and the agent answers correctly. The session is just a parameter you pass through with no changes to the rest.</p>
 <p>A few practical points. A session is not tied to a specific agent. You can route the same session through different agents in the same process, which is useful when you want a triage agent to hand off to a specialist while preserving the conversation. The session carries only the conversation; it does not carry tool definitions, so the receiving agent works with whatever tools it was constructed with.</p>
@@ -1425,8 +1423,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth understanding about this loop. Each iteration of the loop returns an <em>update</em>, not a full message. Some updates contain text; some are empty or carry metadata for events that are not text (more on that in a moment). Checking <code>if update.text</code> is what filters the loop down to the part you actually want to print. <code>flush=True</code> matters because the default Python buffering would hold the output until a newline, defeating the point of streaming.</p>
 <p>After the loop ends, <code>await stream.get_final_response()</code> finalizes the run. This is what returns the complete response object and ensures the session is updated. Skipping it can leave the session in an inconsistent state, especially when the stream involved tool calls, so make it part of every streaming code path.</p>
@@ -1459,8 +1456,7 @@
 </span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">[calling </span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">)]&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="k">elif</span> <span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">update</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="k">await</span> <span class="n">stream</span><span class="o">.</span><span class="n">get_final_response</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The exact attribute names on an update depend on the client and the SDK version. The pattern is stable: there are events for tool calls, events for tool results, and events for text. You filter for the events you care about.</p>
 <p>If the only thing you need is the final reply, prefer <code>agent.run(...)</code> without <code>stream=True</code> over a streaming loop that throws everything but the text away. Streaming is worth the extra code only when the user sees the partial output.</p>
@@ -2162,6 +2158,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -1062,8 +1062,7 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT \* FROM __InstanceXEvent WITHIN PollingInterval WHERE TargetInstance ISA WMIClassName AND TargetInstance.WMIClassPropertyName = Value
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SELECT \* FROM __InstanceXEvent WITHIN PollingInterval WHERE TargetInstance ISA WMIClassName AND TargetInstance.WMIClassPropertyName = Value</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is something similar to what we saw in the earlier post about WQL syntax for event queries. The __InstanceXEvent can be any of the system classes such as __InstanceCreationEvent, __InstanceModificationEvent, __InstanceDeletionEvent, and __InstanceOperationEvent. <strong>Now, when do we use each of these event classes?</strong></p>
 <p><strong>__InstanceCreationEvent</strong> is used when we want to receive a notification upon creation of an instance. For example, we can use this event class when you want to receive an event notification every time a new process gets created. This can be done by,</p>
@@ -1078,8 +1077,7 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Query for new process events
 </span></span><span class="line"><span class="cl">$query = &#34;Select * from __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA &#39;Win32_Process&#39;&#34;
 </span></span><span class="line"><span class="cl">#Register WMI event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;New Process Created. Do something useful here&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;New Process Created. Do something useful here&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>__InstanceDeletionEvent</strong> is used when we want to receive a notification upon deletion of an instance. For example, we can use this class when we want to receive an event notification every time a process is terminated. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1093,8 +1091,7 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Query for new process events
 </span></span><span class="line"><span class="cl">$query = &#34;Select * from __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA &#39;Win32_Process&#39;&#34;
 </span></span><span class="line"><span class="cl">#Register WMI event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;A Process terminated. Do something useful here&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;A Process terminated. Do something useful here&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>__InstanceModificationEvent</strong> is used when we want to monitor changes to an existing instance or a resource. For example, we can use this class when we want to receive an event notification when a the processor utilization on a system goes beyond a specified usage threshold. For example,</p>
 <div class="highlight"><div class="chroma">
@@ -1108,8 +1105,7 @@
 <pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#Query for new process events
 </span></span><span class="line"><span class="cl">$query = &#34;Select * from __InstanceModificationEvent WITHIN 5 WHERE TargetInstance ISA &#39;Win32_Processor&#39; AND TargetInstance.LoadPercentage &gt; 80&#34;
 </span></span><span class="line"><span class="cl">#Register WMI event
-</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Processor utilization is more than 80%. Do something useful here&#34; }
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Register-WmiEvent -Query $query -Action { Write-Host &#34;Processor utilization is more than 80%. Do something useful here&#34; }</span></span></code></pre></td></tr></table>
 </div>
 </div><p>All of the examples above just displayed a message when the event notification was received. Instead, we can do something useful within the script block. For example, in the __InstanceCreationEvent example, we are just displaying that a new process was created but not the process name that just got created. <strong>So, how do we access that information in the script block and tell a user the name of the process that was created?</strong></p>
 <p>Simple, PowerShell creates an automatic variable called $event and stores the last event received in that variable. And, this automatic variable can be accessed in the -Action scriptblock you specify during a WMI event registration. Let us see an example.</p>
@@ -1692,6 +1688,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

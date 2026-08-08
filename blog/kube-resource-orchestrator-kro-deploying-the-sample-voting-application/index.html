@@ -866,8 +866,7 @@ While not very complex, this application has enough moving parts to define depen
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l">integer | default=80</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">nodePort</span><span class="p">:</span><span class="w"> </span><span class="l">integer | default=31001</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">svcName</span><span class="p">:</span><span class="w"> </span><span class="l">string | default=&#34;result&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span>{}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>To deploy the containers as pods, we must define <code>name</code>, <code>imageName</code>, and <code>port</code>. We also need <code>svcName</code> and <code>nodePort</code> as input values for services associated with these deployments. For now, let us leave the <code>status</code> field empty. We will this later. Let us now look at the <code>redis</code> deployment and service.</p>
 <div class="highlight"><div class="chroma">
@@ -941,8 +940,7 @@ While not very complex, this application has enough moving parts to define depen
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">ports</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span>- <span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l">TCP</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.redis.port}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.redis.port}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.redis.port}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>By using <code>selector: ${redisDeployment.spec.selector.matchLabels}</code>, we define an explicit dependency on <code>redisDeployment</code>. The next resources are the <code>db</code> deployment and service.</p>
 <div class="highlight"><div class="chroma">
@@ -1024,8 +1022,7 @@ While not very complex, this application has enough moving parts to define depen
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">ports</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span>- <span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l">TCP</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.db.port}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.db.port}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.db.port}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Note that the <code>redis</code> and <code>db</code> service names must be <code>redis</code> and <code>db,</code> respectively. These names are hard-coded in the application code.</p>
 <p>The next set of deployments and services are <code>worker</code>, <code>vote</code>, and <code>result</code>.</p>
@@ -1202,8 +1199,7 @@ While not very complex, this application has enough moving parts to define depen
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span>- <span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l">TCP</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.result.port}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.result.port}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">nodePort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.result.nodePort}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nt">nodePort</span><span class="p">:</span><span class="w"> </span><span class="l">${schema.spec.result.nodePort}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The <code>worker</code> deployment does not need any service. However, the end-user accesses the <code>vote</code> and <code>result</code> in pods and, therefore, requires the <code>NodePort</code> service.</p>
 <p>This resource group definition can be deployed using the <code>kubectl apply</code> command.</p>
@@ -1212,8 +1208,7 @@ While not very complex, this application has enough moving parts to define depen
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl apply -f vote-rgd.yaml
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl apply -f vote-rgd.yaml</span></span></code></pre></td></tr></table>
 </div>
 </div><p>As we do not need to change any input values to create an instance, we can use the following instance definition to create an instance of the custom API.</p>
 <div class="highlight"><div class="chroma">
@@ -1241,8 +1236,7 @@ While not very complex, this application has enough moving parts to define depen
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">db</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">worker</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">vote</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">result</span><span class="p">:</span><span class="w"> </span>{}<span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">result</span><span class="p">:</span><span class="w"> </span>{}</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Again, this can be deployed using the <code>kubectl apply</code> command.</p>
 <div class="highlight"><div class="chroma">
@@ -1250,8 +1244,7 @@ While not very complex, this application has enough moving parts to define depen
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl apply -f vote_instance.yaml
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ kubectl apply -f vote_instance.yaml</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is a good start. But, how do we make this more dynamic so that we can use it across multiple environments such as dev, staging, and production. This will the topic of our next article in this series.</p>
 
@@ -1767,6 +1760,7 @@ While not very complex, this application has enough moving parts to define depen
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

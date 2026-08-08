@@ -1338,8 +1338,7 @@
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>A few things worth pointing out. The middleware signature is fixed: an async function that takes the context and a <code>call_next</code> callable that takes no arguments. You mutate the context, and you <code>await call_next()</code> to continue down the chain. If you do not call <code>call_next</code>, the rest of the chain (including the agent itself) does not run, which is exactly how you implement blocking behavior later.</p>
 <p>If you prefer a class, inherit from <code>AgentMiddleware</code> and implement <code>process</code> with the same signature:</p>
@@ -1360,8 +1359,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">async</span> <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">call_next</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;[run] starting&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;[run] done&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;[run] done&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Class-based middleware is the right choice when the middleware requires configuration or maintains its own state, such as a counter, a connection to an audit store, or a cache.</p>
 <h2 id="function-middleware-timing-kwargs-and-retries">Function middleware: timing, kwargs, and retries</h2>
@@ -1387,8 +1385,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&#34;tenant&#34;</span><span class="p">,</span> <span class="s2">&#34;contoso&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&#34;request_source&#34;</span><span class="p">,</span> <span class="s2">&#34;agent&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The tool then receives those values via its own <code>FunctionInvocationContext</code> parameter:</p>
 <div class="highlight"><div class="chroma">
@@ -1400,8 +1397,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_orders</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">FunctionInvocationContext</span><span class="p">,</span> <span class="n">customer_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">    <span class="n">tenant</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;tenant&#34;</span><span class="p">,</span> <span class="s2">&#34;default&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;[</span><span class="si">{</span><span class="n">tenant</span><span class="si">}</span><span class="s2">] orders for </span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">: ...&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;[</span><span class="si">{</span><span class="n">tenant</span><span class="si">}</span><span class="s2">] orders for </span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">: ...&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>This pattern keeps tenant IDs, user IDs, and request correlation IDs out of the prompt. The model has no business deciding the tenant ID, and you do not want it to make one up. Set it in middleware, read it in the tool.</p>
 <p>The same layer is the natural place for timing and structured logging:</p>
@@ -1430,8 +1426,7 @@
 </span></span><span class="line"><span class="cl">            <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">        <span class="k">finally</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">            <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[tool] </span><span class="si">{</span><span class="n">context</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> took </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">ms&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[tool] </span><span class="si">{</span><span class="n">context</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> took </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">ms&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Because function middleware fires once per tool call, an agent that makes three tool calls in one run will print three lines. If you want a single summary per run, aggregate in the agent middleware and use <code>metadata</code> to share state.</p>
 <p>You can also retry a failing tool by catching the exception around <code>call_next</code>:</p>
@@ -1456,8 +1451,7 @@
 </span></span><span class="line"><span class="cl">        <span class="k">except</span> <span class="n">TransientError</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">                <span class="k">raise</span>
-</span></span><span class="line"><span class="cl">            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">))</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">))</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Note the placement: this retries the <em>tool</em>, not the model. If the model itself is rate-limited, that is a chat-middleware problem.</p>
 <h2 id="chat-middleware-every-model-call">Chat middleware: every model call</h2>
@@ -1492,8 +1486,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[chat] sending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span><span class="si">}</span><span class="s2"> messages&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;[chat] response received&#34;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;[chat] response received&#34;</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The important mental model: in a run that involves two tool calls, you will typically see chat middleware fire three times (initial call, after-tool-1, after-tool-2), function middleware fire twice (the two tools), and agent middleware fire exactly once. If your numbers do not match that pattern, you are usually looking at a streaming or early-termination case.</p>
 <h2 id="blocking-and-overriding-results">Blocking and overriding results</h2>
@@ -1522,8 +1515,7 @@
 </span></span><span class="line"><span class="cl">            <span class="n">messages</span><span class="o">=</span><span class="p">[</span><span class="n">Message</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&#34;assistant&#34;</span><span class="p">,</span> <span class="n">contents</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;Request blocked.&#34;</span><span class="p">])]</span>
 </span></span><span class="line"><span class="cl">        <span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">raise</span> <span class="n">MiddlewareTermination</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>MiddlewareTermination</code> short-circuits the rest of the chain <em>and</em> the agent. The caller still gets a normal <code>AgentResponse</code>, the one you set on <code>context.result</code>, so calling code does not need to know that anything was blocked.</p>
 <p>A result-rewriting pattern, applied after the agent has produced its answer, is just as common. PII redaction is the classic example:</p>
@@ -1554,8 +1546,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
 </span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">contents</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">                <span class="n">message</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">EMAIL</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&#34;[email]&#34;</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">                <span class="n">message</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">EMAIL</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&#34;[email]&#34;</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>For streaming responses the shape is different, <code>context.result</code> is an async generator of <code>AgentResponseUpdate</code> chunks rather than a finished <code>AgentResponse</code>. You can detect which case you are in with <code>context.stream</code> and wrap the generator if needed:</p>
 <div class="highlight"><div class="chroma">
@@ -1589,8 +1580,7 @@
 </span></span><span class="line"><span class="cl">                    <span class="n">chunk</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">EMAIL</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&#34;[email]&#34;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">            <span class="k">yield</span> <span class="n">chunk</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">wrapped</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">wrapped</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The point of this whole pattern is that the agent definition stays clean. The agent does not know about redaction, and redaction does not know about the agent. You can add or remove the middleware without touching either.</p>
 <h2 id="registration-and-ordering">Registration and ordering</h2>
@@ -1634,8 +1624,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;Weather in Portland?&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">        <span class="n">middleware</span><span class="o">=</span><span class="p">[</span><span class="n">token_logging_chat_middleware</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Ordering follows the wrapping rule. For agent-level <code>[A1, A2]</code> and run-level <code>[R1, R2]</code>, the execution order is <code>A1 → A2 → R1 → R2 → Agent → R2 → R1 → A2 → A1</code>. Function and chat middleware follow the same wrapping principle at their respective layers. In practice, the order matters mostly for two cases: blocking middleware should come first so it runs before logging or timing; result-rewriting middleware should come last so it sees the finished result before anyone else.</p>
 <p>A small but important detail: a single middleware function can be used at any of the three layers as long as its context type matches. If you do not annotate the context parameter, MAF cannot infer the layer. The decorator form makes this explicit:</p>
@@ -1668,8 +1657,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nd">@chat_middleware</span>
 </span></span><span class="line"><span class="cl"><span class="k">async</span> <span class="k">def</span> <span class="nf">m3</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">call_next</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">    <span class="k">await</span> <span class="n">call_next</span><span class="p">()</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Use the decorators when you do not want type annotations, or when you want to be explicit about intent, regardless of annotations.</p>
 <h2 id="summary">Summary</h2>
@@ -2412,6 +2400,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -737,8 +737,7 @@
 </span></span><span class="line"><span class="cl"><span class="s2">&#34;sha256:195ea6a58ca87a18477965a6e6a8623112bde82c5b568a29c56ce4581b6e6695&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="s2">&#34;sha256:52908dc1c386fab0271a2b84b6ef4d96205a98a8c8801169554767172e45d8c7&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="s2">&#34;sha256:a2b47720d601b6c6c6e7763b4851e25475118d80a76be466ef3aa388abf2defd&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="s2">&#34;sha256:14a70245b07c7f5056bdd90a3d93e37417ec26542def5a37ac8f19e437562533&#34;</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;sha256:14a70245b07c7f5056bdd90a3d93e37417ec26542def5a37ac8f19e437562533&#34;</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>index.json</code> at the root of the OCI layout contains a pointer to the manifest that describes the configuration and layers within the image. As seen here, both manifest and image config have file&rsquo;s SHA256 hash as the file name and both files are JSON documents.</p>
 <p>Image config, as we learned earlier, is what the container runtime uses to setup the container. It contains an ordered collection of file system layers and the execution parameters to create the container. What is important for our discussion is at the beginning of the configuration JSON. Here is an example from the golang image.</p>
@@ -801,8 +800,7 @@
 </span></span><span class="line"><span class="cl">      <span class="s2">&#34;sha256:6201ebf6567d8a29c3458610efb2b681fec4b8c127668d8d223f504520ed351e&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="p">]</span>
 </span></span><span class="line"><span class="cl">  <span class="p">},</span>
-</span></span><span class="line"><span class="cl">  <span class="err">....</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">  <span class="err">....</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Each layer in the image is a gzipped tarball, once again, containing the SHA256 hash as the file name. So, if we need to build a container image by hand, we need to really follow the same process of packaging each of our image layers. Let us look at that.</p>
 <h3 id="building-a-hello-cloud-image">Building a hello-cloud image</h3>
@@ -850,8 +848,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">		</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello,&#34;</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;👋&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Nothing fancy here. This program takes an optional input. This optional input can be your name or whatever you like. If there is no input, it prints Hello, 🌍!. You can build the binary using <code>go build hello-cloud.go</code> command.</p>
 <div class="highlight"><div class="chroma">
@@ -865,8 +862,7 @@
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ ./hello-cloud
 </span></span><span class="line"><span class="cl">Hello, 🌍!
 </span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ ./hello-cloud <span class="s2">&#34;Cloud Native Central&#34;</span>
-</span></span><span class="line"><span class="cl">Hello, Cloud Native Central 👋
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Hello, Cloud Native Central 👋</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Go programs are statically linked and therefore have no OS dependencies. Let us now look at creating a folder structure needed for this.</p>
 <div class="highlight"><div class="chroma">
@@ -884,8 +880,7 @@
 </span></span><span class="line"><span class="cl">├── bin
 </span></span><span class="line"><span class="cl">└── tmp
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="m">2</span> directories, <span class="m">0</span> files
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="m">2</span> directories, <span class="m">0</span> files</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We shall now move the hello-world binary into the bin folder.</p>
 <div class="highlight"><div class="chroma">
@@ -905,8 +900,7 @@
 </span></span><span class="line"><span class="cl">imageLayer/
 </span></span><span class="line"><span class="cl">├── bin
 </span></span><span class="line"><span class="cl">│   └── hello-cloud
-</span></span><span class="line"><span class="cl">└── tmp
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">└── tmp</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We have the contents of our image layer ready. We can now package this into a gzipped tarball.</p>
 <div class="highlight"><div class="chroma">
@@ -944,8 +938,7 @@
 </span></span><span class="line"><span class="cl">    │   └── hello-cloud
 </span></span><span class="line"><span class="cl">    └── tmp
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="m">3</span> directories, <span class="m">2</span> files
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="m">3</span> directories, <span class="m">2</span> files</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is good. However, to be able to run a container from this image layer, we need to feed tell the container runtime how to use the layers and the execution parameters to setup the container. So, let us step back a bit and see what the earlier example of golang image&rsquo;s configuration JSON contained. Every container image is specific to an operating system and architecture. The golang image that we pulled is a linux/amd64 image. Our <code>hello-cloud</code> binary is built on a Linux amd64 system as well.</p>
 <p>To be able to invoke our <code>hello-cloud</code> binary, we need to set the right environment variables. Also, we want this binary to get invoked when the container starts. These environment and execution parameters needs to be within the config section of the configuration JSON.</p>
@@ -979,8 +972,7 @@
 </span></span><span class="line"><span class="cl">        <span class="s2">&#34;Cloud Native Central!&#34;</span>
 </span></span><span class="line"><span class="cl">      <span class="p">]</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>We set the <code>Entrypoint</code> to the hello-world binary and the <code>Cmd</code> array to a single argument that will be passed to the binary.</p>
 <p>The next important thing that needs to be added is the <a href="https://github.com/opencontainers/image-spec/blob/main/config.md#layer-diffid">DiffID</a> of the image layer. The diff ID is the digest over the layer&rsquo;s uncompressed tarball. We can obtainthis using the <code>sha256sum</code> command.</p>
@@ -991,8 +983,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ ~$ gunzip &lt; hello-world/hello-cloud.tar.gz <span class="p">|</span> sha256sum
-</span></span><span class="line"><span class="cl">690fa2812df903a4cee676e28389e154fe022f2a26fb29c4c97e9c6583fa5bc6  -
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">690fa2812df903a4cee676e28389e154fe022f2a26fb29c4c97e9c6583fa5bc6  -</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We need to add the serialized version of this digest to the configuration JSON. So, here is how our final configuration JSON looks like.</p>
 <div class="highlight"><div class="chroma">
@@ -1050,8 +1041,7 @@
 </span></span><span class="line"><span class="cl">      <span class="nt">&#34;created_by&#34;</span><span class="p">:</span> <span class="s2">&#34;Ravikanth C&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As we saw in the golang image example earlier, we need a manifest that combines configuration JSON and the layers. These artifacts are referenced using their digest values as well. So, let us generate the digests for both configuration JSON and the layer tar.gz. We will also need the size in bytes which can be derived from the <code>ls</code> output. The layer digest is different from the DiffID we captured earlier. The <a href="https://github.com/opencontainers/image-spec/blob/main/manifest.md#image-manifest-property-descriptions">layer digest</a> identifies the compressed content and DiffID, as mentioned earlier, identifies the uncompressed content. Container runtimes deal with uncompressed layer content and therefore the configuration JSON must include the digest of the uncompressed layer.</p>
 <div class="highlight"><div class="chroma">
@@ -1079,8 +1069,7 @@
 </span></span><span class="line"><span class="cl">total <span class="m">1064</span>
 </span></span><span class="line"><span class="cl">-rw-r--r-- <span class="m">1</span> rchaganti rchaganti     <span class="m">364</span> Nov <span class="m">27</span> 13:19 configuration.json
 </span></span><span class="line"><span class="cl">-rw-r--r-- <span class="m">1</span> rchaganti rchaganti <span class="m">1074934</span> Nov <span class="m">27</span> 13:42 hello-world.tar.gz
-</span></span><span class="line"><span class="cl">drwxr-xr-x <span class="m">4</span> rchaganti rchaganti    <span class="m">4096</span> Nov <span class="m">27</span> 11:11 imageLayer
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">drwxr-xr-x <span class="m">4</span> rchaganti rchaganti    <span class="m">4096</span> Nov <span class="m">27</span> 11:11 imageLayer</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We need to add the appropriate <a href="https://github.com/opencontainers/image-spec/blob/main/media-types.md">mediaType</a> for both configuration JSON and each layer. Here is how our manifest.json looks like.</p>
 <div class="highlight"><div class="chroma">
@@ -1118,8 +1107,7 @@
 </span></span><span class="line"><span class="cl">      <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:e251e682f7e64cff127020015be3254313b3a7900f54d82ecf34653192be4c21&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">  <span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Alright. Do we have the image ready? Not quite yet. We need to push it to an image registry. While, on surface, it looks like a container image is a singular entity but in reality it is not. As we have already seen, a container image includes a bunch of layers, a configuration, and a manifest. When Docker CLI or any other tool pushes images to a registry, these tools do so in a specific sequence. Since we are building this without any tools such as Docker CLI, we need to push these artifacts manually using the <a href="https://docs.docker.com/registry/spec/api/#introduction">Docker registry HTTP API</a>.</p>
 <p>Here is the workflow.</p>
@@ -1158,8 +1146,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">USERNAME</span><span class="o">=</span>ravikanth
 </span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">REPO</span><span class="o">=</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">USERNAME</span><span class="si">}</span><span class="s2">/hello-cloud&#34;</span>
-</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl -v -u <span class="s2">&#34;</span><span class="nv">$USERNAME</span><span class="s2">&#34;</span> <span class="s2">&#34;https://auth.docker.io/token?service=registry.docker.io&amp;scope=repository:</span><span class="nv">$REPO</span><span class="s2">:pull,push&#34;</span> <span class="p">|</span> jq <span class="s1">&#39;.token&#39;</span> <span class="p">|</span> cut -d<span class="se">\&#34;</span> -f2<span class="k">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl -v -u <span class="s2">&#34;</span><span class="nv">$USERNAME</span><span class="s2">&#34;</span> <span class="s2">&#34;https://auth.docker.io/token?service=registry.docker.io&amp;scope=repository:</span><span class="nv">$REPO</span><span class="s2">:pull,push&#34;</span> <span class="p">|</span> jq <span class="s1">&#39;.token&#39;</span> <span class="p">|</span> cut -d<span class="se">\&#34;</span> -f2<span class="k">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The above command will prompt for a password to authenticate with Docker Hub and retrieve the token from the response.</p>
 <h3 id="upload-blobs">Upload blobs</h3>
@@ -1177,8 +1164,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">LOCATION</span><span class="o">=</span><span class="k">$(</span>curl -i <span class="nv">$LOCATION</span> -X PATCH -H <span class="s2">&#34;Content-Length: </span><span class="nv">$LAYERSIZE</span><span class="s2">&#34;</span> -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -H <span class="s2">&#34;Content-Type: application/octet-stream&#34;</span> --data-binary @e251e682f7e64cff127020015be3254313b3a7900f54d82ecf34653192be4c21 <span class="p">|</span> grep location <span class="p">|</span> cut -d<span class="s2">&#34; &#34;</span> -f2 <span class="p">|</span> tr -d <span class="s1">&#39;\r&#39;</span><span class="k">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;</span><span class="nv">$LOCATION</span><span class="s2">&amp;digest=sha256:</span><span class="nv">$LAYERDIGEST</span><span class="s2">&#34;</span> -X PUT -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -v
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;</span><span class="nv">$LOCATION</span><span class="s2">&amp;digest=sha256:</span><span class="nv">$LAYERDIGEST</span><span class="s2">&#34;</span> -X PUT -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -v</span></span></code></pre></td></tr></table>
 </div>
 </div><p>The first command starts an upload and retrieves the location for the upload. The second command uses the location from first command and uploads the blob. Finally, the third command commits the upload at the location returned by second command and specifies the digest of the blob.</p>
 <p>we just need to repeat these steps for each layer and configuration JSON. Since we have only one layer, let us just push the configuration JSON as well.</p>
@@ -1195,8 +1181,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ <span class="nv">LOCATION</span><span class="o">=</span><span class="k">$(</span>curl -i <span class="nv">$LOCATION</span> -X PATCH -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -H <span class="s2">&#34;Content-Type: application/octet-stream&#34;</span> --data-binary @4500bf72b8876e180985cb9d30dcbfb4b37c6212af4a1e66f6a59e9c44e4430e <span class="p">|</span> grep location <span class="p">|</span> cut -d<span class="s2">&#34; &#34;</span> -f2 <span class="p">|</span> tr -d <span class="s1">&#39;\r&#39;</span><span class="k">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;</span><span class="nv">$LOCATION</span><span class="s2">&amp;digest=sha256:</span><span class="nv">$CONFIGDIGEST</span><span class="s2">&#34;</span> -X PUT -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -v
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;</span><span class="nv">$LOCATION</span><span class="s2">&amp;digest=sha256:</span><span class="nv">$CONFIGDIGEST</span><span class="s2">&#34;</span> -X PUT -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> -v</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="upload-the-manifest">Upload the manifest</h3>
 <p>Finally, we need to upload the manifest.</p>
@@ -1205,8 +1190,7 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;https://registry.hub.docker.com/v2/</span><span class="nv">$REPO</span><span class="s2">/manifests/latest&#34;</span> -X PUT -H <span class="s2">&#34;Content-Type: application/vnd.oci.image.manifest.v1+json&#34;</span> -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> --data-binary @manifest.json -v
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vscode ➜ ~/hello-cloud$ curl <span class="s2">&#34;https://registry.hub.docker.com/v2/</span><span class="nv">$REPO</span><span class="s2">/manifests/latest&#34;</span> -X PUT -H <span class="s2">&#34;Content-Type: application/vnd.oci.image.manifest.v1+json&#34;</span> -H <span class="s2">&#34;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&#34;</span> --data-binary @manifest.json -v</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once the manifest upload is complete, you can find the image on Docker Hub.</p>
 <figure class="figure " style="max-width: 450px; height: 50%; margin: 1.5rem auto;">
@@ -1240,8 +1224,7 @@
 </span></span><span class="line"><span class="cl">Hello, Cloud Native Central! 👋
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">vscode ➜ ~$ docker run ravikanth/hello-cloud:latest Readers!
-</span></span><span class="line"><span class="cl">Hello, Readers! 👋
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Hello, Readers! 👋</span></span></code></pre></td></tr></table>
 </div>
 </div><p>This is it! What&rsquo;s next? We shall look at some tools to build these container images. Stay tuned.</p>
 
@@ -1759,6 +1742,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

@@ -957,8 +957,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">jsonData</span><span class="p">))</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>You can try and execute this in the development environment first, where you already have Azure CLI credentials locally.</p>
 <div class="highlight"><div class="chroma">
@@ -990,8 +989,7 @@
 </span></span><span class="line"><span class="cl">--------------------------------------------------------------------------------
 </span></span><span class="line"><span class="cl">connecting to 169.254.169.254:80: connecting to 169.254.169.254:80: dial tcp 169.254.169.254:80: connectex: A socket operation was attempted to an unreachable network.
 </span></span><span class="line"><span class="cl">--------------------------------------------------------------------------------
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span> status <span class="m">1</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span> status <span class="m">1</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As you can see in the output here, the <code>DefaultAzureCredential</code> type attempted <code>EnvironmentCredential</code> and <code>WorkloadIdentityCredential</code> in that order. It then attempted the ManagedIdentityCredential type but failed with an error the &ldquo;socket operation was attempted to an unreachable network&rdquo;. So, what happened to the final type &ndash; <code>AzureCliCredential</code>? Interestingly, it is working as designed. According to the <a href="https://github.com/Azure/azure-sdk-for-go/issues/21029#issuecomment-1601175070">response on one of the issues</a>, the reason this method errors out is because of the way the <code>ManagedIdentityCredential</code> constructor exits once it fails to connect to the metadata endpoint causing the <code>NewDefaultAzureCredential</code> to skip attempting Azure CLI credential.</p>
 <p>However, if you execute the same code inside an Azure service (like an Azure VM), you will see that it attempts the Azure CLI credential.</p>
@@ -1022,8 +1020,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nx">WorkloadIdentityCredential</span><span class="p">:</span><span class="w"> </span><span class="nx">no</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="nx">ID</span><span class="w"> </span><span class="nx">specified</span><span class="p">.</span><span class="w"> </span><span class="nx">Check</span><span class="w"> </span><span class="nx">pod</span><span class="w"> </span><span class="nx">configuration</span><span class="w"> </span><span class="nx">or</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="nx">ClientID</span><span class="w"> </span><span class="nx">in</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">options</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nx">ManagedIdentityCredential</span><span class="p">:</span><span class="w"> </span><span class="nx">no</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">identity</span><span class="w"> </span><span class="nx">is</span><span class="w"> </span><span class="nx">assigned</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">this</span><span class="w"> </span><span class="nx">resource</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nx">AzureCLICredential</span><span class="p">:</span><span class="w"> </span><span class="nx">Azure</span><span class="w"> </span><span class="nx">CLI</span><span class="w"> </span><span class="nx">not</span><span class="w"> </span><span class="nx">found</span><span class="w"> </span><span class="nx">on</span><span class="w"> </span><span class="nx">path</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="nx">exit</span><span class="w"> </span><span class="nx">status</span><span class="w"> </span><span class="mi">1</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="nx">exit</span><span class="w"> </span><span class="nx">status</span><span class="w"> </span><span class="mi">1</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The managed identity endpoint can still be reached inside an Azure VM, even when there is no managed identity (system or user-assigned). This endpoint does not result in a valid token credential; therefore, the <code>NewDefaultAzureCredential()</code> method attempts the Azure CLI credential check.</p>
 <p>As you see above, the <code>NewDefaultAzureCredential()</code> method implements a fixed authentication flow in a specific order. What if you want to customize the authentication flow? You can achieve that using <code>ChainedTokenCredential</code>.</p>
@@ -1170,8 +1167,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">jsonData</span><span class="p">))</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>As shown in the code, you must first create the credentials you want to chain together and use the <code>NewChainedTokenCredential()</code> method to specify the authentication flow. When you run this example, you will see that the authentication flow attempts each credential type.</p>
 <div class="highlight"><div class="chroma">
@@ -1197,8 +1193,7 @@
 </span></span><span class="line"><span class="cl">        ManagedIdentityCredential: no default identity is assigned to this resource
 </span></span><span class="line"><span class="cl">        ClientSecretCredential: unable to resolve an endpoint: http call<span class="o">(</span>https://login.microsoftonline.com/test/v2.0/.well-known/openid-configuration<span class="o">)(</span>GET<span class="o">)</span> error: reply status code was 400:
 </span></span><span class="line"><span class="cl"><span class="o">{</span><span class="s2">&#34;error&#34;</span>:<span class="s2">&#34;invalid_tenant&#34;</span>,<span class="s2">&#34;error_description&#34;</span>:<span class="s2">&#34;AADSTS90002: Tenant &#39;test&#39; not found. Check to make sure you have the correct tenant ID and are signing into the correct cloud. Check with your subscription administrator, this may happen if there are no active subscriptions for the tenant.\r\nTrace ID: a21cd225-ecbb-419b-b73e-b78595fd6c00\r\nCorrelation ID: 38d1a094-e650-495e-8797-134839aad177\r\nTimestamp: 2023-08-17 04:54:12Z&#34;</span>,<span class="s2">&#34;error_codes&#34;</span>:<span class="o">[</span>90002<span class="o">]</span>,<span class="s2">&#34;timestamp&#34;</span>:<span class="s2">&#34;2023-08-17 04:54:12Z&#34;</span>,<span class="s2">&#34;trace_id&#34;</span>:<span class="s2">&#34;a21cd225-ecbb-419b-b73e-b78595fd6c00&#34;</span>,<span class="s2">&#34;correlation_id&#34;</span>:<span class="s2">&#34;38d1a094-e650-495e-8797-134839aad177&#34;</span>,<span class="s2">&#34;error_uri&#34;</span>:<span class="s2">&#34;https://login.microsoftonline.com/error?code=90002&#34;</span><span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span> status <span class="m">1</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span> status <span class="m">1</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>With <code>ChainedTokenCredential</code>, you can customize the authentication flow and use it across both development and production environments.</p>
 
@@ -1734,6 +1729,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>

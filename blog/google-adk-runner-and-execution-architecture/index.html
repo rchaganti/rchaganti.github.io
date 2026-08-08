@@ -1080,8 +1080,7 @@
 </span></span><span class="line"><span class="cl">        <span class="n">current_state</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">state</span>
 </span></span><span class="line"><span class="cl">        
 </span></span><span class="line"><span class="cl">        <span class="c1"># Use ctx.end_invocation = True to terminate early</span>
-</span></span><span class="line"><span class="cl">        <span class="o">...</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="o">...</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>It is important to understand the hierarchy of concepts within an invocation. An <em>invocation</em> starts with a user message and ends with a final response. It can contain one or multiple <em>agent calls</em>, for example, when using agent transfer or <code>AgentTool</code>. Each agent call is handled by <code>agent.run_async()</code>. An LLM agent call can contain one or multiple <em>steps</em>. Each step calls the LLM once and yields its response. If the LLM requests tool calls, those are executed within the same step.</p>
 <p>State variables prefixed with <code>temp:</code> are strictly scoped to a single invocation and discarded afterwards. When a parent agent calls a sub-agent, it passes its <code>InvocationContext</code> to the sub-agent. This means the entire chain of agent calls shares the same invocation ID and the same <code>temp:</code> state.</p>
@@ -1130,8 +1129,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">app_name</span><span class="o">=</span><span class="s2">&#34;my_app&#34;</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">session_service</span><span class="o">=</span><span class="n">session_service</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Once you have a runner, you interact with it using one of its run methods.</p>
 <h3 id="run_async">run_async</h3>
@@ -1171,8 +1169,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">new_message</span><span class="o">=</span><span class="n">user_msg</span>
 </span></span><span class="line"><span class="cl"><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">is_final_response</span><span class="p">()</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="run-synchronous">run (synchronous)</h3>
 <p>A synchronous <code>Runner.run</code> method exists for convenience in simple scripts or testing environments. Internally, it calls <code>Runner.run_async</code> and manages the async event loop execution for you.</p>
@@ -1197,8 +1194,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">new_message</span><span class="o">=</span><span class="n">user_msg</span>
 </span></span><span class="line"><span class="cl"><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">is_final_response</span><span class="p">()</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>For production applications, especially web servers, we should design applications to be asynchronous using <code>run_async</code> for best performance.</p>
 <h3 id="run_live">run_live</h3>
@@ -1256,8 +1252,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">run_config</span><span class="o">=</span><span class="n">run_config</span>
 </span></span><span class="line"><span class="cl"><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>One <code>InvocationContext</code> corresponds to one <code>run_live()</code> loop. It is created when you call <code>run_live()</code> and persists for the entire streaming session.</p>
 <h3 id="runconfig">RunConfig</h3>
@@ -1281,8 +1276,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">max_llm_calls</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">save_input_blobs_as_artifacts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">    <span class="n">support_cfc</span><span class="o">=</span><span class="kc">False</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="p">)</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Some of the key properties of the <code>RunConfig</code> class are:</p>
 <table>
@@ -1526,8 +1520,7 @@
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;State: last_city=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;last_city&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;State: user:query_count=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user:query_count&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl"><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>When you run this, you can observe the <code>Runner</code> orchestrating the full event loop across multiple turns, with the session service persisting state between them.</p>
 <div class="highlight"><div class="chroma">
@@ -1555,8 +1548,7 @@
 </span></span><span class="line"><span class="cl">Agent: The weather in Tokyo is sunny with a temperature of <span class="m">22</span> degrees.
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">State: <span class="nv">last_city</span><span class="o">=</span>Tokyo
-</span></span><span class="line"><span class="cl">State: user:query_count<span class="o">=</span><span class="m">2</span>
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">State: user:query_count<span class="o">=</span><span class="m">2</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>Notice how the <code>Runner</code> drives the entire lifecycle. It receives each user message, passes it to the agent, processes every event the agent generates, including tool call events where state is modified via <code>ToolContext</code>, commits the <code>state_delta</code> through the <code>SessionService</code>, and yields the final response events back to our code. The <code>user:query_count</code> counter increases across turns because the user-scoped state is persisted by the session service between invocations. The agent&rsquo;s instruction template <code>{user:query_count?}</code> is resolved by the framework on each turn using the latest committed state.</p>
 <p>Understanding the <code>Runner</code> and its execution architecture is essential for building reliable agent applications with Google ADK. The <code>Runner</code> is the piece that connects everything we have covered so far in this series, from sessions and state to callbacks and tools. Every state change flows through events, every event flows through the <code>Runner</code>, and the <code>Runner</code> ensures consistency through the yield/pause/process/resume cycle. I recommend experimenting with different <code>RunConfig</code> settings and tracing the events your agents emit to build a deeper understanding of this architecture.</p>
@@ -2220,6 +2212,7 @@
   <script src="/js/code-copy.js"></script>
   <script src="/js/toc-scrollspy.js"></script>
   <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
 </article>
 
   </main>
