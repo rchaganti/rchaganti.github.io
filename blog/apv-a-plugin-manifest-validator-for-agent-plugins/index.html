@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  
+  <script>
+    (function() {
+      const stored = localStorage.getItem('theme-preference');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>apv: A plugin manifest validator for agent plugins | Ravikanth Chaganti</title>
+
+  
+  <meta name="description" content="In an earlier article, I introduced the Agent Plugin specification for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest (plugin.json) that agents and clients use to load the necessary agent resources. This manifest, as seen in the earlier article, has a strict schema. As I started exploring agent plugins for packaging skills and MCP configurations, I felt the need to quickly check whether the plugin manifest conforms to the schema. So, I built one!">
+  <meta name="author" content="Ravikanth Chaganti">
+
+  
+  
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  
+
+  
+  <meta property="og:title" content="apv: A plugin manifest validator for agent plugins">
+  <meta property="og:description" content="In an earlier article, I introduced the Agent Plugin specification for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest (plugin.json) that agents and clients use to load the necessary agent resources. This manifest, as seen in the earlier article, has a strict schema. As I started exploring agent plugins for packaging skills and MCP configurations, I felt the need to quickly check whether the plugin manifest conforms to the schema. So, I built one!">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ravichaganti.com/blog/apv-a-plugin-manifest-validator-for-agent-plugins/">
+  <meta property="og:site_name" content="Ravikanth Chaganti">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="og:image" content="https://ravichaganti.com/images/agentplugins.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="apv: A plugin manifest validator for agent plugins">
+
+  
+  
+    <meta property="article:published_time" content="2026-08-09T00:00:00Z">
+    <meta property="article:modified_time" content="2026-08-09T00:00:00Z">
+    <meta property="article:author" content="Ravikanth Chaganti">
+    <meta property="article:section" content="Agents">
+    
+  
+
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="apv: A plugin manifest validator for agent plugins">
+  <meta name="twitter:description" content="In an earlier article, I introduced the Agent Plugin specification for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest (plugin.json) that agents and clients use to load the necessary agent resources. This manifest, as seen in the earlier article, has a strict schema. As I started exploring agent plugins for packaging skills and MCP configurations, I felt the need to quickly check whether the plugin manifest conforms to the schema. So, I built one!">
+  <meta name="twitter:image" content="https://ravichaganti.com/images/agentplugins.jpg">
+  <meta name="twitter:site" content="@ravikanth">
+
+  
+  <link rel="canonical" href="https://ravichaganti.com/blog/apv-a-plugin-manifest-validator-for-agent-plugins/">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
+
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+
+  
+  <link rel="stylesheet" href="/css/main.css">
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
+
+  
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "apv: A plugin manifest validator for agent plugins",
+  "description": "In an earlier article, I introduced the Agent Plugin specification for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest …",
+  "articleBody": "\"In an earlier article, I introduced the Agent Plugin specification for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest (plugin.json) that agents and clients use to load the necessary agent resources. This manifest, as seen in the earlier article, has a strict schema. As I started exploring agent plugins for packaging skills and MCP configurations, I felt the need to quickly check whether the plugin manifest conforms to the schema. So, I built one!\\nIntroducing apv apv (Agent Plugin Validator) is a lightweight, high-performance, schema-driven Go CLI tool for validating Agent Plugin manifests (plugin.json) and MCP configurations (mcp.json) against the open Agent Plugins v1.0.0 specification.\\n🎯 100% Schema-Driven Validation: Zero hardcoded field assumptions in validator code. ⚡ Agent \\u0026amp; CI/CD Ready: --format json output for programmatic consumption by AI agents and pipeline steps. --quiet / -q silent mode returning deterministic exit codes (0 = valid, 1 = invalid, 2 = usage/runtime error). TTY auto-detection and standard NO_COLOR environment variable support. 📦 Embedded \\u0026amp; Cached Schema Lifecycle: Embedded v1.0.0 default schema fallback (plugin.schema.json). apv schema update [url] to fetch and cache updated schemas locally (~/.apv/schemas/). --schema \\u0026lt;path|url\\u0026gt; for one-off custom schema validation. 🚀 Shell Autocompletion: Built-in tab completion for Bash, Zsh, Fish, and PowerShell (apv completion \\u0026lt;shell\\u0026gt;) with .json file completion for validate and --schema. ⚠️ Spec-Compliant Warning Handling: Unrecognized top-level fields are classified as Warnings (⚠) and ignored per Spec §5.2 without failing validation. To install apv, you can run:\\n1 go install github.com/rchaganti/agent-plugin-validator@latest Or you can download a release from the repository\\u0026rsquo;s releases page.\\nTo validate a plugin manifest,\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 # Validate single file c:\\\\\\u0026gt; apv validate plugin.json ✓ Using schema: Agent Plugins Manifest (embedded default) ✓ .\\\\plugin.json is VALID (with 1 warning) ⚠ /non-schema unknown top-level field \\u0026#39;non-schema\\u0026#39; (ignored per spec §5.2) # Validate entire plugin folder (auto-discovers plugin.json and mcp.json) c:\\\\\\u0026gt; apv validate ./my-plugin-folder ✓ Using schema: Agent Plugins Manifest (embedded default) ✓ ./my-plugin-folder/plugin.json is VALID ✓ Using schema: Agent Plugins MCP Configuration (embedded default) ✓ ./my-plugin-folder/mcp.json is VALID If you want to use apv within a CI/CD pipeline or use it in a scripted manner, you can change the output format to JSON.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 PS C:\\\\\\u0026gt; apv validate plugin.json --format=json { \\u0026#34;valid\\u0026#34;: true, \\u0026#34;schema\\u0026#34;: { \\u0026#34;source\\u0026#34;: \\u0026#34;embedded default\\u0026#34;, \\u0026#34;path\\u0026#34;: \\u0026#34;(embedded)\\u0026#34;, \\u0026#34;id\\u0026#34;: \\u0026#34;https://agent-plugins.org/schemas/1.0.0/plugin.schema.json\\u0026#34;, \\u0026#34;title\\u0026#34;: \\u0026#34;Agent Plugins Manifest\\u0026#34; }, \\u0026#34;errors\\u0026#34;: null, \\u0026#34;warnings\\u0026#34;: [ { \\u0026#34;path\\u0026#34;: \\u0026#34;/non-schema\\u0026#34;, \\u0026#34;message\\u0026#34;: \\u0026#34;unknown top-level field \\u0026#39;non-schema\\u0026#39; (ignored per spec §5.2)\\u0026#34; } ] } By default, apv carries an embedded version of the schema of both plugin and mcp JSON files.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 PS C:\\\\temp\\u0026gt; .\\\\apv.exe schema show Active Schemas: [manifest] Title: Agent Plugins Manifest ID: https://agent-plugins.org/schemas/1.0.0/plugin.schema.json Source: embedded default Path: (embedded) [mcp] Title: Agent Plugins MCP Configuration ID: https://agent-plugins.org/schemas/1.0.0/mcp.schema.json Source: embedded default Path: (embedded) You can update the schema to an updated version available in the agent plugins spec repository.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 PS C:\\\\temp\\u0026gt; .\\\\apv.exe schema update ✓ Schema (manifest) successfully updated and cached. ID: https://agent-plugins.org/schemas/1.0.0/plugin.schema.json Path: C:\\\\Users\\\\ravik\\\\.apv\\\\schemas\\\\plugin.schema.json ✓ Schema (mcp) successfully updated and cached. ID: https://agent-plugins.org/schemas/1.0.0/mcp.schema.json Path: C:\\\\Users\\\\ravik\\\\.apv\\\\schemas\\\\mcp.schema.json PS C:\\\\temp\\u0026gt; .\\\\apv.exe schema show Active Schemas: [manifest] Title: Agent Plugins Manifest ID: https://agent-plugins.org/schemas/1.0.0/plugin.schema.json Source: cached Path: C:\\\\Users\\\\ravik\\\\.apv\\\\schemas\\\\plugin.schema.json [mcp] Title: Agent Plugins MCP Configuration ID: https://agent-plugins.org/schemas/1.0.0/mcp.schema.json Source: cached Path: C:\\\\Users\\\\ravik\\\\.apv\\\\schemas\\\\mcp.schema.json You can also specify the path to different plugin and MCP schema files within the validate command.\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 PS C:\\\\temp\\u0026gt; .\\\\apv validate --help Validate an Agent Plugin manifest (plugin.json) or MCP configuration (mcp.json) against the canonical Agent Plugins v1.0.0 JSON schema. If a directory path is passed, apv automatically discovers and validates plugin.json and mcp.json files inside it. Pass \\u0026#39;-\\u0026#39; as the file argument to read from standard input. Usage: apv validate \\u0026lt;file|dir\\u0026gt; [flags] Flags: -f, --format string Output format (text or json) (default \\u0026#34;text\\u0026#34;) -h, --help help for validate -q, --quiet Quiet mode (suppress output, exit code only) -s, --schema string Custom schema override (path, URL, or key=value, e.g. manifest=p.json,mcp=m.json) --schema-manifest string Custom Manifest schema override (path or URL) --schema-mcp string Custom MCP schema override (path or URL) -t, --type string Schema type: auto, manifest, mcp (default \\u0026#34;auto\\u0026#34;) Global Flags: --color string Control color output (auto, always, never) (default \\u0026#34;auto\\u0026#34;) I find this tiny utility useful as I start creating and sharing agent plugin packages. This is an open-source utility and available for you to contribute bug fixes or enhancements!\\n\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/apv-a-plugin-manifest-validator-for-agent-plugins\/",
+  "datePublished": "2026-08-09T00:00:00Z",
+  "dateModified": "2026-08-09T00:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti"
+    ,"sameAs": ["https://twitter.com/ravikanth"]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Ravikanth Chaganti",
+    "sameAs": ["https://twitter.com/ravikanth"]
+  },
+  
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:\/\/ravichaganti.com\/images\/agentplugins.jpg",
+    "width": 1200,
+    "height": 630
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/ravichaganti.com\/blog\/apv-a-plugin-manifest-validator-for-agent-plugins\/"
+  },
+  
+  "articleSection": "\"Agents\"",
+  
+  
+  
+  "timeRequired": "PT4M",
+  
+  "inLanguage": "en-US",
+  "isAccessibleForFree": true
+}
+</script>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/ravichaganti.com\/"
+    }
+    ,
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Blog",
+      "item": "https:\/\/ravichaganti.com\/blog/"
+    }
+    
+    ,
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Agents",
+      "item": "https:\/\/ravichaganti.com\/categories/agents/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "apv: A plugin manifest validator for agent plugins",
+      "item": "https:\/\/ravichaganti.com\/blog\/apv-a-plugin-manifest-validator-for-agent-plugins\/"
+    }
+    
+    
+  ]
+}
+</script>
+
+
+</head>
+
+<body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
+  <header class="sticky top-0 z-50 bg-white dark:bg-dark-bg-secondary shadow-md relative">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      
+      <div class="flex items-center">
+        <a href="https://ravichaganti.com/" class="flex items-center gap-3 text-gray-900 dark:text-dark-text hover:text-primary transition-colors no-underline group">
+          
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="2" class="group-hover:stroke-primary transition-colors"/>
+            <text x="20" y="26" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="currentColor">RC</text>
+          </svg>
+          
+          <div class="flex flex-col leading-tight">
+            <span class="text-xs sm:text-sm font-semibold">Cloud Native</span>
+            <span class="text-xs sm:text-sm font-semibold">Agentic AI</span>
+            <span class="text-xs sm:text-sm font-semibold">Infrastructure</span>
+          </div>
+        </a>
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-8">
+        
+          <a href="/blog/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Blog
+          </a>
+        
+          <a href="/books/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Books
+          </a>
+        
+          <a href="https://learn.ravichaganti.com" target="_blank" rel="noopener noreferrer" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Courses
+          </a>
+        
+          <a href="https://www.linkedin.com/build-relation/newsletter-follow?entityUrn=7418529089365520384" target="_blank" rel="noopener noreferrer" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            Newsletter
+          </a>
+        
+          <a href="/about/" class="text-gray-700 dark:text-dark-text-secondary hover:text-primary font-medium transition-all no-underline hover:underline hover:decoration-blue-500 hover:decoration-2 hover:underline-offset-4">
+            About
+          </a>
+        
+      </div>
+
+      
+      <div class="hidden md:flex items-center space-x-4 relative" id="social-search-container">
+        
+        <div id="social-icons" class="flex items-center space-x-3">
+          
+
+<a href="https://twitter.com/ravikanth" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Twitter">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+  </svg>
+</a>
+
+
+
+<a href="https://github.com/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="GitHub">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+  </svg>
+</a>
+
+
+
+<a href="https://linkedin.com/in/rchaganti" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="LinkedIn">
+  <svg class="w-5 h-5 text-gray-700 dark:text-dark-text hover:text-primary dark:hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+</a>
+
+
+
+
+        </div>
+
+        
+        <button
+          id="theme-toggle"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="search-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <div id="search-box" class="hidden absolute top-full right-0 mt-2 w-80 bg-white dark:bg-dark-bg-secondary shadow-lg p-4 z-50 rounded-lg">
+          
+
+
+
+
+
+<div class="relative search-container" data-mode="desktop">
+  <input
+    type="text"
+    id="search-input-desktop"
+    placeholder="Search articles..."
+    class="search-input w-full px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results-desktop" class="search-results absolute top-full mt-2 w-full bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-80 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+
+<script>
+(function() {
+  let headerFuse;
+  let headerSearchData = [];
+  let searchInitialized = false;
+
+  
+  fetch('/index.json')
+    .then(response => response.json())
+    .then(data => {
+      headerSearchData = data;
+
+      
+      const options = {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'excerpt', weight: 2 },
+          { name: 'content', weight: 1 },
+          { name: 'categories', weight: 1.5 },
+          { name: 'series', weight: 1.5 }
+        ],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+        minMatchCharLength: 2
+      };
+
+      headerFuse = new Fuse(headerSearchData, options);
+      searchInitialized = true;
+    })
+    .catch(error => console.error('Error loading search index:', error));
+
+  
+  function renderResults(results, resultsContainer) {
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="p-4 text-center text-gray-500 dark:text-dark-text-secondary text-sm">No results found</div>';
+      resultsContainer.classList.remove('hidden');
+      return;
+    }
+
+    resultsContainer.innerHTML = results.slice(0, 5).map(result => {
+      const item = result.item;
+      const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      return `
+        <a href="${item.permalink}" class="block p-3 hover:bg-gray-50 dark:hover:bg-dark-bg-tertiary border-b border-gray-100 dark:border-dark-border last:border-b-0 no-underline">
+          <div class="font-medium text-sm text-gray-900 dark:text-dark-text mb-1">${item.title}</div>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-xs text-gray-500 dark:text-dark-text-secondary">${date}</span>
+            ${item.categories ? item.categories.slice(0, 2).map(cat => `
+              <span class="inline-block px-1.5 py-0.5 text-xs rounded bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400">
+                ${cat}
+              </span>
+            `).join('') : ''}
+          </div>
+          ${item.excerpt ? `<p class="text-xs text-gray-600 dark:text-dark-text-secondary line-clamp-2">${item.excerpt}</p>` : ''}
+        </a>
+      `;
+    }).join('');
+
+    resultsContainer.classList.remove('hidden');
+  }
+
+  
+  function initSearchContainers() {
+    const containers = document.querySelectorAll('.search-container');
+
+    containers.forEach(container => {
+      const searchInput = container.querySelector('.search-input');
+      const searchResults = container.querySelector('.search-results');
+
+      if (!searchInput || !searchResults) return;
+
+      
+      searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+
+        if (query.length < 2 || !searchInitialized) {
+          searchResults.classList.add('hidden');
+          return;
+        }
+
+        const results = headerFuse.search(query);
+        renderResults(results, searchResults);
+      });
+
+      
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          searchResults.classList.add('hidden');
+          searchInput.blur();
+        }
+      });
+    });
+
+    
+    function closeAllResults(e) {
+      const containers = document.querySelectorAll('.search-container');
+      containers.forEach(container => {
+        const searchResults = container.querySelector('.search-results');
+        if (searchResults && !container.contains(e.target)) {
+          searchResults.classList.add('hidden');
+        }
+      });
+    }
+
+    document.addEventListener('click', closeAllResults);
+    document.addEventListener('touchend', closeAllResults);
+  }
+
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearchContainers);
+  } else {
+    initSearchContainers();
+  }
+})();
+</script>
+
+
+        </div>
+      </div>
+
+      
+      <div class="md:hidden flex items-center gap-2">
+        
+        <button id="search-toggle-mobile" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors" aria-label="Search">
+          <svg class="w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+
+        
+        <button
+          id="theme-toggle-mobile"
+          class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded-full transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          
+          <svg class="theme-icon-sun w-5 h-5 text-gray-700 dark:text-dark-text hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+
+          
+          <svg class="theme-icon-moon w-5 h-5 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        
+        <button id="mobile-menu-toggle" class="p-2 hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary rounded" aria-label="Menu">
+          <svg class="w-6 h-6 text-gray-700 dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    
+    <div id="search-box-mobile" class="hidden md:hidden absolute top-full left-0 right-0 bg-white dark:bg-dark-bg-secondary shadow-lg p-4 z-50">
+      
+
+
+
+
+
+<div class="relative search-container" data-mode="mobile">
+  <input
+    type="text"
+    id="search-input-mobile"
+    placeholder="Search articles..."
+    class="search-input w-full px-4 py-2 text-sm border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-dark-text rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+    aria-label="Search"
+    autocomplete="off"
+  >
+  <div id="search-results-mobile" class="search-results absolute top-full mt-2 w-full bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border rounded-lg shadow-xl hidden max-h-80 overflow-y-auto z-50">
+    
+  </div>
+</div>
+
+
+
+
+    </div>
+
+    
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+      
+        <a href="/blog/" class="block py-3 px-2 text-base text-gray-700 dark:text-dark-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors no-underline rounded-md min-h-[44px] flex items-center">
+          Blog
+        </a>
+      
+        <a href="/books/" class="block py-3 px-2 text-base text-gray-700 dark:text-dark-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors no-underline rounded-md min-h-[44px] flex items-center">
+          Books
+        </a>
+      
+        <a href="https://learn.ravichaganti.com" target="_blank" rel="noopener noreferrer" class="block py-3 px-2 text-base text-gray-700 dark:text-dark-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors no-underline rounded-md min-h-[44px] flex items-center">
+          Courses
+        </a>
+      
+        <a href="https://www.linkedin.com/build-relation/newsletter-follow?entityUrn=7418529089365520384" target="_blank" rel="noopener noreferrer" class="block py-3 px-2 text-base text-gray-700 dark:text-dark-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors no-underline rounded-md min-h-[44px] flex items-center">
+          Newsletter
+        </a>
+      
+        <a href="/about/" class="block py-3 px-2 text-base text-gray-700 dark:text-dark-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors no-underline rounded-md min-h-[44px] flex items-center">
+          About
+        </a>
+      
+    </div>
+  </nav>
+
+  
+  
+    <div id="reading-progress" class="absolute bottom-0 left-0 w-full h-1 bg-primary transition-all duration-200 z-10" style="width: 0%; max-width: 100%;"></div>
+  
+</header>
+
+
+<script>
+  document.getElementById('mobile-menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+
+  
+  document.getElementById('search-toggle')?.addEventListener('click', function() {
+    const searchBox = document.getElementById('search-box');
+    searchBox?.classList.toggle('hidden');
+    if (!searchBox?.classList.contains('hidden')) {
+      searchBox?.querySelector('.search-input')?.focus();
+    }
+  });
+
+  
+  document.getElementById('search-toggle-mobile')?.addEventListener('click', function() {
+    const searchBoxMobile = document.getElementById('search-box-mobile');
+    searchBoxMobile?.classList.toggle('hidden');
+    if (!searchBoxMobile?.classList.contains('hidden')) {
+      searchBoxMobile?.querySelector('.search-input')?.focus();
+    }
+  });
+
+  
+  document.addEventListener('click', function(e) {
+    const searchBox = document.getElementById('search-box');
+    const searchToggle = document.getElementById('search-toggle');
+    if (searchBox && searchToggle && !searchBox.contains(e.target) && !searchToggle.contains(e.target)) {
+      searchBox.classList.add('hidden');
+    }
+  });
+
+  
+  document.addEventListener('click', function(e) {
+    const searchBoxMobile = document.getElementById('search-box-mobile');
+    const searchToggleMobile = document.getElementById('search-toggle-mobile');
+    if (searchBoxMobile && searchToggleMobile && !searchBoxMobile.contains(e.target) && !searchToggleMobile.contains(e.target)) {
+      searchBoxMobile.classList.add('hidden');
+    }
+  });
+</script>
+
+
+  <main class="flex-grow">
+    
+<article class="container mx-auto px-4 sm:px-6 md:px-4 py-8 sm:py-10 md:py-12">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-[75%_25%] gap-8">
+      
+      <div class="min-w-0">
+        
+        <header class="mb-8">
+          
+          <nav class="text-xs sm:text-sm mb-4">
+            <ol class="flex items-center space-x-2 text-gray-600 dark:text-dark-text-secondary">
+              <li><a href="https://ravichaganti.com/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+              <li><span class="mx-2">/</span></li>
+              <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
+              
+              <li><span class="mx-2">/</span></li>
+              <li><a href="/categories/agents/" class="hover:text-primary dark:hover:text-blue-400">Agents</a></li>
+              
+            </ol>
+          </nav>
+
+          
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
+            apv: A plugin manifest validator for agent plugins
+          </h1>
+
+          
+          <div
+            class="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-sm sm:text-base text-gray-600 dark:text-dark-text-secondary mb-6">
+            
+            <div class="flex items-center">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <time datetime=" 2026-08-09">August 9, 2026</time>
+            </div>
+
+            
+            
+            <span>•</span>
+            <div class="flex items-center">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>4 min read</span>
+            </div>
+            
+
+            
+            
+          </div>
+
+          
+          <div class="flex flex-wrap gap-2 mb-6">
+            
+            
+            <a href="/categories/agents/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Agents
+            </a>
+            
+            <a href="/categories/agent-plugins/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Agent Plugins
+            </a>
+            
+            <a href="/categories/open-source/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Open Source
+            </a>
+            
+            
+            
+          </div>
+
+          
+          
+          <div
+            class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
+            The agent plugins specification defines a packaging format for agent resources such as skills and MCP configurations. apv is a plugin manifest validator.
+          </div>
+          
+        </header>
+
+        
+        
+
+
+
+
+        
+        <div class="block lg:hidden mobile-toc-container">
+          
+
+  
+    <div class="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-gray-200 dark:border-dark-border">
+      
+      <button
+        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-primary dark:hover:text-blue-400 transition-colors"
+        aria-expanded="false"
+        aria-controls="toc-content"
+      >
+        <span class="flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+          </svg>
+          Table of Contents
+        </span>
+        <svg
+          id="toc-chevron"
+          class="w-4 h-4 transform transition-transform -rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      
+      <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introducing-apv">Introducing apv</a></li>
+  </ul>
+</nav>
+      </nav>
+    </div>
+
+    <style>
+      #toc-content ul {
+        list-style: none;
+        padding-left: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content > nav > ul {
+        padding-left: 0;
+      }
+      #toc-content li {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      #toc-content a {
+        color: #374151;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      #toc-content a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+      }
+       
+      .dark #toc-content a {
+        color: #cbd5e1;
+      }
+      .dark #toc-content a:hover {
+        color: #60a5fa;
+      }
+    </style>
+  
+
+
+        </div>
+
+        <style>
+          @media (min-width: 1024px) {
+            .mobile-toc-container {
+              display: none !important;
+            }
+
+             
+            html,
+            body,
+            main,
+            article,
+            .container,
+            .max-w-7xl,
+            .grid,
+            aside {
+              overflow: visible !important;
+              height: auto !important;
+            }
+
+             
+            .sidebar-sticky-reinforced {
+              position: -webkit-sticky !important;
+              position: sticky !important;
+              top: 130px !important;
+              z-index: 100;
+              align-self: start;
+              height: fit-content;
+            }
+          }
+        </style>
+
+        
+        <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
+          <p>In an <a href="https://ravichaganti.com/blog/agent-plugins-package-reusable-agent-components-into-portable-and-interoperable-plugins/">earlier article</a>, I introduced the <a href="https://agent-plugins.org/">Agent Plugin specification</a> for packaging agent resources such as skills and MCP configurations. This packaging specification requires a plugin manifest (<code>plugin.json</code>) that agents and clients use to load the necessary agent resources. This manifest, as seen in the earlier article, has a strict schema. As I started exploring agent plugins for packaging skills and MCP configurations, I felt the need to quickly check whether the plugin manifest conforms to the schema. So, I built one!</p>
+<h2 id="introducing-apv">Introducing apv</h2>
+<p><code>apv</code> (<a href="https://github.com/rchaganti/agent-plugin-validator"><strong>A</strong>gent <strong>P</strong>lugin <strong>V</strong>alidator</a>) is a lightweight, high-performance, schema-driven Go CLI tool for validating Agent Plugin manifests (<code>plugin.json</code>) and MCP configurations (<code>mcp.json</code>) against the open <a href="https://agent-plugins.org/specification">Agent Plugins v1.0.0 specification</a>.</p>
+<ul>
+<li>🎯 <strong>100% Schema-Driven Validation</strong>: Zero hardcoded field assumptions in validator code.</li>
+<li>⚡ <strong>Agent &amp; CI/CD Ready</strong>:
+<ul>
+<li><code>--format json</code> output for programmatic consumption by AI agents and pipeline steps.</li>
+<li><code>--quiet</code> / <code>-q</code> silent mode returning deterministic exit codes (<code>0</code> = valid, <code>1</code> = invalid, <code>2</code> = usage/runtime error).</li>
+<li>TTY auto-detection and standard <code>NO_COLOR</code> environment variable support.</li>
+</ul>
+</li>
+<li>📦 <strong>Embedded &amp; Cached Schema Lifecycle</strong>:
+<ul>
+<li>Embedded v1.0.0 default schema fallback (<code>plugin.schema.json</code>).</li>
+<li><code>apv schema update [url]</code> to fetch and cache updated schemas locally (<code>~/.apv/schemas/</code>).</li>
+<li><code>--schema &lt;path|url&gt;</code> for one-off custom schema validation.</li>
+</ul>
+</li>
+<li>🚀 <strong>Shell Autocompletion</strong>: Built-in tab completion for Bash, Zsh, Fish, and PowerShell (<code>apv completion &lt;shell&gt;</code>) with <code>.json</code> file completion for <code>validate</code> and <code>--schema</code>.</li>
+<li>⚠️ <strong>Spec-Compliant Warning Handling</strong>:
+<ul>
+<li>Unrecognized top-level fields are classified as <strong>Warnings</strong> (<code>⚠</code>) and ignored per Spec §5.2 without failing validation.</li>
+</ul>
+</li>
+</ul>
+<p>To install <code>apv</code>, you can run:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">go install github.com/rchaganti/agent-plugin-validator@latest</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Or you can download a release from the repository&rsquo;s <a href="https://github.com/rchaganti/agent-plugin-validator/releases">releases page</a>.</p>
+<p>To validate a plugin manifest,</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># Validate single file</span>
+</span></span><span class="line"><span class="cl">c:<span class="se">\&gt;</span> apv validate plugin.json
+</span></span><span class="line"><span class="cl">✓ Using schema: Agent Plugins Manifest <span class="o">(</span>embedded default<span class="o">)</span>
+</span></span><span class="line"><span class="cl">✓ .<span class="se">\p</span>lugin.json is VALID <span class="o">(</span>with <span class="m">1</span> warning<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  ⚠ /non-schema    unknown top-level field <span class="s1">&#39;non-schema&#39;</span> <span class="o">(</span>ignored per spec §5.2<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Validate entire plugin folder (auto-discovers plugin.json and mcp.json)</span>
+</span></span><span class="line"><span class="cl">c:<span class="se">\&gt;</span> apv validate ./my-plugin-folder
+</span></span><span class="line"><span class="cl">✓ Using schema: Agent Plugins Manifest <span class="o">(</span>embedded default<span class="o">)</span>
+</span></span><span class="line"><span class="cl">✓ ./my-plugin-folder/plugin.json is VALID
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">✓ Using schema: Agent Plugins MCP Configuration <span class="o">(</span>embedded default<span class="o">)</span>
+</span></span><span class="line"><span class="cl">✓ ./my-plugin-folder/mcp.json is VALID</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If you want to use <code>apv</code> within a CI/CD pipeline or use it in a scripted manner, you can change the output format to JSON.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\&gt;</span> apv validate plugin.json --format<span class="o">=</span>json
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;valid&#34;</span>: true,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;schema&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;source&#34;</span>: <span class="s2">&#34;embedded default&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;path&#34;</span>: <span class="s2">&#34;(embedded)&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;https://agent-plugins.org/schemas/1.0.0/plugin.schema.json&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;title&#34;</span>: <span class="s2">&#34;Agent Plugins Manifest&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;errors&#34;</span>: null,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;warnings&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;path&#34;</span>: <span class="s2">&#34;/non-schema&#34;</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;message&#34;</span>: <span class="s2">&#34;unknown top-level field &#39;non-schema&#39; (ignored per spec §5.2)&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>By default, <code>apv</code> carries an embedded version of the schema of both plugin and mcp JSON files.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\t</span>emp&gt; .<span class="se">\a</span>pv.exe schema show
+</span></span><span class="line"><span class="cl">Active Schemas:
+</span></span><span class="line"><span class="cl"><span class="o">[</span>manifest<span class="o">]</span>
+</span></span><span class="line"><span class="cl">  Title:  Agent Plugins Manifest
+</span></span><span class="line"><span class="cl">  ID:     https://agent-plugins.org/schemas/1.0.0/plugin.schema.json
+</span></span><span class="line"><span class="cl">  Source: embedded default
+</span></span><span class="line"><span class="cl">  Path:   <span class="o">(</span>embedded<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>mcp<span class="o">]</span>
+</span></span><span class="line"><span class="cl">  Title:  Agent Plugins MCP Configuration
+</span></span><span class="line"><span class="cl">  ID:     https://agent-plugins.org/schemas/1.0.0/mcp.schema.json
+</span></span><span class="line"><span class="cl">  Source: embedded default
+</span></span><span class="line"><span class="cl">  Path:   <span class="o">(</span>embedded<span class="o">)</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>You can update the schema to an updated version available in the agent plugins spec repository.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\t</span>emp&gt; .<span class="se">\a</span>pv.exe schema update
+</span></span><span class="line"><span class="cl">✓ Schema <span class="o">(</span>manifest<span class="o">)</span> successfully updated and cached.
+</span></span><span class="line"><span class="cl">  ID:   https://agent-plugins.org/schemas/1.0.0/plugin.schema.json
+</span></span><span class="line"><span class="cl">  Path: C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\.</span>apv<span class="se">\s</span>chemas<span class="se">\p</span>lugin.schema.json
+</span></span><span class="line"><span class="cl">✓ Schema <span class="o">(</span>mcp<span class="o">)</span> successfully updated and cached.
+</span></span><span class="line"><span class="cl">  ID:   https://agent-plugins.org/schemas/1.0.0/mcp.schema.json
+</span></span><span class="line"><span class="cl">  Path: C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\.</span>apv<span class="se">\s</span>chemas<span class="se">\m</span>cp.schema.json
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">PS C:<span class="se">\t</span>emp&gt; .<span class="se">\a</span>pv.exe schema show
+</span></span><span class="line"><span class="cl">Active Schemas:
+</span></span><span class="line"><span class="cl"><span class="o">[</span>manifest<span class="o">]</span>
+</span></span><span class="line"><span class="cl">  Title:  Agent Plugins Manifest
+</span></span><span class="line"><span class="cl">  ID:     https://agent-plugins.org/schemas/1.0.0/plugin.schema.json
+</span></span><span class="line"><span class="cl">  Source: cached
+</span></span><span class="line"><span class="cl">  Path:   C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\.</span>apv<span class="se">\s</span>chemas<span class="se">\p</span>lugin.schema.json
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>mcp<span class="o">]</span>
+</span></span><span class="line"><span class="cl">  Title:  Agent Plugins MCP Configuration
+</span></span><span class="line"><span class="cl">  ID:     https://agent-plugins.org/schemas/1.0.0/mcp.schema.json
+</span></span><span class="line"><span class="cl">  Source: cached
+</span></span><span class="line"><span class="cl">  Path:   C:<span class="se">\U</span>sers<span class="se">\r</span>avik<span class="se">\.</span>apv<span class="se">\s</span>chemas<span class="se">\m</span>cp.schema.json</span></span></code></pre></td></tr></table>
+</div>
+</div><p>You can also specify the path to different plugin and MCP schema files within the <code>validate</code> command.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">PS C:<span class="se">\t</span>emp&gt; .<span class="se">\a</span>pv validate --help
+</span></span><span class="line"><span class="cl">Validate an Agent Plugin manifest <span class="o">(</span>plugin.json<span class="o">)</span> or MCP configuration <span class="o">(</span>mcp.json<span class="o">)</span>
+</span></span><span class="line"><span class="cl">against the canonical Agent Plugins v1.0.0 JSON schema.
+</span></span><span class="line"><span class="cl">If a directory path is passed, apv automatically discovers and validates plugin.json and mcp.json files inside it.
+</span></span><span class="line"><span class="cl">Pass <span class="s1">&#39;-&#39;</span> as the file argument to <span class="nb">read</span> from standard input.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Usage:
+</span></span><span class="line"><span class="cl">  apv validate &lt;file<span class="p">|</span>dir&gt; <span class="o">[</span>flags<span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Flags:
+</span></span><span class="line"><span class="cl">  -f, --format string            Output format <span class="o">(</span>text or json<span class="o">)</span> <span class="o">(</span>default <span class="s2">&#34;text&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">  -h, --help                     <span class="nb">help</span> <span class="k">for</span> validate
+</span></span><span class="line"><span class="cl">  -q, --quiet                    Quiet mode <span class="o">(</span>suppress output, <span class="nb">exit</span> code only<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  -s, --schema string            Custom schema override <span class="o">(</span>path, URL, or <span class="nv">key</span><span class="o">=</span>value, e.g. <span class="nv">manifest</span><span class="o">=</span>p.json,mcp<span class="o">=</span>m.json<span class="o">)</span>
+</span></span><span class="line"><span class="cl">      --schema-manifest string   Custom Manifest schema override <span class="o">(</span>path or URL<span class="o">)</span>
+</span></span><span class="line"><span class="cl">      --schema-mcp string        Custom MCP schema override <span class="o">(</span>path or URL<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  -t, --type string              Schema type: auto, manifest, mcp <span class="o">(</span>default <span class="s2">&#34;auto&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Global Flags:
+</span></span><span class="line"><span class="cl">      --color string   Control color output <span class="o">(</span>auto, always, never<span class="o">)</span> <span class="o">(</span>default <span class="s2">&#34;auto&#34;</span><span class="o">)</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>I find this tiny utility useful as I start creating and sharing agent plugin packages. This is an open-source utility and available for you to contribute bug fixes or enhancements!</p>
+
+        </div>
+
+        
+        
+
+        
+        
+
+<div class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border">
+  <h3 class="text-lg font-bold mb-4 text-center text-gray-900 dark:text-dark-text">Share this article</h3>
+  <div class="flex flex-wrap justify-center items-center gap-3 sm:gap-4">
+    
+    <button onclick="shareNative()"
+      class="sm:hidden w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-primary text-primary dark:border-blue-400 dark:text-blue-400 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-primary hover:text-white dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600"
+      aria-label="Share" title="Share" id="native-share-btn">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+        </path>
+      </svg>
+    </button>
+
+    
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fapv-a-plugin-manifest-validator-for-agent-plugins%2F&text=apv%3A&#43;A&#43;plugin&#43;manifest&#43;validator&#43;for&#43;agent&#43;plugins"
+      target="_blank" rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
+      aria-label="Share on Twitter" title="Share on Twitter">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+      </svg>
+    </a>
+
+    
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fapv-a-plugin-manifest-validator-for-agent-plugins%2F" target="_blank"
+      rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
+      aria-label="Share on LinkedIn" title="Share on LinkedIn">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+      </svg>
+    </a>
+
+    
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fapv-a-plugin-manifest-validator-for-agent-plugins%2F" target="_blank"
+      rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
+      aria-label="Share on Facebook" title="Share on Facebook">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+      </svg>
+    </a>
+
+    
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fapv-a-plugin-manifest-validator-for-agent-plugins%2F&title=apv%3A&#43;A&#43;plugin&#43;manifest&#43;validator&#43;for&#43;agent&#43;plugins"
+      target="_blank" rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
+      aria-label="Share on Reddit" title="Share on Reddit">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z" />
+      </svg>
+    </a>
+
+    
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fapv-a-plugin-manifest-validator-for-agent-plugins%2F&t=apv%3A&#43;A&#43;plugin&#43;manifest&#43;validator&#43;for&#43;agent&#43;plugins"
+      target="_blank" rel="noopener noreferrer"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
+      aria-label="Share on Hacker News" title="Share on Hacker News">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M0 0v24h24V0H0zm12.8 13.4v5.2H11v-5.2L6.6 5.4h2.1l3.3 6.2 3.3-6.2h2.1l-4.6 8z" />
+      </svg>
+    </a>
+
+    
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/apv-a-plugin-manifest-validator-for-agent-plugins\/')"
+      class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
+      aria-label="Copy link" title="Copy link" id="copy-link-btn">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+        </path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  
+  function shareNative() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'apv: A plugin manifest validator for agent plugins',
+        text: 'The agent plugins specification defines a packaging format for agent resources such as skills and MCP configurations. apv is a plugin manifest validator.',
+        url: 'https:\/\/ravichaganti.com\/blog\/apv-a-plugin-manifest-validator-for-agent-plugins\/'
+      }).catch(function (error) {
+        console.log('Error sharing:', error);
+      });
+    }
+  }
+
+  
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function () {
+      const btn = document.getElementById('copy-link-btn');
+      const originalHTML = btn.innerHTML;
+      const originalTitle = btn.title;
+
+      
+      btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+      btn.title = 'Copied!';
+
+      
+      setTimeout(function () {
+        btn.innerHTML = originalHTML;
+        btn.title = originalTitle;
+      }, 2000);
+    }).catch(function (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy link. Please copy manually: ' + text);
+    });
+  }
+</script>
+
+
+        
+        
+<nav class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border" aria-label="Post navigation">
+  
+  
+  
+  
+
+  
+  
+  
+    
+    
+    
+  
+
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+    <div class="flex">
+      
+        <a href="https://ravichaganti.com/blog/agent-plugins-package-reusable-agent-components-into-portable-and-interoperable-plugins/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Previous Article: Agent Plugins: Package reusable agent components into portable and interoperable plugins">
+          <div class="flex items-start gap-3">
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </div>
+
+            
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Previous Article</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                Agent Plugins: Package reusable agent components into portable and interoperable plugins
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">AI agent clients (IDEs, CLIs, platforms) each invented their own plugin packaging format — even when plugins contained the same underlying components.</p>
+              
+            </div>
+          </div>
+        </a>
+      
+    </div>
+
+    
+    <div class="flex">
+      
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+          <div class="flex items-start gap-3">
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            </div>
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</nav>
+
+
+        
+        
+
+        
+        
+
+        
+        
+
+<div class="comments-section mt-12 pt-8 border-t border-gray-200 dark:border-dark-border">
+  <h3 class="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-dark-text">Comments</h3>
+
+  
+  <div id="comments-placeholder" class="hidden">
+    <div class="bg-gray-100 dark:bg-dark-bg border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-8 text-center">
+      <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+      <h4 class="text-lg font-semibold text-gray-900 dark:text-dark-text mb-2">
+        Comments Require Consent
+      </h4>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        The comment system (Giscus) uses GitHub and may set authentication cookies.
+        Enable comments to join the discussion.
+      </p>
+      <button onclick="window.cookieConsent.enableComments()"
+              class="px-6 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+        Enable Comments
+      </button>
+    </div>
+  </div>
+
+  
+  <div id="giscus-wrapper" class="giscus-wrapper"></div>
+
+  
+  <script>
+    (function() {
+      'use strict';
+
+      let giscusLoaded = false;
+      let themeObserver = null;
+
+      
+      function loadGiscus() {
+        if (giscusLoaded) return;
+
+        const wrapper = document.getElementById('giscus-wrapper');
+        const placeholder = document.getElementById('comments-placeholder');
+
+        if (!wrapper) return;
+
+        
+        if (placeholder) placeholder.classList.add('hidden');
+        wrapper.classList.remove('hidden');
+
+        
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.setAttribute('data-repo', 'rchaganti\/rchaganti.github.io');
+        script.setAttribute('data-repo-id', 'MDEwOlJlcG9zaXRvcnkyNzcwNTE0Mjc=');
+        script.setAttribute('data-category', 'Announcements');
+        script.setAttribute('data-category-id', 'DIC_kwDOEIN4I84CS4rW');
+        script.setAttribute('data-mapping', 'pathname');
+        script.setAttribute('data-strict', '0');
+        script.setAttribute('data-reactions-enabled', '1');
+        script.setAttribute('data-emit-metadata', '0');
+        script.setAttribute('data-input-position', 'bottom');
+        script.setAttribute('data-theme', 'light');
+        script.setAttribute('data-lang', 'en');
+        script.setAttribute('data-loading', 'lazy');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+
+        wrapper.appendChild(script);
+        giscusLoaded = true;
+
+        
+        setupThemeObserver();
+      }
+
+      
+      function updateGiscusTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const theme = isDark ? 'dark' : 'light';
+
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            { giscus: { setConfig: { theme: theme } } },
+            'https://giscus.app'
+          );
+        }
+      }
+
+      
+      function setupThemeObserver() {
+        if (themeObserver) return;
+
+        
+        themeObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+              updateGiscusTheme();
+            }
+          });
+        });
+
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['class']
+        });
+
+        
+        window.addEventListener('message', function(event) {
+          if (event.origin !== 'https://giscus.app') return;
+          if (!(typeof event.data === 'object' && event.data.giscus)) return;
+
+          
+          if (event.data.giscus.discussion) {
+            updateGiscusTheme();
+          }
+        });
+      }
+
+      
+      function checkConsentAndLoad() {
+        if (window.cookieConsent && window.cookieConsent.hasConsent('comments')) {
+          loadGiscus();
+        } else {
+          
+          const placeholder = document.getElementById('comments-placeholder');
+          if (placeholder) placeholder.classList.remove('hidden');
+        }
+      }
+
+      
+      window.addEventListener('loadComments', loadGiscus);
+      window.addEventListener('consentChanged', checkConsentAndLoad);
+
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkConsentAndLoad);
+      } else {
+        checkConsentAndLoad();
+      }
+    })();
+  </script>
+</div>
+
+
+      </div>
+      
+
+      
+      <aside class="hidden lg:block relative">
+        <div class="mb-6">
+          
+<div class="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md dark:shadow-lg dark:shadow-black/20 p-6 mb-6">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-10 h-10 bg-[#0A66C2]/10 rounded-full flex items-center justify-center">
+      <svg class="w-5 h-5 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+      </svg>
+    </div>
+    <h3 class="font-semibold text-gray-900 dark:text-dark-text">Newsletter</h3>
+  </div>
+  <p class="text-sm text-gray-600 dark:text-dark-text-secondary mb-4">
+    Get notified about new articles on cloud, AI, and infrastructure.
+  </p>
+  <a href="https://www.linkedin.com/build-relation/newsletter-follow?entityUrn=7418529089365520384" target="_blank"
+    rel="noopener noreferrer"
+    class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#0A66C2] hover:bg-[#004182] !text-white text-sm font-semibold rounded-lg transition-colors no-underline">
+    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+      <path
+        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+    Subscribe on LinkedIn
+  </a>
+</div>
+        </div>
+        <div class="mb-6">
+          
+
+
+
+        </div>
+        <div class="sidebar-sticky-reinforced">
+          
+
+
+<div class="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-md dark:shadow-lg dark:shadow-black/20 p-6 mb-6">
+  <h3 class="font-semibold text-gray-900 dark:text-dark-text mb-4 flex items-center">
+    <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+    </svg>
+    Table of Contents
+  </h3>
+
+  <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introducing-apv">Introducing apv</a></li>
+  </ul>
+</nav>
+  </nav>
+</div>
+
+<style>
+  #sidebar-toc ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  #sidebar-toc ul ul {
+    padding-left: 1rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-left: 1px solid #e5e7eb;
+     
+  }
+
+  .dark #sidebar-toc ul ul {
+    border-color: #374151;
+     
+  }
+
+  #sidebar-toc li {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #sidebar-toc a {
+    display: block;
+    color: #4b5563;
+     
+    text-decoration: none;
+    transition: all 0.2s;
+    padding-left: 0.5rem;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+     
+  }
+
+  #sidebar-toc a:hover {
+    color: #1e40af;
+     
+    text-decoration: none;
+  }
+
+   
+  #sidebar-toc a.active {
+    color: #2563eb;
+     
+    font-weight: 600;
+    border-left-color: #2563eb;
+  }
+
+   
+  .dark #sidebar-toc a {
+    color: #9ca3af;
+     
+  }
+
+  .dark #sidebar-toc a:hover {
+    color: #60a5fa;
+     
+  }
+
+  .dark #sidebar-toc a.active {
+    color: #60a5fa;
+     
+    border-left-color: #60a5fa;
+  }
+
+   
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 20px;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #374151;
+  }
+</style>
+
+
+        </div>
+      </aside>
+    </div>
+    
+  </div>
+
+  
+  <script src="/js/collapse.js"></script>
+  <script src="/js/code-copy.js"></script>
+  <script src="/js/toc-scrollspy.js"></script>
+  <script src="/js/heading-anchors.js"></script>
+  <script src="/js/carousel-slides.js"></script>
+</article>
+
+  </main>
+
+  <footer class="bg-gray-900 dark:bg-dark-bg text-gray-300 dark:text-dark-text-secondary mt-16">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-sm">
+      <p>&copy; 2026 Ravikanth Chaganti. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <button id="back-to-top"
+          class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-blue-700 transition-all opacity-0 pointer-events-none z-40"
+          aria-label="Back to top"
+          title="Back to top">
+    <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
+
+  
+  
+
+  
+  <script>
+    
+    
+    
+  </script>
+
+  
+  
+    <script src="/js/reading-progress.js"></script>
+  
+
+  
+  <script src="/js/back-to-top.js"></script>
+
+  
+  <script src="/js/theme-toggle.js"></script>
+
+  
+  <script src="/js/cookie-consent.js"></script>
+
+  
+  
+
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+          onload="renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+            ],
+            throwOnError: false
+          });"></script>
+
+  
+  
+
+  
+  <script
+    data-goatcounter="https://ravichaganti.goatcounter.com/count"
+    async
+    src="//gc.zgo.at/count.js">
+  </script>
+
+
+
+  
+  
+<div id="cookie-consent-banner"
+     class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 transition-transform duration-300">
+  <div class="container mx-auto px-4 py-2">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+
+      
+      <div class="flex-1">
+        <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-200">
+          This site may load third-party content (comments, embeds) that could set cookies.
+          <a href="#"
+             id="cookie-learn-more"
+             class="text-primary hover:underline font-medium ml-1"
+             onclick="document.getElementById('cookie-customize').click(); return false;">
+            Learn more
+          </a>
+        </p>
+      </div>
+
+      
+      <div class="flex flex-row gap-2 w-full sm:w-auto flex-shrink-0">
+        <button id="cookie-reject-all"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Reject
+        </button>
+        <button id="cookie-customize"
+                class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+          Settings
+        </button>
+        <button id="cookie-accept-all"
+                class="px-3 py-1 text-xs font-medium text-white bg-primary hover:bg-blue-700 rounded transition-colors">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="cookie-settings-modal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl my-8">
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 rounded-t-lg">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+          Cookie Preferences
+        </h2>
+        <button id="cookie-modal-close"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                aria-label="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    
+    <div class="px-6 py-4 space-y-4 max-h-[calc(90vh-140px)] overflow-y-auto bg-white dark:bg-gray-800">
+
+      
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        <p>
+          Control what third-party content is loaded. We use privacy-friendly analytics with no cookies.
+        </p>
+      </div>
+
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Essential
+            </h3>
+            <div class="flex items-center justify-center w-10 h-5 bg-primary rounded-full flex-shrink-0">
+              <span class="text-xs font-medium text-white">ON</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Required for the website to function. Cannot be disabled.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Theme preference</li>
+            <li>• Privacy-friendly analytics</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Comments
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-comments"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Giscus comment system (GitHub Discussions).
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• Authentication cookies</li>
+            <li>• GitHub privacy policy</li>
+          </ul>
+        </div>
+
+        
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Embedded Content
+            </h3>
+            <label class="relative inline-block w-10 h-5 flex-shrink-0">
+              <input type="checkbox"
+                     id="consent-embeds"
+                     class="peer sr-only">
+              <span class="absolute inset-0 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer transition-colors peer-checked:bg-primary"></span>
+              <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Videos, code snippets, presentations.
+          </p>
+          <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <li>• YouTube, Gists, SlideShare</li>
+            <li>• May set tracking cookies</li>
+          </ul>
+        </div>
+      </div>
+
+      
+      <div class="bg-blue-50 dark:bg-blue-950 dark:bg-opacity-50 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <div class="text-sm">
+            <p class="font-semibold mb-1 text-blue-800 dark:text-blue-200">Privacy First</p>
+            <p class="text-xs text-gray-700 dark:text-gray-300">
+              No tracking cookies. Third-party content only loads with your consent. Preferences stored locally in your browser.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 rounded-b-lg">
+      <div class="flex justify-end">
+        <button id="cookie-save-preferences"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-700 dark:hover:bg-blue-600 rounded transition-colors shadow-sm">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

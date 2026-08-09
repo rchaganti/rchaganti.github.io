@@ -9,7 +9,7 @@ In my work with AI coding agents, I have created many skills that help these age
 
 What's different between different agents and clients is the wrapper around these skills and MCP configurations.
 
-Agent Plugins defines a shared manifest (`plugin.json`) and a fixed directory convention so the parts that are the same across clients use one structure. Agent Plugins is a specification, not a framework or a library, that defines a portable directory-based package format for bundling reusable components that extend AI agents. Published as version 1.0.0, it was created by a Technical Steering Committee (TSC) of Core Maintainers from Amazon, Cursor, Google, Microsoft, OpenAI, and Vercel.
+[Agent Plugins](https://agent-plugins.org/) defines a shared manifest (`plugin.json`) and a fixed directory convention so the parts that are the same across clients use one structure. Agent Plugins is a specification, not a framework or a library, that defines a portable directory-based package format for bundling reusable components that extend AI agents. Published as version 1.0.0, it was created by a Technical Steering Committee (TSC) of Core Maintainers from Amazon, Cursor, Google, Microsoft, OpenAI, and Vercel.
 
 > I have written about different agent AI standards in an [earlier article](https://ravichaganti.com/blog/navigating-agentic-ai-standards-landscape-foundations-protocols-competition-and-path-to-convergence/). It provides an overview and comparison of various existing standards.
 
