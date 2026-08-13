@@ -37,9 +37,19 @@ With the rise of AI, we've seen an explosion of job titles and disciplines. Here
 
 ## The platform layer is the bottleneck
 
-In my work at Dell, building AI platforms and helping enterprises deploy the Dell AI Factory architecture, I see a consistent pattern. Organizations spend millions on high-end infrastructure (like PowerEdge XE9680s packed with GPUs). They have brilliant data scientists building great models. But they stall when trying to connect the two. The platform layer is where the engineering effort concentrates because it's where the abstractions leak. When your model is starving for data because the storage throughput can't keep up with the GPU ingestion rate, that's a platform problem. When you have 8 GPUs, but your serving engine can only effectively utilize two of them due to poor parallelization, that's a platform problem. Dell AI Platforms exist specifically to provide blueprint patterns for this layer, but the reality is that every organization has to build or compose a platform tailored to their specific applications and constraints.
+In my work at Dell, building AI platforms and helping enterprises deploy the Dell AI Factory architecture, I see a consistent pattern. Organizations spend millions on high-end infrastructure (like PowerEdge XE9680s packed with GPUs). They have brilliant data scientists building great models. But they stall when trying to connect the two. The platform layer is where the engineering effort concentrates because it's where the abstractions leak. When your model is starving for data because the storage throughput can't keep up with the GPU ingestion rate, that's a platform problem. When you have 8 GPUs, but your serving engine can only effectively utilize two of them due to poor parallelization, that's a platform problem. 
 
-If you don't build a robust platform layer, your AI applications will be brittle, your infrastructure will be underutilized, and your engineers will spend all their time fighting fires instead of building features.
+### The Agentic AI Catalyst
+
+If stateless chatbots and single-turn RAG applications strained early AI platforms, Agentic AI is pushing the platform layer to its absolute breaking point.
+
+When an enterprise moves from answering questions to deploying autonomous agents. These are the systems that plan, loop, call external tools, execute code, and collaborate in multi-agent networks. This changes the the platform requirements.
+
+- **State & Durability:** Agent workflows don't finish in 3-second HTTP timeouts. They run multi-step loops over minutes or hours, requiring durable session state and checkpointing.
+- **Security & Sandboxing:** Agents execute code and invoke APIs. The platform must provide zero-trust, ephemeral execution sandboxes (like microVMs or WASM runtimes) to prevent malicious or runaway agent actions.
+- **Token Cascades & FinOps:** A single user request to an agent can trigger 20+ internal tool loops, multiplying token consumption by 50x. Platform-level token budgets, step caps, and circuit breakers become essential to prevent budget catastrophes.
+
+Dell AI Platforms exist specifically to provide blueprint patterns for this layer, but the reality is that every organization has to build or compose a platform tailored to their specific applications and constraints. If you don't build a robust platform layer, your AI applications will be brittle, your infrastructure will be underutilized, and your engineers will spend all their time fighting fires instead of building features.
 
 ## Key takeaways
 
