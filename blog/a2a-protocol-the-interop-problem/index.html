@@ -18,11 +18,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   
-  <title>AI Platform Engineering: The Platform Layer | Ravikanth Chaganti</title>
+  <title>A2A Protocol - The interop problem | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="Every AI demo I&rsquo;ve ever seen works perfectly. Every AI system I&rsquo;ve ever built breaks in ways no demo ever warned me about.
-If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter notebook to production, you know exactly what I mean. In the notebook, the model predicts, generates, and reasons beautifully. In production, GPUs sit idle waiting for data, inference latency spikes unpredictably, memory leaks crash the system, and your cloud bill suddenly looks like a down payment on a house.">
+  <meta name="description" content="Ravikanth Chaganti on AI infrastructure, Agentic AI, Cloud Native infrastructure, and automation.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,38 +30,36 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
   
 
   
-  <meta property="og:title" content="AI Platform Engineering: The Platform Layer">
-  <meta property="og:description" content="Every AI demo I&rsquo;ve ever seen works perfectly. Every AI system I&rsquo;ve ever built breaks in ways no demo ever warned me about.
-If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter notebook to production, you know exactly what I mean. In the notebook, the model predicts, generates, and reasons beautifully. In production, GPUs sit idle waiting for data, inference latency spikes unpredictably, memory leaks crash the system, and your cloud bill suddenly looks like a down payment on a house.">
+  <meta property="og:title" content="A2A Protocol - The interop problem">
+  <meta property="og:description" content="Ravikanth Chaganti on AI infrastructure, Agentic AI, Cloud Native infrastructure, and automation.">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://ravichaganti.com/blog/ai-platform-engineering-the-platform-layer/">
+  <meta property="og:url" content="https://ravichaganti.com/blog/a2a-protocol-the-interop-problem/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
   <meta property="og:locale" content="en_US">
   
-  <meta property="og:image" content="https://ravichaganti.com/images/aip-cover.jpg">
+  <meta property="og:image" content="https://ravichaganti.com/images/agentplugins.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="AI Platform Engineering: The Platform Layer">
+  <meta property="og:image:alt" content="A2A Protocol - The interop problem">
 
   
   
-    <meta property="article:published_time" content="2026-02-01T00:00:00Z">
-    <meta property="article:modified_time" content="2026-02-01T00:00:00Z">
+    <meta property="article:published_time" content="2026-08-28T00:00:00Z">
+    <meta property="article:modified_time" content="2026-08-28T00:00:00Z">
     <meta property="article:author" content="Ravikanth Chaganti">
-    <meta property="article:section" content="AI Platform">
+    <meta property="article:section" content="Agents">
     
   
 
   
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AI Platform Engineering: The Platform Layer">
-  <meta name="twitter:description" content="Every AI demo I&rsquo;ve ever seen works perfectly. Every AI system I&rsquo;ve ever built breaks in ways no demo ever warned me about.
-If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter notebook to production, you know exactly what I mean. In the notebook, the model predicts, generates, and reasons beautifully. In production, GPUs sit idle waiting for data, inference latency spikes unpredictably, memory leaks crash the system, and your cloud bill suddenly looks like a down payment on a house.">
-  <meta name="twitter:image" content="https://ravichaganti.com/images/aip-cover.jpg">
+  <meta name="twitter:title" content="A2A Protocol - The interop problem">
+  <meta name="twitter:description" content="Ravikanth Chaganti on AI infrastructure, Agentic AI, Cloud Native infrastructure, and automation.">
+  <meta name="twitter:image" content="https://ravichaganti.com/images/agentplugins.jpg">
   <meta name="twitter:site" content="@ravikanth">
 
   
-  <link rel="canonical" href="https://ravichaganti.com/blog/ai-platform-engineering-the-platform-layer/">
+  <link rel="canonical" href="https://ravichaganti.com/blog/a2a-protocol-the-interop-problem/">
 
   
   <link rel="alternate" type="application/rss+xml" href="https://ravichaganti.com/index.xml">
@@ -94,12 +91,12 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI Platform Engineering: The Platform Layer",
-  "description": "Every AI demo I\u0026rsquo;ve ever seen works perfectly. Every AI system I\u0026rsquo;ve ever built breaks in ways no demo ever warned me about.\nIf you\u0026rsquo;ve spent any time trying to take an AI workload from …",
-  "articleBody": "\"Every AI demo I\\u0026rsquo;ve ever seen works perfectly. Every AI system I\\u0026rsquo;ve ever built breaks in ways no demo ever warned me about.\\nIf you\\u0026rsquo;ve spent any time trying to take an AI workload from a Jupyter notebook to production, you know exactly what I mean. In the notebook, the model predicts, generates, and reasons beautifully. In production, GPUs sit idle waiting for data, inference latency spikes unpredictably, memory leaks crash the system, and your cloud bill suddenly looks like a down payment on a house.\\nThese aren\\u0026rsquo;t model failures. They are platform failures.\\nIn this first post of our AI Platform Engineering series, we need to set the stage. Before we can talk about how to build resilient, scalable AI systems, we have to define exactly what we are building. The key to understanding modern AI architecture is recognizing that it exists in three distinct layers—and almost all the pain right now is concentrated in the middle one.\\nThe three-layer AI architecture If you strip away the buzzwords, every production AI deployment breaks down into three layers.\\nThe bottom-most layer is the infrastructure. It\\u0026rsquo;s the hardware: GPUs, CPUs, high-speed networking (InfiniBand, RoCE), storage arrays, power delivery, and cooling systems. Whether you are running this on-premises or in the cloud, this is the physical reality of compute. This layer is provided by vendors such as Dell, NVIDIA, and AMD.\\nThe middle layer is the platform, and it\\u0026rsquo;s the focus of this entire series. The platform layer is the software that orchestrates the infrastructure to make it usable for AI workloads. It abstracts away the hardware complexity and provides the services needed to train, serve, and monitor AI models. This layer typically includes Kubernetes, model serving engines (vLLM, SGLang), GPU schedulers (Run:ai), vector databases, experiment tracking (MLflow), data pipelines, observability stacks, and cost management tools.\\nThe top-most layer is the application layer, and it\\u0026rsquo;s the software that users actually interact with. It\\u0026rsquo;s the chatbot, the coding assistant, the recommendation engine, or the RAG application. What we have been using for a while, such as ChatGPT, GitHub Copilot, and custom agentic systems that we build live at this layer.\\nIf this three-layer model looks familiar, it\\u0026rsquo;s because we went through this exact evolution with web platforms.\\nTwenty years ago, web developers were racking servers and configuring Apache directly on bare metal. It was painful. Then we built the web platform layer: virtualization, containers, Kubernetes, CI/CD pipelines, and PaaS offerings. The platform layer decoupled the web application from the physical server.\\nAI is going through this exact transition right now, but the stakes are higher. AI workloads are stateful, incredibly resource-intensive, and highly sensitive to latency and bandwidth constraints. You can\\u0026rsquo;t just slap a basic Kubernetes cluster on top of a GPU and call it an AI platform. The orchestration requires a fundamentally different approach.\\nWith the rise of AI, we\\u0026rsquo;ve seen an explosion of job titles and disciplines. Here is how they map to our three-layer model:\\nInfrastructure Engineering: Lives at the bottom. Focused on power, cooling, hardware provisioning, and raw network topology. DataOps: Feeds the platform layer. Focused on data quality, ingestion pipelines, and governance. MLOps: Lives squarely in the platform layer, but traditionally focuses more on the model lifecycle (training, testing, deployment) than the underlying orchestration and hardware efficiency. AI Engineering: Spans the application layer and the upper edges of the platform layer (like prompt engineering and RAG design). Platform Engineering: The umbrella discipline that builds and maintains the entire middle layer. The platform layer is the bottleneck In my work at Dell, building AI platforms and helping enterprises stand up AI infrastructure, I see a consistent pattern. Organizations spend millions on high-end infrastructure — dense multi-GPU chassis, high-speed fabric, all-flash storage. They have brilliant data scientists building great models. But they stall when trying to connect the two. The platform layer is where the engineering effort concentrates because it\\u0026rsquo;s where the abstractions leak. When your model is starving for data because the storage throughput can\\u0026rsquo;t keep up with the GPU ingestion rate, that\\u0026rsquo;s a platform problem. When you have 8 GPUs, but your serving engine can only effectively utilize two of them due to poor parallelization, that\\u0026rsquo;s a platform problem.\\nThe Agentic AI Catalyst If stateless chatbots and single-turn RAG applications strained early AI platforms, Agentic AI is pushing the platform layer to its absolute breaking point.\\nWhen an enterprise moves from answering questions to deploying autonomous agents — systems that plan, loop, call external tools, execute code, and collaborate in multi-agent networks — the platform requirements change fundamentally.\\nState \\u0026amp; Durability: Agent workflows don\\u0026rsquo;t finish in 3-second HTTP timeouts. They run multi-step loops over minutes or hours, requiring durable session state and checkpointing. Security \\u0026amp; Sandboxing: Agents execute code and invoke APIs. The platform must provide zero-trust, ephemeral execution sandboxes (like microVMs or WASM runtimes) to prevent malicious or runaway agent actions. Token Cascades \\u0026amp; FinOps: A single user request to an agent can trigger dozens of internal tool loops, multiplying token consumption by an order of magnitude or more. Platform-level token budgets, step caps, and circuit breakers become essential to prevent budget catastrophes. Validated reference architectures — and every major vendor now ships them — exist to provide blueprint patterns for this layer, but the reality is that every organization has to build or compose a platform tailored to their specific applications and constraints. If you don\\u0026rsquo;t build a robust platform layer, your AI applications will be brittle, your infrastructure will be underutilized, and your engineers will spend all their time fighting fires instead of building features.\\nKey takeaways If I were to summarize this article and explain the most critical points, here is what I\\u0026rsquo;d tell you:\\nAI requires a three-layer architecture: Infrastructure (hardware), Platform (orchestration), and Application (user experience). Most AI failures happen in the middle: The platform layer is the current bottleneck in taking AI from prototype to production. We are repeating web history, but harder: AI platforms require the same abstraction as web platforms (like Kubernetes), but must handle massive state, custom silicon, and extreme bandwidth requirements. Platform Engineering is the critical discipline: It\\u0026rsquo;s the glue that makes expensive GPUs actually useful to application developers. We\\u0026rsquo;ve established that the platform layer is critical. But wait, didn\\u0026rsquo;t we just spend the last ten years perfecting Kubernetes and cloud-native architectures? Why can\\u0026rsquo;t we just use our existing web platforms for AI?\\nIn the next part of this series, we\\u0026rsquo;ll dive into exactly that: Why AI Platforms Are Fundamentally Different from Web Platforms. (Spoiler: Your microservices architecture isn\\u0026rsquo;t going to save you when you need to synchronize gradients across thousands of GPUs.)\\n\"",
-  "url": "https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-the-platform-layer\/",
-  "datePublished": "2026-02-01T00:00:00Z",
-  "dateModified": "2026-02-01T00:00:00Z",
+  "headline": "A2A Protocol - The interop problem",
+  "description": "",
+  "articleBody": "\"\"",
+  "url": "https:\/\/ravichaganti.com\/blog\/a2a-protocol-the-interop-problem\/",
+  "datePublished": "2026-08-28T00:00:00Z",
+  "dateModified": "2026-08-28T00:00:00Z",
   "author": {
     "@type": "Person",
     "name": "Ravikanth Chaganti"
@@ -113,20 +110,18 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
   
   "image": {
     "@type": "ImageObject",
-    "url": "https:\/\/ravichaganti.com\/images\/aip-cover.jpg",
+    "url": "https:\/\/ravichaganti.com\/images\/agentplugins.jpg",
     "width": 1200,
     "height": 630
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-the-platform-layer\/"
+    "@id": "https:\/\/ravichaganti.com\/blog\/a2a-protocol-the-interop-problem\/"
   },
   
-  "articleSection": "\"AI Platform\"",
+  "articleSection": "\"Agents\"",
   
   
-  
-  "timeRequired": "PT6M",
   
   "inLanguage": "en-US",
   "isAccessibleForFree": true
@@ -159,14 +154,14 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     {
       "@type": "ListItem",
       "position": 3,
-      "name": "AI Platform",
-      "item": "https:\/\/ravichaganti.com\/categories/ai-platform/"
+      "name": "Agents",
+      "item": "https:\/\/ravichaganti.com\/categories/agents/"
     },
     {
       "@type": "ListItem",
       "position": 4,
-      "name": "AI Platform Engineering: The Platform Layer",
-      "item": "https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-the-platform-layer\/"
+      "name": "A2A Protocol - The interop problem",
+      "item": "https:\/\/ravichaganti.com\/blog\/a2a-protocol-the-interop-problem\/"
     }
     
     
@@ -588,14 +583,14 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
               <li><a href="/blog/" class="hover:text-primary dark:hover:text-blue-400">Blog</a></li>
               
               <li><span class="mx-2">/</span></li>
-              <li><a href="/categories/ai-platform/" class="hover:text-primary dark:hover:text-blue-400">AI Platform</a></li>
+              <li><a href="/categories/agents/" class="hover:text-primary dark:hover:text-blue-400">Agents</a></li>
               
             </ol>
           </nav>
 
           
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-dark-text mb-6">
-            AI Platform Engineering: The Platform Layer
+            A2A Protocol - The interop problem
           </h1>
 
           
@@ -607,19 +602,10 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <time datetime=" 2026-02-01">February 1, 2026</time>
+              <time datetime=" 2026-08-28">August 28, 2026</time>
             </div>
 
             
-            
-            <span>•</span>
-            <div class="flex items-center">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>6 min read</span>
-            </div>
             
 
             
@@ -630,17 +616,27 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
           <div class="flex flex-wrap gap-2 mb-6">
             
             
-            <a href="/categories/ai-platform/"
+            <a href="/categories/agents/"
               class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
-              AI Platform
+              Agents
+            </a>
+            
+            <a href="/categories/agent-to-agent/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              Agent to Agent&#34;
+            </a>
+            
+            <a href="/categories/a2a-protocol/"
+              class="inline-block px-3 py-1 text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-400 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors no-underline">
+              A2A Protocol
             </a>
             
             
             
             
-            <a href="/series/ai-platform-engineering/"
+            <a href="/series/a2a-protocol/"
               class="inline-block px-3 py-1 text-sm font-medium bg-secondary/10 dark:bg-secondary/20 text-secondary dark:text-purple-400 rounded-full hover:bg-secondary/20 dark:hover:bg-secondary/30 transition-colors no-underline">
-              📚 Series: AI Platform Engineering
+              📚 Series: A2A Protocol
             </a>
             
             
@@ -650,7 +646,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
           
           <div
             class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-dark-text-secondary italic border-l-4 border-primary dark:border-blue-400 pl-4 sm:pl-6 py-2 mb-6 sm:mb-8 bg-gray-50 dark:bg-dark-bg-tertiary rounded-r">
-            Every AI demo I&#39;ve ever seen works perfectly. Every AI system I&#39;ve ever built breaks in ways no demo ever warned me about.
+            Everyone out there building agents. Every enterprise and every developer. But, can my agent talk to yours and a thousand others on the Internet without feeding it every detail?
           </div>
           
         </header>
@@ -661,100 +657,6 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
 
   
   
-  
-    <aside class="bg-gradient-to-br from-secondary/5 to-primary/5 dark:from-secondary/10 dark:to-primary/10 rounded-lg shadow-md dark:shadow-2xl dark:shadow-black/20 p-4 mb-6 border border-secondary/20 dark:border-secondary/30">
-      
-      <button
-        class="flex items-center justify-between w-full text-left font-semibold text-base text-gray-900 dark:text-dark-text hover:text-secondary dark:hover:text-purple-400 transition-colors"
-        aria-expanded="false"
-        aria-controls="series-content"
-      >
-        <span class="flex items-center">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-          </svg>
-          Series: AI Platform Engineering
-        </span>
-        <svg
-          id="series-chevron"
-          class="w-4 h-4 transform transition-transform -rotate-90"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
-
-      
-      <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 2-part series
-      </p>
-
-      
-      <nav id="series-content" class="series-content collapsed mt-1">
-        <ol class="space-y-3">
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                1
-              </span>
-              <div class="flex-grow">
-                
-                  <span class="font-bold text-secondary dark:text-purple-400">
-                    AI Platform Engineering: The Platform Layer
-                    <span class="text-xs ml-2 px-2 py-0.5 bg-secondary dark:bg-purple-600 text-white rounded">You are here</span>
-                  </span>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 1, 2026</p>
-              </div>
-            </li>
-          
-            <li class="flex items-start">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
-                2
-              </span>
-              <div class="flex-grow">
-                
-                  <a href="https://ravichaganti.com/blog/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
-                    AI Platform Engineering: Why AI Platforms are different from web platforms
-                  </a>
-                
-                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 3, 2026</p>
-              </div>
-            </li>
-          
-        </ol>
-
-        
-        <div class="mt-6 pt-6 border-t border-secondary/20 dark:border-secondary/30 grid grid-cols-2 gap-4">
-          
-          
-            
-              
-            
-          
-            
-          
-
-          
-          
-            <div></div>
-          
-
-          
-          
-            
-            <a href="https://ravichaganti.com/blog/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
-              <span class="truncate">AI Platform Engineering: Why AI Platforms are different from web platforms</span>
-              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </a>
-          
-        </div>
-      </nav>
-    </aside>
   
 
 
@@ -790,17 +692,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
 
       
       <nav id="toc-content" class="toc-content collapsed text-sm mt-3">
-        <nav id="TableOfContents">
-  <ul>
-    <li><a href="#the-three-layer-ai-architecture">The three-layer AI architecture</a></li>
-    <li><a href="#the-platform-layer-is-the-bottleneck">The platform layer is the bottleneck</a>
-      <ul>
-        <li><a href="#the-agentic-ai-catalyst">The Agentic AI Catalyst</a></li>
-      </ul>
-    </li>
-    <li><a href="#key-takeaways">Key takeaways</a></li>
-  </ul>
-</nav>
+        <nav id="TableOfContents"></nav>
       </nav>
     </div>
 
@@ -873,73 +765,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>Every AI demo I&rsquo;ve ever seen works perfectly. Every AI system I&rsquo;ve ever built breaks in ways no demo ever warned me about.</p>
-<p>If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter notebook to production, you know exactly what I mean. In the notebook, the model predicts, generates, and reasons beautifully. In production, GPUs sit idle waiting for data, inference latency spikes unpredictably, memory leaks crash the system, and your cloud bill suddenly looks like a down payment on a house.</p>
-<p>These aren&rsquo;t model failures. They are platform failures.</p>
-<p>In this first post of our <em>AI Platform Engineering</em> series, we need to set the stage. Before we can talk about how to build resilient, scalable AI systems, we have to define exactly what we are building. The key to understanding modern AI architecture is recognizing that it exists in three distinct layers—and almost all the pain right now is concentrated in the middle one.</p>
-<h2 id="the-three-layer-ai-architecture">The three-layer AI architecture</h2>
-<p>If you strip away the buzzwords, every production AI deployment breaks down into three layers.</p>
-<p><figure class="figure " style="max-width: 400; height: 50%; margin: 1.5rem auto;">
-  <a href="/images/ch1-01-3-layers.jpg" class="glightbox" data-gallery="post-images" data-glightbox="description: " style="display: block; height: 100%;">
-    <img src="/images/ch1-01-3-layers.jpg" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-  </a></figure>
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
-  
-  
-  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
-  
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const lightbox = GLightbox({
-        selector: '.glightbox',
-        touchNavigation: true,
-        loop: true,
-        autoplayVideos: true,
-        zoomable: true,
-        draggable: true,
-        closeButton: true,
-        moreLength: 0
-      });
-    });
-  </script></p>
-<p>The bottom-most layer is the <em><strong>infrastructure</strong></em>. It&rsquo;s the hardware: GPUs, CPUs, high-speed networking (InfiniBand, RoCE), storage arrays, power delivery, and cooling systems. Whether you are running this on-premises or in the cloud, this is the physical reality of compute. This layer is provided by vendors such as Dell, NVIDIA, and AMD.</p>
-<p>The middle layer is the <em><strong>platform</strong></em>, and it&rsquo;s the focus of this entire series. The platform layer is the software that orchestrates the infrastructure to make it usable for AI workloads. It abstracts away the hardware complexity and provides the services needed to train, serve, and monitor AI models. This layer typically includes Kubernetes, model serving engines (vLLM, SGLang), GPU schedulers (Run:ai), vector databases, experiment tracking (MLflow), data pipelines, observability stacks, and cost management tools.</p>
-<p>The top-most layer is the <em><strong>application</strong></em> layer, and it&rsquo;s the software that users actually interact with. It&rsquo;s the chatbot, the coding assistant, the recommendation engine, or the RAG application. What we have been using for a while, such as ChatGPT, GitHub Copilot, and custom agentic systems that we build live at this layer.</p>
-<p>If this three-layer model looks familiar, it&rsquo;s because we went through this exact evolution with web platforms.</p>
-<p>Twenty years ago, web developers were racking servers and configuring Apache directly on bare metal. It was painful. Then we built the web platform layer: virtualization, containers, Kubernetes, CI/CD pipelines, and PaaS offerings. The platform layer decoupled the web application from the physical server.</p>
-<p>AI is going through this exact transition right now, but the stakes are higher. AI workloads are stateful, incredibly resource-intensive, and highly sensitive to latency and bandwidth constraints. You can&rsquo;t just slap a basic Kubernetes cluster on top of a GPU and call it an AI platform. The orchestration requires a fundamentally different approach.</p>
-<p>With the rise of AI, we&rsquo;ve seen an explosion of job titles and disciplines. Here is how they map to our three-layer model:</p>
-<ul>
-<li><strong>Infrastructure Engineering:</strong> Lives at the bottom. Focused on power, cooling, hardware provisioning, and raw network topology.</li>
-<li><strong>DataOps:</strong> Feeds the platform layer. Focused on data quality, ingestion pipelines, and governance.</li>
-<li><strong>MLOps:</strong> Lives squarely in the platform layer, but traditionally focuses more on the model lifecycle (training, testing, deployment) than the underlying orchestration and hardware efficiency.</li>
-<li><strong>AI Engineering:</strong> Spans the application layer and the upper edges of the platform layer (like prompt engineering and RAG design).</li>
-<li><strong>Platform Engineering:</strong> The umbrella discipline that builds and maintains the entire middle layer.</li>
-</ul>
-<h2 id="the-platform-layer-is-the-bottleneck">The platform layer is the bottleneck</h2>
-<p>In my work at Dell, building AI platforms and helping enterprises stand up AI infrastructure, I see a consistent pattern. Organizations spend millions on high-end infrastructure — dense multi-GPU chassis, high-speed fabric, all-flash storage. They have brilliant data scientists building great models. But they stall when trying to connect the two. The platform layer is where the engineering effort concentrates because it&rsquo;s where the abstractions leak. When your model is starving for data because the storage throughput can&rsquo;t keep up with the GPU ingestion rate, that&rsquo;s a platform problem. When you have 8 GPUs, but your serving engine can only effectively utilize two of them due to poor parallelization, that&rsquo;s a platform problem.</p>
-<h3 id="the-agentic-ai-catalyst">The Agentic AI Catalyst</h3>
-<p>If stateless chatbots and single-turn RAG applications strained early AI platforms, Agentic AI is pushing the platform layer to its absolute breaking point.</p>
-<p>When an enterprise moves from answering questions to deploying autonomous agents — systems that plan, loop, call external tools, execute code, and collaborate in multi-agent networks — the platform requirements change fundamentally.</p>
-<ul>
-<li><strong>State &amp; Durability:</strong> Agent workflows don&rsquo;t finish in 3-second HTTP timeouts. They run multi-step loops over minutes or hours, requiring durable session state and checkpointing.</li>
-<li><strong>Security &amp; Sandboxing:</strong> Agents execute code and invoke APIs. The platform must provide zero-trust, ephemeral execution sandboxes (like microVMs or WASM runtimes) to prevent malicious or runaway agent actions.</li>
-<li><strong>Token Cascades &amp; FinOps:</strong> A single user request to an agent can trigger dozens of internal tool loops, multiplying token consumption by an order of magnitude or more. Platform-level token budgets, step caps, and circuit breakers become essential to prevent budget catastrophes.</li>
-</ul>
-<p>Validated reference architectures — and every major vendor now ships them — exist to provide blueprint patterns for this layer, but the reality is that every organization has to build or compose a platform tailored to their specific applications and constraints. If you don&rsquo;t build a robust platform layer, your AI applications will be brittle, your infrastructure will be underutilized, and your engineers will spend all their time fighting fires instead of building features.</p>
-<h2 id="key-takeaways">Key takeaways</h2>
-<p>If I were to summarize this article and explain the most critical points, here is what I&rsquo;d tell you:</p>
-<ul>
-<li><strong>AI requires a three-layer architecture:</strong> Infrastructure (hardware), Platform (orchestration), and Application (user experience).</li>
-<li><strong>Most AI failures happen in the middle:</strong> The platform layer is the current bottleneck in taking AI from prototype to production.</li>
-<li><strong>We are repeating web history, but harder:</strong> AI platforms require the same abstraction as web platforms (like Kubernetes), but must handle massive state, custom silicon, and extreme bandwidth requirements.</li>
-<li><strong>Platform Engineering is the critical discipline:</strong> It&rsquo;s the glue that makes expensive GPUs actually useful to application developers.</li>
-</ul>
-<p>We&rsquo;ve established that the platform layer is critical. But wait, didn&rsquo;t we just spend the last ten years perfecting Kubernetes and cloud-native architectures? Why can&rsquo;t we just use our existing web platforms for AI?</p>
-<p>In the next part of this series, we&rsquo;ll dive into exactly that: <em>Why AI Platforms Are Fundamentally Different from Web Platforms</em>. (Spoiler: Your microservices architecture isn&rsquo;t going to save you when you need to synchronize gradients across thousands of GPUs.)</p>
-
+          
         </div>
 
         
@@ -963,7 +789,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </button>
 
     
-    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fai-platform-engineering-the-platform-layer%2F&text=AI&#43;Platform&#43;Engineering%3A&#43;The&#43;Platform&#43;Layer"
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fa2a-protocol-the-interop-problem%2F&text=A2A&#43;Protocol&#43;-&#43;The&#43;interop&#43;problem"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1DA1F2] text-[#1DA1F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1DA1F2] hover:text-white hover:scale-105"
       aria-label="Share on Twitter" title="Share on Twitter">
@@ -974,7 +800,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </a>
 
     
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fai-platform-engineering-the-platform-layer%2F" target="_blank"
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fa2a-protocol-the-interop-problem%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#0077B5] text-[#0077B5] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#0077B5] hover:text-white hover:scale-105"
       aria-label="Share on LinkedIn" title="Share on LinkedIn">
@@ -985,7 +811,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </a>
 
     
-    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fai-platform-engineering-the-platform-layer%2F" target="_blank"
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fa2a-protocol-the-interop-problem%2F" target="_blank"
       rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#1877F2] text-[#1877F2] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#1877F2] hover:text-white hover:scale-105"
       aria-label="Share on Facebook" title="Share on Facebook">
@@ -996,7 +822,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </a>
 
     
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fai-platform-engineering-the-platform-layer%2F&title=AI&#43;Platform&#43;Engineering%3A&#43;The&#43;Platform&#43;Layer"
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fravichaganti.com%2Fblog%2Fa2a-protocol-the-interop-problem%2F&title=A2A&#43;Protocol&#43;-&#43;The&#43;interop&#43;problem"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF4500] text-[#FF4500] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF4500] hover:text-white hover:scale-105"
       aria-label="Share on Reddit" title="Share on Reddit">
@@ -1007,7 +833,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </a>
 
     
-    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fai-platform-engineering-the-platform-layer%2F&t=AI&#43;Platform&#43;Engineering%3A&#43;The&#43;Platform&#43;Layer"
+    <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fravichaganti.com%2Fblog%2Fa2a-protocol-the-interop-problem%2F&t=A2A&#43;Protocol&#43;-&#43;The&#43;interop&#43;problem"
       target="_blank" rel="noopener noreferrer"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-[#FF6600] text-[#FF6600] flex items-center justify-center transition-all no-underline shadow-sm hover:shadow-md hover:bg-[#FF6600] hover:text-white hover:scale-105"
       aria-label="Share on Hacker News" title="Share on Hacker News">
@@ -1017,7 +843,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     </a>
 
     
-    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-the-platform-layer\/')"
+    <button onclick="copyToClipboard('https:\/\/ravichaganti.com\/blog\/a2a-protocol-the-interop-problem\/')"
       class="w-12 h-12 rounded-full bg-white dark:bg-dark-bg-secondary border-2 border-amber-500 text-amber-500 flex items-center justify-center transition-all shadow-sm hover:shadow-md hover:bg-amber-500 hover:text-white hover:scale-105"
       aria-label="Copy link" title="Copy link" id="copy-link-btn">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1034,9 +860,9 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
   function shareNative() {
     if (navigator.share) {
       navigator.share({
-        title: 'AI Platform Engineering: The Platform Layer',
-        text: 'Every AI demo I\u0027ve ever seen works perfectly. Every AI system I\u0027ve ever built breaks in ways no demo ever warned me about.',
-        url: 'https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-the-platform-layer\/'
+        title: 'A2A Protocol - The interop problem',
+        text: 'Everyone out there building agents. Every enterprise and every developer. But, can my agent talk to yours and a thousand others on the Internet without feeding it every detail?',
+        url: 'https:\/\/ravichaganti.com\/blog\/a2a-protocol-the-interop-problem\/'
       }).catch(function (error) {
         console.log('Error sharing:', error);
       });
@@ -1093,15 +919,10 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
         
       
     
-      
-    
 
     
     
       
-      
-        
-        
       
     
   
@@ -1131,29 +952,20 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
     
     <div class="flex">
       
-        <a href="https://ravichaganti.com/blog/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms/"
-           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
-           aria-label="Next in AI Platform Engineering: AI Platform Engineering: Why AI Platforms are different from web platforms">
+        
+        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
           <div class="flex items-start gap-3">
-            
-            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
-              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in AI Platform Engineering</p>
-              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
-                AI Platform Engineering: Why AI Platforms are different from web platforms
-              </h3>
-              
-                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">An AI platform is not just a web platform with a GPU attached. The core assumptions that drove web architecture for the last ten years are fundamentally broken when you introduce AI workloads.</p>
-              
+            <div class="flex-1 text-right md:text-left">
+              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
+              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
             </div>
-
-            
-            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
+            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </a>
+        </div>
       
     </div>
   </div>
@@ -1346,31 +1158,6 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
           
 
 
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
-      You May Also Like
-    </h3>
-    <div>
-      
-        
-<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-  <a href="https://ravichaganti.com/blog/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms/" class="no-underline block group">
-    
-    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
-      AI Platform Engineering: Why AI Platforms are different from web platforms
-    </h4>
-
-    
-    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-02-03">
-      Feb 3, 2026
-    </time>
-  </a>
-</article>
-
-      
-    </div>
-  </div>
-
 
         </div>
         <div class="sidebar-sticky-reinforced">
@@ -1386,17 +1173,7 @@ If you&rsquo;ve spent any time trying to take an AI workload from a Jupyter note
   </h3>
 
   <nav id="sidebar-toc" class="toc-sidebar text-sm max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#the-three-layer-ai-architecture">The three-layer AI architecture</a></li>
-    <li><a href="#the-platform-layer-is-the-bottleneck">The platform layer is the bottleneck</a>
-      <ul>
-        <li><a href="#the-agentic-ai-catalyst">The Agentic AI Catalyst</a></li>
-      </ul>
-    </li>
-    <li><a href="#key-takeaways">Key takeaways</a></li>
-  </ul>
-</nav>
+    <nav id="TableOfContents"></nav>
   </nav>
 </div>
 
