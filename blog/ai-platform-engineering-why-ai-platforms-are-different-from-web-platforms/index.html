@@ -21,7 +21,7 @@
   <title>AI Platform Engineering: Why AI Platforms are different from web platforms | Ravikanth Chaganti</title>
 
   
-  <meta name="description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down—sometimes literally.">
+  <meta name="description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down. Sometimes, literally.">
   <meta name="author" content="Ravikanth Chaganti">
 
   
@@ -31,7 +31,7 @@
 
   
   <meta property="og:title" content="AI Platform Engineering: Why AI Platforms are different from web platforms">
-  <meta property="og:description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down—sometimes literally.">
+  <meta property="og:description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down. Sometimes, literally.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://ravichaganti.com/blog/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms/">
   <meta property="og:site_name" content="Ravikanth Chaganti">
@@ -54,7 +54,7 @@
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AI Platform Engineering: Why AI Platforms are different from web platforms">
-  <meta name="twitter:description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down—sometimes literally.">
+  <meta name="twitter:description" content="For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down. Sometimes, literally.">
   <meta name="twitter:image" content="https://ravichaganti.com/images/aip-cover.jpg">
   <meta name="twitter:site" content="@ravikanth">
 
@@ -93,7 +93,7 @@
   "@type": "BlogPosting",
   "headline": "AI Platform Engineering: Why AI Platforms are different from web platforms",
   "description": "For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. …",
-  "articleBody": "\"For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day. I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down—sometimes literally.\\nHere is the hard truth: an AI platform is not just a web platform with a GPU attached. The core assumptions that drove web architecture for the last ten years are fundamentally broken when you introduce AI workloads. Let\\u0026rsquo;s look at why.\\nGPU is the center of gravity, not the CPU Web platforms are CPU-bound and designed for horizontal scalability. You treat servers like cattle. If one goes down, Kubernetes spins up another.\\nAI platforms revolve entirely around the GPU. And GPUs are not cattle; they are incredibly expensive, power-hungry, scarce racehorses. A single modern data center GPU costs tens of thousands of dollars. You absolutely cannot just \\u0026ldquo;add more pods.\\u0026rdquo;\\nBecause of this capital intensity, utilization matters enormously. Your platform has to support sophisticated scheduling, time-slicing, Multi-Instance GPU (MIG), and multi-tenancy just to make the economics work. An idle CPU is a minor inefficiency; an idle GPU cluster is a fireable offense.\\nThermals and Power In traditional web infrastructure, developers rarely think about power draw or cooling. You deploy your code and assume the data center handles the rest.\\nWith AI, physics becomes a software problem. Modern AI servers are beasts. Take a dense 8-GPU chassis—the HGX-derived designs every major OEM ships all share the same envelope. When you have GPUs pulling 700W+ each, traditional air cooling simply stops working. You start dealing with dedicated power circuits, liquid cooling requirements, and physical rack density limits. Your AI platform has to be deeply aware of the underlying hardware topology, PCIe lanes, and NVLink topologies in a way that a web microservice never cares about.\\nWorkloads Are Non-Deterministic If a web service takes a JSON payload and writes it to a database, it should do the exact same thing a million times out of a million. You write unit tests: assert response == expected. LLMs don\\u0026rsquo;t work like that. They are probabilistic engines. The same prompt might yield different answers. This completely upends how we test, monitor, and validate software. You can\\u0026rsquo;t just check for a 200 OK status. Your platform needs semantic evaluation pipelines, output quality monitoring, hallucination detection, and safety guardrails baked in. Observability in AI isn\\u0026rsquo;t just about tracing latency; it\\u0026rsquo;s about evaluating truthfulness.\\nWorkflows Are Built for Experimentation Web development is linear: build → test → ship. AI development is scientific: hypothesize → experiment → evaluate → repeat.\\nAn AI platform must support rapid, messy experimentation. A data scientist needs to spin up a fine-tuning job, try five different hyperparameter configurations, compare the results, track data lineage, and then throw four of them away. The platform has to manage these experiments, track MLflow or Weights \\u0026amp; Biases metrics, and handle model registries. Web CI/CD pipelines are too rigid for the chaotic nature of AI model development.\\nMassive Data Gravity Web apps usually treat the database as just another component. In AI, the data infrastructure is the platform.\\nTraining datasets can be terabytes or petabytes. Vector stores for RAG grow continuously. You can\\u0026rsquo;t just move this data around on a whim. The compute has to move to the data. I see this constantly—it\\u0026rsquo;s why training architectures rely on high-throughput parallel filesystems and object stores that can sustain tens of gigabytes per second to the GPUs. When you\\u0026rsquo;re saturating GPU interconnects, data movement becomes your primary bottleneck.\\nInverted Cost Profiles and AI FinOps In web platforms, compute is generally cheap and developers are expensive. We waste compute to save developer time.\\nIn AI platforms, the economics are entirely inverted. GPU hours are exquisitely expensive. Metrics like cost-per-token and cost-per-inference become your primary KPIs. This has birthed the entirely new discipline of AI FinOps. It\\u0026rsquo;s also why flexible consumption models exist. This is because not every organization wants to CapEx $500K+ servers just to figure out their AI strategy. The platform has to enforce strict quotas, track usage to the penny, and optimize resource allocation aggressively.\\nThe Tale of the Tape: Web vs. AI Platforms Characteristic Web Platforms AI Platforms Compute Focus CPU-centric, cheap, abundant GPU-centric, expensive, scarce Scaling Model Horizontal (scale out easily) Vertical + Complex Cluster (scale up \\u0026amp; out) Workload Nature Deterministic, transactional Probabilistic, compute-intensive Development Loop Build → Test → Ship Hypothesize → Train → Evaluate Storage Role Component of the architecture The center of gravity Key Metric Requests per second, Latency Tokens per second, GPU Utilization The Architectural Shift When you compare a traditional web platform side-by-side with an AI platform, the most striking difference isn\\u0026rsquo;t just that the stack gets taller—it\\u0026rsquo;s that every single layer of concern fundamentally shifts in responsibility, statefulness, and hardware intimacy.\\nIn a standard web platform, you manage 4 relatively straightforward tiers of concern: the web UI, microservices, a relational/document database, and commodity CPU nodes.\\nIn an AI platform, those 4 tiers expand into 6 specialized, highly interdependent layers of concern. Read this as a comparison lens rather than a component inventory—it shows how responsibility shifts as you move from web to AI, not how you would draw an AI platform\\u0026rsquo;s architecture:\\nBreaking Down the Shift in Responsibilities Application Layer → Eval \\u0026amp; Guardrails Layer\\nWeb: Input validation means regex checking email formats and sanitizing SQL injection strings. AI: Input/output validation requires non-deterministic guardrails: detecting prompt injection attacks, enforcing PII redaction, filtering toxicity, and running real-time semantic evaluation to catch model hallucinations before they reach the user. Microservices Layer → Model Serving \\u0026amp; Inference Runtime\\nWeb: Microservices are lightweight, stateless containers running Node.js, Go, or Java. Scaling is cheap, startup time is seconds, and memory footprints are measured in megabytes. AI: Model serving engines (vLLM, TensorRT-LLM, SGLang) are state-heavy runtimes. They manage gigabytes of model weights in VRAM, execute PagedAttention, orchestrate KV cache reuse, and perform continuous dynamic batching across hardware accelerators. Relational Database Layer → Vector DBs \\u0026amp; Unstructured Data Fabric\\nWeb: Databases store structured rows or JSON documents. Queries are deterministic SQL index lookups. AI: Data platforms store multi-dimensional vector embeddings and multi-petabyte unstructured datasets. Queries perform high-dimensional nearest-neighbor searches (HNSW). Storage platforms must stream tens of gigabytes per second directly to GPUs without causing I/O starvation. Commodity CPUs → High-Density GPU \\u0026amp; Accelerator Clusters\\nWeb: Compute nodes are commodity CPU cores connected via standard gigabit networking. Kubernetes treats every pod and CPU core as interchangeable. AI: Compute nodes are specialized accelerator fabrics (such as 8x GPU nodes connected via NVLink and high-bandwidth InfiniBand or Spectrum-X Ethernet). Topology awareness is critical—a pod scheduled on the wrong PCIe lane or remote GPU socket will suffer catastrophic latency penalties. Facility Air Cooling → Direct Liquid Cooling \\u0026amp; Power Management\\nWeb: Facility thermal management is transparent to software developers. Racks pull 5kW to 10kW and run standard fans. AI: High-density GPU racks pull 40kW to 100kW+ per rack. Modern high-density AI servers require direct-to-chip liquid cooling, coolant distribution units (CDUs), and dynamic power capping. Hardware health and thermal telemetry leak directly up into the platform scheduler. You cannot solve AI platform challenges by taking your web platform and adding a GPU driver. Every layer from the facility floor up to the application interface requires a fundamental redesign.\\nWhat\\u0026rsquo;s Next? We\\u0026rsquo;ve established that you can\\u0026rsquo;t just recycle your Kubernetes web platform and expect to succeed with AI. The constraints are different, the hardware is different, and the workflows are different.\\nBut how did we get here? For a while, we tried to solve this with \\u0026ldquo;MLOps,\\u0026rdquo; but that term doesn\\u0026rsquo;t quite capture the reality of generative AI and LLMs.\\nIn the next part of this series, we\\u0026rsquo;ll look at the evolution: why traditional MLOps wasn\\u0026rsquo;t enough, and how it evolved into the modern discipline of AI Platform Engineering.\\n\"",
+  "articleBody": "\"For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day. I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down. Sometimes, literally.\\nHere is the hard truth: an AI platform is not just a web platform with a GPU attached. The core assumptions that have driven web architecture over the last ten years are fundamentally broken when you introduce AI workloads. Let\\u0026rsquo;s look at why.\\nGPU is the center of gravity, not the CPU Web platforms are CPU-bound and designed for horizontal scalability. You treat servers like cattle. If one goes down, Kubernetes spins up another.\\nAI platforms revolve entirely around the GPU. And GPUs are not cattle; they are incredibly expensive, power-hungry, scarce racehorses. A single modern data center GPU costs tens of thousands of dollars. You absolutely cannot just \\u0026ldquo;add more pods.\\u0026rdquo;\\nBecause of this capital intensity, utilization matters enormously. Your platform has to support sophisticated scheduling, time-slicing, Multi-Instance GPU (MIG), and multi-tenancy just to make the economics work. An idle CPU is a minor inefficiency; an idle GPU cluster is a fireable offense.\\nThermals and Power In traditional web infrastructure, developers rarely think about power draw or cooling. You deploy your code and assume the data center handles the rest.\\nWith AI, physics becomes a software problem. Modern AI servers are beasts. Take a dense 8-GPU chassis—the HGX-derived designs every major OEM ships all share the same envelope. When you have GPUs pulling 700W+ each, traditional air cooling simply stops working. You start dealing with dedicated power circuits, liquid-cooling requirements, and physical rack-density limits. Your AI platform has to be deeply aware of the underlying hardware topology, PCIe lanes, and NVLink topologies in a way that a web microservice never cares about.\\nWorkloads Are Non-Deterministic If a web service takes a JSON payload and writes it to a database, it should do the exact same thing a million times out of a million. You write unit tests: assert response == expected. LLMs don\\u0026rsquo;t work like that. They are probabilistic engines. The same prompt might yield different answers. This completely upends how we test, monitor, and validate software. You can\\u0026rsquo;t just check for a 200 OK status. Your platform needs semantic evaluation pipelines, output quality monitoring, hallucination detection, and safety guardrails baked in. Observability in AI isn\\u0026rsquo;t just about tracing latency; it\\u0026rsquo;s about evaluating truthfulness.\\nWorkflows Are Built for Experimentation Web development is linear: build → test → ship. AI development is scientific: hypothesize → experiment → evaluate → repeat.\\nAn AI platform must support rapid, messy experimentation. A data scientist needs to spin up a fine-tuning job, try five different hyperparameter configurations, compare the results, track data lineage, and then discard four of them. The platform has to manage these experiments, track metrics in MLflow or Weights \\u0026amp; Biases, and handle model registries. Web CI/CD pipelines are too rigid for the chaotic nature of AI model development.\\nMassive Data Gravity Web apps usually treat the database as just another component. In AI, the data infrastructure is the platform.\\nTraining datasets can be terabytes or even petabytes in size. Vector stores for RAG grow continuously. You can\\u0026rsquo;t just move this data around on a whim. The compute has to move to the data. I see this constantly—it\\u0026rsquo;s why training architectures rely on high-throughput parallel file systems and object stores that can sustain tens of gigabytes per second to GPUs. When you\\u0026rsquo;re saturating GPU interconnects, data movement becomes your primary bottleneck.\\nInverted Cost Profiles and AI FinOps In web platforms, compute is generally cheap and developers are expensive. We waste compute to save developer time.\\nIn AI platforms, the economics are entirely inverted. GPU hours are exquisitely expensive. Metrics like cost-per-token and cost-per-inference become your primary KPIs. This has given rise to the entirely new discipline of AI FinOps. It\\u0026rsquo;s also why flexible consumption models exist. This is because not every organization wants to CapEx $500K+ servers just to figure out their AI strategy. The platform has to enforce strict quotas, track usage to the penny, and aggressively optimize resource allocation.\\nThe Tale of the Tape: Web vs. AI Platforms Characteristic Web Platforms AI Platforms Compute Focus CPU-centric, cheap, abundant GPU-centric, expensive, scarce Scaling Model Horizontal (scale out easily) Vertical + Complex Cluster (scale up \\u0026amp; out) Workload Nature Deterministic, transactional Probabilistic, compute-intensive Development Loop Build → Test → Ship Hypothesize → Train → Evaluate Storage Role Component of the architecture The center of gravity Key Metric Requests per second, Latency Tokens per second, GPU Utilization The Architectural Shift When you compare a traditional web platform side-by-side with an AI platform, the most striking difference isn\\u0026rsquo;t just that the stack gets taller—it\\u0026rsquo;s that every single layer of concern fundamentally shifts in responsibility, statefulness, and hardware intimacy.\\nIn a standard web platform, you manage 4 relatively straightforward tiers of concern: the web UI, microservices, a relational/document database, and commodity CPU nodes.\\nIn an AI platform, those 4 tiers expand into 6 specialized, highly interdependent layers of concern. Read this as a comparison lens rather than a component inventory—it shows how responsibility shifts as you move from web to AI, not how you would draw an AI platform\\u0026rsquo;s architecture:\\nBreaking Down the Shift in Responsibilities Application Layer → Eval \\u0026amp; Guardrails Layer\\nWeb: Input validation means checking email formats with regex and sanitizing SQL injection strings. AI: Input/output validation requires non-deterministic guardrails: detecting prompt-injection attacks, enforcing PII redaction, filtering for toxicity, and running real-time semantic evaluation to catch model hallucinations before they reach the user. Microservices Layer → Model Serving \\u0026amp; Inference Runtime\\nWeb: Microservices are lightweight, stateless containers running Node.js, Go, or Java. Scaling is cheap, startup time is in seconds, and memory footprint is measured in megabytes. AI: Model serving engines (vLLM, TensorRT-LLM, SGLang) are state-heavy runtimes. They manage gigabytes of model weights in VRAM, execute PagedAttention, orchestrate KV cache reuse, and perform continuous dynamic batching across hardware accelerators. Relational Database Layer → Vector DBs \\u0026amp; Unstructured Data Fabric\\nWeb: Databases store structured rows or JSON documents. Queries are deterministic SQL index lookups. AI: Data platforms store multi-dimensional vector embeddings and multi-petabyte unstructured datasets. Queries perform high-dimensional nearest-neighbor searches (HNSW). Storage platforms must stream tens of gigabytes per second directly to GPUs without causing I/O starvation. Commodity CPUs → High-Density GPU \\u0026amp; Accelerator Clusters\\nWeb: Compute nodes are commodity CPU cores connected via standard gigabit networking. Kubernetes treats every pod and CPU core as interchangeable. AI: Compute nodes are specialized accelerator fabrics (such as 8x GPU nodes connected via NVLink and high-bandwidth InfiniBand or Spectrum-X Ethernet). Topology awareness is critical—a pod scheduled on the wrong PCIe lane or remote GPU socket will suffer catastrophic latency penalties. Facility Air Cooling → Direct Liquid Cooling \\u0026amp; Power Management\\nWeb: Facility thermal management is transparent to software developers. Racks pull 5kW to 10kW and run standard fans. AI: High-density GPU racks pull 40kW to 100kW+ per rack. Modern high-density AI servers require direct-to-chip liquid cooling, coolant distribution units (CDUs), and dynamic power capping. Hardware health and thermal telemetry leak directly up into the platform scheduler. You cannot solve AI platform challenges by simply adding a GPU driver to your web platform. Every layer from the facility floor up to the application interface requires a fundamental redesign.\\nWhat\\u0026rsquo;s Next? We\\u0026rsquo;ve established that you can\\u0026rsquo;t just recycle your Kubernetes web platform and expect to succeed with AI. The constraints, hardware, and workflows are different.\\nBut how did we get here? For a while, we tried to solve this with \\u0026ldquo;MLOps,\\u0026rdquo; but that term doesn\\u0026rsquo;t quite capture the reality of generative AI and LLMs.\\nIn the next part of this series, we\\u0026rsquo;ll look at the evolution: why traditional MLOps wasn\\u0026rsquo;t enough, and how it evolved into the modern discipline of AI Platform Engineering.\\n\"",
   "url": "https:\/\/ravichaganti.com\/blog\/ai-platform-engineering-why-ai-platforms-are-different-from-web-platforms\/",
   "datePublished": "2026-02-03T00:00:00Z",
   "dateModified": "2026-02-03T00:00:00Z",
@@ -172,6 +172,11 @@
 </script>
 
 
+
+  
+  <meta name="model-context" content="enabled">
+  <link rel="alternate" type="application/json" title="Series Catalog" href="https://ravichaganti.com/series/index.json">
+  <link rel="alternate" type="application/json" title="Articles Index" href="https://ravichaganti.com/index.json">
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-bg">
@@ -685,7 +690,7 @@
 
       
       <p class="text-xs text-gray-600 dark:text-dark-text-secondary mt-2 mb-2 collapsed" id="series-description">
-        Part of a 2-part series
+        Part of a 3-part series
       </p>
 
       
@@ -721,6 +726,20 @@
               </div>
             </li>
           
+            <li class="flex items-start">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary/20 dark:bg-secondary/30 text-secondary dark:text-purple-400 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                3
+              </span>
+              <div class="flex-grow">
+                
+                  <a href="https://ravichaganti.com/blog/ai-platform-engineering-how-mlops-became-platform-engineering/" class="text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline hover:underline">
+                    AI Platform Engineering: How MLOps became platform engineering
+                  </a>
+                
+                <p class="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Feb 6, 2026</p>
+              </div>
+            </li>
+          
         </ol>
 
         
@@ -731,6 +750,8 @@
           
             
               
+            
+          
             
           
 
@@ -746,6 +767,14 @@
           
 
           
+          
+            
+            <a href="https://ravichaganti.com/blog/ai-platform-engineering-how-mlops-became-platform-engineering/" class="flex items-center justify-end text-sm text-gray-700 dark:text-dark-text-secondary hover:text-secondary dark:hover:text-purple-400 transition-colors no-underline group">
+              <span class="truncate">AI Platform Engineering: How MLOps became platform engineering</span>
+              <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
           
         </div>
       </nav>
@@ -874,27 +903,27 @@
 
         
         <div class="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-8 sm:mb-10 md:mb-12">
-          <p>For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down—sometimes literally.</p>
-<p>Here is the hard truth: an AI platform is not just a web platform with a GPU attached. The core assumptions that drove web architecture for the last ten years are fundamentally broken when you introduce AI workloads. Let&rsquo;s look at why.</p>
+          <p>For the last decade, building an internal developer platform meant one thing: Kubernetes, stateless microservices, and a horizontally scalable database. If things got slow, you just added more pods. If you needed more compute, you spun up more CPU instances in the cloud. It was a solved problem. Then generative AI showed up, and suddenly everyone thought they could just bolt a GPU onto their existing web platform and call it a day.  I see this all the time in my work as an AI Platform Architect at Dell Technologies. A team will take their battle-tested, highly available web platform, try to run a massive LLM or a large-scale training job on it, and watch the whole thing melt down. Sometimes, literally.</p>
+<p>Here is the hard truth: an AI platform is not just a web platform with a GPU attached. The core assumptions that have driven web architecture over the last ten years are fundamentally broken when you introduce AI workloads. Let&rsquo;s look at why.</p>
 <h2 id="gpu-is-the-center-of-gravity-not-the-cpu">GPU is the center of gravity, not the CPU</h2>
 <p>Web platforms are CPU-bound and designed for horizontal scalability. You treat servers like cattle. If one goes down, Kubernetes spins up another.</p>
 <p>AI platforms revolve entirely around the GPU. And GPUs are not cattle; they are incredibly expensive, power-hungry, scarce racehorses. A single modern data center GPU costs tens of thousands of dollars. You absolutely cannot just &ldquo;add more pods.&rdquo;</p>
 <p>Because of this capital intensity, utilization matters enormously. Your platform has to support sophisticated scheduling, time-slicing, Multi-Instance GPU (MIG), and multi-tenancy just to make the economics work. An idle CPU is a minor inefficiency; an idle GPU cluster is a fireable offense.</p>
 <h2 id="thermals-and-power">Thermals and Power</h2>
 <p>In traditional web infrastructure, developers rarely think about power draw or cooling. You deploy your code and assume the data center handles the rest.</p>
-<p>With AI, physics becomes a software problem. Modern AI servers are beasts. Take a dense 8-GPU chassis—the HGX-derived designs every major OEM ships all share the same envelope. When you have GPUs pulling 700W+ <em>each</em>, traditional air cooling simply stops working. You start dealing with dedicated power circuits, liquid cooling requirements, and physical rack density limits. Your AI platform has to be deeply aware of the underlying hardware topology, PCIe lanes, and NVLink topologies in a way that a web microservice never cares about.</p>
+<p>With AI, physics becomes a software problem. Modern AI servers are beasts. Take a dense 8-GPU chassis—the HGX-derived designs every major OEM ships all share the same envelope. When you have GPUs pulling 700W+ <em>each</em>, traditional air cooling simply stops working. You start dealing with dedicated power circuits, liquid-cooling requirements, and physical rack-density limits. Your AI platform has to be deeply aware of the underlying hardware topology, PCIe lanes, and NVLink topologies in a way that a web microservice never cares about.</p>
 <h2 id="workloads-are-non-deterministic">Workloads Are Non-Deterministic</h2>
 <p>If a web service takes a JSON payload and writes it to a database, it should do the exact same thing a million times out of a million. You write unit tests: <code>assert response == expected</code>. LLMs don&rsquo;t work like that. They are probabilistic engines. The same prompt might yield different answers. This completely upends how we test, monitor, and validate software. You can&rsquo;t just check for a 200 OK status. Your platform needs semantic evaluation pipelines, output quality monitoring, hallucination detection, and safety guardrails baked in. Observability in AI isn&rsquo;t just about tracing latency; it&rsquo;s about evaluating truthfulness.</p>
 <h2 id="workflows-are-built-for-experimentation">Workflows Are Built for Experimentation</h2>
 <p>Web development is linear: <em>build → test → ship</em>.
 AI development is scientific: <em>hypothesize → experiment → evaluate → repeat</em>.</p>
-<p>An AI platform must support rapid, messy experimentation. A data scientist needs to spin up a fine-tuning job, try five different hyperparameter configurations, compare the results, track data lineage, and then throw four of them away. The platform has to manage these experiments, track MLflow or Weights &amp; Biases metrics, and handle model registries. Web CI/CD pipelines are too rigid for the chaotic nature of AI model development.</p>
+<p>An AI platform must support rapid, messy experimentation. A data scientist needs to spin up a fine-tuning job, try five different hyperparameter configurations, compare the results, track data lineage, and then discard four of them. The platform has to manage these experiments, track metrics in MLflow or Weights &amp; Biases, and handle model registries. Web CI/CD pipelines are too rigid for the chaotic nature of AI model development.</p>
 <h2 id="massive-data-gravity">Massive Data Gravity</h2>
 <p>Web apps usually treat the database as just another component. In AI, the data infrastructure <em>is</em> the platform.</p>
-<p>Training datasets can be terabytes or petabytes. Vector stores for RAG grow continuously. You can&rsquo;t just move this data around on a whim. The compute has to move to the data. I see this constantly—it&rsquo;s why training architectures rely on high-throughput parallel filesystems and object stores that can sustain tens of gigabytes per second to the GPUs. When you&rsquo;re saturating GPU interconnects, data movement becomes your primary bottleneck.</p>
+<p>Training datasets can be terabytes or even petabytes in size. Vector stores for RAG grow continuously. You can&rsquo;t just move this data around on a whim. The compute has to move to the data. I see this constantly—it&rsquo;s why training architectures rely on high-throughput parallel file systems and object stores that can sustain tens of gigabytes per second to GPUs. When you&rsquo;re saturating GPU interconnects, data movement becomes your primary bottleneck.</p>
 <h2 id="inverted-cost-profiles-and-ai-finops">Inverted Cost Profiles and AI FinOps</h2>
 <p>In web platforms, compute is generally cheap and developers are expensive. We waste compute to save developer time.</p>
-<p>In AI platforms, the economics are entirely inverted. GPU hours are exquisitely expensive. Metrics like cost-per-token and cost-per-inference become your primary KPIs. This has birthed the entirely new discipline of AI FinOps. It&rsquo;s also why flexible consumption models exist. This is because not every organization wants to CapEx $500K+ servers just to figure out their AI strategy. The platform has to enforce strict quotas, track usage to the penny, and optimize resource allocation aggressively.</p>
+<p>In AI platforms, the economics are entirely inverted. GPU hours are exquisitely expensive. Metrics like cost-per-token and cost-per-inference become your primary KPIs. This has given rise to the entirely new discipline of AI FinOps. It&rsquo;s also why flexible consumption models exist. This is because not every organization wants to CapEx $500K+ servers just to figure out their AI strategy. The platform has to enforce strict quotas, track usage to the penny, and aggressively optimize resource allocation.</p>
 <h2 id="the-tale-of-the-tape-web-vs-ai-platforms">The Tale of the Tape: Web vs. AI Platforms</h2>
 <table>
 	<thead>
@@ -971,14 +1000,14 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
 <li>
 <p><strong>Application Layer → Eval &amp; Guardrails Layer</strong></p>
 <ul>
-<li><em>Web:</em> Input validation means regex checking email formats and sanitizing SQL injection strings.</li>
-<li><em>AI:</em> Input/output validation requires non-deterministic guardrails: detecting prompt injection attacks, enforcing PII redaction, filtering toxicity, and running real-time semantic evaluation to catch model hallucinations before they reach the user.</li>
+<li><em>Web:</em> Input validation means checking email formats with regex and sanitizing SQL injection strings.</li>
+<li><em>AI:</em> Input/output validation requires non-deterministic guardrails: detecting prompt-injection attacks, enforcing PII redaction, filtering for toxicity, and running real-time semantic evaluation to catch model hallucinations before they reach the user.</li>
 </ul>
 </li>
 <li>
 <p><strong>Microservices Layer → Model Serving &amp; Inference Runtime</strong></p>
 <ul>
-<li><em>Web:</em> Microservices are lightweight, stateless containers running Node.js, Go, or Java. Scaling is cheap, startup time is seconds, and memory footprints are measured in megabytes.</li>
+<li><em>Web:</em> Microservices are lightweight, stateless containers running Node.js, Go, or Java. Scaling is cheap, startup time is in seconds, and memory footprint is measured in megabytes.</li>
 <li><em>AI:</em> Model serving engines (vLLM, TensorRT-LLM, SGLang) are state-heavy runtimes. They manage gigabytes of model weights in VRAM, execute PagedAttention, orchestrate KV cache reuse, and perform continuous dynamic batching across hardware accelerators.</li>
 </ul>
 </li>
@@ -1005,10 +1034,10 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
 </li>
 </ol>
 <blockquote>
-<p>You cannot solve AI platform challenges by taking your web platform and adding a GPU driver. Every layer from the facility floor up to the application interface requires a fundamental redesign.</p>
+<p>You cannot solve AI platform challenges by simply adding a GPU driver to your web platform. Every layer from the facility floor up to the application interface requires a fundamental redesign.</p>
 </blockquote>
 <h2 id="whats-next">What&rsquo;s Next?</h2>
-<p>We&rsquo;ve established that you can&rsquo;t just recycle your Kubernetes web platform and expect to succeed with AI. The constraints are different, the hardware is different, and the workflows are different.</p>
+<p>We&rsquo;ve established that you can&rsquo;t just recycle your Kubernetes web platform and expect to succeed with AI. The constraints, hardware, and workflows are different.</p>
 <p>But how did we get here? For a while, we tried to solve this with &ldquo;MLOps,&rdquo; but that term doesn&rsquo;t quite capture the reality of generative AI and LLMs.</p>
 <p>In the next part of this series, we&rsquo;ll look at the evolution: why traditional MLOps wasn&rsquo;t enough, and how it evolved into the modern discipline of <strong>AI Platform Engineering</strong>.</p>
 
@@ -1167,6 +1196,8 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
         
       
     
+      
+    
 
     
     
@@ -1174,6 +1205,9 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
         
         
       
+      
+        
+        
       
     
   
@@ -1212,20 +1246,29 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
     
     <div class="flex">
       
-        
-        <div class="flex-1 card bg-gray-50 dark:bg-dark-bg-tertiary opacity-50 cursor-not-allowed">
+        <a href="https://ravichaganti.com/blog/ai-platform-engineering-how-mlops-became-platform-engineering/"
+           class="flex-1 group card hover:shadow-xl transition-all hover:scale-[1.02] no-underline"
+           aria-label="Next in AI Platform Engineering: AI Platform Engineering: How MLOps became platform engineering">
           <div class="flex items-start gap-3">
-            <div class="flex-1 text-right md:text-left">
-              <p class="text-xs text-gray-400 dark:text-dark-text-muted mb-1 uppercase tracking-wide">No Next Article</p>
-              <p class="text-sm text-gray-400 dark:text-dark-text-muted">This is the latest post</p>
+            
+            <div class="flex-1 min-w-0 text-right md:text-left md:order-1">
+              <p class="text-xs text-gray-500 dark:text-dark-text-muted mb-1 uppercase tracking-wide">Next in AI Platform Engineering</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-dark-text mb-2 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
+                AI Platform Engineering: How MLOps became platform engineering
+              </h3>
+              
+                <p class="text-sm text-gray-600 dark:text-dark-text-secondary line-clamp-2">MLOps was built on a single load-bearing assumption: that you train the model. Foundation models broke it, and the discipline had to become something else.</p>
+              
             </div>
-            <div class="flex-shrink-0 text-gray-400 dark:text-dark-text-muted mt-1">
+
+            
+            <div class="flex-shrink-0 text-primary dark:text-blue-400 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors mt-1 md:order-2">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </div>
           </div>
-        </div>
+        </a>
       
     </div>
   </div>
@@ -1423,6 +1466,22 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
       You May Also Like
     </h3>
     <div>
+      
+        
+<article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+  <a href="https://ravichaganti.com/blog/ai-platform-engineering-how-mlops-became-platform-engineering/" class="no-underline block group">
+    
+    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
+      AI Platform Engineering: How MLOps became platform engineering
+    </h4>
+
+    
+    <time class="text-xs text-gray-500 dark:text-gray-400" datetime="2026-02-06">
+      Feb 6, 2026
+    </time>
+  </a>
+</article>
+
       
         
 <article class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
@@ -1624,6 +1683,9 @@ AI development is scientific: <em>hypothesize → experiment → evaluate → re
 
   
   <script src="/js/cookie-consent.js"></script>
+
+  
+  <script defer src="/js/webmcp.js"></script>
 
   
   
