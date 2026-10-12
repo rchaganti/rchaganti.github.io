@@ -5,7 +5,7 @@
 
 Until recently, when an autonomous agent browses a website, it behaves like a human looking at a screen: it scrapes the Document Object Model (DOM), parses accessibility trees, takes screenshots, and guesses which CSS selectors to click or forms to submit. This "UI actuation" approach is slow, brittle, token-expensive, and breaks the moment a CSS class or layout shifts.
 
-Enter **[WebMCP](https://webmcp.dev/)** (Web Model Context Protocol). WebMCP brings the philosophy of MCP directly into the browser tab. Instead of forcing agents to reverse-engineer HTML, websites can explicitly register typed, callable JavaScript tools with natural language descriptions and JSON Schemas right into the browser's execution context.
+Enter **[WebMCP](https://developer.chrome.com/docs/ai/webmcp)** (Web Model Context Protocol). WebMCP brings the philosophy of MCP directly into the browser tab. Instead of forcing agents to reverse-engineer HTML, websites can explicitly register typed, callable JavaScript tools with natural language descriptions and JSON Schemas right into the browser's execution context.
 
 In this article, we will explore what WebMCP is, compare it with standard server-side MCP, and implement a complete, production-ready WebMCP integration on a Hugo static website without running any server infrastructure.
 
