@@ -15,7 +15,19 @@
   const registry = new Map();
 
   if (!isNative) {
+    const eventTarget = typeof EventTarget !== 'undefined' ? new EventTarget() : null;
+
     document.modelContext = {
+      addEventListener(type, listener, options) {
+        if (eventTarget) eventTarget.addEventListener(type, listener, options);
+      },
+      removeEventListener(type, listener, options) {
+        if (eventTarget) eventTarget.removeEventListener(type, listener, options);
+      },
+      dispatchEvent(event) {
+        return eventTarget ? eventTarget.dispatchEvent(event) : true;
+      },
+
       async registerTool(toolDef, options) {
         if (!toolDef || !toolDef.name) {
           throw new Error("WebMCP: Tool definition must include a 'name'.");
@@ -25,6 +37,7 @@
         if (options && options.signal) {
           options.signal.addEventListener('abort', () => {
             registry.delete(toolDef.name);
+            if (eventTarget) eventTarget.dispatchEvent(new Event('toolchange'));
           });
         }
 
@@ -33,11 +46,16 @@
             detail: { name: toolDef.name, tool: toolDef }
           })
         );
+        if (eventTarget) eventTarget.dispatchEvent(new Event('toolchange'));
         return true;
       },
 
       async unregisterTool(name) {
-        return registry.delete(name);
+        const deleted = registry.delete(name);
+        if (deleted && eventTarget) {
+          eventTarget.dispatchEvent(new Event('toolchange'));
+        }
+        return deleted;
       },
 
       async getTools() {
@@ -50,7 +68,8 @@
         }));
       },
 
-      async executeTool(name, params = {}) {
+      async executeTool(toolOrName, params = {}, options = {}) {
+        const name = typeof toolOrName === 'string' ? toolOrName : (toolOrName && toolOrName.name ? toolOrName.name : '');
         const tool = registry.get(name);
         if (!tool) {
           throw new Error(`WebMCP: Tool '${name}' not found.`);
@@ -58,6 +77,16 @@
         return await tool.execute(params);
       }
     };
+  } else {
+    // If native exists but executeTool is missing or expects descriptor, provide shim fallback
+    if (typeof document.modelContext.executeTool !== 'function') {
+      document.modelContext.executeTool = async function (toolOrName, params = {}) {
+        const name = typeof toolOrName === 'string' ? toolOrName : (toolOrName && toolOrName.name ? toolOrName.name : '');
+        const tool = registry.get(name);
+        if (!tool) throw new Error(`WebMCP: Tool '${name}' not found.`);
+        return await tool.execute(params);
+      };
+    }
   }
 
   // 2. Data Cache (Lazy loading)
@@ -353,6 +382,9 @@
     });
 
     console.log(`[WebMCP] 5 tools registered (${isNative ? 'native browser support' : 'polyfilled'}). Ready for AI agents.`);
+    if (document.modelContext && typeof document.modelContext.dispatchEvent === 'function') {
+      document.modelContext.dispatchEvent(new Event('toolchange'));
+    }
   }
 
   // Expose global helper for easy in-browser DevTools testing
